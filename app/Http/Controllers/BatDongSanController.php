@@ -4,28 +4,30 @@ namespace App\Http\Controllers;
 
 use App\Models\BatDongSan;
 use App\Models\DuAn;
-use App\Models\User; // Thêm dòng này
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str; // Thư viện xử lý chuỗi cho SEO
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Auth;
 
 class BatDongSanController extends Controller
 {
+    // 1. DANH SÁCH (ADMIN)
     public function index()
     {
-        $danhSachBDS = BatDongSan::with('duAn')->orderBy('created_at', 'desc')->get();
-        return view('admin.bat_dong_san.index', compact('danhSachBDS'));
+        $bat_dong_sans = BatDongSan::with('duAn')->orderBy('created_at', 'desc')->get();
+        return view('admin.bat_dong_san.index', ['bat_dong_sans' => $bat_dong_sans]);
     }
 
+    // 2. FORM TẠO MỚI
     public function create()
     {
-        $danhSachDuAn = DuAn::all();
-        return view('admin.bat_dong_san.create', compact('danhSachDuAn'));
+        $du_ans = DuAn::all();
+        return view('admin.bat_dong_san.create', ['du_ans' => $du_ans]);
     }
 
+    // 3. XỬ LÝ LƯU
     public function store(Request $request)
     {
-        // 1. Validate: Cho phép Ảnh + Video (tối đa 50MB)
         $request->validate([
             'tieu_de' => 'required|max:255',
             'du_an_id' => 'required|exists:du_an,id',
@@ -37,13 +39,11 @@ class BatDongSanController extends Controller
 
         $data = $request->all();
         $data['slug'] = Str::slug($request->tieu_de) . '-' . time();
-        $data['user_id'] = Auth::id(); // Lấy ID người đang đăng nhập
+        $data['user_id'] = Auth::id();
 
-        // 2. Upload Ảnh & Video
         if ($request->hasFile('hinh_anh')) {
             $mediaPaths = [];
             foreach ($request->file('hinh_anh') as $file) {
-                // Lưu vào storage/app/public/uploads/bds
                 $path = $file->store('uploads/bds', 'public');
                 $mediaPaths[] = $path;
             }
@@ -51,18 +51,27 @@ class BatDongSanController extends Controller
         }
 
         BatDongSan::create($data);
-        return redirect()->route('bat-dong-san.index')->with('success', 'Đăng tin thành công!');
+        return redirect()->route('admin.bat-dong-san.index')->with('success', 'Đăng tin thành công!');
     }
 
-    // 4. FORM SỬA
+    // 4. HIỂN THỊ CHI TIẾT (FRONTEND) - Đây là phần bạn bị thiếu
+    public function show($id)
+    {
+        // Tìm BĐS theo ID, kèm thông tin dự án
+        $batDongSan = BatDongSan::with('duAn')->findOrFail($id);
+
+        // Trả về view chi tiết phía khách hàng
+        return view('frontend.bat_dong_san.show', compact('batDongSan'));
+    }
+
+    // 5. FORM SỬA (ADMIN)
     public function edit(BatDongSan $batDongSan)
     {
-        $danhSachDuAn = DuAn::all();
-        // Trả về view edit cùng dữ liệu BĐS cần sửa
-        return view('admin.bat_dong_san.edit', compact('batDongSan', 'danhSachDuAn'));
+        $du_ans = DuAn::all();
+        return view('admin.bat_dong_san.edit', ['batDongSan' => $batDongSan, 'du_ans' => $du_ans]);
     }
 
-    // 5. XỬ LÝ CẬP NHẬT
+    // 6. XỬ LÝ CẬP NHẬT
     public function update(Request $request, BatDongSan $batDongSan)
     {
         $request->validate([
@@ -75,7 +84,6 @@ class BatDongSanController extends Controller
             $data['slug'] = Str::slug($request->tieu_de) . '-' . time();
         }
 
-        // Nếu có upload thêm file mới thì gộp vào mảng cũ
         if ($request->hasFile('hinh_anh')) {
             $currentMedia = $batDongSan->hinh_anh ?? [];
             foreach ($request->file('hinh_anh') as $file) {
@@ -86,13 +94,13 @@ class BatDongSanController extends Controller
         }
 
         $batDongSan->update($data);
-        return redirect()->route('bat-dong-san.index')->with('success', 'Cập nhật thành công!');
+        return redirect()->route('admin.bat-dong-san.index')->with('success', 'Cập nhật thành công!');
     }
-    // 6. XÓA BĐS
+
+    // 7. XÓA BĐS
     public function destroy(BatDongSan $batDongSan)
     {
-        // (Nâng cao: Có thể code thêm đoạn xóa file ảnh trong Storage để đỡ rác)
         $batDongSan->delete();
-        return redirect()->route('bat-dong-san.index')->with('success', 'Đã xóa tin đăng!');
+        return redirect()->route('admin.bat-dong-san.index')->with('success', 'Đã xóa tin đăng!');
     }
 }

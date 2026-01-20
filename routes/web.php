@@ -1,57 +1,147 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
+// Import Controllers
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DuAnController;
 use App\Http\Controllers\BatDongSanController;
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\BaiVietController;
 use App\Http\Controllers\LienHeController;
-use App\Http\Controllers\AuthController;
+use App\Http\Controllers\KyGuiController;
+use App\Http\Controllers\LichHenController;
+use App\Http\Controllers\TimKiemController;
+use App\Http\Controllers\SoSanhController;
+use App\Http\Controllers\YeuThichController;
 use App\Http\Controllers\ChatController;
 
-// --- KHU VỰC CÔNG KHAI (KHÁCH HÀNG) ---
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+// =========================================================
+// PHẦN 1: FRONTEND (KHÁCH HÀNG)
+// =========================================================
+
+// 1. Trang chủ & Giới thiệu
 Route::get('/', [HomeController::class, 'index'])->name('home');
-Route::get('/chi-tiet/{slug}', [HomeController::class, 'show'])->name('home.show');
-Route::post('/gui-lien-he', [LienHeController::class, 'store'])->name('lien-he.store');
 Route::get('/gioi-thieu', [HomeController::class, 'about'])->name('about');
 
+// 2. Tìm kiếm Bất Động Sản
+Route::get('/tim-kiem', [TimKiemController::class, 'index'])->name('tim-kiem');
 
+// 3. Chi tiết Bất Động Sản
+Route::get('/bat-dong-san/{id}', [BatDongSanController::class, 'show'])->name('bat-dong-san.show');
 
-// --- API CHAT (KHÔNG CẦN LOGIN) ---
-Route::post('/chat/start', [ChatController::class, 'startChat'])->name('chat.start');
-Route::post('/chat/send', [ChatController::class, 'sendMessage'])->name('chat.send');
-Route::get('/chat/messages', [ChatController::class, 'getMessages'])->name('chat.messages');
+// 4. Dự án
+Route::get('/du-an', [DuAnController::class, 'frontendIndex'])->name('du-an.index');
+Route::get('/du-an/{slug}', [DuAnController::class, 'show'])->name('du-an.show');
 
-// --- ADMIN CHAT (CẦN LOGIN) ---
-Route::middleware(['auth'])->group(function () {
-    Route::get('/admin/chat', [ChatController::class, 'adminIndex'])->name('admin.chat.index');
-    Route::get('/admin/chat/{id}', [ChatController::class, 'adminShow'])->name('admin.chat.show');
+// 5. Tin tức / Bài viết
+Route::get('/tin-tuc', [BaiVietController::class, 'frontendIndex'])->name('bai-viet.index');
+Route::get('/tin-tuc/{slug}', [BaiVietController::class, 'show'])->name('bai-viet.show');
+
+// 6. Liên hệ & Gửi yêu cầu
+Route::get('/lien-he', [LienHeController::class, 'index'])->name('lien-he.index');
+Route::post('/lien-he', [LienHeController::class, 'store'])->name('lien-he.store');
+
+// 7. Ký gửi nhà đất
+Route::get('/ky-gui', [KyGuiController::class, 'create'])->name('ky-gui.create');
+Route::post('/ky-gui', [KyGuiController::class, 'store'])->name('ky-gui.store');
+
+// 8. Đặt lịch xem nhà
+Route::post('/dat-lich-hen', [LichHenController::class, 'store'])->name('lich-hen.store');
+
+// =========================================================
+// PHẦN 2: TÍNH NĂNG TƯƠNG TÁC (AJAX/SESSION)
+// =========================================================
+
+// 1. So sánh Bất động sản
+Route::prefix('so-sanh')->name('so-sanh.')->group(function () {
+    Route::get('/', [SoSanhController::class, 'index'])->name('index');
+    Route::post('/add', [SoSanhController::class, 'addToCompare'])->name('add');
+    Route::post('/remove', [SoSanhController::class, 'removeCompare'])->name('remove');
+});
+
+// 2. Yêu thích (Lưu tin)
+Route::prefix('yeu-thich')->name('yeu-thich.')->group(function () {
+    Route::get('/', [YeuThichController::class, 'index'])->name('index');
+    Route::post('/toggle', [YeuThichController::class, 'toggleFavorite'])->name('toggle');
+});
+
+// 3. Hệ thống Chat (Khách hàng)
+Route::prefix('chat')->name('chat.')->group(function () {
+    Route::post('/start', [ChatController::class, 'startChat'])->name('start');
+    Route::post('/verify', [ChatController::class, 'verifyOtp'])->name('verify');
+    Route::post('/send', [ChatController::class, 'sendMessage'])->name('send');
+    Route::get('/messages', [ChatController::class, 'getMessages'])->name('messages');
 });
 
 
-// --- THÊM MỚI: ROUTE DỰ ÁN ---
-Route::get('/danh-sach-du-an', [HomeController::class, 'listProjects'])->name('project.index');
-Route::get('/du-an/{id}', [HomeController::class, 'showProject'])->name('project.show');
+// =========================================================
+// PHẦN 3: AUTHENTICATION (ĐĂNG NHẬP QUẢN TRỊ)
+// =========================================================
 
-// --- KHU VỰC ĐĂNG NHẬP ---
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.post');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/admin/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/admin/login', [AuthController::class, 'login'])->name('login.post');
+Route::post('/admin/logout', [AuthController::class, 'logout'])->name('logout');
 
-// --- KHU VỰC QUẢN TRỊ (BẢO MẬT) ---
-// Nhóm này yêu cầu phải đăng nhập mới vào được
-Route::middleware(['auth'])->group(function () {
 
-    // Quản lý Dự án
+// =========================================================
+// PHẦN 4: ADMIN DASHBOARD (QUẢN TRỊ VIÊN & SALE)
+// =========================================================
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+
+    // 1. Dashboard
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // 2. Quản lý Dự án
     Route::resource('du-an', DuAnController::class);
 
-    // Quản lý Bất động sản
+    // 3. Quản lý Bất động sản
     Route::resource('bat-dong-san', BatDongSanController::class);
 
-    // Quản lý Liên hệ (Khách hàng)
-    Route::get('/quan-ly-lien-he', [LienHeController::class, 'index'])->name('lien-he.index');
+    // 4. Quản lý Bài viết / Tin tức
+    Route::resource('bai-viet', BaiVietController::class);
 
-    // Route mặc định khi vào admin chuyển hướng sang danh sách BĐS
-    Route::get('/admin', function () {
-        return redirect()->route('bat-dong-san.index');
+    // 5. Quản lý Khách hàng liên hệ
+    Route::prefix('lien-he')->name('lien-he.')->group(function () {
+        Route::get('/', [LienHeController::class, 'adminIndex'])->name('index');
+        Route::post('/update-status/{id}', [LienHeController::class, 'updateStatus'])->name('update_status');
+        Route::delete('/{id}', [LienHeController::class, 'destroy'])->name('destroy');
+    });
+
+    // 6. Quản lý Ký gửi
+    Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
+        Route::get('/', [KyGuiController::class, 'adminIndex'])->name('index');
+        Route::post('/update-status/{id}', [KyGuiController::class, 'updateStatus'])->name('update_status');
+        Route::delete('/{id}', [KyGuiController::class, 'destroy'])->name('destroy');
+    });
+
+    // 7. Quản lý Lịch hẹn
+    Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
+        Route::get('/', [LichHenController::class, 'adminIndex'])->name('index');
+        Route::post('/confirm/{id}', [LichHenController::class, 'confirm'])->name('confirm');
+        Route::delete('/{id}', [LichHenController::class, 'destroy'])->name('destroy');
+    });
+    // 8. Hệ thống Chat (Admin) - Đã sửa lỗi
+    Route::prefix('chat')->name('chat.')->group(function () {
+        // Đường dẫn thực tế: /admin/chat
+        Route::get('/', [ChatController::class, 'adminIndex'])->name('index');
+
+        // Đường dẫn thực tế: /admin/chat/reply
+        Route::post('/reply', [ChatController::class, 'adminReply'])->name('reply');
+
+        // Đường dẫn thực tế: /admin/chat/get-messages
+        // Load tin nhắn với thông tin user (admin/sale)
+        Route::get('/get-messages', [ChatController::class, 'adminGetMessages'])->name('get_messages');
+
+        // Đường dẫn thực tế: /admin/chat/{id} (Luôn đặt cuối cùng để tránh trùng lặp)
+        Route::get('/{id}', [ChatController::class, 'adminShow'])->name('show');
     });
 });

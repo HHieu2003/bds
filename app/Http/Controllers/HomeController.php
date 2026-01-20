@@ -12,18 +12,16 @@ class HomeController extends Controller
     public function index()
     {
         // Lấy 6 BĐS mới nhất
-        $dsBatDongSan = BatDongSan::with(['duAn', 'user'])
+        $bat_dong_sans = BatDongSan::with(['duAn', 'user'])
             ->where('trang_thai', 'con_hang')
             ->orderBy('created_at', 'desc')
             ->limit(6)
             ->get();
 
         // Lấy 3 Dự án nổi bật
-        $duAnNoiBat = DuAn::orderBy('created_at', 'desc')->limit(3)->get();
+        $du_ans = DuAn::orderBy('created_at', 'desc')->limit(3)->get();
 
-        // --- SỬA DÒNG NÀY ---
-        // Cũ: return view('welcome', ...);
-        return view('frontend.home.index', compact('dsBatDongSan', 'duAnNoiBat'));
+        return view('frontend.home.index', ['bat_dong_sans' => $bat_dong_sans, 'du_ans' => $du_ans]);
     }
 
     // 2. CHI TIẾT CĂN HỘ (BẤT ĐỘNG SẢN LẺ)

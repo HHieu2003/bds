@@ -13,17 +13,16 @@ return new class extends Migration
     {
         Schema::create('lien_he', function (Blueprint $table) {
             $table->id();
+            $table->string('ho_ten');
+            $table->string('email');
+            $table->string('so_dien_thoai');
+            $table->text('noi_dung');
 
-            // Thông tin khách hàng
-            $table->string('so_dien_thoai'); // Quan trọng nhất
-            $table->text('loi_nhan')->nullable();
+            // Quan tâm đến BĐS nào? (Optional)
+            $table->foreignId('bat_dong_san_id')->nullable()->constrained('bat_dong_san')->onDelete('set null');
 
-            // Khách quan tâm căn nào?
-            $table->foreignId('bat_dong_san_id')->constrained('bat_dong_san')->onDelete('cascade');
-
-            // Trạng thái xử lý của nhân viên
-            $table->string('trang_thai')->default('chua_xu_ly'); // 'chua_xu_ly', 'da_goi', 'ket_thuc'
-
+            $table->string('trang_thai')->default('moi'); // moi, da_lien_he, da_chot
+            $table->text('ghi_chu_admin')->nullable(); // Admin note lại kết quả tư vấn
             $table->timestamps();
         });
     }

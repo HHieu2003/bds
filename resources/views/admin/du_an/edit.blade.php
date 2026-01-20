@@ -5,7 +5,7 @@
         <div class="card-body p-4">
             <h3 class="mb-4 text-warning">Sửa Dự Án: {{ $duAn->ten_du_an }}</h3>
 
-            <form action="{{ route('du-an.update', $duAn->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.du-an.update', $duAn->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT') <div class="row mb-3">
                     <div class="col-md-6">
@@ -46,7 +46,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-warning px-4">Cập nhật</button>
-                <a href="{{ route('du-an.index') }}" class="btn btn-secondary">Hủy</a>
+                <a href="{{ route('admin.du-an.index') }}" class="btn btn-secondary">Hủy</a>
             </form>
         </div>
     </div>

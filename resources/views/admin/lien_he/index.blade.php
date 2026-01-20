@@ -17,14 +17,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($dsLienHe as $lh)
+                    @foreach($lien_hes as $lh)
                     <tr>
                         <td>{{ $lh->created_at->format('H:i d/m/Y') }}</td>
                         <td>
                             <div class="fw-bold text-danger">{{ $lh->so_dien_thoai }}</div>
                         </td>
                         <td>
-                            <a href="{{ route('home.show', $lh->batDongSan->slug) }}" target="_blank" class="text-decoration-none">
+                            <a href="{{ route('bat-dong-san.show', $lh->batDongSan->id) }}" target="_blank" class="text-decoration-none">
                                 <span class="badge bg-info text-dark">{{ $lh->batDongSan->ma_can }}</span>
                                 <small class="d-block text-muted">{{ $lh->batDongSan->duAn->ten_du_an }}</small>
                             </a>
@@ -42,6 +42,37 @@
                                 <i class="fa-solid fa-phone"></i> Gọi ngay
                             </a>
                         </td>
+
+                        <td>
+    <select onchange="updateCRMStatus({{ $lh->id }}, this.value)" 
+            class="form-control form-control-sm 
+            {{ $lh->trang_thai == 'moi' ? 'border-danger text-danger' : 
+               ($lh->trang_thai == 'da_chot' ? 'border-success text-success' : 'border-primary text-primary') }}">
+        <option value="moi" {{ $lh->trang_thai=='moi'?'selected':'' }}>🔥 Mới tiếp nhận</option>
+        <option value="dang_tu_van" {{ $lh->trang_thai=='dang_tu_van'?'selected':'' }}>📞 Đang tư vấn</option>
+        <option value="da_xem" {{ $lh->trang_thai=='da_xem'?'selected':'' }}>👀 Đã dẫn khách xem</option>
+        <option value="da_chot" {{ $lh->trang_thai=='da_chot'?'selected':'' }}>💰 Đã chốt cọc</option>
+        <option value="khong_nhu_cau" {{ $lh->trang_thai=='khong_nhu_cau'?'selected':'' }}>❌ Không nhu cầu</option>
+    </select>
+</td>
+
+<script>
+function updateCRMStatus(id, status) {
+    fetch(`/admin/lien-he/${id}/status`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ trang_thai: status })
+    })
+    .then(res => res.json())
+    .then(data => {
+        alert('Đã cập nhật tiến độ khách hàng!');
+        // Có thể đổi màu ô select ngay tại đây nếu muốn đẹp hơn
+    });
+}
+</script>
                     </tr>
                     @endforeach
                 </tbody>

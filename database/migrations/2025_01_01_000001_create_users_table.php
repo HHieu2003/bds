@@ -12,12 +12,11 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-
-            // Phân quyền: 'admin' (quản trị), 'sale' (nhân viên)
+            // Role: 'admin' (Quản trị), 'dau_chu' (Nhân viên nguồn hàng), 'sale' (Nhân viên tư vấn)
             $table->string('role')->default('sale');
-
+            $table->string('phone')->nullable(); // Số điện thoại nhân viên để hiển thị liên hệ
+            $table->string('avatar')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

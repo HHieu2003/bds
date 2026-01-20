@@ -6,37 +6,35 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        // 1. Bảng phiên chat (Lưu SĐT khách)
         Schema::create('chat_sessions', function (Blueprint $table) {
             $table->id();
-            $table->string('phone')->unique(); // Số điện thoại là định danh duy nhất
-            $table->foreignId('du_an_id')->nullable()->constrained('du_an')->onDelete('set null');
-            $table->foreignId('bat_dong_san_id')->nullable()->constrained('bat_dong_san')->onDelete('set null');
-            // ---------------------
-            $table->boolean('is_read')->default(false); // Admin đã đọc chưa?
+            $table->string('session_id')->unique(); // ID định danh cho trình duyệt
+            $table->string('user_name')->nullable();
+            $table->string('user_phone'); // Bắt buộc nhập sđt
+            $table->boolean('is_verified')->default(false); // Trạng thái xác minh
+            $table->string('verification_code')->nullable(); // Mã OTP
+            $table->timestamp('expires_at')->nullable(); // Thời hạn cho phiên chưa xác minh
+            $table->string('context_url')->nullable(); // Khách đang xem trang nào
             $table->timestamps();
         });
 
-        // 2. Bảng tin nhắn
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('chat_session_id')->constrained('chat_sessions')->onDelete('cascade');
+            $table->unsignedBigInteger('chat_session_id');
+            $table->unsignedBigInteger('user_id')->nullable(); // Null = Khách, Có ID = Sale/Admin
             $table->text('message');
-            $table->boolean('is_admin')->default(false); // True: Admin nhắn, False: Khách nhắn
+            $table->boolean('is_read')->default(false);
             $table->timestamps();
+
+            $table->foreign('chat_session_id')->references('id')->on('chat_sessions')->onDelete('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('chat_tables');
+        Schema::dropIfExists('chat_messages');
+        Schema::dropIfExists('chat_sessions');
     }
 };

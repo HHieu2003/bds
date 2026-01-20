@@ -10,14 +10,17 @@ return new class extends Migration
     {
         Schema::create('du_an', function (Blueprint $table) {
             $table->id();
-
-            // Thông tin dự án
-            $table->string('ten_du_an');          // VD: Vinhomes Smart City
-            $table->string('dia_chi')->nullable(); // VD: Tây Mỗ, Nam Từ Liêm...
+            $table->string('ten_du_an');
+            $table->string('slug')->unique(); // Quan trọng cho SEO: du-an/vinhomes-ocean-park
+            $table->string('dia_chi');
             $table->string('chu_dau_tu')->nullable();
-            $table->string('don_vi_thi_cong')->nullable();
-            $table->text('mo_ta')->nullable();
-            $table->string('hinh_anh')->nullable(); // Lưu đường dẫn ảnh
+            $table->text('mo_ta_ngan')->nullable(); // Hiển thị ở danh sách
+            $table->longText('noi_dung_chi_tiet')->nullable(); // Hiển thị ở trang chi tiết
+            $table->string('hinh_anh_dai_dien')->nullable(); // Ảnh bìa
+            $table->json('album_anh')->nullable(); // Lưu nhiều ảnh dưới dạng JSON
+            $table->string('dien_tich_tong_the')->nullable();
+            $table->string('map_url')->nullable(); // Link Google Maps iframe
+            $table->string('trang_thai')->default('dang_mo_ban'); // sap_mo_ban, dang_mo_ban, da_ban_het
             $table->timestamps();
         });
     }

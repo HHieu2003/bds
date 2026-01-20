@@ -9,7 +9,7 @@
                 <h5 class="fw-bold mb-3">Liên Kết</h5>
                 <ul class="list-unstyled">
                     <li><a href="{{ route('home') }}" class="text-white-50 text-decoration-none mb-2 d-block">Trang chủ</a></li>
-                    <li><a href="{{ route('project.index') }}" class="text-white-50 text-decoration-none mb-2 d-block">Dự án</a></li>
+                    <li><a href="{{ route('du-an.index') }}" class="text-white-50 text-decoration-none mb-2 d-block">Dự án</a></li>
                 </ul>
             </div>
             <div class="col-lg-4">

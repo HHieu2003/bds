@@ -3,16 +3,21 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\DuAn;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class DuAnSeeder extends Seeder
 {
     public function run()
     {
-        // Xóa dữ liệu cũ (Tùy chọn)
-        // DB::table('du_an')->truncate();
+        // 1. Tắt kiểm tra khóa ngoại để xóa dữ liệu cũ sạch sẽ
+        Schema::disableForeignKeyConstraints();
+        DB::table('bat_dong_san')->truncate();
+        DB::table('du_an')->truncate();
+        Schema::enableForeignKeyConstraints();
 
+        // 2. Danh sách dữ liệu gốc của bạn (Giữ nguyên)
         $projects = [
             [
                 'ten_du_an' => 'GOLDMARK CITY',
@@ -311,19 +316,79 @@ Trong đó có 4 tầng khôi đế: Tầng 1,2 là sảnh cư dân, TTTM; Tần
         ];
 
         foreach ($projects as $da) {
-            // Tạo nội dung HTML cho cột mô tả
-            $moTaHTML = "<strong>TỔNG QUAN:</strong><br>" . nl2br($da['tong_quan']) . "<br><br>" .
-                "<strong>PHÍ DỊCH VỤ:</strong><br>" . $da['phi_dich_vu'] . "<br><br>" .
+            // A. Tạo Mô tả HTML
+            $moTaHTML = "<strong>ĐƠN VỊ THI CÔNG:</strong> " . ($da['don_vi_thi_cong'] ?? 'Đang cập nhật') . "<br>" .
+                "<strong>TỔNG QUAN:</strong><br>" . nl2br($da['tong_quan']) . "<br><br>" .
+                "<strong>PHÍ DỊCH VỤ:</strong><br>" . ($da['phi_dich_vu'] ?? 'Đang cập nhật') . "<br><br>" .
                 "<strong>CÁC DẠNG CĂN HỘ:</strong><br>" . nl2br($da['dang_can_ho']);
 
-            DuAn::create([
+            // B. Tạo Dự án (Chỉ tạo 1 lần duy nhất cho mỗi item)
+            $duAnId = DB::table('du_an')->insertGetId([
                 'ten_du_an' => $da['ten_du_an'],
-                'don_vi_thi_cong' => $da['don_vi_thi_cong'],
-                'chu_dau_tu' => $da['chu_dau_tu'],
+                'slug' => Str::slug($da['ten_du_an']) . '-' . rand(100, 999),
                 'dia_chi' => $da['dia_chi'],
-                'mo_ta' => $moTaHTML,
-                'hinh_anh' => null, // Bạn sẽ thêm ảnh sau
+                'chu_dau_tu' => $da['chu_dau_tu'],
+                'mo_ta_ngan' => Str::limit($da['tong_quan'], 150),
+                'noi_dung_chi_tiet' => $moTaHTML,
+                'trang_thai' => 'dang_mo_ban',
+                'created_at' => now(),
+                'updated_at' => now(),
             ]);
+
+            // C. Tạo các Căn hộ thuộc dự án này
+            $types = explode(',', $da['dang_can_ho']);
+
+            foreach ($types as $type) {
+                $type = trim($type);
+                if (empty($type)) continue;
+
+                // Sinh ra 2 căn cho mỗi loại căn hộ
+                for ($i = 1; $i <= 2; $i++) {
+
+                    // Logic giả lập thông số
+                    $soPhongNgu = 1;
+                    $dienTich = 40;
+                    $giaTy = 1.5;
+
+                    if (str_contains($type, '2PN')) {
+                        $soPhongNgu = 2;
+                        $dienTich = rand(65, 80);
+                        $giaTy = rand(25, 40) / 10;
+                    } elseif (str_contains($type, '3PN')) {
+                        $soPhongNgu = 3;
+                        $dienTich = rand(90, 110);
+                        $giaTy = rand(45, 60) / 10;
+                    } elseif (str_contains($type, '4PN') || stripos($type, 'Duplex') !== false) {
+                        $soPhongNgu = 4;
+                        $dienTich = rand(120, 200);
+                        $giaTy = rand(70, 150) / 10;
+                    }
+
+                    $tenToa = ['S1', 'S2', 'R1', 'R2', 'CT1', 'CT2'][rand(0, 5)];
+
+                    DB::table('bat_dong_san')->insert([
+                        'du_an_id' => $duAnId,
+                        'ma_can' => $tenToa . '.' . rand(10, 30) . rand(10, 99),
+                        'toa' => $tenToa,
+                        'tieu_de' => 'Căn hộ ' . $type . ' ' . $da['ten_du_an'] . ' tầng trung',
+                        'slug' => Str::slug($da['ten_du_an'] . '-' . $type . '-' . uniqid()), // Slug này đảm bảo không trùng
+                        'gia' => $giaTy,
+                        'dien_tich' => $dienTich,
+                        'so_phong_ngu' => $soPhongNgu,
+                        'so_phong_tam' => 2,
+                        'huong_nha' => ['Đông Nam', 'Tây Bắc', 'Đông', 'Tây'][rand(0, 3)],
+                        'loai_hinh' => 'can_ho',
+                        'nhu_cau' => 'ban',
+                        'mo_ta' => 'Căn hộ view thoáng, nội thất cơ bản.',
+                        'is_hot' => rand(0, 1),
+                        'trang_thai' => 'con_hang',
+                        'luot_xem' => rand(10, 500),
+                        'user_id' => 1,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
         }
     }
 }

@@ -3,7 +3,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="text-primary fw-bold">📦 Kho Hàng Bất Động Sản</h2>
-    <a href="{{ route('bat-dong-san.create') }}" class="btn btn-primary">
+    <a href="{{ route('admin.bat-dong-san.create') }}" class="btn btn-primary">
         <i class="fa-solid fa-plus me-1"></i> Đăng Tin Mới
     </a>
 </div>
@@ -23,7 +23,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach($danhSachBDS as $item)
+                @foreach($bat_dong_sans as $item)
                 <tr>
                     <td class="ps-3 fw-bold">{{ $item->id }}</td>
                     <td>
@@ -53,11 +53,11 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        <a href="{{ route('bat-dong-san.edit', $item->id) }}" class="btn btn-sm btn-outline-warning mx-1">
+                        <a href="{{ route('admin.bat-dong-san.edit', $item->id) }}" class="btn btn-sm btn-outline-warning mx-1">
                             <i class="fa-solid fa-pen"></i>
                         </a>
 
-                        <form action="{{ route('bat-dong-san.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xóa tin này?');">
+                        <form action="{{ route('admin.bat-dong-san.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Bạn chắc chắn muốn xóa tin này?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-outline-danger mx-1">
@@ -71,7 +71,7 @@
         </table>
     </div>
 
-    {{-- <div class="d-flex justify-content-center mt-3">{{ $danhSachBDS->links() }}
+    {{-- <div class="d-flex justify-content-center mt-3">{{ $bat_dong_sans->links() }}
 </div> --}}
 </div>
 @endsection

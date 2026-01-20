@@ -4,87 +4,97 @@ namespace App\Http\Controllers;
 
 use App\Models\DuAn;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Thư viện xử lý file
+use Illuminate\Support\Str;
 
 class DuAnController extends Controller
 {
-    // 1. Danh sách
+    // ==========================================
+    // 1. PHẦN DÀNH CHO ADMIN (QUẢN TRỊ)
+    // ==========================================
+
+    // Danh sách dự án (Admin)
     public function index()
     {
-        $danhSachDuAn = DuAn::orderBy('created_at', 'desc')->get();
-        return view('admin.du_an.index', compact('danhSachDuAn'));
+        $du_ans = DuAn::orderBy('created_at', 'desc')->get();
+        return view('admin.du_an.index', ['du_ans' => $du_ans]);
     }
 
-    // 2. Form thêm mới
+    // Form thêm mới
     public function create()
     {
         return view('admin.du_an.create');
     }
 
-    // 3. Xử lý lưu (Có upload ảnh)
+    // Xử lý lưu
     public function store(Request $request)
     {
         $request->validate([
             'ten_du_an' => 'required|max:255',
-            'hinh_anh' => 'nullable|image|max:2048', // Ảnh tối đa 2MB
+            'vi_tri' => 'required',
+            'hinh_anh' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->all();
+        $data['slug'] = Str::slug($request->ten_du_an) . '-' . time();
 
-        // Xử lý upload ảnh
         if ($request->hasFile('hinh_anh')) {
-            // Lưu vào storage/app/public/uploads/duan
-            $path = $request->file('hinh_anh')->store('uploads/duan', 'public');
-            $data['hinh_anh'] = $path;
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('uploads/du_an', 'public');
         }
 
         DuAn::create($data);
-
-        return redirect()->route('du-an.index')->with('success', 'Thêm dự án thành công!');
+        return redirect()->route('admin.du-an.index')->with('success', 'Thêm dự án thành công!');
     }
 
-    // 4. Form sửa
+    // Form sửa
     public function edit(DuAn $duAn)
     {
         return view('admin.du_an.edit', compact('duAn'));
     }
 
-    // 5. Xử lý cập nhật
+    // Xử lý cập nhật
     public function update(Request $request, DuAn $duAn)
     {
         $request->validate([
             'ten_du_an' => 'required|max:255',
-            'hinh_anh' => 'nullable|image|max:2048',
+            'vi_tri' => 'required',
         ]);
 
         $data = $request->all();
+        if ($duAn->ten_du_an != $request->ten_du_an) {
+            $data['slug'] = Str::slug($request->ten_du_an) . '-' . time();
+        }
 
-        // Nếu người dùng chọn ảnh mới
         if ($request->hasFile('hinh_anh')) {
-            // (Tùy chọn) Xóa ảnh cũ đi để đỡ rác server
-            if ($duAn->hinh_anh && Storage::disk('public')->exists($duAn->hinh_anh)) {
-                Storage::disk('public')->delete($duAn->hinh_anh);
-            }
-
-            // Lưu ảnh mới
-            $path = $request->file('hinh_anh')->store('uploads/duan', 'public');
-            $data['hinh_anh'] = $path;
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('uploads/du_an', 'public');
         }
 
         $duAn->update($data);
-
-        return redirect()->route('du-an.index')->with('success', 'Cập nhật dự án thành công!');
+        return redirect()->route('admin.du-an.index')->with('success', 'Cập nhật thành công!');
     }
 
-    // 6. Xóa
+    // Xóa
     public function destroy(DuAn $duAn)
     {
-        // Xóa ảnh khi xóa dự án
-        if ($duAn->hinh_anh && Storage::disk('public')->exists($duAn->hinh_anh)) {
-            Storage::disk('public')->delete($duAn->hinh_anh);
-        }
-
         $duAn->delete();
-        return redirect()->route('du-an.index')->with('success', 'Đã xóa dự án!');
+        return redirect()->route('admin.du-an.index')->with('success', 'Đã xóa dự án!');
+    }
+
+    // ==========================================
+    // 2. PHẦN DÀNH CHO KHÁCH HÀNG (FRONTEND)
+    // ==========================================
+
+    // Danh sách dự án ngoài trang chủ
+    public function frontendIndex()
+    {
+        $du_ans = DuAn::orderBy('created_at', 'desc')->get();
+        // Trả về view của khách hàng
+        return view('frontend.du_an.index', ['du_ans' => $du_ans]);
+    }
+
+    // Chi tiết dự án
+    public function show($slug)
+    {
+        $duAn = DuAn::where('slug', $slug)->firstOrFail();
+        return view('frontend.du_an.show', compact('duAn'));
     }
 }

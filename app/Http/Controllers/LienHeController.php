@@ -7,6 +7,12 @@ use Illuminate\Http\Request;
 
 class LienHeController extends Controller
 {
+    // 0. Trang liên hệ (FRONTEND)
+    public function index()
+    {
+        return view('frontend.lien_he.index');
+    }
+
     // 1. Xử lý khi khách bấm nút "Gửi yêu cầu"
     public function store(Request $request)
     {
@@ -31,11 +37,18 @@ class LienHeController extends Controller
         return redirect()->back()->with('success', 'Đã gửi yêu cầu! Nhân viên sẽ gọi lại cho bạn sớm.');
     }
 
-    // 2. Trang danh sách KH dành cho Admin (Chúng ta sẽ làm giao diện này ngay sau đây)
-    public function index()
+    public function adminIndex()
     {
         // Lấy danh sách liên hệ, mới nhất lên đầu
-        $dsLienHe = LienHe::with('batDongSan')->orderBy('created_at', 'desc')->get();
-        return view('admin.lien_he.index', compact('dsLienHe'));
+        $lien_hes = LienHe::with('batDongSan')->orderBy('created_at', 'desc')->get();
+        return view('admin.lien_he.index', ['lien_hes' => $lien_hes]);
+    }
+    public function updateStatus(Request $request, $id)
+    {
+        $lienHe = LienHe::findOrFail($id);
+        $lienHe->trang_thai = $request->trang_thai;
+        $lienHe->save();
+
+        return response()->json(['success' => 'Cập nhật trạng thái thành công!']);
     }
 }

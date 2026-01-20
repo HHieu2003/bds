@@ -24,10 +24,9 @@ class AuthController extends Controller
 
         // Auth::attempt sẽ tự động mã hóa password và so sánh với DB
         if (Auth::attempt($credentials)) {
-            $request->session()->regenerate(); // Bảo mật: Chống tấn công Session Fixation
-
-            // Đăng nhập thành công -> Chuyển hướng vào trang quản lý BĐS
-            return redirect()->route('bat-dong-san.index');
+            $request->session()->regenerate();
+            // Chuyển hướng về Dashboard thay vì home
+            return redirect()->route('admin.dashboard');
         }
 
         // Đăng nhập thất bại -> Quay lại và báo lỗi

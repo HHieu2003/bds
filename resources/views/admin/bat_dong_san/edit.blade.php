@@ -5,7 +5,7 @@
         <div class="card-body p-4">
             <h2 class="mb-4 text-warning">✏️ Sửa tin: {{ $batDongSan->ma_can }}</h2>
 
-            <form action="{{ route('bat-dong-san.update', $batDongSan->id) }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.bat-dong-san.update', $batDongSan->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT') <div class="row mb-3">
                     <div class="col-md-8">
@@ -15,7 +15,7 @@
                     <div class="col-md-4">
                         <label class="form-label">Dự án</label>
                         <select name="du_an_id" class="form-select">
-                            @foreach($danhSachDuAn as $da)
+                            @foreach($du_ans as $da)
                                 <option value="{{ $da->id }}" {{ $batDongSan->du_an_id == $da->id ? 'selected' : '' }}>
                                     {{ $da->ten_du_an }}
                                 </option>
@@ -69,7 +69,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-warning px-4">Cập nhật tin</button>
-                <a href="{{ route('bat-dong-san.index') }}" class="btn btn-secondary">Hủy</a>
+                <a href="{{ route('admin.bat-dong-san.index') }}" class="btn btn-secondary">Hủy</a>
             </form>
         </div>
     </div>

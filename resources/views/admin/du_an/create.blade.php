@@ -5,7 +5,7 @@
         <div class="card-body p-4">
             <h3 class="mb-4 text-primary">Thêm Dự Án Mới</h3>
 
-            <form action="{{ route('du-an.store') }}" method="POST" enctype="multipart/form-data">
+            <form action="{{ route('admin.du-an.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 
                 <div class="row mb-3">
@@ -41,7 +41,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-success px-4">Lưu Dự Án</button>
-                <a href="{{ route('du-an.index') }}" class="btn btn-secondary">Quay lại</a>
+                <a href="{{ route('admin.du-an.index') }}" class="btn btn-secondary">Quay lại</a>
             </form>
         </div>
     </div>

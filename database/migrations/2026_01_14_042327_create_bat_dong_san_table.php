@@ -11,39 +11,46 @@ return new class extends Migration
         Schema::create('bat_dong_san', function (Blueprint $table) {
             $table->id();
 
-            // --- CÁC CỘT CHUẨN SEO (THÊM MỚI VÀO ĐÂY LUÔN) ---
-            $table->string('tieu_de');          // Tiêu đề bài đăng (Quan trọng cho SEO)
-            $table->string('slug')->unique();   // Đường dẫn đẹp (VD: ban-can-ho-a10)
+            // --- CÁC CỘT CHUẨN SEO ---
+            $table->string('tieu_de');
+            $table->string('slug')->unique();
 
             // --- KHÓA NGOẠI ---
-            $table->foreignId('du_an_id')->constrained('du_an')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('du_an_id')->nullable()->constrained('du_an')->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('set null');
 
             // --- THÔNG TIN QUẢN LÝ ---
-            $table->string('toa'); // Ví dụ: GS1, S2.01, TK1...
+            $table->string('toa')->nullable(); // Để nullable để tránh lỗi nếu không nhập
             $table->string('ma_can');
-            $table->date('ngay_goi')->nullable();
             $table->date('ngay_dang')->nullable();
 
             // --- THÔNG SỐ KỸ THUẬT ---
-            $table->string('huong_cua')->nullable();
-            $table->string('huong_ban_cong')->nullable();
+            $table->string('huong_nha')->nullable(); // Dùng thống nhất tên là huong_nha
             $table->double('dien_tich');
-            $table->string('phong_ngu');
+
+            // Sửa lại thành integer để sau này dễ lọc (VD: tìm nhà > 2 phòng ngủ)
+            $table->integer('so_phong_ngu')->default(0);
+            $table->integer('so_phong_tam')->default(0);
+
             $table->string('noi_that')->nullable();
 
             // --- GIÁ & THANH TOÁN ---
-            $table->decimal('gia', 15, 0);
-            $table->string('hinh_thuc_thanh_toan')->nullable();
+            // QUAN TRỌNG: (15, 2) để lưu được giá 3.5 tỷ
+            $table->decimal('gia', 15, 2);
 
             // --- TRẠNG THÁI & HIỂN THỊ ---
-            $table->string('thoi_gian_vao')->nullable();
             $table->text('mo_ta')->nullable();
-            $table->json('hinh_anh')->nullable();
+            $table->text('tien_ich')->nullable();
+            $table->string('hinh_anh')->nullable();
+            $table->json('album_anh')->nullable(); // Đổi tên hinh_anh (json) thành album_anh cho rõ nghĩa
 
             // --- PHÂN LOẠI ---
-            $table->string('loai_hinh')->default('thue');
+            $table->string('loai_hinh')->default('can_ho'); // can_ho, dat_nen...
+            $table->string('nhu_cau')->default('ban'); // ban, thue
+
+            $table->boolean('is_hot')->default(false);
             $table->string('trang_thai')->default('con_hang');
+            $table->integer('luot_xem')->default(0);
 
             $table->timestamps();
         });

@@ -21,7 +21,7 @@
         {{-- --------------------------------------- --}}
 
         {{-- LƯU Ý: Phải có enctype="multipart/form-data" mới upload được ảnh --}}
-        <form action="{{ route('bat-dong-san.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.bat-dong-san.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             <div class="row mb-4">
@@ -34,7 +34,7 @@
                     <label class="form-label fw-bold">Thuộc Dự Án <span class="text-danger">*</span></label>
                     <select name="du_an_id" class="form-select" required>
                         <option value="">-- Chọn Dự Án --</option>
-                        @foreach($danhSachDuAn as $da)
+                        @foreach($du_ans as $da)
                             <option value="{{ $da->id }}" {{ old('du_an_id') == $da->id ? 'selected' : '' }}>
                                 {{ $da->ten_du_an }}
                             </option>
@@ -120,7 +120,7 @@
             </div>
 
             <button type="submit" class="btn btn-success btn-lg px-5">Đăng Tin</button>
-            <a href="{{ route('bat-dong-san.index') }}" class="btn btn-secondary btn-lg">Hủy</a>
+            <a href="{{ route('admin.bat-dong-san.index') }}" class="btn btn-secondary btn-lg">Hủy</a>
         </form>
     </div>
 
