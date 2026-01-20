@@ -257,47 +257,84 @@
 </div>
 
 <script>
-    // 1. Hàm thêm vào so sánh (Giữ nguyên logic cũ nhưng thêm mở modal)
-    function addToCompare(id) {
-        // ... (Logic thêm vào session như cũ nếu bạn muốn nút "So sánh" cũng tự thêm luôn)
-        // Ở đây tôi giả định nút "So Sánh" chỉ MỞ MODAL lên xem.
-        // Còn nếu bạn muốn nút này vừa THÊM vừa MỞ thì gọi fetch add trước.
-    }
+// ===== HỆ THỐNG SO SÁNH BẤT ĐỘNG SẢN =====
 
-    // 2. Hàm mở Modal và load dữ liệu
-    function openCompareModal() {
-        // Bước 1: Gọi API thêm căn hiện tại vào danh sách luôn (để khách đỡ phải bấm 2 lần)
-        fetch('/so-sanh/them/{{ $batDongSan->id }}') 
-        .then(() => {
-            // Bước 2: Hiển thị Modal
-            var myModal = new bootstrap.Modal(document.getElementById('compareModal'));
-            myModal.show();
-            
-            // Bước 3: Load nội dung bảng
-            loadCompareTable();
-        });
-    }
+// 1. Mở modal so sánh và thêm căn hiện tại vào danh sách
+function openCompareModal() {
+    // Thêm căn hiện tại vào so sánh
+    fetch('/so-sanh/add/{{ $batDongSan->id }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to add item');
+        return response.json();
+    })
+    .then(data => {
+        console.log('Add result:', data);
+        
+        // Mở modal sau khi thêm thành công
+        var myModal = new bootstrap.Modal(document.getElementById('compareModal'));
+        myModal.show();
+        
+        // Load danh sách so sánh
+        loadCompareTable();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra. Vui lòng thử lại!');
+    });
+}
 
-    // 3. Hàm load HTML bảng từ Server
-    function loadCompareTable() {
-        fetch('/so-sanh/load-table')
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('compareModalBody').innerHTML = html;
-        });
-    }
+// 2. Load bảng so sánh từ server
+function loadCompareTable() {
+    fetch('/so-sanh/load-table', {
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to load table');
+        return response.text();
+    })
+    .then(html => {
+        console.log('HTML received:', html);
+        document.getElementById('compareModalBody').innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('compareModalBody').innerHTML = 
+            '<div class="text-center py-5"><p class="text-danger">Có lỗi khi tải danh sách. Vui lòng F5 trang và thử lại.</p></div>';
+    });
+}
 
-    // 4. Hàm xóa item ngay trong Modal
-    function removeCompareItem(id) {
-        if(!confirm('Bỏ căn này khỏi so sánh?')) return;
+// 3. Xóa item khỏi danh sách so sánh
+function removeCompareItem(id) {
+    if (!confirm('Bỏ căn này khỏi so sánh?')) return;
 
-        fetch('/so-sanh/xoa/' + id)
-        .then(response => response.json())
-        .then(data => {
-            // Load lại bảng sau khi xóa
-            loadCompareTable();
-        });
-    }
+    fetch('/so-sanh/remove/' + id, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Failed to remove item');
+        return response.json();
+    })
+    .then(data => {
+        // Load lại bảng sau khi xóa
+        loadCompareTable();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Có lỗi xảy ra khi xóa. Vui lòng thử lại!');
+    });
+}
 </script>
 
 
@@ -449,22 +486,6 @@ function toggleFavorite(id) {
 }
 </script>
 
-<script>
-// Hàm thêm vào so sánh
-function addToCompare(id) {
-    fetch('/so-sanh/them/' + id)
-    .then(response => response.json())
-    .then(data => {
-        if (data.status === 'success') {
-            alert('Đã thêm vào danh sách so sánh! (Hiện có ' + data.count + ' căn)');
-            // Có thể update số lượng trên Header nếu muốn
-        } else {
-            alert(data.message); // Thông báo lỗi (Đã tồn tại hoặc Đầy)
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
-</script>
 
 
 

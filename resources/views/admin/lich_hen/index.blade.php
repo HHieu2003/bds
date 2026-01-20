@@ -30,7 +30,7 @@
                             </td>
                             <td>
                                 @if($lh->batDongSan)
-                                    <a href="{{ route('home.show', $lh->batDongSan->slug) }}" target="_blank" class="text-primary text-decoration-none">
+                                    <a href="{{ route('bat-dong-san.show', $lh->batDongSan->id) }}" target="_blank" class="text-primary text-decoration-none">
                                         {{ $lh->batDongSan->ma_can }}
                                     </a>
                                     <br>
@@ -56,20 +56,17 @@
                             </td>
                             <td>
                                 @if($lh->trang_thai == 'moi_dat')
-                                <form action="{{ route('lich-hen.update', $lh->id) }}" method="POST" class="d-inline">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="trang_thai" value="da_xac_nhan">
+                                <form action="{{ route('admin.lich-hen.confirm', $lh->id) }}" method="POST" class="d-inline">
+                                    @csrf
                                     <button class="btn btn-sm btn-success" title="Xác nhận lịch"><i class="fas fa-check"></i></button>
                                 </form>
-                                <form action="{{ route('lich-hen.update', $lh->id) }}" method="POST" class="d-inline">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="trang_thai" value="huy">
+                                <form action="{{ route('admin.lich-hen.destroy', $lh->id) }}" method="POST" class="d-inline">
+                                    @csrf @method('DELETE')
                                     <button class="btn btn-sm btn-danger" title="Hủy lịch" onclick="return confirm('Hủy lịch hẹn này?')"><i class="fas fa-times"></i></button>
                                 </form>
                                 @elseif($lh->trang_thai == 'da_xac_nhan')
-                                <form action="{{ route('lich-hen.update', $lh->id) }}" method="POST" class="d-inline">
-                                    @csrf @method('PUT')
-                                    <input type="hidden" name="trang_thai" value="hoan_thanh">
+                                <form action="{{ route('admin.lich-hen.confirm', $lh->id) }}" method="POST" class="d-inline">
+                                    @csrf
                                     <button class="btn btn-sm btn-info text-white" title="Hoàn thành (Khách đã đến xem)">Đã xem xong</button>
                                 </form>
                                 @endif

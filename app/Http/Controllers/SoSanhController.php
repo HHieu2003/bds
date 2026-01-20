@@ -8,6 +8,15 @@ use Illuminate\Support\Facades\Session;
 
 class SoSanhController extends Controller
 {
+    // --- Frontend: Trang so sánh ---
+    public function index()
+    {
+        $compareIds = Session::get('compare_list', []);
+        $properties = BatDongSan::whereIn('id', $compareIds)->get();
+
+        return view('frontend.so_sanh.index', compact('properties'));
+    }
+
     // --- API: Trả về HTML bảng so sánh để nạp vào Modal ---
     public function loadTable()
     {
@@ -19,7 +28,7 @@ class SoSanhController extends Controller
     }
 
     // --- Thêm vào danh sách (Giữ nguyên) ---
-    public function add($id)
+    public function addToCompare($id)
     {
         $compareIds = Session::get('compare_list', []);
 
@@ -42,7 +51,7 @@ class SoSanhController extends Controller
     }
 
     // --- Xóa khỏi danh sách (Sửa lại trả về JSON để JS xử lý) ---
-    public function remove($id)
+    public function removeCompare($id)
     {
         $compareIds = Session::get('compare_list', []);
         $compareIds = array_diff($compareIds, [$id]);

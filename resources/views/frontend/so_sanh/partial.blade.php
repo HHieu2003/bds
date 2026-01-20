@@ -11,7 +11,10 @@
                             <i class="fas fa-times-circle fs-5"></i>
                         </button>
                         
-                        <img src="{{ asset($item->hinh_anh) }}" class="rounded-3 mb-2" style="width: 100%; height: 100px; object-fit: cover;">
+                        @php
+                            $img = is_array($item->hinh_anh) ? $item->hinh_anh[0] : $item->hinh_anh;
+                        @endphp
+                        <img src="{{ asset($img) }}" class="rounded-3 mb-2" style="width: 100%; height: 100px; object-fit: cover;" onerror="this.src='https://via.placeholder.com/100'">
                         <h6 class="fw-bold text-truncate px-1 small">
                             {{ $item->tieu_de }}
                         </h6>
@@ -37,7 +40,7 @@
             <tr>
                 <td class="fw-bold bg-light text-start ps-3">Phòng ngủ</td>
                 @foreach($properties as $item)
-                <td>{{ $item->so_phong_ngu }} PN</td>
+                <td>{{ $item->phong_ngu ?? 'KXĐ' }}</td>
                 @endforeach
             </tr>
             <tr>
@@ -50,7 +53,7 @@
                 <td class="bg-light"></td>
                 @foreach($properties as $item)
                 <td>
-                    <a href="{{ route('home.show', $item->slug) }}" class="btn btn-primary btn-sm rounded-pill w-100">Chi Tiết</a>
+                    <a href="{{ route('bat-dong-san.show', $item->id) }}" class="btn btn-primary btn-sm rounded-pill w-100">Chi Tiết</a>
                 </td>
                 @endforeach
             </tr>

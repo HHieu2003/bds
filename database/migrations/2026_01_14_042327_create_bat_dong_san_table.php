@@ -25,10 +25,11 @@ return new class extends Migration
             $table->date('ngay_dang')->nullable();
 
             // --- THÔNG SỐ KỸ THUẬT ---
-            $table->string('huong_nha')->nullable(); // Dùng thống nhất tên là huong_nha
+            $table->string('huong_cua')->nullable(); // Hướng căn hộ
+            $table->string('huong_ban_cong')->nullable(); // Hướng ban công
             $table->double('dien_tich');
 
-            // Sửa lại thành integer để sau này dễ lọc (VD: tìm nhà > 2 phòng ngủ)
+            // Số phòng ngủ và phòng tắm
             $table->integer('so_phong_ngu')->default(0);
             $table->integer('so_phong_tam')->default(0);
 

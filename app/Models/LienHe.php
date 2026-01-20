@@ -16,7 +16,7 @@ class LienHe extends Model
 
     protected $fillable = [
         'so_dien_thoai',
-        'loi_nhan',
+        'noi_dung',
         'bat_dong_san_id',
         'trang_thai'
     ];

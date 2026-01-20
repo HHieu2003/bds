@@ -63,8 +63,9 @@ Route::post('/dat-lich-hen', [LichHenController::class, 'store'])->name('lich-he
 // 1. So sánh Bất động sản
 Route::prefix('so-sanh')->name('so-sanh.')->group(function () {
     Route::get('/', [SoSanhController::class, 'index'])->name('index');
-    Route::post('/add', [SoSanhController::class, 'addToCompare'])->name('add');
-    Route::post('/remove', [SoSanhController::class, 'removeCompare'])->name('remove');
+    Route::get('/load-table', [SoSanhController::class, 'loadTable'])->name('load_table');
+    Route::post('/add/{id}', [SoSanhController::class, 'addToCompare'])->name('add');
+    Route::post('/remove/{id}', [SoSanhController::class, 'removeCompare'])->name('remove');
 });
 
 // 2. Yêu thích (Lưu tin)

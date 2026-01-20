@@ -86,7 +86,7 @@ class DuAnController extends Controller
     // Danh sách dự án ngoài trang chủ
     public function frontendIndex()
     {
-        $du_ans = DuAn::orderBy('created_at', 'desc')->get();
+        $du_ans = DuAn::orderBy('created_at', 'desc')->paginate(9);
         // Trả về view của khách hàng
         return view('frontend.du_an.index', ['du_ans' => $du_ans]);
     }

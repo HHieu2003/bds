@@ -29,7 +29,7 @@
                     @foreach($duAn->batDongSans as $bds)
                     <div class="col-md-6">
                         <div class="card h-100 border-0 shadow-sm">
-                            <a href="{{ route('home.show', $bds->slug) }}">
+                            <a href="{{ route('bat-dong-san.show', $bds->id) }}">
                                 <img src="{{ $bds->hinh_anh && count($bds->hinh_anh)>0 ? asset('storage/'.$bds->hinh_anh[0]) : 'https://via.placeholder.com/400x300' }}" class="card-img-top" style="height: 200px; object-fit: cover;">
                             </a>
                             <div class="card-body">
@@ -37,7 +37,7 @@
                                     <span class="badge bg-warning text-dark">{{ $bds->toa }}</span>
                                     <span class="text-danger fw-bold">{{ number_format($bds->gia) }}</span>
                                 </div>
-                                <h6 class="fw-bold"><a href="{{ route('home.show', $bds->slug) }}" class="text-dark text-decoration-none">{{ Str::limit($bds->tieu_de, 40) }}</a></h6>
+                                <h6 class="fw-bold"><a href="{{ route('bat-dong-san.show', $bds->id) }}" class="text-dark text-decoration-none">{{ Str::limit($bds->tieu_de, 40) }}</a></h6>
                                 <hr>
                                 <div class="small text-muted d-flex justify-content-between">
                                     <span><i class="fa-solid fa-bed"></i> {{ $bds->phong_ngu }}</span>
