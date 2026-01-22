@@ -13,10 +13,14 @@ return new class extends Migration
     {
         Schema::create('lich_hen', function (Blueprint $table) {
             $table->id();
-            // Thông tin khách hàng đặt lịch
+
+            // Liên kết khách hàng (Thêm mới)
+            $table->foreignId('khach_hang_id')->nullable()->constrained('khach_hang')->onDelete('set null');
+
+            // Thông tin khách hàng đặt lịch (Vẫn giữ để backup nếu khách không đăng nhập)
             $table->string('ten_khach_hang');
             $table->string('sdt_khach_hang');
-            $table->string('email_khach_hang')->nullable(); // Để gửi mail xác nhận
+            $table->string('email_khach_hang')->nullable();
 
             // Xem căn nào?
             $table->foreignId('bat_dong_san_id')->constrained('bat_dong_san')->onDelete('cascade');

@@ -11,22 +11,19 @@ class ChatMessage extends Model
 
     protected $fillable = [
         'chat_session_id',
-        'user_id',
+        'user_id', // Null = Khách hàng, Có ID = Admin/Sale
         'message',
         'is_read'
     ];
 
-    // --- ĐÂY LÀ PHẦN BẠN ĐANG THIẾU ---
-
-    // Định nghĩa quan hệ: 1 tin nhắn thuộc về 1 user (nếu là admin/sale)
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    // Định nghĩa quan hệ: 1 tin nhắn thuộc về 1 phiên chat
     public function chatSession()
     {
         return $this->belongsTo(ChatSession::class);
+    }
+
+    // Lấy thông tin Admin trả lời (nếu có)
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -79,13 +79,13 @@
                     <div class="card border-0 rounded-4 shadow-sm h-100">
                         <div class="position-relative">
                             <span class="badge bg-primary position-absolute top-0 start-0 m-3">{{ $bds->loai_hinh == 'ban' ? 'ĐANG BÁN' : 'CHO THUÊ' }}</span>
-                            <a href="{{ route('bat-dong-san.show', $bds->id) }}">
+                            <a href="{{ route('bat-dong-san.show', $bds->slug) }}">
                                 <img src="{{ $bds->hinh_anh && count($bds->hinh_anh)>0 ? asset('storage/'.$bds->hinh_anh[0]) : 'https://via.placeholder.com/600x400' }}" class="card-img-top rounded-top-4" style="height: 220px; object-fit: cover;">
                             </a>
                         </div>
                         <div class="card-body">
                             <div class="mb-2"><small class="text-muted">{{ $bds->duAn->ten_du_an }}</small></div>
-                            <h5 class="fw-bold text-truncate"><a href="{{ route('bat-dong-san.show', $bds->id) }}" class="text-dark text-decoration-none">{{ $bds->tieu_de }}</a></h5>
+                            <h5 class="fw-bold text-truncate"><a href="{{ route('bat-dong-san.show', $bds->slug) }}" class="text-dark text-decoration-none">{{ $bds->tieu_de }}</a></h5>
                             <div class="d-flex justify-content-between align-items-center mt-3">
                                 <span class="text-danger fw-bold fs-5">{{ number_format($bds->gia) }} ₫</span>
                                 <div class="text-muted small">

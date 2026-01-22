@@ -16,11 +16,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('bat_dong_san_id')->constrained('bat_dong_san')->onDelete('cascade');
 
-            // Nếu khách đã đăng nhập
-            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
+            // Liên kết khách hàng (Thêm mới - Quan trọng nhất)
+            $table->foreignId('khach_hang_id')->nullable()->constrained('khach_hang')->onDelete('cascade');
 
-            // Nếu khách vãng lai (lưu theo session hoặc cookie)
+            // Vẫn giữ user_id nếu Sale muốn lưu tin, hoặc session_id cho khách vãng lai chưa xác thực
+            $table->foreignId('user_id')->nullable()->constrained('users')->onDelete('cascade');
             $table->string('session_id')->nullable();
+
+            // Cột sđt này có thể bỏ nếu đã dùng khach_hang_id, 
+            // nhưng nên giữ lại để lưu sđt cho trường hợp khách chưa tạo tài khoản hoàn chỉnh
+            $table->string('so_dien_thoai')->nullable();
 
             $table->timestamps();
         });
@@ -28,9 +33,13 @@ return new class extends Migration
         // Bảng đăng ký nhận thông báo giá (Price Alerts)
         Schema::create('nhan_bao_gia', function (Blueprint $table) {
             $table->id();
+
+            // Nếu có khách hàng thì link luôn
+            $table->foreignId('khach_hang_id')->nullable()->constrained('khach_hang')->onDelete('cascade');
+
             $table->string('email');
             $table->foreignId('bat_dong_san_id')->constrained('bat_dong_san')->onDelete('cascade');
-            $table->decimal('gia_mong_muon', 15, 2)->nullable(); // Khi giá giảm xuống mức này thì báo
+            $table->decimal('gia_mong_muon', 15, 2)->nullable();
             $table->boolean('da_gui_thong_bao')->default(false);
             $table->timestamps();
         });
@@ -41,6 +50,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('khach_hang_tuong_tac');
+        Schema::dropIfExists('nhan_bao_gia'); // Drop bảng này trước vì nó phụ thuộc
+        Schema::dropIfExists('yeu_thich');
     }
 };

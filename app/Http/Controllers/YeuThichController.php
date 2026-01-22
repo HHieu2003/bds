@@ -6,62 +6,47 @@ use App\Models\YeuThich;
 use App\Models\BatDongSan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
 
 class YeuThichController extends Controller
 {
-    // --- Xử lý Thả tim / Hủy tim ---
     public function toggle($id)
     {
-        // Kiểm tra BĐS có tồn tại không
-        $bds = BatDongSan::findOrFail($id);
+        $user = Auth::guard('customer')->user();
 
-        // Xác định định danh người dùng (User ID hoặc Session ID)
-        $userId = Auth::id();
-        $sessionId = Session::getId();
-
-        // Tìm xem đã like chưa
-        $query = YeuThich::where('bat_dong_san_id', $id);
-
-        if ($userId) {
-            $query->where('user_id', $userId);
-        } else {
-            $query->where('session_id', $sessionId);
+        // 1. Chưa login -> Báo Frontend hiện Popup Quick Login
+        if (!$user) {
+            return response()->json([
+                'status' => 'require_login',
+                'message' => 'Đăng nhập để lưu tin.'
+            ]);
         }
 
-        $existingLike = $query->first();
+        // 2. Đã login -> Xử lý lưu/xóa
+        $existingLike = YeuThich::where('bat_dong_san_id', $id)
+            ->where('khach_hang_id', $user->id)
+            ->first();
 
         if ($existingLike) {
-            // Nếu đã like rồi thì xóa (Unlike)
             $existingLike->delete();
-            return response()->json(['status' => 'removed', 'message' => 'Đã bỏ lưu tin này']);
+            return response()->json(['status' => 'removed', 'message' => 'Đã bỏ lưu tin']);
         } else {
-            // Chưa like thì tạo mới
             YeuThich::create([
                 'bat_dong_san_id' => $id,
-                'user_id' => $userId,
-                'session_id' => $userId ? null : $sessionId // Nếu đã login thì không cần lưu session_id
+                'khach_hang_id' => $user->id
             ]);
-            return response()->json(['status' => 'added', 'message' => 'Đã lưu tin thành công']);
+            return response()->json(['status' => 'added', 'message' => 'Đã lưu tin']);
         }
     }
 
-    // --- Hiển thị danh sách đã lưu ---
     public function index()
     {
-        $userId = Auth::id();
-        $sessionId = Session::getId();
+        $user = Auth::guard('customer')->user();
+        if (!$user) return redirect()->route('home')->with('error', 'Vui lòng đăng nhập để xem tin đã lưu');
 
-        $query = YeuThich::with('batDongSan');
-
-        if ($userId) {
-            $query->where('user_id', $userId);
-        } else {
-            $query->where('session_id', $sessionId);
-        }
-
-        // Lấy danh sách BĐS từ bảng YeuThich
-        $yeuThichs = $query->orderBy('created_at', 'desc')->get();
+        $yeuThichs = YeuThich::where('khach_hang_id', $user->id)
+            ->with('batDongSan')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return view('frontend.yeu_thich.index', compact('yeuThichs'));
     }

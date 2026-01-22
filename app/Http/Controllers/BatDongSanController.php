@@ -55,12 +55,20 @@ class BatDongSanController extends Controller
     }
 
     // 4. HIỂN THỊ CHI TIẾT (FRONTEND) - Đây là phần bạn bị thiếu
-    public function show($id)
+    public function show($slug)
     {
-        // Tìm BĐS theo ID, kèm thông tin dự án
-        $batDongSan = BatDongSan::with('duAn')->findOrFail($id);
+        // Debug: In ra xem slug nhận được là gì
+        // dd($slug); 
 
-        // Trả về view chi tiết phía khách hàng
+        $batDongSan = BatDongSan::with('duAn')
+            ->where('slug', $slug)
+            ->first(); // Bỏ fail để không báo lỗi 404 ngay
+
+        if (!$batDongSan) {
+            // Nếu không tìm thấy, in ra thông báo để biết
+            dd("Không tìm thấy BĐS nào có slug là: " . $slug . ". Hãy kiểm tra Database xem cột slug có dữ liệu chưa.");
+        }
+
         return view('frontend.bat_dong_san.show', compact('batDongSan'));
     }
 

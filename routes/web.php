@@ -16,7 +16,7 @@ use App\Http\Controllers\TimKiemController;
 use App\Http\Controllers\SoSanhController;
 use App\Http\Controllers\YeuThichController;
 use App\Http\Controllers\ChatController;
-
+use App\Http\Controllers\CustomerAuthController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -35,7 +35,7 @@ Route::get('/gioi-thieu', [HomeController::class, 'about'])->name('about');
 Route::get('/tim-kiem', [TimKiemController::class, 'index'])->name('tim-kiem');
 
 // 3. Chi tiết Bất Động Sản
-Route::get('/bat-dong-san/{id}', [BatDongSanController::class, 'show'])->name('bat-dong-san.show');
+Route::get('/bat-dong-san/{slug}', [BatDongSanController::class, 'show'])->name('bat-dong-san.show');
 
 // 4. Dự án
 Route::get('/du-an', [DuAnController::class, 'frontendIndex'])->name('du-an.index');
@@ -67,17 +67,24 @@ Route::prefix('so-sanh')->name('so-sanh.')->group(function () {
     Route::post('/add/{id}', [SoSanhController::class, 'addToCompare'])->name('add');
     Route::post('/remove/{id}', [SoSanhController::class, 'removeCompare'])->name('remove');
 });
+// Auth Khách hàng (API)
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::post('/quick-login', [CustomerAuthController::class, 'quickLogin'])->name('quick_login');
+    Route::post('/send-otp', [CustomerAuthController::class, 'sendVerificationOtp'])->name('send_otp');
+    Route::post('/confirm-otp', [CustomerAuthController::class, 'confirmVerificationOtp'])->name('confirm_otp');
+    Route::post('/logout', [CustomerAuthController::class, 'logout'])->name('logout');
+});
 
-// 2. Yêu thích (Lưu tin)
+// Yêu thích
 Route::prefix('yeu-thich')->name('yeu-thich.')->group(function () {
     Route::get('/', [YeuThichController::class, 'index'])->name('index');
-    Route::post('/toggle', [YeuThichController::class, 'toggleFavorite'])->name('toggle');
+    // SỬA LẠI ROUTE TOGGLE NHẬN ID
+    Route::post('/toggle/{id}', [YeuThichController::class, 'toggle'])->name('toggle');
 });
 
 // 3. Hệ thống Chat (Khách hàng)
 Route::prefix('chat')->name('chat.')->group(function () {
     Route::post('/start', [ChatController::class, 'startChat'])->name('start');
-    Route::post('/verify', [ChatController::class, 'verifyOtp'])->name('verify');
     Route::post('/send', [ChatController::class, 'sendMessage'])->name('send');
     Route::get('/messages', [ChatController::class, 'getMessages'])->name('messages');
 });
@@ -132,17 +139,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
     // 8. Hệ thống Chat (Admin) - Đã sửa lỗi
     Route::prefix('chat')->name('chat.')->group(function () {
-        // Đường dẫn thực tế: /admin/chat
         Route::get('/', [ChatController::class, 'adminIndex'])->name('index');
-
-        // Đường dẫn thực tế: /admin/chat/reply
         Route::post('/reply', [ChatController::class, 'adminReply'])->name('reply');
-
-        // Đường dẫn thực tế: /admin/chat/get-messages
-        // Load tin nhắn với thông tin user (admin/sale)
         Route::get('/get-messages', [ChatController::class, 'adminGetMessages'])->name('get_messages');
-
-        // Đường dẫn thực tế: /admin/chat/{id} (Luôn đặt cuối cùng để tránh trùng lặp)
         Route::get('/{id}', [ChatController::class, 'adminShow'])->name('show');
     });
 });

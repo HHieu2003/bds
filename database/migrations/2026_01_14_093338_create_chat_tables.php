@@ -8,22 +8,32 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // 1. Bảng Phiên Chat (Hội thoại)
         Schema::create('chat_sessions', function (Blueprint $table) {
             $table->id();
-            $table->string('session_id')->unique(); // ID định danh cho trình duyệt
+
+            // Liên kết với bảng Khách Hàng (Quan trọng nhất)
+            $table->foreignId('khach_hang_id')->nullable()->constrained('khach_hang')->onDelete('set null');
+
+            // Các thông tin định danh phụ (Backup)
+            $table->string('session_id')->unique(); // Session ID của Laravel
             $table->string('user_name')->nullable();
-            $table->string('user_phone'); // Bắt buộc nhập sđt
-            $table->boolean('is_verified')->default(false); // Trạng thái xác minh
-            $table->string('verification_code')->nullable(); // Mã OTP
-            $table->timestamp('expires_at')->nullable(); // Thời hạn cho phiên chưa xác minh
-            $table->string('context_url')->nullable(); // Khách đang xem trang nào
+            $table->string('user_phone')->nullable();
+
+            $table->boolean('is_verified')->default(false); // Đã xác thực SĐT hay chưa
+            $table->string('context_url')->nullable(); // Khách đang xem trang nào khi chat
+
             $table->timestamps();
         });
 
+        // 2. Bảng Tin Nhắn
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('chat_session_id');
-            $table->unsignedBigInteger('user_id')->nullable(); // Null = Khách, Có ID = Sale/Admin
+
+            // Nếu là Admin/Sale trả lời thì lưu ID user, nếu là khách thì để Null
+            $table->unsignedBigInteger('user_id')->nullable();
+
             $table->text('message');
             $table->boolean('is_read')->default(false);
             $table->timestamps();

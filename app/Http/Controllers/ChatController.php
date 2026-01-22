@@ -4,141 +4,124 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatSession;
 use App\Models\ChatMessage;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Session;
+
 
 class ChatController extends Controller
 {
     // ==========================================
-    // PHẦN 1: LOGIC KHÁCH HÀNG (FRONTEND)
+    // PHẦN KHÁCH HÀNG (FRONTEND)
     // ==========================================
 
+    /**
+     * Bắt đầu phiên chat
+     */
     public function startChat(Request $request)
     {
-        $request->validate([
-            'phone' => 'required|numeric|digits_between:10,11',
-            'name' => 'required|string|max:50',
-            'current_url' => 'nullable|string'
-        ]);
+        // 1. Kiểm tra đăng nhập (Guard Customer)
+        $customer = Auth::guard('customer')->user();
 
-        $otp = rand(100000, 999999);
-        $chatSession = ChatSession::where('user_phone', $request->phone)->first();
-
-        if ($chatSession) {
-            if (!$chatSession->is_verified) {
-                // Nếu chưa xác minh, gửi lại OTP mới
-                $chatSession->verification_code = $otp;
-                $chatSession->user_name = $request->name;
-                $chatSession->expires_at = Carbon::now()->addDay();
-                $chatSession->save();
-            } else {
-                // Đã xác minh thì kiểm tra lại danh tính (Security Check)
-                $chatSession->verification_code = $otp;
-                $chatSession->save();
-            }
-        } else {
-            // Tạo mới
-            $chatSession = ChatSession::create([
-                'session_id' => Str::random(40),
-                'user_name' => $request->name,
-                'user_phone' => $request->phone,
-                'is_verified' => false,
-                'verification_code' => $otp,
-                'expires_at' => Carbon::now()->addDay(),
-                'context_url' => $request->current_url
+        // Nếu chưa đăng nhập -> Báo Frontend mở Modal Login
+        if (!$customer) {
+            return response()->json([
+                'status' => 'require_login',
+                'message' => 'Vui lòng nhập thông tin để chat.'
             ]);
         }
 
-        Log::info("OTP Chat cho SĐT {$request->phone}: {$otp}");
+        // 2. Tìm hoặc Tạo phiên chat
+        // Tìm theo ID khách hàng trước
+        $chatSession = ChatSession::firstOrCreate(
+            ['khach_hang_id' => $customer->id],
+            [
+                'session_id' => Session::getId(),
+                'user_phone' => $customer->getContactInfo(),
+                'user_name' => $customer->ho_ten,
+                'is_verified' => $customer->isVerified(),
+                'context_url' => url()->previous()
+            ]
+        );
 
         return response()->json([
-            'status' => 'otp_sent',
-            'message' => 'Mã OTP đã được gửi.',
-            'phone' => $request->phone
+            'status' => 'success',
+            'session_id' => $chatSession->id,
+            'customer_name' => $customer->ho_ten,
+            'messages' => $chatSession->messages // Load tin nhắn cũ
         ]);
     }
 
-    public function verifyOtp(Request $request)
-    {
-        $request->validate(['phone' => 'required', 'otp' => 'required']);
-        $chatSession = ChatSession::where('user_phone', $request->phone)->first();
-
-        if (!$chatSession) return response()->json(['status' => 'error', 'message' => 'Không tìm thấy phiên chat.'], 404);
-
-        if ($chatSession->verification_code == $request->otp) {
-            $chatSession->is_verified = true;
-            $chatSession->verification_code = null;
-            $chatSession->expires_at = null; // Vĩnh viễn không xóa
-            $chatSession->save();
-
-            $history = $chatSession->messages()->orderBy('created_at', 'asc')->get();
-            return response()->json(['status' => 'success', 'session_id' => $chatSession->id, 'history' => $history]);
-        }
-
-        return response()->json(['status' => 'error', 'message' => 'Mã OTP không đúng.'], 400);
-    }
-
+    /**
+     * Gửi tin nhắn
+     */
     public function sendMessage(Request $request)
     {
-        $request->validate(['message' => 'required', 'chat_session_id' => 'required']);
+        $request->validate(['message' => 'required']);
 
-        $session = ChatSession::find($request->chat_session_id);
-        if (!$session || !$session->is_verified) {
-            return response()->json(['status' => 'error', 'message' => 'Phiên chưa xác thực'], 403);
+        $customer = Auth::guard('customer')->user();
+        if (!$customer) return response()->json(['status' => 'error', 'message' => 'Hết phiên làm việc'], 401);
+
+        // Tìm session của khách
+        $chatSession = ChatSession::where('khach_hang_id', $customer->id)->first();
+
+        if (!$chatSession) {
+            return response()->json(['status' => 'error', 'message' => 'Lỗi phiên chat'], 404);
         }
 
+        // Lưu tin nhắn
         $msg = ChatMessage::create([
-            'chat_session_id' => $request->chat_session_id,
-            'user_id' => null, // Null = Khách hàng
+            'chat_session_id' => $chatSession->id,
+            'user_id' => null, // Null = Khách hàng gửi
             'message' => $request->message,
+            'is_read' => false
         ]);
 
         return response()->json(['status' => 'success', 'data' => $msg]);
     }
 
-    public function getMessages(Request $request)
+    /**
+     * Lấy tin nhắn mới (Polling)
+     */
+    public function getMessages()
     {
-        if (!$request->chat_session_id) return response()->json([]);
-        // Lấy tin nhắn (có thể lọc theo last_id để tối ưu nếu cần)
-        $messages = ChatMessage::where('chat_session_id', $request->chat_session_id)
-            ->orderBy('created_at', 'asc')
-            ->get();
-        return response()->json($messages);
+        $customer = Auth::guard('customer')->user();
+        if (!$customer) return response()->json([]);
+
+        $chatSession = ChatSession::where('khach_hang_id', $customer->id)->first();
+
+        if ($chatSession) {
+            $messages = ChatMessage::where('chat_session_id', $chatSession->id)
+                ->with('user') // Để lấy avatar/tên admin nếu cần
+                ->orderBy('created_at', 'asc')
+                ->get();
+            return response()->json(['data' => $messages]);
+        }
+        return response()->json(['data' => []]);
     }
 
     // ==========================================
-    // PHẦN 2: LOGIC QUẢN TRỊ (ADMIN)
+    // PHẦN QUẢN TRỊ (ADMIN / SALE)
     // ==========================================
 
-    // Danh sách các cuộc hội thoại
     public function adminIndex()
     {
-        // Chỉ lấy các cuộc hội thoại đã xác minh hoặc đang chờ (tùy nhu cầu)
-        // Ở đây ưu tiên hiển thị tin nhắn mới nhất lên đầu
-        $sessions = ChatSession::where('is_verified', true)
-            ->with(['messages' => function ($q) {
-                $q->latest()->limit(1);
-            }])
-            ->orderByDesc(
-                ChatMessage::select('created_at')
-                    ->whereColumn('chat_session_id', 'chat_sessions.id')
-                    ->orderByDesc('created_at')
-                    ->limit(1)
-            )
+        $sessions = ChatSession::with(['messages' => function ($q) {
+            $q->latest()->limit(1);
+        }])
+            ->with('khachHang') // Load thông tin khách
+            ->orderBy('updated_at', 'desc')
             ->paginate(20);
 
         return view('admin.chat.index', compact('sessions'));
     }
 
-    // Giao diện chat chi tiết của Admin
     public function adminShow($id)
     {
-        $session = ChatSession::findOrFail($id);
+        $session = ChatSession::with('messages')->findOrFail($id);
 
-        // Đánh dấu tất cả tin nhắn của khách là "Đã đọc"
+        // Đánh dấu đã đọc
         ChatMessage::where('chat_session_id', $id)
             ->whereNull('user_id')
             ->update(['is_read' => true]);
@@ -146,7 +129,6 @@ class ChatController extends Controller
         return view('admin.chat.show', compact('session'));
     }
 
-    // API để Admin gửi tin nhắn (Reply)
     public function adminReply(Request $request)
     {
         $request->validate([
@@ -154,29 +136,31 @@ class ChatController extends Controller
             'message' => 'required'
         ]);
 
-        $session = ChatSession::findOrFail($request->chat_session_id);
-
+        // Admin trả lời
         ChatMessage::create([
-            'chat_session_id' => $session->id,
-            'user_id' => Auth::id(), // ID người trả lời
-            'message' => $request->message,
-            'is_read' => 0 // Tin của admin thì mặc định là chưa đọc (với khách) hoặc tùy logic
+            'chat_session_id' => $request->chat_session_id,
+            'user_id' => Auth::id(), // ID của Admin đang login (Guard web)
+            'message' => $request->message
         ]);
 
-        // Cập nhật thời gian session để nó nổi lên đầu danh sách
-        $session->touch();
+        // Update timestamp để session nổi lên đầu
+        ChatSession::where('id', $request->chat_session_id)->touch();
 
-        return response()->json(['status' => 'success']);
+        // AJAX response nếu gọi từ giao diện chat admin
+        if ($request->ajax()) {
+            return response()->json(['status' => 'success']);
+        }
+
+        return back()->with('success', 'Đã gửi tin nhắn.');
     }
 
-    // API Polling dành riêng cho Admin (để check tin mới trong trang chat)
+    // API lấy tin nhắn cho Admin (để chat realtime-like)
     public function adminGetMessages(Request $request)
     {
-        $messages = ChatMessage::where('chat_session_id', $request->chat_session_id)
-            ->with('user') // Nếu muốn hiện avatar/tên sale
+        $sessionId = $request->chat_session_id;
+        $messages = ChatMessage::where('chat_session_id', $sessionId)
             ->orderBy('created_at', 'asc')
             ->get();
-
         return response()->json($messages);
     }
 }

@@ -107,7 +107,7 @@
                     <div class="col-md-6 col-xl-4">
                         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card">
                             <div class="position-relative">
-                                <a href="{{ route('bat-dong-san.show', $bds->id) }}">
+                                <a href="{{ route('bat-dong-san.show', $bds->slug) }}">
                                     <img src="{{ asset($bds->hinh_anh ?? 'images/no-image.jpg') }}" class="card-img-top" style="height: 220px; object-fit: cover;">
                                 </a>
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-3">{{ $bds->loai_hinh == 'can_ho' ? 'Chung cư' : 'Nhà đất' }}</span>
@@ -117,7 +117,7 @@
                             </div>
                             <div class="card-body">
                                 <h6 class="card-title fw-bold text-truncate mb-2">
-                                    <a href="{{ route('bat-dong-san.show', $bds->id) }}" class="text-decoration-none text-dark">{{ $bds->tieu_de }}</a>
+                                    <a href="{{ route('bat-dong-san.show', $bds->slug) }}" class="text-decoration-none text-dark">{{ $bds->tieu_de }}</a>
                                 </h6>
                                 <p class="text-danger fw-bold fs-5 mb-2">{{ number_format($bds->gia, 2) }} Tỷ</p>
                                 <div class="d-flex justify-content-between text-muted small mb-3">
@@ -131,7 +131,7 @@
                                 </p>
                             </div>
                             <div class="card-footer bg-white border-top-0 pt-0 pb-3">
-                                <a href="{{ route('bat-dong-san.show', $bds->id) }}" class="btn btn-outline-primary w-100 rounded-pill btn-sm">Xem chi tiết</a>
+                                <a href="{{ route('bat-dong-san.show', $bds->slug) }}" class="btn btn-outline-primary w-100 rounded-pill btn-sm">Xem chi tiết</a>
                             </div>
                         </div>
                     </div>
