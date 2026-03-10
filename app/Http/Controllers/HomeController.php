@@ -18,8 +18,8 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
-        // Lấy 3 Dự án nổi bật
-        $du_ans = DuAn::orderBy('created_at', 'desc')->limit(3)->get();
+        // Lấy tất cả Dự án nổi bật
+        $du_ans = DuAn::orderBy('created_at', 'desc')->get();
 
         return view('frontend.home.index', ['bat_dong_sans' => $bat_dong_sans, 'du_ans' => $du_ans]);
     }

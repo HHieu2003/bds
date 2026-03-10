@@ -1,125 +1,154 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Admin Dashboard - Bất Động Sản</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard | Real Estate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
     <style>
-        body { min-height: 100vh; overflow-x: hidden; background-color: #f4f6f9; }
-        #sidebar-wrapper { min-height: 100vh; margin-left: -15rem; transition: margin .25s ease-out; background-color: #343a40; color: white; }
-        #sidebar-wrapper .sidebar-heading { padding: 0.875rem 1.25rem; font-size: 1.2rem; font-weight: bold; background: #212529; }
-        #sidebar-wrapper .list-group { width: 15rem; }
-        #page-content-wrapper { min-width: 100vw; }
-        body.sb-sidenav-toggled #sidebar-wrapper { margin-left: 0; }
-        
-        .list-group-item { border: none; padding: 15px 20px; font-size: 15px; }
-        .list-group-item.active { background-color: #0d6efd; color: white; font-weight: bold; }
-        .list-group-item-action { color: #cfd8dc; background-color: #343a40; }
-        .list-group-item-action:hover { background-color: #495057; color: white; }
-        
-        @media (min-width: 768px) {
-            #sidebar-wrapper { margin-left: 0; }
-            #page-content-wrapper { min-width: 0; width: 100%; }
-            body.sb-sidenav-toggled #sidebar-wrapper { margin-left: -15rem; }
-        }
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        #sidebar { min-width: 260px; max-width: 260px; min-height: 100vh; background: #0F172A; color: #fff; transition: all 0.3s; }
+        #sidebar .sidebar-header { padding: 20px; background: #1E293B; border-bottom: 1px solid #334155; }
+        #sidebar ul.components { padding: 20px 0; }
+        #sidebar ul li a { padding: 12px 20px; display: block; font-size: 0.95rem; color: #94a3b8; text-decoration: none; transition: 0.3s; display: flex; align-items: center; }
+        #sidebar ul li a:hover { color: #fff; background: #1E293B; padding-left: 25px; }
+        #sidebar ul li a.active { color: #38bdf8; background: #1E293B; border-left: 4px solid #38bdf8; font-weight: 600; }
+        #sidebar ul li a i { width: 25px; font-size: 1.1rem; margin-right: 10px; }
+        .sidebar-label { font-size: 0.75rem; text-transform: uppercase; color: #64748b; padding: 20px 20px 5px 20px; font-weight: 700; letter-spacing: 1px; }
+        #content { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
+        .top-navbar { background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 10px 20px; }
     </style>
 </head>
 <body>
-    <div class="d-flex" id="wrapper">
-        <div class="border-end" id="sidebar-wrapper">
-            <div class="sidebar-heading border-bottom text-warning">
-                <i class="fa-solid fa-building-columns me-2"></i> ADMIN PRO
+<div class="d-flex">
+    <nav id="sidebar">
+        <div class="sidebar-header d-flex align-items-center">
+            <i class="fas fa-building fa-2x text-primary me-2"></i>
+            <div>
+                <h5 class="mb-0 fw-bold">QUẢN TRỊ</h5>
+                <small class="text-muted" style="font-size: 0.7rem;">
+                    Vai trò: {{ strtoupper(Auth::user()->role) }}
+                </small>
             </div>
-            <div class="list-group list-group-flush">
-                <a href="{{ route('admin.dashboard') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="fa-solid fa-chart-line me-2"></i> Dashboard
+        </div>
+
+        <ul class="list-unstyled components">
+            {{-- DASHBOARD --}}
+            <li>
+                <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="fas fa-tachometer-alt"></i> Tổng quan
                 </a>
-                <a href="{{ route('admin.bat-dong-san.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/bat-dong-san*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-house me-2"></i> Kho Hàng BĐS
-                </a>
-                <a href="{{ route('admin.du-an.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/du-an*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-city me-2"></i> Quản lý Dự Án
-                </a>
-                <a href="{{ route('admin.lien-he.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/lien-he*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-users me-2"></i> Khách Hàng (Leads)
-                </a>
-                <a href="{{ route('admin.bai-viet.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/bai-viet*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-city me-2"></i> Quản lý Bài Viết
-                </a>
-                <a href="{{ route('admin.lich-hen.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/lich-hen*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-city me-2"></i> Quản lý Lịch Hẹn
-                </a>
-                <a href="{{ route('admin.ky-gui.index') }}" class="list-group-item list-group-item-action {{ request()->is('admin/ky-gui*') ? 'active' : '' }}">
-                    <i class="fa-solid fa-city me-2"></i> Quản lý Ký Gửi
-                </a>
-                <li class="nav-item">
-                    <a href="{{ route('admin.chat.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.chat.*') ? 'active' : '' }}">
-                        <i class="fa-solid fa-comments me-2"></i> Chat Hỗ Trợ
-                        
-                        @php
-                            $unreadCount = \App\Models\ChatMessage::where('is_read', false)->whereNull('user_id')->count();
-                        @endphp
-                        
-                        @if($unreadCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $unreadCount }}</span>
-                        @endif
+            </li>
+
+            {{-- PHẦN 1: KHO HÀNG (DỰ ÁN & BĐS) --}}
+            <div class="sidebar-label">Kho hàng & Sản phẩm</div>
+            
+            {{-- Admin & Nguồn: Quản lý toàn diện --}}
+            @if(Auth::user()->role == 'admin' || Auth::user()->role == 'nguon')
+                <li>
+                    <a href="{{ route('admin.du-an.index') }}" class="{{ request()->routeIs('admin.du-an.*') ? 'active' : '' }}">
+                        <i class="fas fa-city"></i> Quản lý Dự án
                     </a>
                 </li>
+                <li>
+                    <a href="{{ route('admin.bat-dong-san.index') }}" class="{{ request()->routeIs('admin.bat-dong-san.*') ? 'active' : '' }}">
+                        <i class="fas fa-home"></i> Quản lý Bất động sản
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ route('admin.ky-gui.index') }}" class="{{ request()->routeIs('admin.ky-gui.*') ? 'active' : '' }}">
+                        <i class="fas fa-file-contract"></i> Duyệt Ký gửi
+                    </a>
+                </li>
+            @endif
 
-                <a href="/" target="_blank" class="list-group-item list-group-item-action bg-secondary text-white mt-3">
-                    <i class="fa-solid fa-eye me-2"></i> Xem Trang Chủ
+            {{-- Sale: Chỉ được xem để tìm hàng --}}
+            @if(Auth::user()->role == 'sale')
+                <li>
+                    <a href="{{ route('admin.bat-dong-san.index') }}" class="{{ request()->routeIs('admin.bat-dong-san.*') ? 'active' : '' }}">
+                        <i class="fas fa-search"></i> Tra cứu Kho hàng
+                    </a>
+                </li>
+            @endif
+
+            {{-- PHẦN 2: KINH DOANH (KHÁCH & CHAT) --}}
+            {{-- Chỉ Admin & Sale mới làm việc với khách --}}
+            @if(Auth::user()->role == 'admin' || Auth::user()->role == 'sale')
+            <div class="sidebar-label">Kinh doanh</div>
+            <li>
+                <a href="{{ route('admin.chat.index') }}" class="{{ request()->routeIs('admin.chat.*') ? 'active' : '' }}">
+                    <i class="fas fa-comments"></i> Chat tư vấn
                 </a>
-            </div>
-        </div>
+            </li>
+            <li>
+                <a href="{{ route('admin.lien-he.index') }}" class="{{ request()->routeIs('admin.lien-he.*') ? 'active' : '' }}">
+                    <i class="fas fa-users"></i> Khách hàng / Leads
+                </a>
+            </li>
+            @endif
 
-        <div id="page-content-wrapper">
-            <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm px-4 py-3">
-                <div class="container-fluid">
-                    <span class="fw-bold text-secondary">Hệ thống quản lý Bất Động Sản</span>
-                    
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
+            {{-- PHẦN 3: VẬN HÀNH (LỊCH HẸN) --}}
+            <div class="sidebar-label">Vận hành</div>
+            <li>
+                <a href="{{ route('admin.lich-hen.index') }}" class="{{ request()->routeIs('admin.lich-hen.*') ? 'active' : '' }}">
+                    <i class="fas fa-calendar-check"></i> Quản lý Lịch hẹn
+                </a>
+            </li>
+            
+            {{-- Tin tức (Ai cũng xem được, Admin/Nguồn được sửa) --}}
+            <li>
+                <a href="{{ route('admin.bai-viet.index') }}" class="{{ request()->routeIs('admin.bai-viet.*') ? 'active' : '' }}">
+                    <i class="fas fa-newspaper"></i> Tin tức
+                </a>
+            </li>
 
-                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                        <ul class="navbar-nav ms-auto mt-2 mt-lg-0 align-items-center">
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle fw-bold text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                    <i class="fa-solid fa-user-tie me-1"></i> {{ Auth::user()->name ?? 'Admin' }}
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li>
-                                        <form action="{{ route('logout') }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="fa-solid fa-right-from-bracket me-2"></i> Đăng xuất
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
-                        </ul>
-                    </div>
+            {{-- Đăng xuất --}}
+            <div class="sidebar-label">Hệ thống</div>
+            <li>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="text-danger">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                    @csrf
+                </form>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="content">
+        <nav class="navbar navbar-expand-lg top-navbar">
+            <div class="container-fluid">
+                <button type="button" id="sidebarCollapse" class="btn btn-light shadow-sm"><i class="fas fa-bars"></i></button>
+                <div class="ms-auto d-flex align-items-center">
+                    <span class="me-3 text-muted small">Xin chào, <strong>{{ Auth::user()->name }}</strong> ({{ Auth::user()->role }})</span>
+                    <img src="https://ui-avatars.com/api/?name={{ Auth::user()->name }}&background=0D8ABC&color=fff" class="rounded-circle" width="35" height="35">
                 </div>
-            </nav>
-
-            <div class="container-fluid p-4">
-                @if(session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fa-solid fa-check-circle me-2"></i> {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    </div>
-                @endif
-
-                @yield('content')
             </div>
+        </nav>
+        <div class="p-4">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-check-circle me-2"></i> {{ session('success') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            @endif
+            @yield('content')
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.getElementById('sidebarCollapse').addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('active');
+        // Thêm CSS: #sidebar.active { margin-left: -260px; } trong file css nếu cần
+    });
+</script>
 </body>
 </html>

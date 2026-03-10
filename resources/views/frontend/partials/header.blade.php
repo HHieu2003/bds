@@ -121,7 +121,7 @@
 </nav>
 
 {{-- Spacer để nội dung không bị Header che mất --}}
-<div style="height: 76px;"></div>
+<div style="height: 70px;"></div>
 
 <style>
     /* CSS nhỏ cho Header */

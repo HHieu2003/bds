@@ -26,7 +26,6 @@
         @method('PUT')
         <div class="row">
             <div class="col-md-8">
-                <!-- Tiêu đề -->
                 <div class="mb-3">
                     <label for="tieu_de" class="form-label fw-bold">Tiêu đề <span class="text-danger">*</span></label>
                     <input type="text" name="tieu_de" id="tieu_de" class="form-control @error('tieu_de') is-invalid @enderror" 
@@ -36,7 +35,6 @@
                     @enderror
                 </div>
 
-                <!-- Mô tả ngắn -->
                 <div class="mb-3">
                     <label for="mo_ta_ngan" class="form-label fw-bold">Mô tả ngắn</label>
                     <textarea name="mo_ta_ngan" id="mo_ta_ngan" class="form-control @error('mo_ta_ngan') is-invalid @enderror" 
@@ -47,21 +45,17 @@
                     <small class="form-text text-muted">Hiển thị trên trang danh sách</small>
                 </div>
 
-                <!-- Nội dung chi tiết -->
                 <div class="mb-3">
                     <label for="noi_dung" class="form-label fw-bold">Nội dung chi tiết <span class="text-danger">*</span></label>
+                    {{-- ID "noi_dung" sẽ được CKEditor bắt lấy --}}
                     <textarea name="noi_dung" id="noi_dung" class="form-control @error('noi_dung') is-invalid @enderror" 
                               rows="12" placeholder="Nhập nội dung đầy đủ của bài viết" required>{{ old('noi_dung', $baiViet->noi_dung) }}</textarea>
                     @error('noi_dung')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
-                    <small class="form-text text-muted d-block mt-2">
-                        Hỗ trợ HTML cơ bản (nên sử dụng thẻ <code>&lt;p&gt;</code>, <code>&lt;h2&gt;</code>, <code>&lt;ul&gt;</code>, etc.)
-                    </small>
                 </div>
 
-                <!-- Thông tin bổ sung -->
-                <div class="card bg-light p-3">
+                <div class="card bg-light p-3 border-0">
                     <div class="row g-3">
                         <div class="col-md-6">
                             <p class="text-muted mb-1"><small>Slug (URL)</small></p>
@@ -88,14 +82,12 @@
                 </div>
             </div>
 
-            <!-- Sidebar -->
             <div class="col-md-4">
                 <div class="card shadow-sm border-0 mb-3">
                     <div class="card-header bg-primary text-white fw-bold">
                         <i class="fa-solid fa-cog me-2"></i> Cài đặt bài viết
                     </div>
                     <div class="card-body">
-                        <!-- Loại bài viết -->
                         <div class="mb-3">
                             <label for="loai_bai_viet" class="form-label fw-bold">Loại bài viết <span class="text-danger">*</span></label>
                             <select name="loai_bai_viet" id="loai_bai_viet" class="form-select @error('loai_bai_viet') is-invalid @enderror">
@@ -110,12 +102,8 @@
                                     <i class="fa-solid fa-briefcase"></i> Tuyển Dụng
                                 </option>
                             </select>
-                            @error('loai_bai_viet')
-                                <span class="invalid-feedback d-block">{{ $message }}</span>
-                            @enderror
                         </div>
 
-                        <!-- Trạng thái hiển thị -->
                         <div class="mb-3">
                             <label for="hien_thi" class="form-label fw-bold">Trạng thái</label>
                             <select name="hien_thi" id="hien_thi" class="form-select @error('hien_thi') is-invalid @enderror">
@@ -126,14 +114,10 @@
                                     <i class="fa-solid fa-eye-slash"></i> Ẩn
                                 </option>
                             </select>
-                            @error('hien_thi')
-                                <span class="invalid-feedback d-block">{{ $message }}</span>
-                            @enderror
                         </div>
 
                         <hr>
 
-                        <!-- Hình ảnh đại diện -->
                         <div class="mb-3">
                             <label for="hinh_anh" class="form-label fw-bold">Hình ảnh đại diện</label>
                             
@@ -147,15 +131,11 @@
 
                             <input type="file" name="hinh_anh" id="hinh_anh" class="form-control @error('hinh_anh') is-invalid @enderror" 
                                    accept="image/*">
-                            @error('hinh_anh')
-                                <span class="invalid-feedback d-block">{{ $message }}</span>
-                            @enderror
                             <small class="form-text text-muted d-block mt-2">Định dạng: JPG, PNG, GIF. Dung lượng tối đa: 5MB</small>
                         </div>
                     </div>
                 </div>
 
-                <!-- Nút hành động -->
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-success btn-lg">
                         <i class="fa-solid fa-save me-2"></i> Lưu Thay Đổi
@@ -164,38 +144,17 @@
                         <i class="fa-solid fa-times me-2"></i> Hủy
                     </a>
                 </div>
-
-                <!-- Thông tin hữu ích -->
-                <div class="alert alert-info mt-3" role="alert">
-                    <strong><i class="fa-solid fa-lightbulb me-2"></i> Mẹo:</strong>
-                    <ul class="mb-0 mt-2">
-                        <li>Tiêu đề nên ngắn gọn, có SEO tốt</li>
-                        <li>Mô tả ngắn hiển thị trên danh sách</li>
-                        <li>Hình ảnh nên chất lượng cao</li>
-                        <li>Nội dung rõ ràng, dễ hiểu</li>
-                    </ul>
-                </div>
             </div>
         </div>
     </form>
 </div>
 
-<style>
-    .form-control:focus, .form-select:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
-    }
-    
-    code {
-        background-color: #f8f9fa;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 0.875rem;
-    }
-    
-    .card {
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-    }
-</style>
+{{-- TÍCH HỢP CKEDITOR 4 --}}
+<script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+<script>
+    CKEDITOR.replace('noi_dung', {
+        height: 500
+    });
+</script>
+
 @endsection

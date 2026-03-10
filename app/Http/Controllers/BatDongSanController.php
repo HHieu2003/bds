@@ -54,20 +54,12 @@ class BatDongSanController extends Controller
         return redirect()->route('admin.bat-dong-san.index')->with('success', 'Đăng tin thành công!');
     }
 
-    // 4. HIỂN THỊ CHI TIẾT (FRONTEND) - Đây là phần bạn bị thiếu
+    // 4. HIỂN THỊ CHI TIẾT (FRONTEND)
     public function show($slug)
     {
-        // Debug: In ra xem slug nhận được là gì
-        // dd($slug); 
-
-        $batDongSan = BatDongSan::with('duAn')
+        $batDongSan = BatDongSan::with('duAn', 'user')
             ->where('slug', $slug)
-            ->first(); // Bỏ fail để không báo lỗi 404 ngay
-
-        if (!$batDongSan) {
-            // Nếu không tìm thấy, in ra thông báo để biết
-            dd("Không tìm thấy BĐS nào có slug là: " . $slug . ". Hãy kiểm tra Database xem cột slug có dữ liệu chưa.");
-        }
+            ->firstOrFail();
 
         return view('frontend.bat_dong_san.show', compact('batDongSan'));
     }

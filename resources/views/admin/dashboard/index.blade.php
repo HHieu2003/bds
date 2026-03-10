@@ -113,7 +113,7 @@
                                 @foreach($topViewed as $bds)
                                 <tr>
                                     <td>{{ $bds->ma_can }}</td>
-                                    <td><a href="{{ route('bat-dong-san.show', $bds->id) }}" target="_blank">{{ Str::limit($bds->tieu_de, 40) }}</a></td>
+                                    <td><a href="{{ route('bat-dong-san.show', $bds->slug) }}" target="_blank">{{ Str::limit($bds->tieu_de, 40) }}</a></td>
                                     <td>{{ number_format($bds->gia, 2) }} Tỷ</td>
                                     <td class="text-center font-weight-bold text-success">{{ $bds->luot_xem }}</td>
                                 </tr>

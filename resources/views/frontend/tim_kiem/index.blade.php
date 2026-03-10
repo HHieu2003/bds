@@ -108,7 +108,17 @@
                         <div class="card h-100 border-0 shadow-sm rounded-4 overflow-hidden product-card">
                             <div class="position-relative">
                                 <a href="{{ route('bat-dong-san.show', $bds->slug) }}">
-                                    <img src="{{ asset($bds->hinh_anh ?? 'images/no-image.jpg') }}" class="card-img-top" style="height: 220px; object-fit: cover;">
+                                    @php
+                                        $firstImage = 'images/no-image.jpg';
+                                        if ($bds->hinh_anh) {
+                                            if (is_array($bds->hinh_anh)) {
+                                                $firstImage = $bds->hinh_anh[0] ?? 'images/no-image.jpg';
+                                            } else {
+                                                $firstImage = $bds->hinh_anh;
+                                            }
+                                        }
+                                    @endphp
+                                    <img src="{{ asset($firstImage) }}" class="card-img-top" style="height: 220px; object-fit: cover;">
                                 </a>
                                 <span class="badge bg-danger position-absolute top-0 start-0 m-3">{{ $bds->loai_hinh == 'can_ho' ? 'Chung cư' : 'Nhà đất' }}</span>
                                 <span class="badge bg-dark bg-opacity-75 position-absolute bottom-0 end-0 m-3">

@@ -20,19 +20,25 @@ class AuthController extends Controller
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
+        ], [
+            'email.required' => 'Email là bắt buộc.',
+            'email.email' => 'Email không đúng định dạng.',
+            'password.required' => 'Mật khẩu là bắt buộc.',
         ]);
 
         // Auth::attempt sẽ tự động mã hóa password và so sánh với DB
-        if (Auth::attempt($credentials)) {
+        if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            // Chuyển hướng về Dashboard thay vì home
-            return redirect()->route('admin.dashboard');
+            // Chuyển hướng về Dashboard
+            return redirect()->intended(route('admin.dashboard'));
         }
 
         // Đăng nhập thất bại -> Quay lại và báo lỗi
-        return back()->withErrors([
-            'email' => 'Email hoặc mật khẩu không chính xác.',
-        ]);
+        return back()
+            ->withInput($request->only('email'))
+            ->withErrors([
+                'email' => 'Email hoặc mật khẩu không chính xác.',
+            ]);
     }
 
     // 3. Đăng xuất
