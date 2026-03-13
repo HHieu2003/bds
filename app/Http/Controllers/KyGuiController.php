@@ -29,10 +29,8 @@ class KyGuiController extends Controller
 
         // Xử lý upload ảnh minh họa
         if ($request->hasFile('hinh_anh_tham_khao')) {
-            $file = $request->file('hinh_anh_tham_khao');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('uploads/kygui'), $filename);
-            $data['hinh_anh_tham_khao'] = 'uploads/kygui/' . $filename;
+            $path = $request->file('hinh_anh_tham_khao')->store('uploads/ky_gui', 'public');
+            $data['hinh_anh_tham_khao'] = $path;
         }
 
         KyGui::create($data);

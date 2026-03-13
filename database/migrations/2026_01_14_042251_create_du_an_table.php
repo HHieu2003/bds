@@ -14,6 +14,7 @@ return new class extends Migration
             $table->string('slug')->unique(); // Quan trọng cho SEO: du-an/vinhomes-ocean-park
             $table->string('dia_chi');
             $table->string('chu_dau_tu')->nullable();
+            $table->string('don_vi_thi_cong')->nullable();
             $table->text('mo_ta_ngan')->nullable(); // Hiển thị ở danh sách
             $table->longText('noi_dung_chi_tiet')->nullable(); // Hiển thị ở trang chi tiết
             $table->string('hinh_anh_dai_dien')->nullable(); // Ảnh bìa

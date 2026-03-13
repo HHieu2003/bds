@@ -30,7 +30,6 @@ class BatDongSan extends Model
         'so_phong_tam',
         'noi_that',
         'gia',
-        'hinh_thuc_thanh_toan',
         'thoi_gian_vao',
         'mo_ta',
         'hinh_anh',

@@ -30,7 +30,7 @@ class DuAnController extends Controller
     {
         $request->validate([
             'ten_du_an' => 'required|max:255',
-            'vi_tri' => 'required',
+            'dia_chi' => 'nullable',
             'hinh_anh' => 'nullable|image|max:2048',
         ]);
 
@@ -56,20 +56,25 @@ class DuAnController extends Controller
     {
         $request->validate([
             'ten_du_an' => 'required|max:255',
-            'vi_tri' => 'required',
+            'dia_chi' => 'required',
+            'hinh_anh_dai_dien' => 'nullable|image|max:2048',
         ]);
 
         $data = $request->all();
+
+        // Tự động cập nhật Slug nếu tên dự án thay đổi
         if ($duAn->ten_du_an != $request->ten_du_an) {
             $data['slug'] = Str::slug($request->ten_du_an) . '-' . time();
         }
 
-        if ($request->hasFile('hinh_anh')) {
-            $data['hinh_anh'] = $request->file('hinh_anh')->store('uploads/du_an', 'public');
+        // Xử lý cập nhật ảnh đại diện mới
+        if ($request->hasFile('hinh_anh_dai_dien')) {
+            $data['hinh_anh_dai_dien'] = $request->file('hinh_anh_dai_dien')->store('uploads/du_an', 'public');
         }
 
-        $duAn->update($data);
-        return redirect()->route('admin.du-an.index')->with('success', 'Cập nhật thành công!');
+        $duAn->update($data); // Hàm này sẽ lấy toàn bộ $data khớp với $fillable để lưu
+
+        return redirect()->route('admin.du-an.index')->with('success', 'Cập nhật dự án thành công!');
     }
 
     // Xóa
