@@ -4,34 +4,37 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
 
 class CheckRole
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
-    public function handle(Request $request, Closure $next, ...$roles)
+    public function handle(Request $request, Closure $next, string ...$roles): Response
     {
-        if (!Auth::check()) {
-            return redirect('login');
+        $nhanVien = Auth::guard('nhanvien')->user();
+
+        // Chưa đăng nhập
+        if (! $nhanVien) {
+            return redirect()->route('nhanvien.login')
+                ->withErrors(['email' => 'Vui lòng đăng nhập để tiếp tục.']);
         }
 
-        $user = Auth::user();
+        // Tài khoản bị khoá
+        if (! $nhanVien->kich_hoat) {
+            Auth::guard('nhanvien')->logout();
+            return redirect()->route('nhanvien.login')
+                ->withErrors(['email' => 'Tài khoản đã bị vô hiệu hoá. Liên hệ Admin.']);
+        }
 
-        // Nếu là Admin thì cho qua hết
-        if ($user->role == 'admin') {
+        // Không truyền role → cho qua tất cả
+        if (empty($roles)) {
             return $next($request);
         }
 
-        // Kiểm tra quyền (roles truyền vào từ route)
-        if (in_array($user->role, $roles)) {
-            return $next($request);
+        // Kiểm tra vai trò
+        if (!Auth::guard('nhanvien')->check()) {
+            return redirect()->route('nhanvien.login'); // ← redirect về login
         }
-
-        abort(403, 'Bạn không có quyền truy cập chức năng này!');
+        return $next($request);
     }
 }

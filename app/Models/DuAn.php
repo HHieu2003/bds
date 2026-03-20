@@ -2,21 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DuAn extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    // Tên bảng tương ứng trong cơ sở dữ liệu
     protected $table = 'du_an';
 
-    /**
-     * Các thuộc tính có thể gán dữ liệu hàng loạt (Mass Assignment).
-     * Cần liệt kê đầy đủ các cột bạn muốn lưu từ Form vào Database.
-     */
     protected $fillable = [
+        'khu_vuc_id',
         'ten_du_an',
         'slug',
         'dia_chi',
@@ -26,24 +23,39 @@ class DuAn extends Model
         'noi_dung_chi_tiet',
         'hinh_anh_dai_dien',
         'album_anh',
-        'dien_tich_tong_the',
+        'video_url',
         'map_url',
+        'noi_bat',
+        'hien_thi',
+        'thu_tu_hien_thi',
         'trang_thai',
+        'seo_title',
+        'seo_description',
+        'seo_keywords',
+        'thoi_diem_dang',
     ];
 
-    /**
-     * Khai báo kiểu dữ liệu cho các cột đặc biệt.
-     * Cột 'album_anh' lưu dạng JSON nên cần cast về 'array' để Laravel tự động xử lý.
-     */
     protected $casts = [
-        'album_anh' => 'array',
+        'hien_thi'    => 'boolean',
+        'noi_bat'     => 'boolean',
+        'album_anh'   => 'array',
+        'thoi_diem_dang' => 'datetime',
     ];
 
-    /**
-     * Mối quan hệ: Một Dự án có nhiều Bất động sản.
-     */
+    // ── Relationships ──
+    public function khuVuc()
+    {
+        return $this->belongsTo(KhuVuc::class, 'khu_vuc_id');
+    }
+
     public function batDongSans()
     {
         return $this->hasMany(BatDongSan::class, 'du_an_id');
+    }
+
+    // ── Scopes ──
+    public function scopeHienThi($query)
+    {
+        return $query->where('hien_thi', true);
     }
 }

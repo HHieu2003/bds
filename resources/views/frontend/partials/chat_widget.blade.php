@@ -1,170 +1,246 @@
-<div id="chat-widget-container" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
-    
-    <button id="chat-toggle-btn" class="btn btn-primary rounded-circle shadow-lg d-flex align-items-center justify-content-center" 
-            style="width: 60px; height: 60px; transition: transform 0.3s;">
-        <i class="fas fa-comment-dots fa-2x"></i>
-    </button>
+{{-- NÚT BONG BÓNG CHAT GÓC PHẢI DƯỚI --}}
+<button id="chatWidgetBtn" class="chat-widget-btn shadow-lg" onclick="toggleChatWindow()">
+    <i class="fas fa-comment-dots"></i>
+</button>
 
-    <div id="chat-box" class="card shadow-lg d-none" style="width: 320px; height: 450px; position: absolute; bottom: 70px; right: 0; border-radius: 15px; overflow: hidden;">
-        
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <span class="fw-bold"><i class="fas fa-headset me-2"></i>Hỗ trợ tư vấn</span>
-            <button id="chat-close-btn" class="btn btn-sm text-white"><i class="fas fa-times"></i></button>
-        </div>
-
-        <div id="chat-messages" class="card-body overflow-auto bg-light" style="height: 340px; display: flex; flex-direction: column;">
-            <div class="text-center text-muted small mt-5">
-                <i class="fas fa-circle-notch fa-spin"></i> Đang kết nối...
+{{-- KHUNG CỬA SỔ CHAT --}}
+<div id="chatWindow" class="chat-window shadow-lg rounded-4 overflow-hidden d-none">
+    {{-- Header --}}
+    <div class="chat-header text-white p-3 d-flex justify-content-between align-items-center"
+        style="background: linear-gradient(135deg, #FF8C42, #FF6B1A);">
+        <div class="d-flex align-items-center gap-2">
+            <div class="bg-white rounded-circle d-flex align-items-center justify-content-center text-primary"
+                style="width: 35px; height: 35px;">
+                <i class="fas fa-headset"></i>
+            </div>
+            <div>
+                <h6 class="mb-0 fw-bold">Hỗ trợ trực tuyến</h6>
+                <small class="opacity-75" style="font-size: 0.75rem;">Chúng tôi phản hồi trong vài phút</small>
             </div>
         </div>
+        <button class="btn-close btn-close-white" onclick="toggleChatWindow()"></button>
+    </div>
 
-        <div class="card-footer p-2 bg-white">
+    {{-- Vùng chứa tin nhắn --}}
+    <div class="chat-body p-3 bg-light" id="chatBody" style="height: 350px; overflow-y: auto;">
+        {{-- Nơi đổ dữ liệu tin nhắn --}}
+        <div class="text-center text-muted small mt-5" id="chatKhachHangChuaDangNhap">
+            Vui lòng <a href="#" onclick="openAuthModal('login'); return false;" class="text-primary fw-bold">Đăng
+                nhập</a> để bắt đầu trò chuyện với chuyên viên.
+        </div>
+    </div>
+
+    {{-- Form nhập tin nhắn --}}
+    <div class="chat-footer p-2 bg-white border-top">
+        <form id="chatForm" onsubmit="sendChatMessage(event)">
+            <input type="hidden" id="currentPhienChatId" value="">
             <div class="input-group">
-                <input type="text" id="chat-input" class="form-control border-0" placeholder="Nhập tin nhắn..." disabled>
-                <button class="btn btn-primary" id="chat-send-btn" disabled>
+                <input type="text" id="chatInput"
+                    class="form-control border-0 shadow-none bg-light rounded-pill px-3" placeholder="Nhập tin nhắn..."
+                    disabled>
+                <button type="submit"
+                    class="btn text-white rounded-circle ms-2 shadow-sm d-flex align-items-center justify-content-center"
+                    id="chatSendBtn" style="background-color: #FF8C42; width: 40px; height: 40px;" disabled>
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
+<style>
+    /* Nút bong bóng chat */
+    .chat-widget-btn {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF8C42, #FF6B1A);
+        color: white;
+        border: none;
+        font-size: 1.5rem;
+        z-index: 1050;
+        cursor: pointer;
+        transition: transform 0.3s;
+    }
+
+    .chat-widget-btn:hover {
+        transform: scale(1.1);
+    }
+
+    /* Khung cửa sổ chat */
+    .chat-window {
+        position: fixed;
+        bottom: 100px;
+        right: 30px;
+        width: 350px;
+        background: white;
+        z-index: 1050;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.3s ease;
+        pointer-events: none;
+    }
+
+    .chat-window.show {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: all;
+    }
+
+    /* Bong bóng tin nhắn */
+    .chat-msg {
+        max-width: 80%;
+        padding: 10px 15px;
+        border-radius: 15px;
+        margin-bottom: 10px;
+        font-size: 0.9rem;
+        word-wrap: break-word;
+    }
+
+    .chat-msg.msg-admin {
+        background-color: #e2e8f0;
+        color: #0f172a;
+        border-bottom-left-radius: 2px;
+        align-self: flex-start;
+    }
+
+    .chat-msg.msg-customer {
+        background-color: #FF8C42;
+        color: white;
+        border-bottom-right-radius: 2px;
+        align-self: flex-end;
+    }
+
+    .chat-row {
+        display: flex;
+        flex-direction: column;
+    }
+</style>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    const chatBtn = document.getElementById('chat-toggle-btn');
-    const chatBox = document.getElementById('chat-box');
-    const closeBtn = document.getElementById('chat-close-btn');
-    const msgArea = document.getElementById('chat-messages');
-    const input = document.getElementById('chat-input');
-    const sendBtn = document.getElementById('chat-send-btn');
-    
-    let isChatOpen = false;
-    let pollInterval = null;
+    let chatPollingInterval = null;
 
-    // --- MỞ CHAT ---
-    chatBtn.addEventListener('click', function() {
-        if (!isChatOpen) {
-            // Gọi API start chat để check login
-            startChatSession();
+    function toggleChatWindow() {
+        const win = document.getElementById('chatWindow');
+        win.classList.toggle('show');
+        win.classList.toggle('d-none');
+
+        if (win.classList.contains('show')) {
+            initChat();
         } else {
-            closeChat();
+            clearInterval(chatPollingInterval);
         }
-    });
-
-    closeBtn.addEventListener('click', closeChat);
-
-    function closeChat() {
-        chatBox.classList.add('d-none');
-        isChatOpen = false;
-        clearInterval(pollInterval);
     }
 
-    function startChatSession() {
-        fetch('{{ route("chat.start") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(res => res.json())
-        .then(data => {
-            if (data.status === 'require_login') {
-                // Chưa login -> Gọi Modal Quick Login (đã có ở Layout master)
-                // Biến pendingAction để sau khi login xong thì tự mở lại chat
-                if(typeof pendingAction !== 'undefined') {
-                    pendingAction = { type: 'chat' };
+    function initChat() {
+        if (!APP.isLoggedIn) {
+            document.getElementById('chatKhachHangChuaDangNhap').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('chatKhachHangChuaDangNhap').style.display = 'none';
+        document.getElementById('chatBody').innerHTML =
+            '<div class="text-center mt-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>';
+
+        // Gọi API Khởi tạo bằng POST
+        fetch(APP.routes.chatKhoiTao, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': APP.csrfToken,
+                    'Accept': 'application/json'
                 }
-                var modalQuickLogin = new bootstrap.Modal(document.getElementById('modalQuickLogin'));
-                modalQuickLogin.show();
-            } else if (data.status === 'success') {
-                // Đã login -> Mở hộp chat
-                openChatBox(data);
-            }
-        })
-        .catch(err => console.error(err));
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('currentPhienChatId').value = data.phien_chat_id;
+                    document.getElementById('chatInput').disabled = false;
+                    document.getElementById('chatSendBtn').disabled = false;
+
+                    // Lấy lịch sử chat và bắt đầu Polling 3s/lần
+                    fetchMessages();
+                    clearInterval(chatPollingInterval);
+                    chatPollingInterval = setInterval(fetchMessages, 3000);
+                }
+            });
     }
 
-    function openChatBox(data) {
-        chatBox.classList.remove('d-none');
-        isChatOpen = true;
-        input.disabled = false;
-        sendBtn.disabled = false;
-        
-        // Render tin nhắn cũ
-        renderMessages(data.messages);
-        
-        // Bắt đầu polling tin mới mỗi 3s
-        pollInterval = setInterval(fetchNewMessages, 3000);
+    function fetchMessages() {
+        const phienChatId = document.getElementById('currentPhienChatId').value;
+        if (!phienChatId) return;
+
+        // Gọi API Lịch sử (Khớp với Route của bạn)
+        const url = APP.baseUrl + '/chat/lich-su/' + phienChatId;
+
+        fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) renderMessages(data.tin_nhans);
+            });
     }
 
     function renderMessages(messages) {
-        let html = '';
-        if(!messages || messages.length === 0) {
-            html = '<div class="text-center text-muted small mt-3">Xin chào! Chúng tôi có thể giúp gì cho bạn?</div>';
-        } else {
-            messages.forEach(msg => {
-                // msg.user_id == null là khách, != null là admin
-                let isMe = (msg.user_id == null); 
-                html += `
-                    <div class="d-flex mb-2 ${isMe ? 'justify-content-end' : 'justify-content-start'}">
-                        <div class="p-2 rounded shadow-sm text-break" 
-                             style="max-width: 80%; background-color: ${isMe ? '#0d6efd' : '#e9ecef'}; color: ${isMe ? '#fff' : '#000'}">
-                            ${msg.message}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-        msgArea.innerHTML = html;
-        msgArea.scrollTop = msgArea.scrollHeight; // Scroll xuống cuối
+        const body = document.getElementById('chatBody');
+
+        // Tránh giật màn hình nếu không có tin nhắn mới
+        const currentMsgs = body.querySelectorAll('.chat-row').length;
+        if (currentMsgs === messages.length) return;
+
+        body.innerHTML = '';
+
+        messages.forEach(msg => {
+            // Khớp với CSDL của bạn (nguoi_gui = khachhang)
+            const isCustomer = msg.nguoi_gui === 'khachhang';
+            const msgClass = isCustomer ? 'msg-customer' : 'msg-admin';
+
+            body.innerHTML += `
+                <div class="chat-row">
+                    <div class="chat-msg ${msgClass}">${msg.noi_dung}</div>
+                </div>
+            `;
+        });
+
+        // Luôn cuộn xuống dòng cuối cùng
+        body.scrollTop = body.scrollHeight;
     }
 
-    // --- GỬI TIN ---
-    function sendMessage() {
-        let txt = input.value.trim();
-        if(!txt) return;
+    function sendChatMessage(e) {
+        e.preventDefault();
+        const input = document.getElementById('chatInput');
+        const phienChatId = document.getElementById('currentPhienChatId').value;
+        const noiDung = input.value.trim();
 
-        // Hiện tạm tin nhắn lên trước khi gửi (UX tốt hơn)
-        msgArea.innerHTML += `
-            <div class="d-flex mb-2 justify-content-end">
-                <div class="p-2 rounded shadow-sm text-break" style="max-width: 80%; background-color: #0d6efd; color: #fff; opacity: 0.7">
-                    ${txt} <i class="fas fa-spinner fa-spin small ms-1"></i>
-                </div>
-            </div>
-        `;
-        msgArea.scrollTop = msgArea.scrollHeight;
+        if (!noiDung || !phienChatId) return;
         input.value = '';
 
-        fetch('{{ route("chat.send") }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-            body: JSON.stringify({ message: txt })
-        })
-        .then(res => res.json())
-        .then(data => {
-            fetchNewMessages(); // Tải lại để xóa icon loading
-        });
+        // Gửi tin nhắn lên Server bằng POST
+        fetch(APP.routes.chatGui, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': APP.csrfToken,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    phien_chat_id: phienChatId,
+                    noi_dung: noiDung
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    fetchMessages(); // Refresh tin nhắn lập tức
+                }
+            });
     }
-
-    sendBtn.addEventListener('click', sendMessage);
-    input.addEventListener('keypress', function(e) {
-        if(e.key === 'Enter') sendMessage();
-    });
-
-    // --- LẤY TIN MỚI ---
-    function fetchNewMessages() {
-        if(!isChatOpen) return;
-        fetch('{{ route("chat.messages") }}')
-        .then(res => res.json())
-        .then(res => {
-            renderMessages(res.data);
-        });
-    }
-    
-    // Hàm global để gọi từ bên ngoài (ví dụ sau khi login thành công)
-    window.openChatWidget = function(data) {
-        openChatBox(data);
-    }
-});
 </script>

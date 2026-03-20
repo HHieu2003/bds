@@ -12,21 +12,21 @@ class YeuThich extends Model
     protected $table = 'yeu_thich';
 
     protected $fillable = [
+        'khach_hang_id',
         'bat_dong_san_id',
-        'khach_hang_id', // <--- QUAN TRỌNG: Phải có dòng này mới lưu được
-        'user_id',       // Giữ lại nếu sale cũng dùng chức năng này
-        'session_id'     // Giữ lại nếu muốn hỗ trợ khách vãng lai cũ
+        'session_id',
     ];
 
-    // Liên kết ngược về Bất động sản
-    public function batDongSan()
-    {
-        return $this->belongsTo(BatDongSan::class, 'bat_dong_san_id');
-    }
-
-    // Liên kết về Khách hàng
+    // ============================================================
+    // RELATIONSHIPS
+    // ============================================================
     public function khachHang()
     {
         return $this->belongsTo(KhachHang::class, 'khach_hang_id');
+    }
+
+    public function batDongSan()
+    {
+        return $this->belongsTo(BatDongSan::class, 'bat_dong_san_id');
     }
 }

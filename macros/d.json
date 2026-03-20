@@ -1,0 +1,180 @@
+[
+  {
+    "type": "mouse_click",
+    "x": 845,
+    "y": 267,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 1.0361499786376953
+  },
+  {
+    "type": "mouse_click",
+    "x": 845,
+    "y": 267,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 1.1695137023925781
+  },
+  {
+    "type": "mouse_click",
+    "x": 1121,
+    "y": 547,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 2.645542860031128
+  },
+  {
+    "type": "mouse_click",
+    "x": 1121,
+    "y": 547,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 2.780426502227783
+  },
+  {
+    "type": "mouse_click",
+    "x": 957,
+    "y": 577,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 3.8452417850494385
+  },
+  {
+    "type": "mouse_click",
+    "x": 957,
+    "y": 577,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 3.9810631275177
+  },
+  {
+    "type": "mouse_click",
+    "x": 951,
+    "y": 518,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 5.8301472663879395
+  },
+  {
+    "type": "mouse_move",
+    "x": 951,
+    "y": 518,
+    "time": 5.929357290267944
+  },
+  {
+    "type": "mouse_move",
+    "x": 959,
+    "y": 518,
+    "time": 5.991223335266113
+  },
+  {
+    "type": "mouse_move",
+    "x": 982,
+    "y": 518,
+    "time": 6.04916787147522
+  },
+  {
+    "type": "mouse_move",
+    "x": 1009,
+    "y": 520,
+    "time": 6.100245952606201
+  },
+  {
+    "type": "mouse_move",
+    "x": 1011,
+    "y": 520,
+    "time": 6.178773641586304
+  },
+  {
+    "type": "mouse_move",
+    "x": 1014,
+    "y": 521,
+    "time": 6.2398176193237305
+  },
+  {
+    "type": "mouse_move",
+    "x": 1018,
+    "y": 523,
+    "time": 6.3031840324401855
+  },
+  {
+    "type": "mouse_click",
+    "x": 1018,
+    "y": 523,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 6.344483852386475
+  },
+  {
+    "type": "mouse_click",
+    "x": 1020,
+    "y": 598,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 7.0877532958984375
+  },
+  {
+    "type": "mouse_click",
+    "x": 1020,
+    "y": 598,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 7.221019983291626
+  },
+  {
+    "type": "mouse_click",
+    "x": 1020,
+    "y": 598,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 7.846830368041992
+  },
+  {
+    "type": "mouse_click",
+    "x": 1020,
+    "y": 598,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 7.984037160873413
+  },
+  {
+    "type": "key_press",
+    "key": "Key.f10",
+    "time": 10.323034048080444
+  },
+  {
+    "type": "key_release",
+    "key": "Key.f10",
+    "time": 10.423473119735718
+  },
+  {
+    "type": "key_press",
+    "key": "Key.f10",
+    "time": 11.316926956176758
+  },
+  {
+    "type": "key_release",
+    "key": "Key.f10",
+    "time": 11.492555141448975
+  },
+  {
+    "type": "key_press",
+    "key": "Key.f10",
+    "time": 11.89345669746399
+  },
+  {
+    "type": "key_release",
+    "key": "Key.f10",
+    "time": 12.10210394859314
+  },
+  {
+    "type": "key_press",
+    "key": "Key.f10",
+    "time": 12.411379337310791
+  },
+  {
+    "type": "key_release",
+    "key": "Key.f10",
+    "time": 12.598740100860596
+  }
+]

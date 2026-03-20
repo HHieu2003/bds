@@ -11,9 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Đăng ký alias cho middleware 'role' ở đây
+
+        // ── Alias middleware ──
         $middleware->alias([
-            'role' => \App\Http\Middleware\CheckRole::class,
+            'check.role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

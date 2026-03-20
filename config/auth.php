@@ -37,12 +37,20 @@ return [
 
     'guards' => [
         'web' => [
-            'driver' => 'session',
+            'driver'   => 'session',
             'provider' => 'users',
         ],
+
+        // ── Nhân viên nội bộ ──
+        'nhanvien' => [
+            'driver'   => 'session',
+            'provider' => 'nhanvien',
+        ],
+
+        // ── Khách hàng ──
         'customer' => [
-            'driver' => 'session',
-            'provider' => 'customers',
+            'driver'   => 'session',
+            'provider' => 'customer',
         ],
     ],
 
@@ -62,20 +70,20 @@ return [
     | Supported: "database", "eloquent"
     |
     */
-
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model'  => App\Models\User::class,
         ],
 
-        // 'users' => [
-        //     'driver' => 'database',
-        //     'table' => 'users',
-        // ],
-        'customers' => [
+        'nhanvien' => [
             'driver' => 'eloquent',
-            'model' => App\Models\KhachHang::class,
+            'model'  => App\Models\NhanVien::class,
+        ],
+
+        'customer' => [
+            'driver' => 'eloquent',
+            'model'  => App\Models\KhachHang::class,
         ],
     ],
 
@@ -101,8 +109,20 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
-            'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
-            'expire' => 60,
+            'table'    => 'password_reset_tokens',
+            'expire'   => 60,
+            'throttle' => 60,
+        ],
+        'nhanvien' => [
+            'provider' => 'nhanvien',
+            'table'    => 'password_reset_tokens',
+            'expire'   => 60,
+            'throttle' => 60,
+        ],
+        'customer' => [
+            'provider' => 'customer',
+            'table'    => 'password_reset_tokens',
+            'expire'   => 60,
             'throttle' => 60,
         ],
     ],

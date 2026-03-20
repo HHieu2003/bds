@@ -1,0 +1,126 @@
+[
+  {
+    "type": "mouse_click",
+    "x": 819,
+    "y": 259,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 0.9467217922210693
+  },
+  {
+    "type": "mouse_click",
+    "x": 819,
+    "y": 259,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 1.0871715545654297
+  },
+  {
+    "type": "mouse_click",
+    "x": 1111,
+    "y": 544,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 2.257725715637207
+  },
+  {
+    "type": "mouse_click",
+    "x": 1111,
+    "y": 544,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 2.3957667350769043
+  },
+  {
+    "type": "mouse_click",
+    "x": 948,
+    "y": 591,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 3.3053858280181885
+  },
+  {
+    "type": "mouse_click",
+    "x": 948,
+    "y": 591,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 3.443998336791992
+  },
+  {
+    "type": "mouse_click",
+    "x": 945,
+    "y": 520,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 4.8450706005096436
+  },
+  {
+    "type": "mouse_move",
+    "x": 946,
+    "y": 520,
+    "time": 4.940714359283447
+  },
+  {
+    "type": "mouse_move",
+    "x": 956,
+    "y": 520,
+    "time": 5.004185438156128
+  },
+  {
+    "type": "mouse_move",
+    "x": 961,
+    "y": 520,
+    "time": 5.064521551132202
+  },
+  {
+    "type": "mouse_click",
+    "x": 963,
+    "y": 521,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 5.121761798858643
+  },
+  {
+    "type": "mouse_click",
+    "x": 1047,
+    "y": 600,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 6.128282070159912
+  },
+  {
+    "type": "mouse_click",
+    "x": 1047,
+    "y": 600,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 6.265605688095093
+  },
+  {
+    "type": "mouse_click",
+    "x": 1045,
+    "y": 621,
+    "button": "Button.left",
+    "pressed": true,
+    "time": 8.318312168121338
+  },
+  {
+    "type": "mouse_click",
+    "x": 1045,
+    "y": 621,
+    "button": "Button.left",
+    "pressed": false,
+    "time": 8.458083391189575
+  },
+  {
+    "type": "key_press",
+    "key": "Key.f10",
+    "time": 9.846302270889282
+  },
+  {
+    "type": "key_release",
+    "key": "Key.f10",
+    "time": 9.974239587783813
+  }
+]
