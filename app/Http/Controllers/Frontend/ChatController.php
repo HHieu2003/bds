@@ -10,19 +10,19 @@ use Illuminate\Support\Facades\Auth;
 
 class ChatController extends Controller
 {
-    /**
-     * Khởi tạo khung chat hoặc lấy lịch sử tin nhắn
-     */
+    // ══════════════════════════════
+    // KHỞI TẠO PHIÊN CHAT (POST)
+    // ══════════════════════════════
     public function khoiTao(Request $request)
     {
         $khachHang = Auth::guard('customer')->user();
 
-        // 1. Tìm phiên chat cũ đang MỞ của khách hàng này
+        // 1. Tìm xem khách hàng có phiên chat nào đang mở không
         $phienChat = PhienChat::where('khach_hang_id', $khachHang?->id)
             ->whereIn('trang_thai', ['dang_cho', 'dang_chat'])
             ->first();
 
-        // 2. Nếu chưa có phiên chat nào đang mở thì mới tạo mới
+        // 2. Nếu chưa có, tạo phiên chat mới
         if (!$phienChat) {
             $phienChat = PhienChat::create([
                 'khach_hang_id' => $khachHang?->id,
@@ -31,50 +31,60 @@ class ChatController extends Controller
                 'session_id'    => session()->getId(),
             ]);
 
-            // Tin nhắn chào mừng tự động
+            // Gửi tin nhắn tự động từ hệ thống
             TinNhanChat::create([
                 'phien_chat_id' => $phienChat->id,
                 'nguoi_gui'     => 'hethong',
                 'loai_tin_nhan' => 'vanban',
-                'noi_dung'      => 'Xin chào! Tôi là trợ lý tư vấn BĐS của Thành Công Land. Tôi có thể giúp gì cho bạn?',
+                'noi_dung'      => 'Xin chào! Tôi là trợ lý tư vấn của Thành Công Land. Tôi có thể giúp gì cho bạn?',
             ]);
         }
 
         return response()->json([
             'success'       => true,
             'phien_chat_id' => $phienChat->id,
-            'message'       => 'Phiên chat đã được tải.',
+            'message'       => 'Khởi tạo thành công',
         ]);
     }
 
-    /**
-     * Khách hàng gửi tin nhắn mới
-     */
-    public function gui(Request $request)
+    // ══════════════════════════════
+    // GỬI TIN NHẮN (POST)
+    // ══════════════════════════════
+    public function guiTinNhan(Request $request)
     {
-        if (!Auth::guard('customer')->check()) {
-            return response()->json(['success' => false, 'message' => 'Unauthorized']);
-        }
+        $request->validate([
+            'phien_chat_id' => ['required', 'exists:phien_chat,id'],
+            'noi_dung'      => ['required', 'string', 'max:2000'],
+        ]);
 
-        $request->validate(['noi_dung' => 'required|string']);
+        $khachHang = Auth::guard('customer')->user();
 
-        $phienChat = PhienChat::find($request->phien_chat_id);
-        if (!$phienChat) {
-            return response()->json(['success' => false, 'message' => 'Phiên chat không tồn tại']);
-        }
-
-        // Lưu tin nhắn
         $tinNhan = TinNhanChat::create([
-            'phien_chat_id' => $phienChat->id,
-            'nguoi_gui_type' => 'khach_hang', // Phân biệt ai gửi
-            'nguoi_gui_id' => Auth::guard('customer')->id(),
-            'noi_dung' => $request->noi_dung,
-            'da_doc' => 0
+            'phien_chat_id' => $request->phien_chat_id,
+            'khach_hang_id' => $khachHang?->id,
+            'nguoi_gui'     => 'khachhang',
+            'loai_tin_nhan' => 'vanban',
+            'noi_dung'      => $request->noi_dung,
         ]);
 
         return response()->json([
-            'success' => true,
-            'tin_nhan' => $tinNhan
+            'success'  => true,
+            'tin_nhan' => $tinNhan,
+        ]);
+    }
+
+    // ══════════════════════════════
+    // LẤY LỊCH SỬ CHAT (GET)
+    // ══════════════════════════════
+    public function lichSu(int $phienChatId)
+    {
+        $tinNhans = TinNhanChat::where('phien_chat_id', $phienChatId)
+            ->orderBy('created_at', 'asc')
+            ->get(['id', 'nguoi_gui', 'loai_tin_nhan', 'noi_dung', 'created_at']);
+
+        return response()->json([
+            'success'   => true,
+            'tin_nhans' => $tinNhans,
         ]);
     }
 }

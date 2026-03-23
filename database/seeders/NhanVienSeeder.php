@@ -13,8 +13,8 @@ class NhanVienSeeder extends Seeder
         $nhanVien = [
             [
                 'ho_ten'        => 'Nguyễn Thành Công',
-                'email'         => 'admin@thanhcongland.com',
-                'password'      => Hash::make('password'),
+                'email'         => 'admin@gmail.com',
+                'password'      => Hash::make('123456'),
                 'vai_tro'       => 'admin',
                 'so_dien_thoai' => '0901234567',
                 'anh_dai_dien'  => null,

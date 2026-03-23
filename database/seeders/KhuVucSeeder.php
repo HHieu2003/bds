@@ -24,12 +24,9 @@ class KhuVucSeeder extends Seeder
 
         // Cấp 2: Quận/Huyện
         $quanHuyen = [
-            ['ten' => 'Hà Đông',    'slug' => 'ha-dong',    'ma' => '268', 'thu_tu' => 1],
-            ['ten' => 'Cầu Giấy',   'slug' => 'cau-giay',   'ma' => '007', 'thu_tu' => 2],
-            ['ten' => 'Nam Từ Liêm', 'slug' => 'nam-tu-liem', 'ma' => '020', 'thu_tu' => 3],
-            ['ten' => 'Thanh Xuân', 'slug' => 'thanh-xuan',  'ma' => '009', 'thu_tu' => 4],
-            ['ten' => 'Hoàng Mai',  'slug' => 'hoang-mai',   'ma' => '021', 'thu_tu' => 5],
-            ['ten' => 'Long Biên',  'slug' => 'long-bien',   'ma' => '022', 'thu_tu' => 6],
+            ['ten' => 'Vinhomes Smart City',    'slug' => 'Vinhomes Smart City',    'ma' => '268', 'thu_tu' => 1],
+            ['ten' => 'Cầu Giấy',   'slug' => 'cau-giay',   'ma' => '007', 'thu_tu' => 3],
+            ['ten' => 'Nam Từ Liêm', 'slug' => 'nam-tu-liem', 'ma' => '020', 'thu_tu' => 2],
         ];
 
         foreach ($quanHuyen as $q) {

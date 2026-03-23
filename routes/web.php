@@ -73,8 +73,8 @@ Route::prefix('')->name('frontend.')->group(function () {
     });
 
     // Chat
-   Route::get('/chat/khoi-tao', [FeChatController::class, 'khoiTao'])->name('chat.khoi-tao');
-    Route::post('/chat/gui', [FeChatController::class, 'gui'])->name('chat.gui');
+    Route::post('/chat/khoi-tao', [FeChatController::class, 'khoiTao'])->name('chat.khoi-tao');
+    Route::post('/chat/gui', [FeChatController::class, 'guiTinNhan'])->name('chat.gui');
     Route::get('/chat/lich-su/{id}', [FeChatController::class, 'lichSu'])->name('chat.lich-su');
 });
 

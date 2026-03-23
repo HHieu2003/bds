@@ -229,6 +229,7 @@
                         </a>
                         @if (isset($khuVucMenu) && $khuVucMenu->count() > 0)
                             <div class="dropdown-divider"></div>
+
                             @foreach ($khuVucMenu as $kv)
                                 <a href="{{ route('frontend.du-an.index', ['khu_vuc' => $kv->id]) }}">
                                     <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
@@ -259,13 +260,6 @@
                     </div>
                 </li>
 
-                {{-- Ký gửi --}}
-                <li class="nav-item">
-                    <a href="{{ route('frontend.ky-gui.create') }}"
-                        class="nav-link nav-link-cta {{ request()->routeIs('frontend.ky-gui.*') ? 'active' : '' }}">
-                        <i class="fas fa-paper-plane me-1"></i> Ký gửi BĐS
-                    </a>
-                </li>
 
                 {{-- Giới thiệu --}}
                 <li class="nav-item">
@@ -274,6 +268,20 @@
                         Giới thiệu
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('frontend.gioi-thieu') }}"
+                        class="nav-link {{ request()->routeIs('frontend.gioi-thieu') ? 'active' : '' }}">
+                        Nội Thất
+                    </a>
+                </li>
+                {{-- Ký gửi --}}
+                <li class="nav-item">
+                    <a href="{{ route('frontend.ky-gui.create') }}"
+                        class="nav-link nav-link-cta {{ request()->routeIs('frontend.ky-gui.*') ? 'active' : '' }}">
+                        <i class="fas fa-paper-plane me-1"></i> Ký gửi BĐS
+                    </a>
+                </li>
+
 
             </ul>
 
@@ -312,12 +320,13 @@
                             </form>
                         </div>
                     </div>
-             @else
-        <button class="btn-login" id="btnMoLogin" title="Đăng nhập / Đăng ký" onclick="openAuthModal('login')">
-            <i class="fas fa-user me-1"></i>
-            <span class="d-none d-lg-inline">Đăng nhập</span>
-        </button>
-    @endauth
+                @else
+                    <button class="btn-login" id="btnMoLogin" title="Đăng nhập / Đăng ký"
+                        onclick="openAuthModal('login')">
+                        <i class="fas fa-user me-1"></i>
+                        <span class="d-none d-lg-inline">Đăng nhập</span>
+                    </button>
+                @endauth
 
                 {{-- Hamburger --}}
                 <button class="hamburger" id="hamburger" aria-label="Menu">
@@ -525,7 +534,7 @@
     .nav-dropdown {
         display: none;
         position: absolute;
-        top: calc(100% + 8px);
+        top: calc(100% + 1px);
         left: 0;
         background: #fff;
         border-radius: 12px;
@@ -665,7 +674,7 @@
 
     /* ===================== MEGA DROPDOWN CĂN HỘ ===================== */
     .can-ho-mega {
-        width: 490px !important;
+        /* width: 490px !important; */
         padding: 0 !important;
         overflow: hidden;
         left: 50% !important;
@@ -687,7 +696,7 @@
     }
 
     .can-ho-col-title {
-        font-size: .7rem;
+        font-size: .72rem;
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 1px;
