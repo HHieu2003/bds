@@ -631,26 +631,28 @@
     }
 
     /* ===================== BACK TO TOP ===================== */
+    /* ── BACK TO TOP ── */
     .back-to-top {
         position: fixed;
-        bottom: 5.5rem;
-        right: 1.25rem;
-        width: 42px;
-        height: 42px;
+        bottom: 172px;
+        /* Xếp chồng: trên contact panel */
+        right: 24px;
+        width: 44px;
+        height: 44px;
         border-radius: 12px;
         background: linear-gradient(135deg, #FF8C42, #FF6B1A);
-        border: none;
-        color: #fff;
-        font-size: .9rem;
+        border: 2px solid #e5e7eb;
+        color: #1a3c5e;
+        font-size: .85rem;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 18px rgba(255, 140, 66, .4);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, .10);
         opacity: 0;
-        transform: translateY(12px);
-        transition: opacity .3s, transform .3s, background .2s;
-        z-index: 990;
+        transform: translateY(10px);
+        transition: opacity .3s, transform .3s, background .2s, border-color .2s;
+        z-index: 980;
     }
 
     .back-to-top.show {
@@ -659,8 +661,22 @@
     }
 
     .back-to-top:hover {
-        background: linear-gradient(135deg, #1a3c5e, #2d6a9f);
-        box-shadow: 0 4px 18px rgba(26, 60, 94, .35);
+        background: #1a3c5e;
+        border-color: #1a3c5e;
+        color: #fff;
+        box-shadow: 0 6px 20px rgba(26, 60, 94, .25);
+        transform: translateY(-2px);
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .back-to-top {
+            bottom: 152px;
+            right: 16px;
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+        }
     }
 
     /* ===================== RESPONSIVE ===================== */

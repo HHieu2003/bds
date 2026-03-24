@@ -1,12 +1,21 @@
 {{-- NÚT BONG BÓNG CHAT GÓC PHẢI DƯỚI --}}
-<button id="chatWidgetBtn" class="chat-widget-btn shadow-lg" onclick="toggleChatWindow()">
-    <i class="fas fa-comment-dots fs-3"></i>
-    <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"
-        id="chatUnreadBadge" style="display:none;"></span>
+{{-- NÚT CHAT --}}
+<button id="chatWidgetBtn" onclick="toggleChatWindow()" aria-label="Chat với chúng tôi">
+    <div class="cw-btn-inner">
+        <div class="cw-btn-icon">
+            <i class="fas fa-comment-dots" id="chatBtnIcon"></i>
+        </div>
+        <div class="cw-btn-label">Chat ngay</div>
+    </div>
+    {{-- Badge thông báo --}}
+    <span class="cw-unread-badge" id="chatUnreadBadge" style="display:none"></span>
+    {{-- Pulse ring --}}
+    <span class="cw-pulse"></span>
 </button>
 
+
 {{-- KHUNG CỬA SỔ CHAT FRONTEND --}}
-<div id="chatWindow" class="chat-window shadow-lg rounded-4 overflow-hidden d-none">
+<div id="chatWindow" class="chat-window shadow-lg rounded-4 overflow-hidden">
     {{-- Header --}}
     <div class="chat-header p-3 d-flex justify-content-between align-items-center position-relative z-1"
         style="background:linear-gradient(135deg,#0F172A,#1A2948);">
@@ -64,65 +73,190 @@
 </div>
 
 <style>
-    .chat-widget-btn {
+    /* ── CHAT BUTTON ── */
+    #chatWidgetBtn {
         position: fixed;
-        bottom: 30px;
-        right: 30px;
-        width: 65px;
-        height: 65px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #FF8C42, #FF6B1A);
-        color: white;
+        /* fixed cho toàn trang */
+        bottom: 24px;
+        right: 24px;
+        height: 52px;
+        padding: 0 18px 0 12px;
+        border-radius: 50px;
         border: none;
-        z-index: 1050;
         cursor: pointer;
+        background: linear-gradient(135deg, #0F172A 0%, #1a3c5e 100%);
+        color: #fff;
+        z-index: 1040;
+        display: flex;
+        align-items: center;
+        box-shadow: 0 6px 24px rgba(15, 23, 42, .35);
+        transition: transform .3s cubic-bezier(.68, -.55, .265, 1.55), box-shadow .3s;
+        outline: none;
+        overflow: visible;
+        /* ← để pulse ring không bị crop */
+    }
+
+    #chatWidgetBtn:hover {
+        transform: translateY(-3px) scale(1.03);
+        box-shadow: 0 12px 32px rgba(15, 23, 42, .45);
+    }
+
+    #chatWidgetBtn.active {
+        background: linear-gradient(135deg, #374151, #6b7280);
+    }
+
+    .cw-btn-inner {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* Icon tròn cam */
+    .cw-btn-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF8C42, #FF5722);
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        font-size: 1rem;
+        color: #fff;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(255, 140, 66, .5);
+        transition: transform .3s;
     }
 
-    .chat-widget-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 10px 25px rgba(255, 140, 66, 0.4) !important;
+    #chatWidgetBtn:hover .cw-btn-icon {
+        transform: rotate(-15deg) scale(1.1);
     }
 
+    .cw-btn-label {
+        font-size: .82rem;
+        font-weight: 800;
+        color: #fff;
+        white-space: nowrap;
+        letter-spacing: .2px;
+    }
+
+    /* Badge đỏ */
+    .cw-unread-badge {
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        min-width: 18px;
+        height: 18px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 2px solid #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .58rem;
+        font-weight: 900;
+        color: #fff;
+    }
+
+    /* Pulse ring */
+    .cw-pulse {
+        position: absolute;
+        inset: -5px;
+        border-radius: 60px;
+        border: 2px solid rgba(255, 140, 66, .45);
+        animation: cwPulse 2.5s ease-out infinite;
+        pointer-events: none;
+    }
+
+    #chatWidgetBtn.active .cw-pulse {
+        display: none;
+    }
+
+    @keyframes cwPulse {
+        0% {
+            transform: scale(1);
+            opacity: .7;
+        }
+
+        100% {
+            transform: scale(1.35);
+            opacity: 0;
+        }
+    }
+
+    /* Khi chat đang mở — thu lại thành pill nhỏ */
+    #chatWidgetBtn.active .cw-btn-label {
+        display: none;
+    }
+
+    #chatWidgetBtn.active {
+        padding: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        justify-content: center;
+    }
+
+    #chatWidgetBtn.active .cw-btn-icon {
+        width: 34px;
+        height: 34px;
+    }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        #chatWidgetBtn {
+            bottom: 16px;
+            right: 16px;
+            height: 46px;
+            padding: 0 14px 0 10px;
+        }
+
+        #chatWidgetBtn.active {
+            width: 46px;
+            height: 46px;
+            padding: 0;
+        }
+    }
+
+    /* ── CHAT WINDOW ── */
     .chat-window {
         position: fixed;
-        bottom: 110px;
-        right: 30px;
+        bottom: 96px;
+        right: 24px;
         width: 360px;
         height: 500px;
-        max-height: 70vh;
+        max-height: 72vh;
         background: #f8fafc;
-        z-index: 1050;
+        z-index: 9999;
         display: flex;
         flex-direction: column;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .15), 0 0 0 1px rgba(0, 0, 0, .06);
+
+        /* Ẩn mặc định bằng CSS — KHÔNG dùng d-none */
         opacity: 0;
-        transform: translateY(20px) scale(0.95);
+        visibility: hidden;
+        transform: translateY(16px) scale(.96);
         transform-origin: bottom right;
-        transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
         pointer-events: none;
+        transition: opacity .3s cubic-bezier(.19, 1, .22, 1),
+            transform .3s cubic-bezier(.19, 1, .22, 1),
+            visibility .3s;
     }
 
     .chat-window.show {
         opacity: 1;
+        visibility: visible;
         transform: translateY(0) scale(1);
         pointer-events: all;
     }
 
     @media (max-width: 576px) {
         .chat-window {
-            width: calc(100% - 40px);
-            right: 20px;
-            bottom: 100px;
-        }
-
-        .chat-widget-btn {
-            width: 55px;
-            height: 55px;
-            right: 20px;
-            bottom: 20px;
+            width: calc(100vw - 32px);
+            right: 16px;
+            bottom: 80px;
+            height: 420px;
         }
     }
 
@@ -130,6 +264,8 @@
         flex-grow: 1;
         overflow-y: auto;
         background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+
+
     }
 
     .chat-body::-webkit-scrollbar {
@@ -208,16 +344,23 @@
 
     function toggleChatWindow() {
         const win = document.getElementById('chatWindow');
+        const btn = document.getElementById('chatWidgetBtn');
         const badge = document.getElementById('chatUnreadBadge');
-        win.classList.toggle('show');
-        win.classList.toggle('d-none');
-        if (win.classList.contains('show')) {
-            badge.style.display = 'none';
-            initFrontendChat();
-        } else {
+
+        const isOpen = win.classList.contains('show');
+
+        if (isOpen) {
+            win.classList.remove('show');
+            btn.classList.remove('active');
             clearInterval(feChatPolling);
+        } else {
+            win.classList.add('show'); // ← Chỉ cần 1 dòng, không cần rAF
+            btn.classList.add('active');
+            if (badge) badge.style.display = 'none';
+            initFrontendChat();
         }
     }
+
 
     function initFrontendChat() {
         if (!window.APP || !APP.isLoggedIn) {

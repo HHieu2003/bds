@@ -115,39 +115,41 @@
 {{-- ══════════════════════════════════════════ CSS ══ --}}
 <style>
     /* ─── NÚT TOGGLE ─── */
+    /* ── NÚT TOGGLE CONTACT ── */
     .cp-toggle-btn {
         position: fixed;
-        bottom: 107px;
-        right: 30px;
-        width: 58px;
-        height: 58px;
-        border-radius: 50%;
+        bottom: 96px;
+        /* Trên chat button: 24+56+16 */
+        right: 24px;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        /* Vuông bo — khác với chat tròn */
         border: none;
         cursor: pointer;
-        background: linear-gradient(135deg, #FF8C42 0%, #FF5722 100%);
+        background: linear-gradient(135deg, #FF8C42, #FF5722);
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
-        z-index: 1050;
+        z-index: 1045;
         transition: transform .3s cubic-bezier(.68, -.55, .265, 1.55), box-shadow .3s;
-        box-shadow: 0 6px 20px rgba(255, 140, 66, .45);
+        box-shadow: 0 4px 18px rgba(255, 140, 66, .42);
         padding: 0;
     }
 
     .cp-toggle-btn:hover {
-        transform: scale(1.1);
-        box-shadow: 0 10px 28px rgba(255, 140, 66, .55);
+        transform: scale(1.08);
+        box-shadow: 0 8px 24px rgba(255, 140, 66, .55);
     }
 
     .cp-toggle-btn.active {
         background: linear-gradient(135deg, #1a3c5e, #2d6a9f);
-        box-shadow: 0 6px 20px rgba(26, 60, 94, .45);
-        transform: rotate(0deg);
+        box-shadow: 0 4px 18px rgba(26, 60, 94, .4);
     }
 
     .cp-btn-inner {
-        font-size: 1.35rem;
+        font-size: 1.2rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -155,15 +157,15 @@
     }
 
     .cp-toggle-btn.active .cp-btn-inner {
-        transform: rotate(180deg);
+        transform: rotate(90deg);
     }
 
-    /* Vòng sóng pulse */
+    /* Pulse ring */
     .cp-pulse-ring {
         position: absolute;
-        inset: -5px;
-        border-radius: 50%;
-        border: 2px solid rgba(255, 140, 66, .5);
+        inset: -6px;
+        border-radius: 20px;
+        border: 2px solid rgba(255, 140, 66, .45);
         animation: cpRingPulse 2.5s ease-out infinite;
         pointer-events: none;
     }
@@ -175,20 +177,20 @@
     @keyframes cpRingPulse {
         0% {
             transform: scale(1);
-            opacity: .8;
+            opacity: .7;
         }
 
         100% {
-            transform: scale(1.55);
+            transform: scale(1.5);
             opacity: 0;
         }
     }
 
-    /* Chấm online */
+    /* Online dot */
     .cp-online-dot {
         position: absolute;
-        top: 4px;
-        right: 4px;
+        top: -3px;
+        right: -3px;
         width: 12px;
         height: 12px;
         background: #2ecc71;
@@ -213,19 +215,20 @@
         }
     }
 
-    /* ─── PANEL ─── */
+    /* Panel */
     .cp-panel {
         position: fixed;
-        bottom: 108px;
-        right: 90px;
+        bottom: 160px;
+        /* Trên nút toggle */
+        right: 24px;
         width: 310px;
         background: #fff;
         border-radius: 20px;
-        z-index: 1049;
+        z-index: 1044;
         overflow: hidden;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, .18), 0 0 0 1px rgba(0, 0, 0, .05);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, .15), 0 0 0 1px rgba(0, 0, 0, .05);
         opacity: 0;
-        transform: translateY(18px) scale(.95);
+        transform: translateY(14px) scale(.96);
         transform-origin: bottom right;
         pointer-events: none;
         transition: opacity .3s cubic-bezier(.19, 1, .22, 1),
@@ -237,6 +240,25 @@
         transform: translateY(0) scale(1);
         pointer-events: all;
     }
+
+    /* Mobile */
+    @media (max-width: 576px) {
+        .cp-toggle-btn {
+            bottom: 80px;
+            right: 16px;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+        }
+
+        .cp-panel {
+            bottom: 138px;
+            right: 16px;
+            width: calc(100vw - 32px);
+            max-width: 310px;
+        }
+    }
+
 
     /* ─── HEADER ─── */
     .cp-panel-header {
