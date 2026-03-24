@@ -27,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Các middleware alias (giữ nguyên nếu bạn đang có)
         $middleware->alias([
+            'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'check.role' => \App\Http\Middleware\CheckRole::class,
         ]);
     })

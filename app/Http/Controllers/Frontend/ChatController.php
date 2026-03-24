@@ -16,27 +16,36 @@ class ChatController extends Controller
     public function khoiTao(Request $request)
     {
         $khachHang = Auth::guard('customer')->user();
+        $sessionId = session()->getId();
 
-        // 1. Tìm xem khách hàng có phiên chat nào đang mở không
-        $phienChat = PhienChat::where('khach_hang_id', $khachHang?->id)
-            ->whereIn('trang_thai', ['dang_cho', 'dang_chat'])
-            ->first();
+        // 1. Tìm xem khách có phiên chat nào đang mở không
+        if ($khachHang) {
+            $phienChat = PhienChat::where('khach_hang_id', $khachHang->id)
+                ->whereIn('trang_thai', ['dang_cho', 'dang_chat'])
+                ->first();
+        } else {
+            // Dành cho trường hợp sau này bạn muốn cho khách vãng lai chat
+            $phienChat = PhienChat::where('session_id', $sessionId)
+                ->whereIn('trang_thai', ['dang_cho', 'dang_chat'])
+                ->first();
+        }
 
         // 2. Nếu chưa có, tạo phiên chat mới
         if (!$phienChat) {
             $phienChat = PhienChat::create([
                 'khach_hang_id' => $khachHang?->id,
+                'session_id'    => $sessionId,  // Đã thêm lại để sửa lỗi 1364
+
                 'trang_thai'    => 'dang_cho',
-                'kenh'          => 'website',
-                'session_id'    => session()->getId(),
             ]);
 
             // Gửi tin nhắn tự động từ hệ thống
             TinNhanChat::create([
                 'phien_chat_id' => $phienChat->id,
                 'nguoi_gui'     => 'hethong',
-                'loai_tin_nhan' => 'vanban',
+                'loai_tin_nhan' => 'vanban',    // Bổ sung loại tin nhắn
                 'noi_dung'      => 'Xin chào! Tôi là trợ lý tư vấn của Thành Công Land. Tôi có thể giúp gì cho bạn?',
+                'da_doc'        => 0
             ]);
         }
 
@@ -57,14 +66,12 @@ class ChatController extends Controller
             'noi_dung'      => ['required', 'string', 'max:2000'],
         ]);
 
-        $khachHang = Auth::guard('customer')->user();
-
         $tinNhan = TinNhanChat::create([
             'phien_chat_id' => $request->phien_chat_id,
-            'khach_hang_id' => $khachHang?->id,
             'nguoi_gui'     => 'khachhang',
-            'loai_tin_nhan' => 'vanban',
+            'loai_tin_nhan' => 'vanban',    // Bổ sung loại tin nhắn
             'noi_dung'      => $request->noi_dung,
+            'da_doc'        => 0
         ]);
 
         return response()->json([
@@ -80,7 +87,7 @@ class ChatController extends Controller
     {
         $tinNhans = TinNhanChat::where('phien_chat_id', $phienChatId)
             ->orderBy('created_at', 'asc')
-            ->get(['id', 'nguoi_gui', 'loai_tin_nhan', 'noi_dung', 'created_at']);
+            ->get();
 
         return response()->json([
             'success'   => true,

@@ -5,8 +5,8 @@
 @push('styles')
     <style>
         /* ══════════════════════════════════════
-       PAGE HEADER
-    ══════════════════════════════════════ */
+           PAGE HEADER
+        ══════════════════════════════════════ */
         .page-header {
             display: flex;
             align-items: center;
@@ -60,8 +60,8 @@
         }
 
         /* ══════════════════════════════════════
-       STAT CARDS
-    ══════════════════════════════════════ */
+           STAT CARDS
+        ══════════════════════════════════════ */
         .stat-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -145,8 +145,8 @@
         }
 
         /* ══════════════════════════════════════
-       FILTER CARD
-    ══════════════════════════════════════ */
+           FILTER CARD
+        ══════════════════════════════════════ */
         .filter-card {
             background: #fff;
             border-radius: 14px;
@@ -245,8 +245,8 @@
         }
 
         /* ══════════════════════════════════════
-       TABLE CARD
-    ══════════════════════════════════════ */
+           TABLE CARD
+        ══════════════════════════════════════ */
         .table-card {
             background: #fff;
             border-radius: 14px;
@@ -713,8 +713,8 @@
 
                             {{-- Ảnh --}}
                             <td>
-                                @if ($da->hinh_anh)
-                                    <img src="{{ Storage::url($da->hinh_anh) }}" class="project-thumb"
+                                @if ($da->hinh_anh_dai_dien)
+                                    <img src="{{ Storage::url($da->hinh_anh_dai_dien) }}" class="project-thumb"
                                         alt="{{ $da->ten_du_an }}">
                                 @else
                                     <div class="project-thumb-placeholder">

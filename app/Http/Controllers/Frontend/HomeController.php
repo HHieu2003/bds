@@ -66,4 +66,12 @@ class HomeController extends Controller
     {
         return view('frontend.pages.about');
     }
+    public function noithat()
+    {
+        return view('frontend.pages.noi-that');
+    }
+    public function tuyendung()
+    {
+        return view('frontend.pages.tuyen-dung');
+    }
 }

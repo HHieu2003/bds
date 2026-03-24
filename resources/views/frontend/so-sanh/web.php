@@ -137,12 +137,6 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-        // Trong group middleware('auth:customer')
-        Route::post('cap-nhat-thong-tin', [KhachHangAuthController::class, 'updateProfile'])
-            ->name('khach-hang.update-profile');
-        Route::post('doi-mat-khau',       [KhachHangAuthController::class, 'changePassword'])
-            ->name('khach-hang.change-password');
-
         // Dashboard — tất cả role đều vào được
         // → tên route: nhanvien.dashboard
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');

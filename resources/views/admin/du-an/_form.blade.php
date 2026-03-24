@@ -1,8 +1,6 @@
 @push('styles')
     <style>
-        /* ══════════════════════════════════════
-       PAGE HEADER
-    ══════════════════════════════════════ */
+        /* (Giữ nguyên toàn bộ CSS cũ tuyệt đẹp của bạn) */
         .page-header {
             display: flex;
             align-items: center;
@@ -53,9 +51,6 @@
             border-color: #1a3c5e;
         }
 
-        /* ══════════════════════════════════════
-       ERRORS
-    ══════════════════════════════════════ */
         .errors-summary {
             background: #fff5f5;
             border: 1px solid #fcc;
@@ -82,9 +77,6 @@
             margin-bottom: 2px;
         }
 
-        /* ══════════════════════════════════════
-       LAYOUT 2 CỘT
-    ══════════════════════════════════════ */
         .form-layout {
             display: grid;
             grid-template-columns: 1fr 320px;
@@ -98,9 +90,6 @@
             }
         }
 
-        /* ══════════════════════════════════════
-       FORM CARD
-    ══════════════════════════════════════ */
         .form-card {
             background: #fff;
             border-radius: 14px;
@@ -134,9 +123,6 @@
             padding: 20px;
         }
 
-        /* ══════════════════════════════════════
-       FIELDS
-    ══════════════════════════════════════ */
         .form-group {
             margin-bottom: 16px;
         }
@@ -229,9 +215,6 @@
             }
         }
 
-        /* ══════════════════════════════════════
-       TOGGLE SWITCH
-    ══════════════════════════════════════ */
         .toggle-group {
             display: flex;
             align-items: center;
@@ -300,9 +283,6 @@
             transform: translateX(20px);
         }
 
-        /* ══════════════════════════════════════
-       BADGE TRẠNG THÁI
-    ══════════════════════════════════════ */
         .status-select-wrap {
             position: relative;
         }
@@ -331,9 +311,6 @@
             color: #e74c3c;
         }
 
-        /* ══════════════════════════════════════
-       ẢNH ĐẠI DIỆN
-    ══════════════════════════════════════ */
         .current-image {
             margin-bottom: 12px;
         }
@@ -433,9 +410,6 @@
             font-weight: 500;
         }
 
-        /* ══════════════════════════════════════
-       ACTION BUTTONS
-    ══════════════════════════════════════ */
         .form-actions {
             display: flex;
             flex-direction: column;
@@ -497,24 +471,14 @@
     </style>
 @endpush
 
-{{-- ══════════════════════════════════════════════
-     FORM LAYOUT
-══════════════════════════════════════════════ --}}
 <div class="form-layout">
 
-    {{-- ════════════════════════════
-         CỘT TRÁI
-    ════════════════════════════ --}}
+    {{-- CỘT TRÁI --}}
     <div>
-
         {{-- THÔNG TIN CƠ BẢN --}}
         <div class="form-card">
-            <div class="form-card-header">
-                <i class="fas fa-info-circle"></i> Thông tin cơ bản
-            </div>
+            <div class="form-card-header"><i class="fas fa-info-circle"></i> Thông tin cơ bản</div>
             <div class="form-card-body">
-
-                {{-- Tên dự án --}}
                 <div class="form-group">
                     <label class="form-label required">Tên dự án</label>
                     <input type="text" name="ten_du_an" class="form-field @error('ten_du_an') is-error @enderror"
@@ -525,7 +489,6 @@
                     @enderror
                 </div>
 
-                {{-- Khu vực + Địa chỉ --}}
                 <div class="form-row-2">
                     <div class="form-group">
                         <label class="form-label required">Khu vực</label>
@@ -534,8 +497,7 @@
                             @foreach ($khuVucs as $kv)
                                 <option value="{{ $kv->id }}"
                                     {{ old('khu_vuc_id', $duAn->khu_vuc_id ?? '') == $kv->id ? 'selected' : '' }}>
-                                    {{ $kv->ten_khu_vuc }}
-                                </option>
+                                    {{ $kv->ten_khu_vuc }}</option>
                             @endforeach
                         </select>
                         @error('khu_vuc_id')
@@ -554,7 +516,6 @@
                     </div>
                 </div>
 
-                {{-- Chủ đầu tư + Đơn vị thi công --}}
                 <div class="form-row-2">
                     <div class="form-group">
                         <label class="form-label">Chủ đầu tư</label>
@@ -569,13 +530,9 @@
                     </div>
                 </div>
 
-                {{-- Video + Map --}}
                 <div class="form-row-2">
                     <div class="form-group">
-                        <label class="form-label">
-                            Video URL
-                            <span class="label-hint">YouTube, Vimeo...</span>
-                        </label>
+                        <label class="form-label">Video URL <span class="label-hint">YouTube, Vimeo...</span></label>
                         <input type="url" name="video_url" class="form-field"
                             value="{{ old('video_url', $duAn->video_url ?? '') }}"
                             placeholder="https://youtube.com/...">
@@ -587,102 +544,68 @@
                             placeholder="https://maps.google.com/...">
                     </div>
                 </div>
-
             </div>
         </div>
 
-        {{-- MÔ TẢ --}}
+        {{-- MÔ TẢ & NỘI DUNG (CKEDITOR ĐƯỢC TÍCH HỢP Ở ĐÂY) --}}
         <div class="form-card">
-            <div class="form-card-header">
-                <i class="fas fa-align-left"></i> Mô tả dự án
-            </div>
+            <div class="form-card-header"><i class="fas fa-align-left"></i> Mô tả chi tiết</div>
             <div class="form-card-body">
-
-                {{-- Mô tả ngắn --}}
                 <div class="form-group">
-                    <label class="form-label">
-                        Mô tả ngắn
-                        <span class="label-hint">Hiển thị ở trang danh sách, tối đa 500 ký tự</span>
-                    </label>
+                    <label class="form-label">Mô tả ngắn <span class="label-hint">Hiển thị ở trang danh sách, tối đa 500
+                            ký tự</span></label>
                     <textarea name="mo_ta_ngan" class="form-field @error('mo_ta_ngan') is-error @enderror" rows="3" maxlength="500"
                         placeholder="Tóm tắt ngắn gọn về dự án...">{{ old('mo_ta_ngan', $duAn->mo_ta_ngan ?? '') }}</textarea>
-                    @error('mo_ta_ngan')
-                        <div class="field-error"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                    @enderror
                 </div>
 
-                {{-- Nội dung chi tiết --}}
                 <div class="form-group">
-                    <label class="form-label">
-                        Nội dung chi tiết
-                        <span class="label-hint">Hiển thị ở trang chi tiết dự án</span>
-                    </label>
-                    <textarea name="noi_dung_chi_tiet" class="form-field" rows="10"
-                        placeholder="Nhập mô tả đầy đủ: vị trí, tiện ích, mặt bằng...">{{ old('noi_dung_chi_tiet', $duAn->noi_dung_chi_tiet ?? '') }}</textarea>
+                    <label class="form-label">Nội dung chi tiết <span class="label-hint">Dùng công cụ để soạn thảo giống
+                            bài viết</span></label>
+                    {{-- Gắn ID để CKEditor nhận diện --}}
+                    <textarea name="noi_dung_chi_tiet" id="noiDungChiTietDuAn" class="form-field">{{ old('noi_dung_chi_tiet', $duAn->noi_dung_chi_tiet ?? '') }}</textarea>
                 </div>
-
             </div>
         </div>
 
         {{-- SEO --}}
         <div class="form-card">
-            <div class="form-card-header">
-                <i class="fas fa-search"></i> SEO
-                <span style="font-weight:400;color:#aaa;font-size:.78rem;margin-left:4px">(không bắt buộc)</span>
-            </div>
+            <div class="form-card-header"><i class="fas fa-search"></i> SEO <span
+                    style="font-weight:400;color:#aaa;font-size:.78rem;margin-left:4px">(không bắt buộc)</span></div>
             <div class="form-card-body">
-
                 <div class="form-group">
                     <label class="form-label">SEO Title</label>
                     <input type="text" name="seo_title" class="form-field"
                         value="{{ old('seo_title', $duAn->seo_title ?? '') }}"
                         placeholder="Tiêu đề SEO — mặc định dùng tên dự án">
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">SEO Description</label>
                     <textarea name="seo_description" class="form-field" rows="3" placeholder="Mô tả SEO, tối đa 160 ký tự...">{{ old('seo_description', $duAn->seo_description ?? '') }}</textarea>
                 </div>
-
                 <div class="form-group">
-                    <label class="form-label">
-                        Từ khóa
-                        <span class="label-hint">Cách nhau bằng dấu phẩy</span>
-                    </label>
+                    <label class="form-label">Từ khóa <span class="label-hint">Cách nhau bằng dấu phẩy</span></label>
                     <input type="text" name="seo_keywords" class="form-field"
                         value="{{ old('seo_keywords', $duAn->seo_keywords ?? '') }}"
                         placeholder="vinhomes, smart city, hà nội...">
                 </div>
-
             </div>
         </div>
-
     </div>
 
-    {{-- ════════════════════════════
-         CỘT PHẢI
-    ════════════════════════════ --}}
+    {{-- CỘT PHẢI --}}
     <div>
-
         {{-- NÚT LƯU --}}
         <div class="form-actions" style="margin-bottom:20px">
             <button type="submit" class="btn-save">
-                <i class="fas fa-save"></i>
-                {{ $duAn ? 'Cập nhật dự án' : 'Lưu dự án mới' }}
+                <i class="fas fa-save"></i> {{ $duAn ? 'Cập nhật dự án' : 'Lưu dự án mới' }}
             </button>
-            <a href="{{ route('nhanvien.admin.du-an.index') }}" class="btn-cancel">
-                Hủy bỏ
-            </a>
+            <a href="{{ route('nhanvien.admin.du-an.index') }}" class="btn-cancel">Hủy bỏ</a>
         </div>
 
         {{-- CÀI ĐẶT --}}
         <div class="form-card">
-            <div class="form-card-header">
-                <i class="fas fa-sliders-h"></i> Cài đặt
-            </div>
+            <div class="form-card-header"><i class="fas fa-sliders-h"></i> Cài đặt</div>
             <div class="form-card-body">
-
-                {{-- Hiển thị --}}
                 <div class="toggle-group">
                     <div class="toggle-info">
                         <span class="toggle-label-text">Hiển thị trên website</span>
@@ -694,10 +617,7 @@
                         <span class="switch-slider"></span>
                     </label>
                 </div>
-
                 <hr class="divider">
-
-                {{-- Nổi bật --}}
                 <div class="toggle-group">
                     <div class="toggle-info">
                         <span class="toggle-label-text">Dự án nổi bật</span>
@@ -709,71 +629,50 @@
                         <span class="switch-slider"></span>
                     </label>
                 </div>
-
                 <hr class="divider">
-
-                {{-- Trạng thái --}}
                 <div class="form-group">
                     <label class="form-label">Trạng thái mở bán</label>
                     <select name="trang_thai" class="form-field" id="selectTrangThai">
                         <option value="sap_mo_ban"
-                            {{ old('trang_thai', $duAn->trang_thai ?? '') === 'sap_mo_ban' ? 'selected' : '' }}>
-                            🔔 Sắp mở bán
-                        </option>
+                            {{ old('trang_thai', $duAn->trang_thai ?? '') === 'sap_mo_ban' ? 'selected' : '' }}>🔔 Sắp
+                            mở bán</option>
                         <option value="dang_mo_ban"
                             {{ old('trang_thai', $duAn->trang_thai ?? 'dang_mo_ban') === 'dang_mo_ban' ? 'selected' : '' }}>
-                            ✅ Đang mở bán
-                        </option>
+                            ✅ Đang mở bán</option>
                         <option value="da_ban_het"
-                            {{ old('trang_thai', $duAn->trang_thai ?? '') === 'da_ban_het' ? 'selected' : '' }}>
-                            🔴 Đã bán hết
-                        </option>
+                            {{ old('trang_thai', $duAn->trang_thai ?? '') === 'da_ban_het' ? 'selected' : '' }}>🔴 Đã
+                            bán hết</option>
                     </select>
                     <div id="statusHint" class="status-hint dang" style="margin-top:6px">✅ Đang mở bán</div>
                 </div>
-
                 <hr class="divider">
-
-                {{-- Thứ tự --}}
                 <div class="form-group">
-                    <label class="form-label">
-                        Thứ tự hiển thị
-                        <span class="label-hint">Số nhỏ lên trước</span>
-                    </label>
+                    <label class="form-label">Thứ tự hiển thị <span class="label-hint">Số nhỏ lên trước</span></label>
                     <input type="number" name="thu_tu_hien_thi" class="form-field" min="0" max="999"
                         style="width:110px" value="{{ old('thu_tu_hien_thi', $duAn->thu_tu_hien_thi ?? 0) }}">
                 </div>
-
             </div>
         </div>
 
         {{-- ẢNH ĐẠI DIỆN --}}
         <div class="form-card">
-            <div class="form-card-header">
-                <i class="fas fa-image"></i> Ảnh đại diện
-            </div>
+            <div class="form-card-header"><i class="fas fa-image"></i> Ảnh đại diện</div>
             <div class="form-card-body">
-
-                {{-- Ảnh hiện tại (edit) --}}
                 @if (!empty($duAn->hinh_anh_dai_dien))
                     <div class="current-image" id="currentImage">
-                        <img src="{{ Storage::url($duAn->hinh_anh_dai_dien) }}" alt="Ảnh hiện tại">
-                        <div class="current-image-label">
-                            <i class="fas fa-check-circle"></i> Ảnh hiện tại
-                        </div>
+                        {{-- ĐÃ SỬA: Dùng hàm asset('storage/...') để gọi ảnh chuẩn xác --}}
+                        <img src="{{ asset('storage/' . $duAn->hinh_anh_dai_dien) }}" alt="Ảnh hiện tại">
+                        <div class="current-image-label"><i class="fas fa-check-circle"></i> Ảnh hiện tại</div>
                     </div>
                 @else
                     <div class="img-placeholder" id="imgPlaceholder">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <span>Chưa có ảnh</span>
+                        <i class="fas fa-cloud-upload-alt"></i><span>Chưa có ảnh</span>
                     </div>
                 @endif
 
-                {{-- Preview ảnh mới --}}
                 <img src="" id="imgPreviewNew" class="img-preview-new" alt="Preview">
                 <div class="img-filename" id="imgFilename"></div>
 
-                {{-- Upload --}}
                 <div class="upload-box">
                     <input type="file" name="hinh_anh_dai_dien" id="inputHinhAnh"
                         accept="image/jpeg,image/png,image/webp" class="upload-input">
@@ -783,13 +682,10 @@
                     </label>
                     <small class="upload-hint">JPG, PNG, WEBP — tối đa 3MB</small>
                 </div>
-
                 @error('hinh_anh_dai_dien')
-                    <div class="field-error" style="margin-top:8px">
-                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                    </div>
+                    <div class="field-error" style="margin-top:8px"><i class="fas fa-exclamation-circle"></i>
+                        {{ $message }}</div>
                 @enderror
-
             </div>
         </div>
 
@@ -797,24 +693,41 @@
 </div>
 
 @push('scripts')
+    {{-- KHAI BÁO THƯ VIỆN CKEDITOR --}}
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <script>
-        // ── Preview ảnh ──
+        // Kích hoạt CKEditor cho mô tả chi tiết
+        if (document.getElementById('noiDungChiTietDuAn')) {
+            CKEDITOR.replace('noiDungChiTietDuAn', {
+                height: 400,
+                language: 'vi'
+            });
+        }
+
+        // Bắt sự kiện form submit để nạp data từ CKEditor vào <textarea> ẩn
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                if (CKEDITOR.instances['noiDungChiTietDuAn']) {
+                    CKEDITOR.instances['noiDungChiTietDuAn'].updateElement();
+                }
+            });
+        });
+
+        // Preview ảnh
         document.getElementById('inputHinhAnh')?.addEventListener('change', function() {
             const file = this.files[0];
             if (!file) return;
-
             if (file.size > 3 * 1024 * 1024) {
                 alert('⚠️ Ảnh vượt quá 3MB, vui lòng chọn ảnh nhỏ hơn!');
                 this.value = '';
                 return;
             }
-
             const reader = new FileReader();
             reader.onload = e => {
                 const preview = document.getElementById('imgPreviewNew');
                 preview.src = e.target.result;
                 preview.style.display = 'block';
-
                 document.getElementById('currentImage')?.style.setProperty('display', 'none');
                 document.getElementById('imgPlaceholder')?.style.setProperty('display', 'none');
                 document.getElementById('imgFilename').textContent = '📎 ' + file.name;
@@ -822,10 +735,9 @@
             reader.readAsDataURL(file);
         });
 
-        // ── Hint trạng thái ──
+        // Hint trạng thái
         const selectTrangThai = document.getElementById('selectTrangThai');
         const statusHint = document.getElementById('statusHint');
-
         const statusMap = {
             'sap_mo_ban': {
                 cls: 'sap',
@@ -846,7 +758,6 @@
             statusHint.className = 'status-hint ' + s.cls;
             statusHint.textContent = s.text;
         }
-
         selectTrangThai?.addEventListener('change', e => updateStatusHint(e.target.value));
         updateStatusHint(selectTrangThai?.value);
     </script>

@@ -15,6 +15,8 @@ class BatDongSanController extends Controller
         // 1. Khởi tạo Query mặc định: Chỉ lấy BĐS đang hiển thị và còn hàng
         $query = BatDongSan::with(['duAn', 'khuVuc'])
             ->where('hien_thi', 1)
+            ->when($request->toa,     fn($q) => $q->where('toa', $request->toa))
+            ->when($request->noithat, fn($q) => $q->where('noi_that', $request->noithat))
             ->where('trang_thai', 'con_hang');
 
         // 2. Lọc theo Nhu cầu (Bán / Thuê)
@@ -32,8 +34,11 @@ class BatDongSanController extends Controller
         }
 
         // 4. Lọc theo Khu vực
-        if ($request->filled('khu_vuc')) {
-            $query->where('khu_vuc_id', $request->khu_vuc);
+        if ($request->filled('khu_vuc_id')) {
+            $query->whereHas('duAn', function ($q) use ($request) {
+                // Truy vấn vào bảng du_an để tìm các dự án thuộc khu vực này
+                $q->where('khu_vuc_id', $request->khu_vuc_id);
+            });
         }
 
         // 5. Lọc theo Dự án
@@ -86,6 +91,10 @@ class BatDongSanController extends Controller
             $query->orderBy('noi_bat', 'desc')->orderBy('created_at', 'desc'); // Mặc định: Nổi bật lên trước, sau đó là mới nhất
         }
 
+
+        $toaList = BatDongSan::whereNotNull('toa')
+            ->when($request->du_an, fn($q) => $q->where('du_an_id', $request->du_an))
+            ->distinct()->pluck('toa')->sort()->values();
         // 10. Phân trang (12 BĐS / 1 trang) và giữ nguyên param trên URL
         $batDongSans = $query->paginate(12)->withQueryString();
 

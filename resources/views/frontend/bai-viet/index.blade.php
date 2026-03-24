@@ -134,7 +134,7 @@
                                     <div class="d-flex mb-3 align-items-center">
                                         <a href="{{ route('frontend.tin-tuc.show', $tin->slug) }}" class="flex-shrink-0">
                                             <img src="{{ $tin->hinh_anh ? asset('storage/' . $tin->hinh_anh) : asset('images/default-news.jpg') }}"
-                                                alt="{{ $tin->tieu_de }}" class="rounded-3"
+                                                alt="{{ $tin->tieu_de }}" onerror="this.alt=''" class="rounded-3"
                                                 style="width: 80px; height: 60px; object-fit: cover;">
                                         </a>
                                         <div class="ms-3">

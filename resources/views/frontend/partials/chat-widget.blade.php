@@ -2,52 +2,51 @@
 <button id="chatWidgetBtn" class="chat-widget-btn shadow-lg" onclick="toggleChatWindow()">
     <i class="fas fa-comment-dots fs-3"></i>
     <span class="position-absolute top-0 start-100 translate-middle p-2 bg-danger border border-light rounded-circle"
-        id="chatUnreadBadge" style="display: none;"></span>
+        id="chatUnreadBadge" style="display:none;"></span>
 </button>
 
 {{-- KHUNG CỬA SỔ CHAT FRONTEND --}}
 <div id="chatWindow" class="chat-window shadow-lg rounded-4 overflow-hidden d-none">
-    {{-- Header Khung Chat --}}
+    {{-- Header --}}
     <div class="chat-header p-3 d-flex justify-content-between align-items-center position-relative z-1"
-        style="background: linear-gradient(135deg, #0F172A, #1A2948);">
+        style="background:linear-gradient(135deg,#0F172A,#1A2948);">
         <div class="d-flex align-items-center gap-3">
             <div class="position-relative">
                 <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                    style="width: 40px; height: 40px; font-size: 1.2rem;">
-                    <i class="fas fa-headset" style="color: #FF8C42;"></i>
+                    style="width:40px;height:40px;font-size:1.2rem;">
+                    <i class="fas fa-headset" style="color:#FF8C42;"></i>
                 </div>
                 <span class="position-absolute bottom-0 end-0 p-1 bg-success border border-white rounded-circle"></span>
             </div>
             <div class="text-white">
-                <h6 class="mb-0 fw-bold" style="font-size: 1rem;">CSKH Thành Công Land</h6>
-                <small class="opacity-75" style="font-size: 0.75rem;"><i
-                        class="fas fa-bolt text-warning me-1"></i>Thường trả lời ngay</small>
+                <h6 class="mb-0 fw-bold" style="font-size:1rem;">CSKH Thành Công Land</h6>
+                <small class="opacity-75" style="font-size:0.75rem;">
+                    <i class="fas fa-bolt text-warning me-1"></i>Thường trả lời ngay
+                </small>
             </div>
         </div>
-        <button class="btn btn-sm text-white opacity-75 hover-opacity-100" onclick="toggleChatWindow()"
-            style="box-shadow: none;">
+        <button class="btn btn-sm text-white opacity-75" onclick="toggleChatWindow()" style="box-shadow:none;">
             <i class="fas fa-times fs-5"></i>
         </button>
     </div>
 
-    {{-- Nội dung Chat (Body) --}}
+    {{-- Body --}}
     <div class="chat-body p-3 d-flex flex-column" id="chatBody">
-        {{-- Yêu cầu Đăng nhập --}}
         <div class="d-flex flex-column justify-content-center align-items-center h-100 text-center"
-            id="chatKhachHangChuaDangNhap" style="display: none;">
+            id="chatKhachHangChuaDangNhap" style="display:none !important;">
             <div class="bg-light rounded-circle p-3 mb-3">
                 <i class="fas fa-user-lock fs-2 text-muted"></i>
             </div>
             <h6 class="fw-bold text-dark mb-2">Xin chào quý khách!</h6>
-            <p class="small text-muted mb-3">Vui lòng đăng nhập để lưu trữ cuộc trò chuyện và nhận tư vấn tốt nhất.</p>
+            <p class="small text-muted mb-3">Vui lòng đăng nhập để lưu trữ cuộc trò chuyện.</p>
             <button onclick="openAuthModal('login')" class="btn rounded-pill px-4 text-white fw-bold shadow-sm"
-                style="background-color: #FF8C42;">
+                style="background-color:#FF8C42;">
                 Đăng nhập ngay
             </button>
         </div>
     </div>
 
-    {{-- Form Nhập tin nhắn (Footer) --}}
+    {{-- Footer --}}
     <div class="chat-footer p-2 bg-white border-top z-1">
         <form id="chatForm" onsubmit="sendFrontendMessage(event)">
             <input type="hidden" id="currentPhienChatId" value="">
@@ -56,7 +55,7 @@
                     placeholder="Nhập câu hỏi..." disabled autocomplete="off">
                 <button type="submit"
                     class="btn rounded-pill d-flex align-items-center justify-content-center text-white"
-                    id="chatSendBtn" style="background-color: #FF8C42; width: 40px; height: 40px;" disabled>
+                    id="chatSendBtn" style="background-color:#FF8C42;width:40px;height:40px;" disabled>
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
@@ -64,11 +63,7 @@
     </div>
 </div>
 
-{{-- ==========================================
-     CSS GIAO DIỆN CHAT FRONTEND
-========================================== --}}
 <style>
-    /* Nút Bong bóng Chat */
     .chat-widget-btn {
         position: fixed;
         bottom: 30px;
@@ -92,7 +87,6 @@
         box-shadow: 0 10px 25px rgba(255, 140, 66, 0.4) !important;
     }
 
-    /* Khung cửa sổ chat */
     .chat-window {
         position: fixed;
         bottom: 110px;
@@ -117,7 +111,6 @@
         pointer-events: all;
     }
 
-    /* Responsive trên Mobile */
     @media (max-width: 576px) {
         .chat-window {
             width: calc(100% - 40px);
@@ -133,12 +126,10 @@
         }
     }
 
-    /* Vùng chứa tin nhắn */
     .chat-body {
         flex-grow: 1;
         overflow-y: auto;
         background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
-        /* Pattern nhẹ */
     }
 
     .chat-body::-webkit-scrollbar {
@@ -150,7 +141,6 @@
         border-radius: 10px;
     }
 
-    /* Bong bóng tin nhắn */
     .fe-chat-row {
         display: flex;
         flex-direction: column;
@@ -168,7 +158,6 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
     }
 
-    /* Tin hệ thống */
     .fe-msg-system {
         background: rgba(0, 0, 0, 0.04);
         color: #64748B;
@@ -181,7 +170,6 @@
         max-width: 90%;
     }
 
-    /* Tin Khách Hàng gửi (Cam - Bên phải) */
     .fe-msg-customer {
         background: linear-gradient(135deg, #FF8C42, #FF6B1A);
         color: white;
@@ -189,7 +177,6 @@
         align-self: flex-end;
     }
 
-    /* Tin Admin trả lời (Trắng - Bên trái) */
     .fe-msg-admin {
         background: white;
         color: #0F172A;
@@ -198,7 +185,6 @@
         border: 1px solid #e2e8f0;
     }
 
-    /* Giờ gửi tin */
     .fe-msg-time {
         font-size: 0.7rem;
         margin-top: 5px;
@@ -216,9 +202,6 @@
     }
 </style>
 
-{{-- ==========================================
-     JAVASCRIPT XỬ LÝ FRONTEND CHAT
-========================================== --}}
 <script>
     let feChatPolling = null;
     let feLastMessageCount = 0;
@@ -226,15 +209,13 @@
     function toggleChatWindow() {
         const win = document.getElementById('chatWindow');
         const badge = document.getElementById('chatUnreadBadge');
-
         win.classList.toggle('show');
         win.classList.toggle('d-none');
-
         if (win.classList.contains('show')) {
-            badge.style.display = 'none'; // Ẩn chấm đỏ khi mở
+            badge.style.display = 'none';
             initFrontendChat();
         } else {
-            clearInterval(feChatPolling); // Tắt polling khi đóng để tiết kiệm tài nguyên
+            clearInterval(feChatPolling);
         }
     }
 
@@ -246,13 +227,11 @@
 
         document.getElementById('chatKhachHangChuaDangNhap').style.display = 'none';
 
-        // Hiện khung loading tinh tế
         if (feLastMessageCount === 0) {
             document.getElementById('chatBody').innerHTML =
                 '<div class="d-flex justify-content-center align-items-center h-100"><div class="spinner-grow text-primary spinner-grow-sm me-2"></div><span class="text-muted small">Đang kết nối hệ thống...</span></div>';
         }
 
-        // Khởi tạo phiên
         fetch(APP.routes.chatKhoiTao, {
                 method: 'POST',
                 headers: {
@@ -261,83 +240,76 @@
                     'Accept': 'application/json'
                 }
             })
-            .then(res => res.json())
+            .then(async res => {
+                // NẾU CÓ LỖI TỪ SERVER, LẤY NỘI DUNG LỖI ĐỂ HIỂN THỊ
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error("Lỗi Server " + res.status + ": " + text.substring(0, 150) + "...");
+                }
+                return res.json();
+            })
             .then(data => {
                 if (data.success) {
                     document.getElementById('currentPhienChatId').value = data.phien_chat_id;
                     document.getElementById('chatInput').disabled = false;
                     document.getElementById('chatSendBtn').disabled = false;
 
-                    fetchFrontendMessages(); // Tải tin nhắn
+                    fetchFrontendMessages();
 
-                    // Kích hoạt Polling 3s/lần
                     clearInterval(feChatPolling);
                     feChatPolling = setInterval(fetchFrontendMessages, 3000);
                 }
             })
-            .catch(err => console.error('Lỗi khởi tạo chat:', err));
+            .catch(err => {
+                console.error('Lỗi khởi tạo chat:', err);
+                // IN LỖI RA MÀN HÌNH THAY VÌ XOAY TRÒN
+                document.getElementById('chatBody').innerHTML =
+                    `<div class="d-flex flex-column align-items-center justify-content-center h-100 text-center p-3">
+                    <i class="fas fa-exclamation-triangle text-danger fs-2 mb-2"></i>
+                    <h6 class="text-dark fw-bold">Không thể kết nối</h6>
+                    <small class="text-danger text-break">${err.message}</small>
+                </div>`;
+            });
     }
 
     function fetchFrontendMessages() {
         const phienChatId = document.getElementById('currentPhienChatId').value;
         if (!phienChatId) return;
-
-        const safeBaseUrl = APP.baseUrl.replace(/\/$/, '');
-        const url = safeBaseUrl + '/chat/lich-su/' + phienChatId;
-
+        const url = APP.baseUrl.replace(/\/$/, '') + '/chat/lich-su/' + phienChatId;
         fetch(url, {
-                method: 'GET',
                 headers: {
                     'Accept': 'application/json'
                 }
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) {
-                    renderFrontendMessages(data.tin_nhans);
-                }
+                if (data.success) renderFrontendMessages(data.tin_nhans);
             })
             .catch(err => console.log('Lỗi lấy lịch sử:', err));
     }
 
     function renderFrontendMessages(messages) {
         const body = document.getElementById('chatBody');
-
         if (messages.length === feLastMessageCount && feLastMessageCount > 0) return;
         feLastMessageCount = messages.length;
-
         body.innerHTML = '';
-
         messages.forEach(msg => {
-            let msgClass = '';
-            let timeHtml = '';
-
-            let dateObj = new Date(msg.created_at);
-            let timeString = ("0" + dateObj.getHours()).slice(-2) + ":" + ("0" + dateObj.getMinutes()).slice(-
-            2);
-
+            const d = new Date(msg.created_at);
+            const t = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+            let cls = '',
+                time = '';
             if (msg.nguoi_gui === 'hethong') {
-                msgClass = 'fe-msg-system';
+                cls = 'fe-msg-system';
             } else if (msg.nguoi_gui === 'nhanvien') {
-                msgClass = 'fe-msg-admin';
-                timeHtml = `<div class="fe-msg-time">${timeString}</div>`;
-            } else { // Khách hàng (Chính mình)
-                msgClass = 'fe-msg-customer';
-                timeHtml =
-                    `<div class="fe-msg-time">${timeString} <i class="fas fa-check-double ms-1"></i></div>`;
+                cls = 'fe-msg-admin';
+                time = `<div class="fe-msg-time">${t}</div>`;
+            } else {
+                cls = 'fe-msg-customer';
+                time = `<div class="fe-msg-time">${t} <i class="fas fa-check-double ms-1"></i></div>`;
             }
-
-            body.innerHTML += `
-                <div class="fe-chat-row">
-                    <div class="fe-msg-bubble ${msgClass}">
-                        ${msg.noi_dung}
-                        ${timeHtml}
-                    </div>
-                </div>
-            `;
+            body.innerHTML +=
+                `<div class="fe-chat-row"><div class="fe-msg-bubble ${cls}">${msg.noi_dung}${time}</div></div>`;
         });
-
-        // Cuộn mượt mà xuống cuối
         body.scrollTo({
             top: body.scrollHeight,
             behavior: 'smooth'
@@ -347,32 +319,18 @@
     function sendFrontendMessage(e) {
         e.preventDefault();
         const input = document.getElementById('chatInput');
-        const phienChatId = document.getElementById('currentPhienChatId').value;
+        const phienId = document.getElementById('currentPhienChatId').value;
         const noiDung = input.value.trim();
-
-        if (!noiDung || !phienChatId) return;
-
-        input.value = ''; // Xóa ô nhập liệu
-
-        // Đổ bóng bong ảo lên màn hình cho cảm giác tức thời
+        if (!noiDung || !phienId) return;
+        input.value = '';
         const body = document.getElementById('chatBody');
-        const now = new Date();
-        const timeString = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
-
-        body.innerHTML += `
-            <div class="fe-chat-row">
-                <div class="fe-msg-bubble fe-msg-customer" style="opacity: 0.7;">
-                    ${noiDung}
-                    <div class="fe-msg-time">${timeString} <i class="far fa-clock ms-1"></i></div>
-                </div>
-            </div>
-        `;
+        const t = ('0' + new Date().getHours()).slice(-2) + ':' + ('0' + new Date().getMinutes()).slice(-2);
+        body.innerHTML +=
+            `<div class="fe-chat-row"><div class="fe-msg-bubble fe-msg-customer" style="opacity:.7">${noiDung}<div class="fe-msg-time">${t} <i class="far fa-clock ms-1"></i></div></div></div>`;
         body.scrollTo({
             top: body.scrollHeight,
             behavior: 'smooth'
         });
-
-        // Call API
         fetch(APP.routes.chatGui, {
                 method: 'POST',
                 headers: {
@@ -381,7 +339,7 @@
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    phien_chat_id: phienChatId,
+                    phien_chat_id: phienId,
                     noi_dung: noiDung
                 })
             })

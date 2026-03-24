@@ -1,71 +1,165 @@
-<div class="table-responsive">
-    <table class="table table-bordered align-middle text-center mb-0" style="min-width: 700px;">
-        <thead class="bg-light">
-            <tr>
-                <th style="width: 15%; background-color: #f1f5f9; color: #64748B;" class="text-start p-3 fs-6 serif-font">
-                    Tiêu chí</th>
+{{-- AJAX partial — trả về bởi SoSanhController@modal --}}
+<div style="overflow-x:auto">
+    <table style="width:100%;border-collapse:collapse;min-width:600px">
+
+        {{-- Header: ảnh + tên + giá --}}
+        <thead>
+            <tr style="background:#f8f4f1">
+                <th
+                    style="width:140px;padding:12px 16px;font-size:.75rem;
+                   color:#9ca3af;font-weight:700;text-transform:uppercase;
+                   border-bottom:2px solid #f0ece8">
+                    Tiêu chí
+                </th>
                 @foreach ($danhSachBds as $bds)
-                    <th style="width: {{ 85 / $danhSachBds->count() }}%; padding: 1rem;">
-                        <div class="position-relative">
-                            {{-- Gọi hàm xóa và load lại Modal --}}
-                            <button class="btn btn-sm btn-danger rounded-circle position-absolute"
-                                style="top: -10px; right: -10px; z-index: 10;"
-                                onclick="removeSoSanhTuModal({{ $bds->id }})" title="Xóa khỏi bảng">
-                                <i class="fas fa-times"></i>
+                    @php $anh = is_array($bds->album_anh) && count($bds->album_anh) > 0 ? $bds->album_anh[0] : null; @endphp
+                    <th
+                        style="padding:12px 14px;border-bottom:2px solid #f0ece8;
+                   border-left:1px solid #f0ece8;vertical-align:top">
+                        {{-- Nút xóa --}}
+                        <div style="display:flex;justify-content:flex-end;margin-bottom:6px">
+                            <button onclick="removeSoSanh({{ $bds->id }})"
+                                style="background:#fee2e2;border:none;border-radius:6px;
+                               padding:3px 8px;font-size:.7rem;color:#e74c3c;
+                               cursor:pointer;font-weight:700"
+                                title="Xóa khỏi so sánh">
+                                <i class="fas fa-times"></i> Xóa
                             </button>
-
-                            <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}" target="_blank"
-                                class="d-block overflow-hidden rounded-3 mb-2 bg-light" style="height: 120px;">
-                                @php $anh = is_array($bds->album_anh) && count($bds->album_anh) > 0 ? $bds->album_anh[0] : null; @endphp
-                                <img src="{{ $anh ? asset('storage/' . $anh) : asset('images/default-bds.jpg') }}"
-                                    class="w-100 h-100" style="object-fit: cover;">
-                            </a>
-
-                            <h6 class="fw-bold mb-1 text-dark line-clamp-2" style="font-size: 0.85rem;">
-                                {{ $bds->tieu_de }}</h6>
-                            <h6 class="fw-bold mb-0" style="color: #FF8C42; font-size: 0.95rem;">
-                                {{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</h6>
+                        </div>
+                        {{-- Ảnh --}}
+                        @if ($anh)
+                            <img src="{{ asset('storage/' . $anh) }}"
+                                style="width:100%;height:120px;object-fit:cover;
+                            border-radius:10px;margin-bottom:8px"
+                                onerror="this.style.display='none'">
+                        @else
+                            <div
+                                style="width:100%;height:80px;background:#f0ece8;
+                            border-radius:10px;display:flex;align-items:center;
+                            justify-content:center;margin-bottom:8px;color:#ccc">
+                                <i class="fas fa-building" style="font-size:1.5rem"></i>
+                            </div>
+                        @endif
+                        {{-- Tên --}}
+                        <a href="{{ route('frontend.bat-dong-san.show', $bds->slug ?? $bds->id) }}"
+                            style="font-size:.82rem;font-weight:800;color:#1a3c5e;
+                      text-decoration:none;line-height:1.35;display:block">
+                            {{ Str::limit($bds->tieu_de, 50) }}
+                        </a>
+                        {{-- Giá --}}
+                        <div
+                            style="font-size:.95rem;font-weight:900;
+                        color:var(--primary);margin-top:4px">
+                            {{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}
                         </div>
                     </th>
                 @endforeach
             </tr>
         </thead>
+
+        {{-- Body: từng tiêu chí --}}
         <tbody>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light">Khu vực</td>
+            @php
+                $rows = [
+                    [
+                        'label' => 'Nhu cầu',
+                        'icon' => 'fa-tag',
+                        'values' => $danhSachBds->map(
+                            fn($b) => $b->nhu_cau == 'ban'
+                                ? '<span style="color:#e74c3c;font-weight:700">🏷 Đang bán</span>'
+                                : '<span style="color:#2d6a9f;font-weight:700">🔑 Cho thuê</span>',
+                        ),
+                    ],
+                    [
+                        'label' => 'Khu vực',
+                        'icon' => 'fa-map-marker-alt',
+                        'values' => $danhSachBds->map(
+                            fn($b) => $b->khuVuc->ten_khu_vuc ?? '<em style="color:#ccc">N/A</em>',
+                        ),
+                    ],
+                    [
+                        'label' => 'Dự án',
+                        'icon' => 'fa-city',
+                        'values' => $danhSachBds->map(
+                            fn($b) => $b->duAn->ten_du_an ?? '<em style="color:#ccc">BĐS Tự Do</em>',
+                        ),
+                    ],
+                    [
+                        'label' => 'Tòa',
+                        'icon' => 'fa-building',
+                        'values' => $danhSachBds->map(
+                            fn($b) => $b->toa ? 'Tòa ' . $b->toa : '<em style="color:#ccc">—</em>',
+                        ),
+                    ],
+                    [
+                        'label' => 'Diện tích',
+                        'icon' => 'fa-ruler-combined',
+                        'values' => $danhSachBds->map(fn($b) => ($b->dien_tich ?? '—') . ' m²'),
+                    ],
+                    [
+                        'label' => 'Phòng ngủ',
+                        'icon' => 'fa-bed',
+                        'values' => $danhSachBds->map(fn($b) => ($b->so_phong_ngu ?? '—') . ' phòng'),
+                    ],
+                    [
+                        'label' => 'Phòng tắm',
+                        'icon' => 'fa-bath',
+                        'values' => $danhSachBds->map(fn($b) => ($b->so_phong_tam ?? '—') . ' WC'),
+                    ],
+                    [
+                        'label' => 'Nội thất',
+                        'icon' => 'fa-couch',
+                        'values' => $danhSachBds->map(fn($b) => $b->noi_that ?? '<em style="color:#ccc">N/A</em>'),
+                    ],
+                    [
+                        'label' => 'Hướng nhà',
+                        'icon' => 'fa-compass',
+                        'values' => $danhSachBds->map(fn($b) => $b->huong ?? '<em style="color:#ccc">N/A</em>'),
+                    ],
+                    [
+                        'label' => 'Pháp lý',
+                        'icon' => 'fa-file-contract',
+                        'values' => $danhSachBds->map(fn($b) => $b->phap_ly ?? '<em style="color:#ccc">N/A</em>'),
+                    ],
+                ];
+            @endphp
+
+            @foreach ($rows as $i => $row)
+                <tr style="background: {{ $i % 2 === 0 ? '#fff' : '#fdf8f5' }}">
+                    <td
+                        style="padding:10px 16px;font-size:.78rem;font-weight:700;
+                   color:#6b7280;border-bottom:1px solid #f5f0eb;
+                   white-space:nowrap">
+                        <i class="fas {{ $row['icon'] }}" style="color:var(--primary);margin-right:6px;width:14px"></i>
+                        {{ $row['label'] }}
+                    </td>
+                    @foreach ($row['values'] as $val)
+                        <td
+                            style="padding:10px 14px;font-size:.82rem;color:#333;
+                   border-bottom:1px solid #f5f0eb;
+                   border-left:1px solid #f5f0eb">
+                            {!! $val !!}
+                        </td>
+                    @endforeach
+                </tr>
+            @endforeach
+
+            {{-- Hàng nút Xem chi tiết --}}
+            <tr style="background:#f8f4f1">
+                <td style="padding:12px 16px;font-size:.78rem;font-weight:700;color:#6b7280">
+                    <i class="fas fa-link" style="color:var(--primary);margin-right:6px"></i>
+                    Chi tiết
+                </td>
                 @foreach ($danhSachBds as $bds)
-                    <td class="p-2 fw-semibold">{{ $bds->khuVuc->ten_khu_vuc ?? 'N/A' }}</td>
-                @endforeach
-            </tr>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light">Dự án</td>
-                @foreach ($danhSachBds as $bds)
-                    <td class="p-2 text-primary fw-bold">{{ $bds->duAn->ten_du_an ?? 'BĐS Tự Do' }}</td>
-                @endforeach
-            </tr>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light">Diện tích</td>
-                @foreach ($danhSachBds as $bds)
-                    <td class="p-2 fw-bold">{{ $bds->dien_tich }} m²</td>
-                @endforeach
-            </tr>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light">Phòng</td>
-                @foreach ($danhSachBds as $bds)
-                    <td class="p-2">{{ $bds->so_phong_ngu }} PN | {{ $bds->so_phong_tam }} WC</td>
-                @endforeach
-            </tr>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light">Pháp lý</td>
-                @foreach ($danhSachBds as $bds)
-                    <td class="p-2">{{ $bds->phap_ly ?? 'N/A' }}</td>
-                @endforeach
-            </tr>
-            <tr>
-                <td class="fw-bold text-start text-muted p-2 bg-light"></td>
-                @foreach ($danhSachBds as $bds)
-                    <td class="p-2"><a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}" target="_blank"
-                            class="btn btn-sm btn-outline-dark rounded-pill fw-bold w-100">Chi Tiết</a></td>
+                    <td style="padding:12px 14px;border-left:1px solid #f0ece8">
+                        <a href="{{ route('frontend.bat-dong-san.show', $bds->slug ?? $bds->id) }}"
+                            style="display:inline-flex;align-items:center;gap:6px;
+                      background:var(--navy);color:#fff;
+                      padding:7px 14px;border-radius:8px;
+                      font-size:.78rem;font-weight:700;text-decoration:none">
+                            <i class="fas fa-eye"></i> Xem chi tiết
+                        </a>
+                    </td>
                 @endforeach
             </tr>
         </tbody>

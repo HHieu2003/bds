@@ -157,14 +157,6 @@ class KhachHangAuthController extends Controller
     {
         return view('frontend.auth.profile');
     }
-    public function updateProfile()
-    {
-        return back()->with('success', 'Đã cập nhật hồ sơ.');
-    }
-    public function changePassword()
-    {
-        return back()->with('success', 'Đã đổi mật khẩu.');
-    }
     public function lichSuXem()
     {
         return view('frontend.auth.lich_su_xem');
@@ -176,5 +168,66 @@ class KhachHangAuthController extends Controller
     public function lichHenCuaToi()
     {
         return view('frontend.auth.lich_hen_cua_toi');
+    }
+
+
+
+    // ── Cập nhật thông tin cơ bản ──
+    public function updateProfile(Request $request)
+    {
+        $kh = Auth::guard('customer')->user();
+
+        $request->validate([
+            'ho_ten'       => 'required|string|max:100',
+            'so_dien_thoai' => 'required|string|max:15|unique:khach_hang,so_dien_thoai,' . $kh->id,
+            'email'        => 'nullable|email|max:100|unique:khach_hang,email,' . $kh->id,
+        ], [
+            'ho_ten.required'          => 'Vui lòng nhập họ tên.',
+            'so_dien_thoai.required'   => 'Vui lòng nhập số điện thoại.',
+            'so_dien_thoai.unique'     => 'Số điện thoại đã được dùng bởi tài khoản khác.',
+            'email.unique'             => 'Email đã tồn tại trong hệ thống.',
+        ]);
+
+        $kh->update([
+            'ho_ten'        => $request->ho_ten,
+            'so_dien_thoai' => $request->so_dien_thoai,
+            'email'         => $request->email,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Cập nhật thành công!']);
+    }
+
+    // ── Đổi mật khẩu ──
+    public function changePassword(Request $request)
+    {
+        $kh = Auth::guard('customer')->user();
+
+        $request->validate([
+            'mat_khau_cu'  => 'required',
+            'mat_khau_moi' => 'required|min:6|confirmed',
+        ], [
+            'mat_khau_cu.required'   => 'Vui lòng nhập mật khẩu hiện tại.',
+            'mat_khau_moi.required'  => 'Vui lòng nhập mật khẩu mới.',
+            'mat_khau_moi.min'       => 'Mật khẩu mới tối thiểu 6 ký tự.',
+            'mat_khau_moi.confirmed' => 'Xác nhận mật khẩu không khớp.',
+        ]);
+
+        if (!Hash::check($request->mat_khau_cu, $kh->password)) {
+            return response()->json([
+                'success' => false,
+                'errors'  => ['mat_khau_cu' => 'Mật khẩu hiện tại không đúng.']
+            ], 422);
+        }
+
+        if (Hash::check($request->mat_khau_moi, $kh->password)) {
+            return response()->json([
+                'success' => false,
+                'errors'  => ['mat_khau_moi' => 'Mật khẩu mới không được trùng mật khẩu cũ.']
+            ], 422);
+        }
+
+        $kh->update(['password' => Hash::make($request->mat_khau_moi)]);
+
+        return response()->json(['success' => true, 'message' => 'Đổi mật khẩu thành công!']);
     }
 }

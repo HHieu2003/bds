@@ -112,9 +112,10 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#">
+                        <a href="{{ route('frontend.tuyen-dung') }}">
                             <i class="fas fa-angle-right"></i> Tuyển dụng
                         </a>
+
                     </li>
                 </ul>
             </div>
@@ -219,9 +220,9 @@
                     Thiết kế &amp; phát triển bởi đội ngũ Thành Công Technology
                     và chúng tôi chỉ có trách nhiệm chuyển tải thông tin. <br>
                     Mọi thông tin chỉ có giá trị tham khảo. Chúng
-    tôi
+                    tôi
                     không chịu trách nhiệm từ các tin đăng và thông tin quy hoạch được đăng tải trên trang này.
-                </p> 
+                </p>
             </div>
             <div class="footer-bottom-right">
                 <a href="#">Điều khoản sử dụng</a>
@@ -375,7 +376,7 @@
         display: grid;
         grid-template-columns: 1.8fr 1fr 1fr 1.5fr;
         gap: 2.5rem;
-        padding: 3rem 0 2rem;
+        padding: 2rem 0 0.5rem;
     }
 
     /* ── Cột Brand ── */

@@ -74,10 +74,10 @@
 
                                 {{-- Vòng lặp lấy danh sách Khu vực --}}
                                 @forelse($khuVucMenu ?? [] as $kv)
-                                    @if ($loop->iteration <= 4)
+                                    @if ($loop->iteration <= 5)
                                         {{-- Giới hạn 4 khu vực để menu không bị quá dài --}}
                                         <a
-                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc' => $kv->id]) }}">
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc_id' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
                                             <small class="badge-pn">{{ $kv->so_du_an ?? 0 }} dự án</small>
                                         </a>
@@ -158,7 +158,7 @@
                                 @forelse($khuVucMenu ?? [] as $kv)
                                     @if ($loop->iteration <= 4)
                                         <a
-                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc' => $kv->id]) }}">
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc_id' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
                                             <small class="badge-pn badge-pn-blue">{{ $kv->so_du_an ?? 0 }} dự
                                                 án</small>
@@ -269,8 +269,8 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('frontend.gioi-thieu') }}"
-                        class="nav-link {{ request()->routeIs('frontend.gioi-thieu') ? 'active' : '' }}">
+                    <a href="{{ route('frontend.noi-that') }}"
+                        class="nav-link {{ request()->routeIs('frontend.noi-that') ? 'active' : '' }}">
                         Nội Thất
                     </a>
                 </li>
@@ -295,38 +295,89 @@
                 </a>
 
                 {{-- Tài khoản --}}
+                {{-- ── DROPDOWN HỒ SƠ KHÁCH HÀNG ── --}}
                 @auth('customer')
-                    <div class="nav-item has-dropdown">
-                        <button class="action-btn user-btn">
-                            <i class="fas fa-user-circle"></i>
-                            <span class="d-none d-lg-inline ms-1">
-                                {{ Str::limit(Auth::guard('customer')->user()->ho_ten ?? 'Tài khoản', 12) }}
+                    @php $kh = Auth::guard('customer')->user(); @endphp
+                    <div class="kh-profile-wrap" id="khProfileWrap">
+                        {{-- Nút avatar --}}
+                        <div class="kh-avatar-btn" id="khAvatarBtn">
+                            <div class="kh-avatar">
+                                {{ strtoupper(mb_substr($kh->ho_ten ?? 'K', 0, 1)) }}
+                            </div>
+                            <span class="kh-name d-none d-md-inline">
+                                {{ Str::limit($kh->ho_ten ?? 'Tài khoản', 12) }}
                             </span>
-                            <i class="fas fa-chevron-down ms-1" style="font-size:.7rem"></i>
-                        </button>
-                        <div class="nav-dropdown nav-dropdown-right">
-                            <a href="{{ route('frontend.yeu-thich.index') }}">
-                                <i class="far fa-heart me-2"></i> BĐS yêu thích
-                            </a>
-                            <div class="dropdown-divider"></div>
-                            <a href="#"
-                                onclick="event.preventDefault();document.getElementById('logoutCustomer').submit()">
-                                <i class="fas fa-sign-out-alt me-2 text-danger"></i>
-                                <span class="text-danger">Đăng xuất</span>
-                            </a>
-                            <form id="logoutCustomer" action="{{ route('khach-hang.logout') }}" method="POST"
-                                style="display:none">
-                                @csrf
-                            </form>
+                            <i class="fas fa-chevron-down kh-chevron" id="khChevron"></i>
+                        </div>
+
+                        {{-- Dropdown menu --}}
+                        <div class="kh-dropdown" id="khDropdown">
+                            {{-- Header dropdown --}}
+                            <div class="kh-dd-header">
+                                <div class="kh-dd-avatar">
+                                    {{ strtoupper(mb_substr($kh->ho_ten ?? 'K', 0, 1)) }}
+                                </div>
+                                <div>
+                                    <div class="kh-dd-name">{{ $kh->ho_ten ?? 'Khách hàng' }}</div>
+                                    <div class="kh-dd-sdt">{{ $kh->so_dien_thoai ?? ($kh->email ?? '') }}</div>
+                                </div>
+                            </div>
+
+                            {{-- Menu items --}}
+                            <div class="kh-dd-body">
+                                <button class="kh-dd-item" onclick="openModalHoSo('thong-tin')">
+                                    <span class="kh-dd-icon" style="background:#fff5ef;color:#FF8C42;">
+                                        <i class="fas fa-user-edit"></i>
+                                    </span>
+                                    <span>Đổi thông tin</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </button>
+
+                                <div class="kh-dd-divider"></div>
+
+                                <a href="{{ route('frontend.yeu-thich.index') }}" class="kh-dd-item">
+                                    <span class="kh-dd-icon" style="background:#fff1f2;color:#e11d48;">
+                                        <i class="fas fa-heart"></i>
+                                    </span>
+                                    <span>BĐS yêu thích</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </a>
+                                <a href="{{ route('khach-hang.lich-hen-cua-toi') }}" class="kh-dd-item">
+                                    <span class="kh-dd-icon" style="background:#f0fdf4;color:#16a34a;">
+                                        <i class="fas fa-calendar-check"></i>
+                                    </span>
+                                    <span>Lịch hẹn của tôi</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </a>
+                                <a href="{{ route('khach-hang.ky-gui-cua-toi') }}" class="kh-dd-item">
+                                    <span class="kh-dd-icon" style="background:#fefce8;color:#ca8a04;">
+                                        <i class="fas fa-file-signature"></i>
+                                    </span>
+                                    <span>Ký gửi của tôi</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </a>
+
+                                <div class="kh-dd-divider"></div>
+
+                                <form action="{{ route('khach-hang.logout') }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="kh-dd-item" style="color:#dc2626;">
+                                        <span class="kh-dd-icon" style="background:#fff5f5;color:#dc2626;">
+                                            <i class="fas fa-sign-out-alt"></i>
+                                        </span>
+                                        <span>Đăng xuất</span>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 @else
-                    <button class="btn-login" id="btnMoLogin" title="Đăng nhập / Đăng ký"
-                        onclick="openAuthModal('login')">
-                        <i class="fas fa-user me-1"></i>
-                        <span class="d-none d-lg-inline">Đăng nhập</span>
-                    </button>
+                    {{-- Chưa đăng nhập --}}
+                    <a href="{{ route('khach-hang.login') }}" class="btn-header-login">
+                        <i class="fas fa-user me-1"></i> Đăng nhập
+                    </a>
                 @endauth
+
 
                 {{-- Hamburger --}}
                 <button class="hamburger" id="hamburger" aria-label="Menu">

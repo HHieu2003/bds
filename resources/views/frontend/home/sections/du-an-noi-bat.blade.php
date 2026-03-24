@@ -38,7 +38,7 @@
 
                             {{-- Hình ảnh dự án --}}
                             <div class="overflow-hidden position-relative w-100" style="height: 280px;">
-                                <img src="{{ $da->hinh_anh ? asset('storage/' . $da->hinh_anh) : 'https://vinhomesland.vn/wp-content/uploads/2023/10/be-boi-the-canopy-residences-vinhomes-smart-city.jpg' }}"
+                                <img src="{{ $da->hinh_anh_dai_dien ? asset('storage/' . $da->hinh_anh_dai_dien) : 'https://vinhomesland.vn/wp-content/uploads/2023/10/be-boi-the-canopy-residences-vinhomes-smart-city.jpg' }}"
                                     class="card-img-top w-100 h-100 project-img"
                                     style="object-fit: cover; transition: transform 0.6s ease;"
                                     alt="{{ $da->ten_du_an }}">
