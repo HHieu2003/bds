@@ -373,9 +373,9 @@
                     </div>
                 @else
                     {{-- Chưa đăng nhập --}}
-                    <a href="{{ route('khach-hang.login') }}" class="btn-header-login">
+                    <button type="button" class="btn-header-login" onclick="openAuthModal('login')">
                         <i class="fas fa-user me-1"></i> Đăng nhập
-                    </a>
+                    </button>
                 @endauth
 
 
@@ -1079,6 +1079,199 @@
             display: none;
         }
     }
+
+    /* ===================== KH PROFILE DROPDOWN ===================== */
+    .kh-profile-wrap {
+        position: relative;
+    }
+
+    .kh-avatar-btn {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        cursor: pointer;
+        padding: .3rem .6rem;
+        border-radius: 10px;
+        border: none;
+        background: none;
+        transition: background .2s;
+        font-family: inherit;
+    }
+
+    .kh-avatar-btn:hover {
+        background: rgba(255, 140, 66, .08);
+    }
+
+    .kh-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF8C42, #FF5722);
+        color: #fff;
+        font-size: .9rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 3px 10px rgba(255, 140, 66, .35);
+        flex-shrink: 0;
+    }
+
+    .kh-name {
+        font-size: .82rem;
+        font-weight: 700;
+        color: #1a3c5e;
+    }
+
+    .kh-chevron {
+        font-size: .6rem;
+        color: #9ca3af;
+        transition: transform .25s;
+    }
+
+    .kh-profile-wrap.open .kh-chevron {
+        transform: rotate(180deg);
+    }
+
+    /* Dropdown */
+    .kh-dropdown {
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 240px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, .14), 0 0 0 1px rgba(0, 0, 0, .05);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(8px) scale(.97);
+        transform-origin: top right;
+        transition: all .22s cubic-bezier(.19, 1, .22, 1);
+        z-index: 2000;
+    }
+
+    .kh-profile-wrap.open .kh-dropdown {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+        transform: translateY(0) scale(1);
+    }
+
+    .kh-dd-header {
+        background: linear-gradient(135deg, #0F172A, #1a3c5e);
+        border-radius: 16px 16px 0 0;
+        padding: .4rem 1rem;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .kh-dd-avatar {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #FF8C42, #FF5722);
+        color: #fff;
+        font-size: .95rem;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        border: 2px solid rgba(255, 255, 255, .2);
+    }
+
+    .kh-dd-name {
+        font-size: .85rem;
+        font-weight: 800;
+        color: #fff;
+    }
+
+    .kh-dd-sdt {
+        font-size: .68rem;
+        color: rgba(255, 255, 255, .6);
+        margin-top: .1rem;
+    }
+
+    .kh-dd-body {
+        padding: .4rem 0 .5rem;
+    }
+
+    .kh-dd-item {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        width: 100%;
+        padding: .55rem .9rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: .82rem;
+        font-weight: 600;
+        color: #374151;
+        text-decoration: none;
+        transition: background .15s;
+        font-family: inherit;
+    }
+
+    .kh-dd-item:hover {
+        background: #fff8f3;
+        color: #FF8C42;
+    }
+
+    .kh-dd-icon {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: .78rem;
+        flex-shrink: 0;
+    }
+
+    .kh-dd-arr {
+        font-size: .55rem;
+        color: #d1d5db;
+        margin-left: auto;
+    }
+
+    .kh-dd-item:hover .kh-dd-arr {
+        color: #FF8C42;
+    }
+
+    .kh-dd-divider {
+        height: 1px;
+        background: #f3f4f6;
+        margin: .3rem .9rem;
+    }
+
+    /* Nút đăng nhập (chưa login) */
+    .btn-header-login {
+        padding: .45rem 1rem;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #FF8C42, #FF5722);
+        color: #fff;
+        font-size: .82rem;
+        font-weight: 700;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all .2s;
+        box-shadow: 0 3px 10px rgba(255, 140, 66, .3);
+        font-family: inherit;
+    }
+
+    .btn-header-login:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 5px 16px rgba(255, 140, 66, .4);
+    }
+
+    /* Toggle dropdown JS */
+    .kh-profile-wrap .kh-avatar-btn {
+        cursor: pointer;
+    }
 </style>
 
 
@@ -1149,5 +1342,19 @@
             }
         } catch (e) {}
 
+    });
+    // ── KH Profile Dropdown ──
+    var _khOpen = false;
+    document.getElementById('khAvatarBtn')?.addEventListener('click', function(e) {
+        e.stopPropagation();
+        _khOpen = !_khOpen;
+        document.getElementById('khProfileWrap').classList.toggle('open', _khOpen);
+    });
+    document.addEventListener('click', function(e) {
+        var wrap = document.getElementById('khProfileWrap');
+        if (wrap && !wrap.contains(e.target)) {
+            _khOpen = false;
+            wrap.classList.remove('open');
+        }
     });
 </script>

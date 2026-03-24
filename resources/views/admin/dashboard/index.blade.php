@@ -449,7 +449,7 @@
                 @forelse($bdsMoiNhat as $bds)
                     @php
                         $imgs = is_array($bds->hinh_anh) ? $bds->hinh_anh : json_decode($bds->hinh_anh ?? '[]', true);
-                        $thumb = count($imgs) ? asset('storage/' . $imgs[0]) : asset('images/no-image.jpg');
+                        $thumb = !empty($imgs) ? asset('storage/' . $imgs[0]) : asset('images/no-image.jpg');
                     @endphp
                     <div class="bds-mini-item">
                         <img src="{{ $thumb }}" class="bds-mini-thumb" alt="{{ $bds->tieu_de }}"
@@ -658,7 +658,8 @@
                     BĐS 6 tháng gần đây
                 </div>
                 <div style="display:flex;gap:.3rem;align-items:flex-end;height:60px;">
-                    @php $maxVal = max(array_column($bdsSixMonths, 'them') ?: [1]); @endphp
+                    @php $maxVal = max(array_column($bdsSixMonths ?? [], 'them') ?: [1]); @endphp
+
                     @foreach ($bdsSixMonths as $m)
                         @php $h = $maxVal > 0 ? round($m['them'] / $maxVal * 100) : 0; @endphp
                         <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem;">

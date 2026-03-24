@@ -74,6 +74,8 @@ class KyGuiController extends Controller
     public function success()
     {
         return view('frontend.ky-gui.success');
+
+        
     }
 
     public function myKyGui()

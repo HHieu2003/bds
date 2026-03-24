@@ -16,9 +16,8 @@ class KhachHangAuthController extends Controller
         if (Auth::guard('customer')->check()) {
             return redirect()->route('frontend.home');
         }
-        return view('frontend.auth.login');
+        return redirect()->back()->with('open_auth_modal', 'login');
     }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -175,6 +174,7 @@ class KhachHangAuthController extends Controller
     // ── Cập nhật thông tin cơ bản ──
     public function updateProfile(Request $request)
     {
+        /** @var KhachHang $kh */
         $kh = Auth::guard('customer')->user();
 
         $request->validate([
@@ -200,6 +200,7 @@ class KhachHangAuthController extends Controller
     // ── Đổi mật khẩu ──
     public function changePassword(Request $request)
     {
+        /** @var KhachHang $kh */
         $kh = Auth::guard('customer')->user();
 
         $request->validate([

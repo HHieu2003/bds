@@ -326,8 +326,9 @@
     @include('frontend.partials.so-sanh-bar')
 
 
-    {{-- Modal hồ sơ khách hàng --}}
+    {{-- MODAL HỒ SƠ KHÁCH HÀNG --}}
     @include('frontend.partials.modal-khach-hang')
+
     {{-- ══════════════════════════════════════
      THƯ VIỆN JS
 ══════════════════════════════════════ --}}
@@ -338,8 +339,8 @@
 ══════════════════════════════════════ --}}
     <script>
         /* ════════════════════════════════════
-                                                                                                                                                                               CONFIG GLOBAL — route + meta
-                                                                                                                                                                            ════════════════════════════════════ */
+                                                                                                                                                                                   CONFIG GLOBAL — route + meta
+                                                                                                                                                                                ════════════════════════════════════ */
         window.APP = {
             csrfToken: '{{ csrf_token() }}',
             baseUrl: '{{ url('/') }}',

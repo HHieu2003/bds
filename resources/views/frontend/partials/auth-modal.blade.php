@@ -553,3 +553,10 @@
         }
     });
 </script>
+@if (session('open_auth_modal'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            openAuthModal('{{ session('open_auth_modal') }}');
+        });
+    </script>
+@endif

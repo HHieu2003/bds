@@ -126,7 +126,7 @@ class DashboardController extends Controller
             'lichHenHomNay',
             'khachHangMoi',
             'kyGuiChoDuyet',
-            'bdsByLoai',
+
             'bdsSixMonths',
             'danhSachNhanVien',
         ));
