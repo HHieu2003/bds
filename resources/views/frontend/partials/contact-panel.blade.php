@@ -123,7 +123,7 @@
         right: 24px;
         width: 52px;
         height: 52px;
-        border-radius: 16px;
+        border-radius: 50%;
         /* Vuông bo — khác với chat tròn */
         border: none;
         cursor: pointer;

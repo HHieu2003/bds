@@ -302,17 +302,16 @@
             </div>
         </div>
 
-        {{-- ⑤ MÔ TẢ --}}
+        {{-- ⑤ MÔ TẢ (ĐÃ TÍCH HỢP CKEDITOR) --}}
         <div class="fc">
             <div class="fc-head"><i class="fas fa-align-left"></i> Mô tả bất động sản</div>
             <div class="fc-body">
                 <div class="fg">
                     <label class="fl">
                         Nội dung mô tả chi tiết
-                        <span class="fhint">Hỗ trợ HTML cơ bản</span>
+                        <span class="fhint">Soạn thảo phong phú</span>
                     </label>
-                    <textarea name="mo_ta" class="fi" rows="10"
-                        placeholder="Mô tả đầy đủ: vị trí, tiện ích, đặc điểm nổi bật, chính sách giá...">{{ old('mo_ta', $isEdit ? $batDongSan->mo_ta : '') }}</textarea>
+                    <textarea name="mo_ta" id="moTaBdsEditor">{{ old('mo_ta', $isEdit ? $batDongSan->mo_ta : '') }}</textarea>
                 </div>
             </div>
         </div>
@@ -566,17 +565,17 @@
                     </div>
 
                     {{-- Nút xem trang ngoài --}}
-                   @if(Route::has('bat-dong-san.show'))
-<a href="{{ route('bat-dong-san.show', $batDongSan->slug) }}"
-   target="_blank" class="btn-preview-page">
-    <i class="fas fa-external-link-alt"></i> Xem trang hiển thị
-</a>
-@else
-<a href="{{ url('/bat-dong-san/' . $batDongSan->slug) }}"
-   target="_blank" class="btn-preview-page">
-    <i class="fas fa-external-link-alt"></i> Xem trang hiển thị
-</a>
-@endif
+                    @if (Route::has('bat-dong-san.show'))
+                        <a href="{{ route('bat-dong-san.show', $batDongSan->slug) }}" target="_blank"
+                            class="btn-preview-page">
+                            <i class="fas fa-external-link-alt"></i> Xem trang hiển thị
+                        </a>
+                    @else
+                        <a href="{{ url('/bat-dong-san/' . $batDongSan->slug) }}" target="_blank"
+                            class="btn-preview-page">
+                            <i class="fas fa-external-link-alt"></i> Xem trang hiển thị
+                        </a>
+                    @endif
                 </div>
             </div>
         @endif
@@ -1131,8 +1130,28 @@
 @endpush
 
 @push('scripts')
+    {{-- TÍCH HỢP CKEDITOR --}}
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
     <script>
-        // ══ 1. Toggle khối giá theo nhu cầu ══
+        // ══ 1. Kích hoạt CKEditor cho Mô tả ══
+        if (document.getElementById('moTaBdsEditor')) {
+            CKEDITOR.replace('moTaBdsEditor', {
+                height: 350,
+                language: 'vi'
+            });
+        }
+
+        // Đồng bộ CKEditor trước khi Submit
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function() {
+                if (CKEDITOR.instances['moTaBdsEditor']) {
+                    CKEDITOR.instances['moTaBdsEditor'].updateElement();
+                }
+            });
+        });
+
+        // ══ 2. Toggle khối giá theo nhu cầu ══
         const selNhuCau = document.getElementById('sel_nhucau');
         const gbBan = document.getElementById('gb_ban');
         const gbThue = document.getElementById('gb_thue');
@@ -1148,7 +1167,7 @@
             toggleGia(); // gọi ngay khi load (cho trang edit)
         }
 
-        // ══ 2. Ẩn/hiện Tòa/Tầng/Mã căn theo loại hình ══
+        // ══ 3. Ẩn/hiện Tòa/Tầng/Mã căn theo loại hình ══
         const selLoai = document.getElementById('sel_loai');
         const rowToaTang = document.getElementById('row_toatang');
 
@@ -1164,7 +1183,7 @@
             toggleToaTang();
         }
 
-        // ══ 3. Preview ảnh đại diện ══
+        // ══ 4. Preview ảnh đại diện ══
         const inpHinhAnh = document.getElementById('inp_hinhanh');
         const imgPreview = document.getElementById('imgPreview');
         const imgCurrent = document.getElementById('imgCurrent');
@@ -1191,7 +1210,7 @@
             });
         }
 
-        // ══ 4. Preview album ảnh mới ══
+        // ══ 5. Preview album ảnh mới ══
         const inpAlbum = document.getElementById('inp_album');
         const albumPreview = document.getElementById('albumPreview');
 
@@ -1224,7 +1243,7 @@
             });
         }
 
-        // ══ 5. Xóa ảnh album đã lưu (AJAX) ══
+        // ══ 6. Xóa ảnh album đã lưu (AJAX) ══
         document.querySelectorAll('.alb-del-btn[data-bds]').forEach(function(btn) {
             btn.addEventListener('click', function() {
                 if (!confirm('Xóa ảnh này khỏi album?')) return;
@@ -1262,7 +1281,7 @@
             });
         });
 
-        // ══ 6. Hiển thị giá theo tỷ khi nhập ══
+        // ══ 7. Hiển thị giá theo tỷ khi nhập ══
         const inpGia = document.getElementById('inp_gia');
         const giaHint = document.getElementById('gia_hint');
 

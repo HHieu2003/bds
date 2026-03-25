@@ -19,6 +19,8 @@ class KhachHang extends Authenticatable
         'so_dien_thoai',
         'email',
         'password',
+         'verification_token', 
+         'token_expiry',
         'nguon_khach_hang',
         'muc_do_tiem_nang',
         'nhan_vien_phu_trach_id',
@@ -36,6 +38,8 @@ class KhachHang extends Authenticatable
         'sdt_xac_thuc_at'    => 'datetime',
         'email_xac_thuc_at'  => 'datetime',
         'lien_he_cuoi_at'    => 'datetime',
+         'email_xac_thuc_at' => 'datetime',
+    'token_expiry'      => 'datetime',
     ];
 
     // ============================================================

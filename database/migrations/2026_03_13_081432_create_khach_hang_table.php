@@ -15,6 +15,10 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->string('password')->nullable();
 
+            // ── Token xác thực email & reset mật khẩu ──
+            $table->string('verification_token')->nullable();
+            $table->timestamp('token_expiry')->nullable();
+
             // website | chat | lien_he | ky_gui | sale
             $table->string('nguon_khach_hang')->default('website');
 

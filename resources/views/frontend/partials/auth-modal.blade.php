@@ -1,562 +1,340 @@
-{{-- ══════════════════════════════════════
-     AUTH MODAL — Đăng nhập / Đăng ký
-     Mở từ JS: openAuthModal('login') hoặc openAuthModal('register')
-══════════════════════════════════════ --}}
+<div class="kh-modal-backdrop" id="authModalBackdrop" onclick="closeAuthModal()"></div>
 
-<style>
-    /* ── Overlay nền mờ ── */
-    .auth-modal-overlay {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, .55);
-        z-index: 2000;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-        backdrop-filter: blur(3px);
-    }
-
-    .auth-modal-overlay.show {
-        display: flex;
-    }
-
-    /* ── Hộp modal ── */
-    .auth-modal {
-        background: #fff;
-        border-radius: var(--radius-lg);
-        width: 100%;
-        max-width: 440px;
-        padding: 2rem;
-        box-shadow: 0 24px 60px rgba(0, 0, 0, .18);
-        animation: modalIn .3s ease;
-        max-height: 92vh;
-        overflow-y: auto;
-        position: relative;
-    }
-
-    @keyframes modalIn {
-        from {
-            opacity: 0;
-            transform: scale(.96) translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-        }
-    }
-
-    /* ── Nút đóng ── */
-    .auth-modal-close {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: #f3f4f6;
-        border: none;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: var(--text-sub);
-        transition: background var(--transition);
-    }
-
-    .auth-modal-close:hover {
-        background: #fee2e2;
-        color: #e74c3c;
-    }
-
-    /* ── Tabs Đăng nhập / Đăng ký ── */
-    .auth-tabs {
-        display: flex;
-        background: #f3f4f6;
-        border-radius: 10px;
-        padding: .25rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .auth-tab-btn {
-        flex: 1;
-        padding: .55rem;
-        border-radius: 8px;
-        border: none;
-        background: transparent;
-        font-size: .85rem;
-        font-weight: 700;
-        color: var(--text-sub);
-        cursor: pointer;
-        transition: all var(--transition);
-        font-family: inherit;
-    }
-
-    .auth-tab-btn.active {
-        background: #fff;
-        color: var(--primary);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
-    }
-
-    .auth-form-wrap {
-        display: none;
-    }
-
-    .auth-form-wrap.active {
-        display: block;
-    }
-
-    /* ── Input ── */
-    .auth-input-group {
-        margin-bottom: 1rem;
-    }
-
-    .auth-input-group label {
-        display: block;
-        font-size: .78rem;
-        font-weight: 700;
-        color: #374151;
-        margin-bottom: .4rem;
-    }
-
-    .auth-input-group label span {
-        color: #e74c3c;
-    }
-
-    .auth-input-wrap {
-        position: relative;
-    }
-
-    .auth-input-wrap>i.field-icon {
-        position: absolute;
-        left: .9rem;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #9ca3af;
-        font-size: .85rem;
-        pointer-events: none;
-    }
-
-    .auth-input-wrap input {
-        width: 100%;
-        padding: .72rem .9rem .72rem 2.5rem;
-        border: 1.8px solid var(--border);
-        border-radius: 10px;
-        font-size: .88rem;
-        color: #1f2937;
-        background: #f9fafb;
-        outline: none;
-        transition: border-color var(--transition), box-shadow var(--transition);
-        font-family: inherit;
-    }
-
-    .auth-input-wrap input:focus {
-        border-color: var(--primary);
-        background: #fff;
-        box-shadow: 0 0 0 3px rgba(255, 140, 66, .12);
-    }
-
-    .auth-input-wrap input.is-invalid {
-        border-color: #e74c3c;
-        background: #fff5f5;
-    }
-
-    .auth-invalid-msg {
-        font-size: .73rem;
-        color: #e74c3c;
-        margin-top: .3rem;
-        display: flex;
-        align-items: center;
-        gap: .3rem;
-    }
-
-    /* ── Nút submit ── */
-    .auth-btn-submit {
-        width: 100%;
-        padding: .82rem;
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-size: .92rem;
-        font-weight: 800;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: .5rem;
-        box-shadow: 0 4px 16px rgba(255, 140, 66, .35);
-        transition: transform var(--transition), box-shadow var(--transition);
-        font-family: inherit;
-        margin-top: 1.2rem;
-    }
-
-    .auth-btn-submit:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(255, 140, 66, .45);
-    }
-
-    /* ── Divider & Social ── */
-    .auth-divider {
-        text-align: center;
-        font-size: .75rem;
-        color: var(--text-muted);
-        margin: 1rem 0;
-        position: relative;
-    }
-
-    .auth-divider::before,
-    .auth-divider::after {
-        content: '';
-        position: absolute;
-        top: 50%;
-        width: 38%;
-        height: 1px;
-        background: var(--border);
-    }
-
-    .auth-divider::before {
-        left: 0;
-    }
-
-    .auth-divider::after {
-        right: 0;
-    }
-
-    .auth-social-btns {
-        display: flex;
-        gap: .6rem;
-    }
-
-    .auth-social-btn {
-        flex: 1;
-        padding: .6rem;
-        border: 1.5px solid var(--border);
-        border-radius: 10px;
-        background: #fff;
-        cursor: pointer;
-        font-size: .82rem;
-        font-weight: 600;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: .4rem;
-        transition: background var(--transition), border-color var(--transition);
-        font-family: inherit;
-    }
-
-    .auth-social-btn:hover {
-        background: #f9fafb;
-        border-color: var(--primary);
-    }
-
-    /* ── OTP ── */
-    .otp-field-wrap {
-        display: flex;
-        gap: .5rem;
-    }
-
-    .otp-field-wrap input[name="otp"] {
-        letter-spacing: .4em;
-        font-size: 1.1rem;
-        text-align: center;
-    }
-
-    .btn-send-otp {
-        padding: .7rem 1rem;
-        background: var(--navy);
-        color: #fff;
-        border: none;
-        border-radius: 10px;
-        font-size: .78rem;
-        font-weight: 700;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: background var(--transition);
-        font-family: inherit;
-    }
-
-    .btn-send-otp:hover {
-        background: var(--navy-2);
-    }
-
-    .btn-send-otp:disabled {
-        background: var(--text-muted);
-        cursor: not-allowed;
-    }
-
-    @media (max-width: 768px) {
-        .auth-modal {
-            padding: 1.5rem 1.2rem;
-        }
-
-        .auth-social-btns {
-            flex-direction: column;
-        }
-    }
-</style>
-
-{{-- ══ HTML ══ --}}
-<div class="auth-modal-overlay" id="authModalOverlay">
-    <div class="auth-modal">
-
-        <button class="auth-modal-close" id="btnCloseAuthModal" title="Đóng">
-            <i class="fas fa-times"></i>
-        </button>
-
-        {{-- Tabs --}}
-        <div class="auth-tabs">
-            <button class="auth-tab-btn active" data-tab="login">
-                <i class="fas fa-sign-in-alt"></i> Đăng nhập
-            </button>
-            <button class="auth-tab-btn" data-tab="register">
-                <i class="fas fa-user-plus"></i> Đăng ký
-            </button>
+<div class="kh-modal" id="authModal" style="max-width:440px">
+    <div class="kh-modal-header">
+        <div class="kh-modal-icon" id="authModalIcon" style="background:linear-gradient(135deg,#FF8C42,#FF5722)">
+            <i class="fas fa-user" id="authModalIconI"></i>
         </div>
+        <div>
+            <div class="kh-modal-title" id="authModalTitle">Đăng nhập</div>
+            <div class="kh-modal-sub" id="authModalSub">Chào mừng bạn trở lại!</div>
+        </div>
+        <button class="kh-modal-close" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    </div>
 
-        {{-- ── Form Đăng nhập ── --}}
-        <div class="auth-form-wrap active" id="authTabLogin">
-            <form id="formLogin" action="{{ route('khach-hang.login.post') }}" method="POST">
+    <div class="kh-modal-body" style="padding:1.3rem 1.5rem 1.5rem">
+
+        {{-- BƯỚC 1: ĐĂNG NHẬP --}}
+        <div id="authStepLogin">
+            <form id="formAuthLogin" autocomplete="off">
                 @csrf
-
-                <div class="auth-input-group">
-                    <label>Email hoặc SĐT <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-user field-icon"></i>
-                        <input type="text" name="email" placeholder="Email hoặc số điện thoại..."
-                            value="{{ old('email') }}" autocomplete="username" required>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-envelope"></i> Email <span>*</span></label>
+                    <input type="email" class="kh-field-input" id="loginEmail" name="email" placeholder="example@gmail.com">
+                    <div class="kh-field-err" id="errLoginEmail"></div>
+                </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-lock"></i> Mật khẩu <span>*</span></label>
+                    <div class="kh-pw-wrap">
+                        <input type="password" class="kh-field-input" id="loginPassword" name="password" placeholder="Nhập mật khẩu">
+                        <button type="button" class="kh-pw-eye" onclick="toggleAuthEye('loginPassword',this)"><i class="far fa-eye"></i></button>
                     </div>
+                    <div class="kh-field-err" id="errLoginPassword"></div>
                 </div>
-
-                <div class="auth-input-group">
-                    <label>Mật khẩu <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-lock field-icon"></i>
-                        <input type="password" name="password" placeholder="Mật khẩu..." autocomplete="current-password"
-                            required>
-                    </div>
+                <div style="text-align:right;margin:-4px 0 12px">
+                    <a href="#" onclick="switchAuthStep('forgot');return false" style="font-size:.76rem;color:#FF8C42;font-weight:700;text-decoration:none">Quên mật khẩu?</a>
                 </div>
-
-                <div
-                    style="display:flex;justify-content:space-between;
-                            align-items:center;font-size:.8rem;margin-bottom:.5rem">
-                    <label
-                        style="display:flex;align-items:center;gap:.4rem;
-                                  cursor:pointer;color:var(--text-sub)">
-                        <input type="checkbox" name="remember" {{ old('remember') ? 'checked' : '' }}>
-                        Ghi nhớ đăng nhập
-                    </label>
-                    <a href="{{ route('khach-hang.forgot') }}" style="color:var(--primary);font-weight:600">
-                        Quên mật khẩu?
-                    </a>
-                </div>
-
-                <button type="submit" class="auth-btn-submit">
-                    <i class="fas fa-sign-in-alt"></i> Đăng nhập
-                </button>
+                <div class="kh-field-err" id="errLoginGeneral" style="text-align:center;margin-bottom:10px;font-size:.8rem"></div>
+                <button type="submit" class="kh-btn-submit" id="btnAuthLogin"><i class="fas fa-sign-in-alt"></i> Đăng nhập</button>
             </form>
-
-            <div class="auth-divider">hoặc đăng nhập bằng</div>
-            <div class="auth-social-btns">
-                <button class="auth-social-btn" type="button">
-                    <img src="{{ asset('images/google-icon.svg') }}" width="18" alt="Google"
-                        onerror="this.outerHTML='<i class=\'fab fa-google\' style=\'color:#ea4335\'></i>'">
-                    Google
-                </button>
-                <button class="auth-social-btn" type="button">
-                    <i class="fab fa-facebook-f" style="color:#1877f2"></i> Facebook
-                </button>
+            <div style="text-align:center;margin-top:1rem;font-size:.8rem;color:#888">
+                Chưa có tài khoản? <a href="#" onclick="switchAuthStep('register');return false" style="color:#FF8C42;font-weight:700;text-decoration:none">Đăng ký ngay</a>
             </div>
         </div>
 
-        {{-- ── Form Đăng ký ── --}}
-        <div class="auth-form-wrap" id="authTabRegister">
-            <form id="formRegister" action="{{ route('khach-hang.register.post') }}" method="POST">
+        {{-- BƯỚC 2: ĐĂNG KÝ --}}
+        <div id="authStepRegister" style="display:none">
+            <form id="formAuthRegister" autocomplete="off">
                 @csrf
-
-                <div class="auth-input-group">
-                    <label>Họ và tên <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-user field-icon"></i>
-                        <input type="text" name="ho_ten" placeholder="Nguyễn Văn A" value="{{ old('ho_ten') }}"
-                            required>
-                    </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-user"></i> Họ và tên <span>*</span></label>
+                    <input type="text" class="kh-field-input" id="regHoTen" name="ho_ten" placeholder="Nguyễn Văn A">
+                    <div class="kh-field-err" id="errRegHoTen"></div>
                 </div>
-
-                <div class="auth-input-group">
-                    <label>Số điện thoại <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-phone field-icon"></i>
-                        <input type="tel" name="so_dien_thoai" id="inputSdtRegister" placeholder="0912 345 678"
-                            value="{{ old('so_dien_thoai') }}" required>
-                    </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-envelope"></i> Email <span>*</span></label>
+                    <input type="email" class="kh-field-input" id="regEmail" name="email" placeholder="example@gmail.com">
+                    <div class="kh-field-err" id="errRegEmail"></div>
                 </div>
-
-                {{-- OTP --}}
-                <div class="auth-input-group">
-                    <label>Xác thực OTP</label>
-                    <div class="otp-field-wrap">
-                        <div class="auth-input-wrap" style="flex:1">
-                            <i class="fas fa-shield-alt field-icon"></i>
-                            <input type="text" name="otp" id="inputOtp" placeholder="Nhập mã 6 số..."
-                                maxlength="6" inputmode="numeric">
-                        </div>
-                        <button type="button" class="btn-send-otp" id="btnSendOtp">
-                            Gửi OTP
-                        </button>
-                    </div>
-                    <div id="otpCountdown"
-                        style="font-size:.73rem;color:var(--primary);
-                                margin-top:.3rem;display:none">
-                    </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-phone"></i> Số điện thoại</label>
+                    <input type="tel" class="kh-field-input" id="regSdt" name="so_dien_thoai" placeholder="0912 345 678">
+                    <div class="kh-field-err" id="errRegSoDienThoai"></div>
                 </div>
-
-                <div class="auth-input-group">
-                    <label>Email <small style="color:var(--text-muted)">(tuỳ chọn)</small></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-envelope field-icon"></i>
-                        <input type="email" name="email" placeholder="example@gmail.com"
-                            value="{{ old('email') }}">
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-lock"></i> Mật khẩu <span>*</span></label>
+                    <div class="kh-pw-wrap">
+                        <input type="password" class="kh-field-input" id="regPassword" name="password" placeholder="Tối thiểu 6 ký tự">
+                        <button type="button" class="kh-pw-eye" onclick="toggleAuthEye('regPassword',this)"><i class="far fa-eye"></i></button>
                     </div>
+                    <div class="kh-field-err" id="errRegPassword"></div>
                 </div>
-
-                <div class="auth-input-group">
-                    <label>Mật khẩu <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-lock field-icon"></i>
-                        <input type="password" name="password" placeholder="Ít nhất 6 ký tự" required>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-key"></i> Xác nhận mật khẩu <span>*</span></label>
+                    <div class="kh-pw-wrap">
+                        <input type="password" class="kh-field-input" id="regPasswordConfirm" name="password_confirmation" placeholder="Nhập lại mật khẩu">
+                        <button type="button" class="kh-pw-eye" onclick="toggleAuthEye('regPasswordConfirm',this)"><i class="far fa-eye"></i></button>
                     </div>
+                    <div class="kh-field-err" id="errRegPasswordConfirmation"></div>
                 </div>
-
-                <div class="auth-input-group">
-                    <label>Xác nhận mật khẩu <span>*</span></label>
-                    <div class="auth-input-wrap">
-                        <i class="fas fa-lock field-icon"></i>
-                        <input type="password" name="password_confirmation" placeholder="Nhập lại mật khẩu" required>
-                    </div>
-                </div>
-
-                <button type="submit" class="auth-btn-submit">
-                    <i class="fas fa-user-plus"></i> Tạo tài khoản
-                </button>
+                <button type="submit" class="kh-btn-submit" id="btnAuthRegister"><i class="fas fa-user-plus"></i> Đăng ký</button>
             </form>
+            <div style="text-align:center;margin-top:1rem;font-size:.8rem;color:#888">
+                Đã có tài khoản? <a href="#" onclick="switchAuthStep('login');return false" style="color:#FF8C42;font-weight:700;text-decoration:none">Đăng nhập</a>
+            </div>
         </div>
 
+        {{-- BƯỚC 3: NHẬP OTP KÍCH HOẠT --}}
+        <div id="authStepOtp" style="display:none">
+            <div style="text-align:center;margin-bottom:1.4rem">
+                <div style="width:58px;height:58px;border-radius:50%;margin:0 auto 12px;background:linear-gradient(135deg,#FF8C42,#FF5722);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#fff;box-shadow:0 4px 16px rgba(255,140,66,.4)"><i class="fas fa-envelope-open-text"></i></div>
+                <p style="font-size:.84rem;color:#555;margin:0">Nhập mã OTP đã gửi đến<br><strong id="otpEmailDisplay" style="color:#1a3c5e"></strong></p>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:center;margin-bottom:1.2rem" id="otpInputs">
+                @for ($i = 0; $i < 6; $i++) <input type="text" class="otp-box reg-otp-box" maxlength="1" inputmode="numeric"> @endfor
+            </div>
+            <div class="kh-field-err" id="errOtp" style="text-align:center;margin-bottom:10px;font-size:.8rem"></div>
+            <button id="btnVerifyOtp" class="kh-btn-submit"><i class="fas fa-check-circle"></i> Xác thực ngay</button>
+            <div style="text-align:center;margin-top:.9rem;font-size:.78rem;color:#888">
+                <span id="otpCountdownWrap">Gửi lại sau <strong id="otpTimer" style="color:#FF8C42">60</strong>s</span>
+                <a href="#" id="btnResendOtp" style="display:none;color:#FF8C42;font-weight:700;text-decoration:none"><i class="fas fa-redo-alt"></i> Gửi lại OTP</a>
+            </div>
+            <button onclick="switchAuthStep('register')" style="width:100%;margin-top:.6rem;padding:.5rem;border:1.5px solid #e5e7eb;border-radius:10px;background:#fff;color:#9ca3af;font-size:.78rem;cursor:pointer;font-family:inherit">← Quay lại đăng ký</button>
+        </div>
+
+        {{-- BƯỚC 4: QUÊN MẬT KHẨU (GỬI YÊU CẦU) --}}
+        <div id="authStepForgot" style="display:none">
+            <div style="text-align:center;margin-bottom:1.2rem">
+                <p style="font-size:.84rem;color:#555;margin:0">Nhập email đăng ký — chúng tôi sẽ gửi mã OTP và link đặt lại mật khẩu.</p>
+            </div>
+            <form id="formAuthForgot" autocomplete="off">
+                @csrf
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-envelope"></i> Email <span>*</span></label>
+                    <input type="email" class="kh-field-input" id="forgotEmail" name="email" placeholder="example@gmail.com">
+                    <div class="kh-field-err" id="errForgotEmail"></div>
+                </div>
+                <div class="kh-field-err" id="errForgotGeneral" style="text-align:center;margin-bottom:10px;font-size:.8rem;color:#10b981"></div>
+                <button type="submit" class="kh-btn-submit" id="btnAuthForgot"><i class="fas fa-paper-plane"></i> Nhận mã OTP</button>
+            </form>
+            <div style="text-align:center;margin-top:1rem;font-size:.8rem;color:#888">
+                <a href="#" onclick="switchAuthStep('login');return false" style="color:#FF8C42;font-weight:700;text-decoration:none">← Quay lại đăng nhập</a>
+            </div>
+        </div>
+
+        {{-- BƯỚC 5: NHẬP OTP ĐẶT LẠI MK --}}
+        <div id="authStepResetConfirm" style="display:none">
+            <div style="text-align:center;margin-bottom:1.4rem">
+                <p style="font-size:.84rem;color:#555;margin:0">Nhập mã 6 số được gửi đến <strong id="resetEmailDisplay" style="color:#1a3c5e"></strong><br>và tạo mật khẩu mới.</p>
+            </div>
+            <form id="formAuthResetConfirm" autocomplete="off">
+                @csrf
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-shield-alt"></i> Mã OTP <span>*</span></label>
+                    <input type="text" class="kh-field-input" id="resetOtp" placeholder="Nhập mã 6 số" maxlength="6" inputmode="numeric" required style="letter-spacing: 5px; font-weight: bold; text-align: center; font-size: 1.2rem;">
+                    <div class="kh-field-err" id="errResetOtp"></div>
+                </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-lock"></i> Mật khẩu mới <span>*</span></label>
+                    <div class="kh-pw-wrap">
+                        <input type="password" class="kh-field-input" id="resetNewPassword" placeholder="Tối thiểu 6 ký tự" required>
+                        <button type="button" class="kh-pw-eye" onclick="toggleAuthEye('resetNewPassword',this)"><i class="far fa-eye"></i></button>
+                    </div>
+                    <div class="kh-field-err" id="errResetNewPassword"></div>
+                </div>
+                <div class="kh-field">
+                    <label class="kh-field-label"><i class="fas fa-key"></i> Xác nhận mật khẩu <span>*</span></label>
+                    <div class="kh-pw-wrap">
+                        <input type="password" class="kh-field-input" id="resetNewPasswordConfirm" placeholder="Nhập lại mật khẩu" required>
+                        <button type="button" class="kh-pw-eye" onclick="toggleAuthEye('resetNewPasswordConfirm',this)"><i class="far fa-eye"></i></button>
+                    </div>
+                </div>
+                <div class="kh-field-err" id="errResetConfirmGeneral" style="text-align:center;margin-bottom:10px;font-size:.8rem"></div>
+                <button type="submit" class="kh-btn-submit" id="btnAuthResetConfirm"><i class="fas fa-save"></i> Cập nhật mật khẩu</button>
+            </form>
+            <div style="text-align:center;margin-top:1rem;font-size:.8rem;color:#888">
+                <a href="#" onclick="switchAuthStep('forgot');return false" style="color:#FF8C42;font-weight:700;text-decoration:none">← Gửi lại email</a>
+            </div>
+        </div>
     </div>
 </div>
 
-{{-- ══ JS ══ --}}
+<style>
+    .kh-modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); z-index: 1050; backdrop-filter: blur(3px); }
+    .kh-modal-backdrop.show { display: block; }
+    .kh-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: #fff; border-radius: 16px; z-index: 1051; width: 90%; max-width: 440px; box-shadow: 0 25px 50px rgba(0,0,0,0.25); opacity: 0; transition: transform 0.3s ease, opacity 0.3s ease; }
+    .kh-modal.show { display: block; transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    .kh-modal-header { display: flex; align-items: center; gap: 15px; padding: 1.2rem 1.5rem; border-bottom: 1px solid #f0f0f0; position: relative; }
+    .kh-modal-icon { width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center; color: #fff; font-size: 1.2rem; flex-shrink: 0; transition: background 0.3s; }
+    .kh-modal-title { font-size: 1.1rem; font-weight: 700; color: #1a3c5e; margin-bottom: 2px; }
+    .kh-modal-sub { font-size: 0.8rem; color: #888; }
+    .kh-modal-close { position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; font-size: 1.2rem; color: #aaa; cursor: pointer; transition: color 0.2s; padding: 0; }
+    .kh-modal-close:hover { color: #e74c3c; }
+    .kh-field { margin-bottom: 1rem; }
+    .kh-field-label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 0.4rem; color: #444; }
+    .kh-field-label i { color: #888; margin-right: 4px; }
+    .kh-field-label span { color: #e74c3c; }
+    .kh-field-input { width: 100%; padding: 0.65rem 0.9rem; border: 1.5px solid #e0e0e0; border-radius: 8px; font-size: 0.9rem; outline: none; transition: all 0.2s; font-family: inherit; color: #333; }
+    .kh-field-input:focus { border-color: #FF8C42; box-shadow: 0 0 0 3px rgba(255,140,66,0.15); }
+    .kh-field-input.error { border-color: #e74c3c; box-shadow: 0 0 0 3px rgba(231,76,60,0.1); }
+    .kh-pw-wrap { position: relative; }
+    .kh-pw-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #aaa; cursor: pointer; padding: 0; }
+    .kh-pw-eye:hover { color: #333; }
+    .kh-field-err { color: #e74c3c; font-size: 0.78rem; margin-top: 5px; display: none; align-items: center; gap: 4px; }
+    .kh-btn-submit { width: 100%; padding: 0.75rem; background: linear-gradient(135deg,#FF8C42,#FF5722); border: none; border-radius: 8px; color: #fff; font-weight: 700; font-size: 0.95rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; transition: transform 0.2s, box-shadow 0.2s; font-family: inherit; }
+    .kh-btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255,140,66,0.35); }
+    .kh-btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
+    .otp-box { width: 46px; height: 54px; text-align: center; font-size: 1.5rem; font-weight: 900; border: 2px solid #e5e7eb; border-radius: 10px; outline: none; transition: border-color .2s,box-shadow .2s; color: #1a3c5e; font-family: inherit; background: #fafafa; }
+    .otp-box:focus { border-color: #FF8C42; box-shadow: 0 0 0 3px rgba(255,140,66,0.15); background: #fff; }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        var overlay = document.getElementById('authModalOverlay');
-        var closeBtn = document.getElementById('btnCloseAuthModal');
+        const AUTH_CSRF = '{{ csrf_token() }}';
+        const URL_LOGIN = '{{ route("khach-hang.login.post") }}';
+        const URL_REG = '{{ route("khach-hang.register.post") }}';
+        const URL_OTP = '{{ route("khach-hang.verify-otp") }}';
+        const URL_SENDOTP = '{{ route("khach-hang.send-otp") }}';
+        const URL_FORGOT = '{{ route("khach-hang.forgot.post") }}';
+        const URL_RESET = '{{ route("khach-hang.reset.post") }}';
 
-        /* Mở modal — gọi: openAuthModal('login') hoặc openAuthModal('register') */
-        window.openAuthModal = function(tab) {
-            if (!overlay) return;
-            overlay.classList.add('show');
+        let _otpEmail = '', _resetEmail = '', _otpTimer = null;
+
+        window.openAuthModal = function(step = 'login') {
+            clearAuthErrors();
+            document.getElementById('authModalBackdrop').classList.add('show');
+            document.getElementById('authModal').classList.add('show');
             document.body.style.overflow = 'hidden';
-            if (tab) switchAuthTab(tab);
+            switchAuthStep(step);
         };
 
-        /* Đóng modal */
         window.closeAuthModal = function() {
-            if (!overlay) return;
-            overlay.classList.remove('show');
+            document.getElementById('authModalBackdrop').classList.remove('show');
+            document.getElementById('authModal').classList.remove('show');
             document.body.style.overflow = '';
         };
 
-        /* Đóng khi click nút X */
-        if (closeBtn) closeBtn.addEventListener('click', closeAuthModal);
-
-        /* Đóng khi click ra ngoài overlay */
-        if (overlay) overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) closeAuthModal();
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape' && document.getElementById('authModal').classList.contains('show')) closeAuthModal();
         });
 
-        /* Đóng khi nhấn Escape */
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeAuthModal();
-        });
+        @if(session('open_auth_modal')) openAuthModal('{{ session('open_auth_modal') }}'); @endif
 
-        /* Chuyển tab */
-        function switchAuthTab(tab) {
-            document.querySelectorAll('.auth-tab-btn').forEach(function(btn) {
-                btn.classList.toggle('active', btn.dataset.tab === tab);
+        const AUTH_STEPS = {
+            login:        { title: 'Đăng nhập', sub: 'Chào mừng bạn trở lại!', icon: 'fa-user' },
+            register:     { title: 'Tạo tài khoản', sub: 'Đăng ký miễn phí ngay hôm nay', icon: 'fa-user-plus' },
+            otp:          { title: 'Xác thực OTP', sub: 'Kiểm tra hộp thư của bạn', icon: 'fa-shield-alt' },
+            forgot:       { title: 'Quên mật khẩu', sub: 'Lấy lại quyền truy cập', icon: 'fa-key' },
+            resetConfirm: { title: 'Tạo mật khẩu mới', sub: 'Bảo mật tài khoản của bạn', icon: 'fa-unlock-alt' }
+        };
+
+        window.switchAuthStep = function(step) {
+            ['login', 'register', 'otp', 'forgot', 'resetConfirm'].forEach(s => {
+                const el = document.getElementById('authStep' + s.charAt(0).toUpperCase() + s.slice(1));
+                if(el) el.style.display = (s === step) ? 'block' : 'none';
             });
-            document.querySelectorAll('.auth-form-wrap').forEach(function(wrap) {
-                var isActive = wrap.id === 'authTab' + tab.charAt(0).toUpperCase() + tab.slice(1);
-                wrap.classList.toggle('active', isActive);
-            });
+            const cfg = AUTH_STEPS[step];
+            document.getElementById('authModalTitle').textContent = cfg.title;
+            document.getElementById('authModalSub').textContent = cfg.sub;
+            document.getElementById('authModalIconI').className = 'fas ' + cfg.icon;
+            clearAuthErrors();
+        };
+
+        function clearAuthErrors() {
+            document.querySelectorAll('[id^="err"]').forEach(el => { el.innerHTML = ''; el.style.display = 'none'; });
+            document.querySelectorAll('.kh-field-input').forEach(el => el.classList.remove('error'));
         }
-        document.querySelectorAll('.auth-tab-btn').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                switchAuthTab(btn.dataset.tab);
-            });
-        });
 
-        /* ── Gửi OTP + đếm ngược ── */
-        var btnOtp = document.getElementById('btnSendOtp');
-        var countdown = document.getElementById('otpCountdown');
-
-        if (btnOtp) {
-            btnOtp.addEventListener('click', function() {
-                var sdt = document.getElementById('inputSdtRegister')?.value?.trim();
-                if (!sdt) {
-                    showFlash('Vui lòng nhập số điện thoại trước.', 'warning');
-                    return;
+        function showAuthErrors(errors) {
+            Object.entries(errors).forEach(([key, msgs]) => {
+                const maps = { ho_ten: 'errRegHoTen', email: 'errRegEmail', password: 'errRegPassword', so_dien_thoai: 'errRegSoDienThoai', password_confirmation: 'errRegPasswordConfirmation' };
+                const elId = maps[key];
+                if (elId) {
+                    const el = document.getElementById(elId);
+                    if (el) { el.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${Array.isArray(msgs) ? msgs[0] : msgs}`; el.style.display = 'flex'; }
                 }
-                fetch(APP.routes.sendOtp, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': APP.csrfToken,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            so_dien_thoai: sdt
-                        }),
-                    })
-                    .then(function(r) {
-                        return r.json();
-                    })
-                    .then(function(data) {
-                        if (data.success) {
-                            showFlash('OTP đã được gửi đến SĐT của bạn.', 'success');
-                            startOtpCountdown(60);
-                            if (data.otp_dev) console.log('DEV OTP:', data.otp_dev);
-                        } else {
-                            showFlash(data.message || 'Không thể gửi OTP.', 'error');
-                        }
-                    })
-                    .catch(function() {
-                        showFlash('Lỗi kết nối, thử lại sau.', 'error');
-                    });
             });
         }
 
-        function startOtpCountdown(seconds) {
-            btnOtp.disabled = true;
-            if (countdown) countdown.style.display = 'block';
-            var remaining = seconds;
-            var timer = setInterval(function() {
-                if (countdown) countdown.textContent = 'Gửi lại sau ' + remaining + 's';
-                remaining--;
-                if (remaining < 0) {
-                    clearInterval(timer);
-                    btnOtp.disabled = false;
-                    btnOtp.textContent = 'Gửi lại OTP';
-                    if (countdown) countdown.style.display = 'none';
-                }
-            }, 1000);
+        async function authPost(url, data, btn, origHtml) {
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang xử lý...';
+            try {
+                const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': AUTH_CSRF, 'Accept': 'application/json' }, body: JSON.stringify(data) });
+                return await res.json();
+            } catch { return { success: false, message: 'Lỗi kết nối, vui lòng thử lại.' }; } finally { btn.disabled = false; btn.innerHTML = origHtml; }
         }
+
+        // ĐĂNG NHẬP
+        document.getElementById('formAuthLogin')?.addEventListener('submit', async function(e) {
+            e.preventDefault(); clearAuthErrors(); const btn = document.getElementById('btnAuthLogin');
+            const data = await authPost(URL_LOGIN, { email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value }, btn, '<i class="fas fa-sign-in-alt"></i> Đăng nhập');
+            if (data.success) location.reload();
+            else if (data.errors) {
+                if (data.errors.email) { document.getElementById('errLoginEmail').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.errors.email[0]}`; document.getElementById('errLoginEmail').style.display='flex'; }
+                if (data.errors.password) { document.getElementById('errLoginPassword').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.errors.password[0]}`; document.getElementById('errLoginPassword').style.display='flex'; }
+            } else { document.getElementById('errLoginGeneral').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`; document.getElementById('errLoginGeneral').style.color = '#e74c3c'; document.getElementById('errLoginGeneral').style.display='block'; }
+        });
+
+        // ĐĂNG KÝ
+        document.getElementById('formAuthRegister')?.addEventListener('submit', async function(e) {
+            e.preventDefault(); clearAuthErrors(); const btn = document.getElementById('btnAuthRegister');
+            const data = await authPost(URL_REG, { ho_ten: document.getElementById('regHoTen').value.trim(), email: document.getElementById('regEmail').value.trim(), so_dien_thoai: document.getElementById('regSdt').value.trim(), password: document.getElementById('regPassword').value, password_confirmation: document.getElementById('regPasswordConfirm').value }, btn, '<i class="fas fa-user-plus"></i> Đăng ký');
+            if (data.success) {
+                _otpEmail = data.email || document.getElementById('regEmail').value.trim();
+                document.getElementById('otpEmailDisplay').textContent = _otpEmail;
+                switchAuthStep('otp'); startOtpCountdown(); setTimeout(() => document.querySelector('.reg-otp-box')?.focus(), 100);
+            } else if (data.errors) showAuthErrors(data.errors);
+        });
+
+        // OTP KÍCH HOẠT TÀI KHOẢN
+        document.querySelectorAll('.reg-otp-box').forEach((inp, i, all) => {
+            inp.addEventListener('input', function() { this.value = this.value.replace(/\D/g, ''); if (this.value && i < all.length - 1) all[i + 1].focus(); if ([...all].every(b => b.value)) submitOtp(); });
+            inp.addEventListener('keydown', function(e) { if (e.key === 'Backspace' && !this.value && i > 0) all[i - 1].focus(); });
+            inp.addEventListener('paste', function(e) { e.preventDefault(); const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, ''); [...all].forEach((box, idx) => { box.value = text[idx] || ''; }); if (text.length >= 6) submitOtp(); });
+        });
+
+        document.getElementById('btnVerifyOtp')?.addEventListener('click', submitOtp);
+        async function submitOtp() {
+            const otp = [...document.querySelectorAll('.reg-otp-box')].map(b => b.value).join(''); if (otp.length !== 6) return;
+            const btn = document.getElementById('btnVerifyOtp');
+            const data = await authPost(URL_OTP, { email: _otpEmail, otp }, btn, '<i class="fas fa-check-circle"></i> Xác thực ngay');
+            if (data.success) { clearInterval(_otpTimer); btn.innerHTML = '<i class="fas fa-check-circle"></i> Thành công! Đang tải...'; btn.style.background = '#10b981'; setTimeout(() => location.reload(), 800); }
+            else { document.getElementById('errOtp').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`; document.getElementById('errOtp').style.display='block'; document.querySelectorAll('.reg-otp-box').forEach(b => { b.value = ''; }); document.querySelector('.reg-otp-box')?.focus(); }
+        }
+
+        document.getElementById('btnResendOtp')?.addEventListener('click', async function(e) { e.preventDefault(); this.style.display = 'none'; document.getElementById('otpCountdownWrap').style.display = 'inline'; await fetch(URL_SENDOTP, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': AUTH_CSRF }, body: JSON.stringify({ email: _otpEmail }) }); startOtpCountdown(); });
+
+        function startOtpCountdown() {
+            clearInterval(_otpTimer); let s = 60; document.getElementById('otpTimer').textContent = s; document.getElementById('otpCountdownWrap').style.display = 'inline'; document.getElementById('btnResendOtp').style.display = 'none'; document.getElementById('errOtp').style.display = 'none';
+            _otpTimer = setInterval(() => { s--; document.getElementById('otpTimer').textContent = s; if (s <= 0) { clearInterval(_otpTimer); document.getElementById('otpCountdownWrap').style.display = 'none'; document.getElementById('btnResendOtp').style.display = 'inline'; } }, 1000);
+        }
+
+        // QUÊN MẬT KHẨU (GỬI YÊU CẦU)
+        document.getElementById('formAuthForgot')?.addEventListener('submit', async function(e) {
+            e.preventDefault(); clearAuthErrors(); const btn = document.getElementById('btnAuthForgot'); _resetEmail = document.getElementById('forgotEmail').value.trim();
+            const data = await authPost(URL_FORGOT, { email: _resetEmail }, btn, '<i class="fas fa-paper-plane"></i> Nhận mã OTP');
+            if (data.success) { document.getElementById('resetEmailDisplay').textContent = _resetEmail; switchAuthStep('resetConfirm'); }
+            else {
+                if (data.errors?.email) { document.getElementById('errForgotEmail').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.errors.email[0]}`; document.getElementById('errForgotEmail').style.display = 'flex'; }
+                else if(data.message) { document.getElementById('errForgotGeneral').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`; document.getElementById('errForgotGeneral').style.color = '#e74c3c'; document.getElementById('errForgotGeneral').style.display = 'block'; }
+            }
+        });
+
+        // CẬP NHẬT MẬT KHẨU BẰNG MÃ OTP (TRÊN MODAL)
+        document.getElementById('formAuthResetConfirm')?.addEventListener('submit', async function(e) {
+            e.preventDefault(); clearAuthErrors(); const btn = document.getElementById('btnAuthResetConfirm');
+            const data = await authPost(URL_RESET, { email: _resetEmail, token: document.getElementById('resetOtp').value.trim(), password: document.getElementById('resetNewPassword').value, password_confirmation: document.getElementById('resetNewPasswordConfirm').value }, btn, '<i class="fas fa-save"></i> Cập nhật mật khẩu');
+            if (data.success) {
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Đặt lại thành công!'; btn.style.background = '#10b981';
+                setTimeout(() => { switchAuthStep('login'); document.getElementById('loginEmail').value = _resetEmail; document.getElementById('errLoginGeneral').innerHTML = `<i class="fas fa-check-circle"></i> Đặt lại mật khẩu thành công! Vui lòng đăng nhập.`; document.getElementById('errLoginGeneral').style.color = '#10b981'; document.getElementById('errLoginGeneral').style.display = 'block'; btn.innerHTML = '<i class="fas fa-save"></i> Cập nhật mật khẩu'; btn.style.background = ''; }, 1200);
+            } else {
+                if (data.errors) {
+                    if (data.errors.password) { document.getElementById('errResetNewPassword').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.errors.password[0]}`; document.getElementById('errResetNewPassword').style.display = 'flex'; }
+                    if (data.errors.token) { document.getElementById('errResetOtp').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.errors.token[0]}`; document.getElementById('errResetOtp').style.display = 'flex'; }
+                } else { document.getElementById('errResetConfirmGeneral').innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message}`; document.getElementById('errResetConfirmGeneral').style.color = '#e74c3c'; document.getElementById('errResetConfirmGeneral').style.display = 'block'; }
+            }
+        });
+
+        window.toggleAuthEye = function(id, btn) { const inp = document.getElementById(id); const ico = btn.querySelector('i'); const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; ico.className = show ? 'far fa-eye-slash' : 'far fa-eye'; };
     });
 </script>
-@if (session('open_auth_modal'))
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            openAuthModal('{{ session('open_auth_modal') }}');
-        });
-    </script>
-@endif

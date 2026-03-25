@@ -3,14 +3,21 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPasswordMail;
+use App\Mail\VerifyEmailMail;
 use App\Models\KhachHang;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class KhachHangAuthController extends Controller
 {
-    // ── Đăng nhập ──
+    // ══════════════════════════════════════════════════
+    // ĐĂNG NHẬP
+    // ══════════════════════════════════════════════════
     public function showLogin()
     {
         if (Auth::guard('customer')->check()) {
@@ -18,26 +25,41 @@ class KhachHangAuthController extends Controller
         }
         return redirect()->back()->with('open_auth_modal', 'login');
     }
+
     public function login(Request $request)
     {
-        $request->validate([
-            'email'    => ['required'],   // email hoặc SĐT
+        $v = Validator::make($request->all(), [
+            'email'    => ['required'],
             'password' => ['required'],
         ]);
 
-        $credentials = $request->only('email', 'password');
-
-        if (Auth::guard('customer')->attempt($credentials, $request->boolean('remember'))) {
-            $request->session()->regenerate();
-            return redirect()->intended(route('frontend.home'));
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'errors' => $v->errors()], 422);
         }
 
-        return back()
-            ->withErrors(['email' => 'Thông tin đăng nhập không chính xác.'])
-            ->withInput($request->only('email'));
+        $kh = KhachHang::where('email', $request->email)->first();
+
+        if (!$kh || !Hash::check($request->password, $kh->password)) {
+            return response()->json(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác.']);
+        }
+
+        if (!$kh->email_xac_thuc_at) {
+            return response()->json(['success' => false, 'message' => 'Tài khoản chưa xác thực email. Vui lòng kiểm tra hộp thư.']);
+        }
+
+        if (!$kh->kich_hoat) {
+            return response()->json(['success' => false, 'message' => 'Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ hỗ trợ.']);
+        }
+
+        Auth::guard('customer')->login($kh, $request->boolean('remember'));
+        $request->session()->regenerate();
+
+        return response()->json(['success' => true, 'message' => 'Đăng nhập thành công!']);
     }
 
-    // ── Đăng ký ──
+    // ══════════════════════════════════════════════════
+    // ĐĂNG KÝ
+    // ══════════════════════════════════════════════════
     public function showRegister()
     {
         if (Auth::guard('customer')->check()) {
@@ -48,187 +70,270 @@ class KhachHangAuthController extends Controller
 
     public function register(Request $request)
     {
-        $request->validate([
-            'ho_ten'       => ['required', 'string', 'max:100'],
-            'so_dien_thoai' => ['required', 'unique:khach_hang,so_dien_thoai'],
-            'email'        => ['nullable', 'email', 'unique:khach_hang,email'],
-            'password'     => ['required', 'min:6', 'confirmed'],
+        $v = Validator::make($request->all(), [
+            'ho_ten'               => ['required', 'string', 'max:100'],
+            'so_dien_thoai'        => ['nullable', 'string', 'max:15'],
+            'email'                => ['required', 'email'],
+            'password'             => ['required', 'min:6', 'confirmed'],
+        ], [
+            'ho_ten.required'      => 'Vui lòng nhập họ tên.',
+            'email.required'       => 'Vui lòng nhập email.',
+            'email.email'          => 'Email không hợp lệ.',
+            'password.min'         => 'Mật khẩu ít nhất 6 ký tự.',
+            'password.confirmed'   => 'Xác nhận mật khẩu không khớp.',
         ]);
 
-        $khachHang = KhachHang::create([
-            'ho_ten'        => $request->ho_ten,
-            'so_dien_thoai' => $request->so_dien_thoai,
-            'email'         => $request->email,
-            'password'      => Hash::make($request->password),
-            'nguon_khach_hang' => 'website',
-        ]);
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'errors' => $v->errors()], 422);
+        }
 
-        Auth::guard('customer')->login($khachHang);
-        $request->session()->regenerate();
+        $existing = KhachHang::where('email', $request->email)->first();
+        if ($existing && $existing->email_xac_thuc_at) {
+            return response()->json(['success' => false, 'errors'  => ['email' => ['Email này đã được sử dụng.']]], 422);
+        }
 
-        return redirect()->route('frontend.home')
-            ->with('success', 'Đăng ký thành công! Chào mừng ' . $khachHang->ho_ten);
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+
+        $kh = KhachHang::updateOrCreate(
+            ['email' => $request->email],
+            [
+                'ho_ten'             => $request->ho_ten,
+                'so_dien_thoai'      => $request->so_dien_thoai,
+                'password'           => Hash::make($request->password),
+                'nguon_khach_hang'   => 'website',
+                'verification_token' => $otp,
+                'token_expiry'       => Carbon::now()->addMinutes(15),
+                'email_xac_thuc_at'  => null,
+            ]
+        );
+
+        Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+
+        return response()->json(['success' => true, 'email' => $kh->email, 'message' => 'OTP đã gửi đến ' . $kh->email]);
     }
 
-    // ── OTP ──
+    // ══════════════════════════════════════════════════
+    // XÁC THỰC OTP EMAIL
+    // ══════════════════════════════════════════════════
     public function sendOtp(Request $request)
     {
-        $request->validate([
-            'so_dien_thoai' => ['required', 'string'],
+        $kh = KhachHang::where('email', $request->email)->whereNull('email_xac_thuc_at')->first();
+        if (!$kh) return response()->json(['success' => false, 'message' => 'Email không tồn tại.']);
+
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $kh->update([
+            'verification_token' => $otp,
+            'token_expiry'       => Carbon::now()->addMinutes(15),
         ]);
 
-        // Tạo OTP 6 số
-        $otp = rand(100000, 999999);
+        Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
 
-        // Lưu vào session (thực tế gửi qua SMS API)
-        session(['otp' => $otp, 'otp_sdt' => $request->so_dien_thoai]);
-
-        // TODO: Tích hợp SMS API (Twilio, Esms, ...)
-        // SmsService::send($request->so_dien_thoai, "Mã OTP của bạn là: $otp");
-
-        return response()->json([
-            'success' => true,
-            'message' => 'OTP đã được gửi.',
-            // DEV ONLY — xoá khi production:
-            'otp_dev' => app()->isLocal() ? $otp : null,
-        ]);
+        return response()->json(['success' => true, 'message' => 'Đã gửi lại OTP.']);
     }
 
     public function verifyOtp(Request $request)
     {
-        $request->validate([
-            'so_dien_thoai' => ['required'],
-            'otp'           => ['required', 'digits:6'],
-        ]);
+        $kh = KhachHang::where('email', $request->email)->whereNull('email_xac_thuc_at')->first();
+        if (!$kh) return response()->json(['success' => false, 'message' => 'Yêu cầu không hợp lệ.']);
 
-        $sessionOtp = session('otp');
-        $sessionSdt = session('otp_sdt');
+        $dbToken  = str_pad((string) $kh->verification_token, 6, '0', STR_PAD_LEFT);
+        $reqToken = str_pad((string) $request->otp, 6, '0', STR_PAD_LEFT);
 
-        if (
-            $sessionOtp !== (int) $request->otp ||
-            $sessionSdt !== $request->so_dien_thoai
-        ) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Mã OTP không đúng hoặc đã hết hạn.',
-            ], 422);
+        if ($dbToken !== $reqToken) {
+            return response()->json(['success' => false, 'message' => 'Mã OTP không đúng.']);
         }
 
-        session()->forget(['otp', 'otp_sdt']);
+        if (Carbon::parse($kh->token_expiry)->isPast()) {
+            return response()->json(['success' => false, 'message' => 'OTP đã hết hạn. Vui lòng gửi lại.']);
+        }
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Xác thực OTP thành công.',
+        $kh->update([
+            'email_xac_thuc_at'  => Carbon::now(),
+            'verification_token' => null,
+            'token_expiry'       => null,
+            'kich_hoat'          => true,
         ]);
+
+        Auth::guard('customer')->login($kh);
+        $request->session()->regenerate();
+
+        return response()->json(['success' => true, 'message' => '🎉 Xác thực thành công! Chào mừng ' . $kh->ho_ten]);
     }
 
-    // ── Đăng xuất ──
     public function logout(Request $request)
     {
         Auth::guard('customer')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect()->route('frontend.home')
-            ->with('success', 'Đã đăng xuất.');
+        return redirect()->route('frontend.home')->with('success', 'Đã đăng xuất.');
     }
 
-    // ── Quên mật khẩu (stub) ──
+    // ══════════════════════════════════════════════════
+    // QUÊN MẬT KHẨU
+    // ══════════════════════════════════════════════════
     public function showForgot()
     {
         return view('frontend.auth.forgot');
     }
-    public function sendReset()
+
+   public function sendReset(Request $request)
     {
-        return back()->with('success', 'Vui lòng kiểm tra email/SMS.');
+        // 1. Validate định dạng email cơ bản
+        $v = Validator::make($request->all(), [
+            'email' => ['required', 'email'],
+        ], [
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email'    => 'Email không hợp lệ.',
+        ]);
+
+        if ($v->fails()) {
+            return response()->json(['success' => false, 'errors' => $v->errors()], 422);
+        }
+
+        // 2. Tìm khách hàng trong cơ sở dữ liệu
+        $kh = KhachHang::where('email', $request->email)->first();
+
+        // 3. KIỂM TRA: Nếu email không tồn tại trong hệ thống
+        if (!$kh) {
+            return response()->json([
+                'success' => false,
+                'errors'  => [
+                    'email' => ['Email này chưa được đăng ký trong hệ thống.']
+                ]
+            ], 422);
+        }
+
+        // 4. KIỂM TRA: Nếu tài khoản tồn tại nhưng chưa xác thực email (chưa kích hoạt)
+        if (!$kh->email_xac_thuc_at) {
+            return response()->json([
+                'success' => false,
+                'errors'  => [
+                    'email' => ['Tài khoản này chưa được xác thực. Vui lòng đăng ký lại hoặc liên hệ hỗ trợ.']
+                ]
+            ], 422);
+        }
+
+        // 5. Nếu mọi thứ hợp lệ, tiến hành tạo mã OTP và gửi Mail
+        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $kh->verification_token = $otp;
+        $kh->token_expiry = Carbon::now()->addMinutes(15);
+        $kh->save();
+
+        $resetLink = route('khach-hang.reset', ['token' => $otp, 'email' => $kh->email]);
+        Mail::to($kh->email)->send(new ResetPasswordMail($resetLink, $otp, $kh->ho_ten));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mã OTP và link đặt lại mật khẩu đã được gửi đến email.'
+        ]);
     }
-    public function showReset()
+    public function showReset(Request $request, $token = null)
     {
-        return view('frontend.auth.reset');
-    }
-    public function reset()
-    {
-        return redirect()->route('khach-hang.login');
+        $token = $token ?? $request->query('token');
+        $email = $request->query('email');
+
+        if (!$email || !$token) {
+            return redirect()->route('frontend.home')->with('error', 'Đường dẫn đặt lại mật khẩu không hợp lệ.');
+        }
+
+        $kh = KhachHang::where('email', $email)->first();
+        if (!$kh) return redirect()->route('frontend.home')->with('error', 'Tài khoản không tồn tại.');
+
+        $dbToken  = str_pad((string) $kh->verification_token, 6, '0', STR_PAD_LEFT);
+        $reqToken = str_pad((string) $token, 6, '0', STR_PAD_LEFT);
+
+        if ($dbToken !== $reqToken) {
+            return redirect()->route('frontend.home')->with('error', 'Mã xác thực không đúng hoặc đã được sử dụng.');
+        }
+
+        if ($kh->token_expiry && Carbon::parse($kh->token_expiry)->isPast()) {
+            return redirect()->route('frontend.home')->with('error', 'Mã xác thực đã hết hạn. Vui lòng yêu cầu lại.');
+        }
+
+        return view('frontend.auth.reset', compact('token', 'email'));
     }
 
-    // ── Trang cá nhân (stub) ──
-    public function profile()
+    public function reset(Request $request)
     {
-        return view('frontend.auth.profile');
-    }
-    public function lichSuXem()
-    {
-        return view('frontend.auth.lich_su_xem');
-    }
-    public function kyGuiCuaToi()
-    {
-        return view('frontend.auth.ky_gui_cua_toi');
-    }
-    public function lichHenCuaToi()
-    {
-        return view('frontend.auth.lich_hen_cua_toi');
+        $v = Validator::make($request->all(), [
+            'email'    => ['required', 'email'],
+            'token'    => ['required'],
+            'password' => ['required', 'min:6', 'confirmed'],
+        ], [
+            'password.min'       => 'Mật khẩu ít nhất 6 ký tự.',
+            'password.confirmed' => 'Xác nhận mật khẩu không khớp.',
+            'token.required'     => 'Vui lòng nhập mã OTP.'
+        ]);
+
+        if ($v->fails()) {
+            return $request->expectsJson() ? response()->json(['success' => false, 'errors' => $v->errors()], 422) : back()->withErrors($v)->withInput();
+        }
+
+        $kh = KhachHang::where('email', $request->email)->first();
+        if (!$kh) {
+            $msg = 'Tài khoản không tồn tại.';
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => $msg]) : back()->withErrors(['email' => $msg]);
+        }
+
+        $dbToken  = str_pad((string) $kh->verification_token, 6, '0', STR_PAD_LEFT);
+        $reqToken = str_pad((string) $request->token, 6, '0', STR_PAD_LEFT);
+
+        if ($dbToken !== $reqToken) {
+            $msg = 'Mã OTP không hợp lệ hoặc đã được sử dụng.';
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => $msg]) : back()->withErrors(['token' => $msg]);
+        }
+
+        if ($kh->token_expiry && Carbon::parse($kh->token_expiry)->isPast()) {
+            $msg = 'Mã OTP đã hết hạn. Vui lòng gửi lại yêu cầu mới.';
+            return $request->expectsJson() ? response()->json(['success' => false, 'message' => $msg]) : back()->withErrors(['token' => $msg]);
+        }
+
+        $kh->password           = Hash::make($request->password);
+        $kh->verification_token = null;
+        $kh->token_expiry       = null;
+        $kh->save();
+
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Đặt lại mật khẩu thành công!']);
+        }
+
+        return redirect()->route('frontend.home')->with('success', '✅ Đặt lại mật khẩu thành công! Vui lòng đăng nhập.')->with('open_auth_modal', 'login');
     }
 
+    // ══════════════════════════════════════════════════
+    // TRANG CÁ NHÂN & CẬP NHẬT THÔNG TIN
+    // ══════════════════════════════════════════════════
+    public function profile() { return view('frontend.auth.profile'); }
+    public function lichSuXem() { return view('frontend.auth.lich_su_xem'); }
+    public function kyGuiCuaToi() { return view('frontend.auth.ky_gui_cua_toi'); }
+    public function lichHenCuaToi() { return view('frontend.auth.lich_hen_cua_toi'); }
 
-
-    // ── Cập nhật thông tin cơ bản ──
     public function updateProfile(Request $request)
     {
-        /** @var KhachHang $kh */
         $kh = Auth::guard('customer')->user();
-
-        $request->validate([
-            'ho_ten'       => 'required|string|max:100',
+        $v = Validator::make($request->all(), [
+            'ho_ten'        => 'required|string|max:100',
             'so_dien_thoai' => 'required|string|max:15|unique:khach_hang,so_dien_thoai,' . $kh->id,
-            'email'        => 'nullable|email|max:100|unique:khach_hang,email,' . $kh->id,
-        ], [
-            'ho_ten.required'          => 'Vui lòng nhập họ tên.',
-            'so_dien_thoai.required'   => 'Vui lòng nhập số điện thoại.',
-            'so_dien_thoai.unique'     => 'Số điện thoại đã được dùng bởi tài khoản khác.',
-            'email.unique'             => 'Email đã tồn tại trong hệ thống.',
+            'email'         => 'nullable|email|max:100|unique:khach_hang,email,' . $kh->id,
         ]);
+        if ($v->fails()) return response()->json(['success' => false, 'errors' => $v->errors()], 422);
 
-        $kh->update([
-            'ho_ten'        => $request->ho_ten,
-            'so_dien_thoai' => $request->so_dien_thoai,
-            'email'         => $request->email,
-        ]);
-
+        $kh->update($request->only('ho_ten', 'so_dien_thoai', 'email'));
         return response()->json(['success' => true, 'message' => 'Cập nhật thành công!']);
     }
 
-    // ── Đổi mật khẩu ──
     public function changePassword(Request $request)
     {
-        /** @var KhachHang $kh */
         $kh = Auth::guard('customer')->user();
-
-        $request->validate([
+        $v = Validator::make($request->all(), [
             'mat_khau_cu'  => 'required',
             'mat_khau_moi' => 'required|min:6|confirmed',
-        ], [
-            'mat_khau_cu.required'   => 'Vui lòng nhập mật khẩu hiện tại.',
-            'mat_khau_moi.required'  => 'Vui lòng nhập mật khẩu mới.',
-            'mat_khau_moi.min'       => 'Mật khẩu mới tối thiểu 6 ký tự.',
-            'mat_khau_moi.confirmed' => 'Xác nhận mật khẩu không khớp.',
         ]);
+        if ($v->fails()) return response()->json(['success' => false, 'errors' => $v->errors()], 422);
 
-        if (!Hash::check($request->mat_khau_cu, $kh->password)) {
-            return response()->json([
-                'success' => false,
-                'errors'  => ['mat_khau_cu' => 'Mật khẩu hiện tại không đúng.']
-            ], 422);
-        }
-
-        if (Hash::check($request->mat_khau_moi, $kh->password)) {
-            return response()->json([
-                'success' => false,
-                'errors'  => ['mat_khau_moi' => 'Mật khẩu mới không được trùng mật khẩu cũ.']
-            ], 422);
-        }
+        if (!Hash::check($request->mat_khau_cu, $kh->password)) return response()->json(['success' => false, 'errors' => ['mat_khau_cu' => ['Mật khẩu hiện tại không đúng.']]], 422);
 
         $kh->update(['password' => Hash::make($request->mat_khau_moi)]);
-
         return response()->json(['success' => true, 'message' => 'Đổi mật khẩu thành công!']);
     }
 }

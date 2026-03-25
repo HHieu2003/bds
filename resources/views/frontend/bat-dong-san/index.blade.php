@@ -45,37 +45,41 @@
             min-height: 80vh;
         }
 
+        /* ══ TOPBAR ══ */
         .bds-topbar {
             background: #fff;
             border-bottom: 1px solid #f0ece8;
-            padding: 14px 0;
+            padding: 0;
             position: sticky;
             top: 68px;
             z-index: 100;
             box-shadow: 0 2px 12px rgba(0, 0, 0, .05);
         }
 
-        .bds-topbar-inner {
+        /* ── Row 1: toolbar chính ── */
+        .bds-toolbar {
             display: flex;
             align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
+            gap: 6px;
+            padding: 8px 0;
+            flex-wrap: nowrap;
+            overflow: visible;
         }
 
-        /* ── Nhu cầu tabs ── */
+        /* Tabs Mua / Thuê */
         .bds-nhu-cau-tabs {
             display: flex;
             background: #f5f0eb;
-            border-radius: 10px;
+            border-radius: 9px;
             padding: 3px;
             gap: 2px;
             flex-shrink: 0;
         }
 
         .bds-nhu-cau-tab {
-            padding: 7px 16px;
-            border-radius: 8px;
-            font-size: .82rem;
+            padding: 6px 14px;
+            border-radius: 7px;
+            font-size: .8rem;
             font-weight: 700;
             text-decoration: none;
             color: #888;
@@ -83,7 +87,7 @@
             white-space: nowrap;
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 4px;
         }
 
         .bds-nhu-cau-tab.active {
@@ -96,24 +100,24 @@
             color: #2d6a9f;
         }
 
-        /* ── Quick search ── */
+        /* Search */
         .bds-quick-search {
             flex: 1;
-            min-width: 200px;
+            min-width: 140px;
+            max-width: 190px;
             position: relative;
-            max-width: 320px;
         }
 
         .bds-quick-search input {
             width: 100%;
-            padding: 9px 14px 9px 36px;
+            padding: 8px 12px 8px 32px;
             border: 1.5px solid #e8e8e8;
-            border-radius: 10px;
-            font-size: .875rem;
+            border-radius: 9px;
+            font-size: .82rem;
             outline: none;
             font-family: inherit;
-            transition: border-color .2s;
             background: #fafafa;
+            transition: border-color .2s, background .2s;
         }
 
         .bds-quick-search input:focus {
@@ -123,78 +127,93 @@
 
         .bds-quick-search i {
             position: absolute;
-            left: 11px;
+            left: 10px;
             top: 50%;
             transform: translateY(-50%);
             color: #bbb;
-            font-size: .85rem;
+            font-size: .8rem;
             pointer-events: none;
         }
 
-        /* ── Quick filter pills ── */
-        .bds-quick-selects {
+        /* ── Filter pills — scroll ngang nếu tràn ── */
+        .bds-filter-pills {
             display: flex;
-            gap: 7px;
-            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
             flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            padding-bottom: 0;
+        }
+
+        .bds-filter-pills::-webkit-scrollbar {
+            display: none;
         }
 
         .bds-qs {
-            padding: 8px 12px;
+            padding: 7px 10px;
             border: 1.5px solid #e8e8e8;
-            border-radius: 9px;
-            font-size: .8rem;
+            border-radius: 8px;
+            font-size: .78rem;
             font-weight: 600;
             color: #555;
             background: #fff;
             cursor: pointer;
             outline: none;
             font-family: inherit;
+            white-space: nowrap;
+            flex-shrink: 0;
+            min-width: 0;
             transition: border-color .2s, color .2s;
-            min-width: 110px;
+            /* loại bỏ min-width cũ */
+            max-width: 150px
         }
 
         .bds-qs:focus,
         .bds-qs.has-value {
             border-color: var(--primary);
             color: var(--primary);
+            background: #fff9f5;
         }
 
-        /* ── Sort + View toggle ── */
-        .bds-sort-wrap {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-shrink: 0;
-            margin-left: auto;
-        }
-
+        /* Sort */
         .bds-sort {
-            padding: 8px 12px;
+            padding: 7px 10px;
             border: 1.5px solid #e8e8e8;
-            border-radius: 9px;
-            font-size: .8rem;
+            border-radius: 8px;
+            font-size: .78rem;
             font-weight: 600;
             color: #555;
             background: #fff;
             cursor: pointer;
             outline: none;
             font-family: inherit;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        /* View buttons */
+        .bds-view-wrap {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
         .bds-view-btn {
-            width: 36px;
-            height: 36px;
+            width: 33px;
+            height: 33px;
             border: 1.5px solid #e8e8e8;
-            border-radius: 9px;
+            border-radius: 8px;
             background: #fff;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #bbb;
-            font-size: .9rem;
+            font-size: .85rem;
             transition: all .2s;
+            flex-shrink: 0;
         }
 
         .bds-view-btn.active {
@@ -203,27 +222,27 @@
             background: #fff5ef;
         }
 
-        /* ════════════ ACTIVE FILTER CHIPS ════════════ */
+        /* ── Row 2: active chips ── */
         .bds-active-filters {
-            padding: 10px 0 0;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: wrap;
+            padding: 5px 0 8px;
+            border-top: 1px solid #f5f0eb;
         }
 
         .bds-filter-chip {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 5px;
             background: #fff5ef;
             border: 1px solid #ffd4b0;
             color: #c85a00;
-            padding: 4px 10px 4px 12px;
+            padding: 3px 10px 3px 10px;
             border-radius: 20px;
-            font-size: .75rem;
+            font-size: .72rem;
             font-weight: 700;
-            text-decoration: none;
         }
 
         .bds-filter-chip button {
@@ -232,11 +251,11 @@
             color: #c85a00;
             cursor: pointer;
             padding: 0;
-            font-size: .7rem;
+            font-size: .65rem;
             opacity: .7;
-            transition: opacity .2s;
             display: flex;
             align-items: center;
+            transition: opacity .2s;
         }
 
         .bds-filter-chip button:hover {
@@ -244,21 +263,84 @@
         }
 
         .bds-clear-all {
-            font-size: .75rem;
+            font-size: .72rem;
             font-weight: 700;
             color: #e74c3c;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 4px;
-            padding: 4px 0;
+            padding: 3px 0;
+            white-space: nowrap;
         }
 
         .bds-result-count {
-            font-size: .82rem;
+            font-size: .78rem;
             color: #888;
             margin-left: auto;
             white-space: nowrap;
+        }
+
+        /* ── Mobile sidebar btn ── */
+        .bds-sidebar-toggle-btn {
+            display: none;
+            width: 100%;
+            padding: 8px;
+            border: 1.5px solid #e8e8e8;
+            border-radius: 9px;
+            background: #fff;
+            font-weight: 700;
+            font-size: .82rem;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: #1a3c5e;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 991px) {
+            .bds-filter-pills {
+                display: none;
+            }
+
+            .bds-sort {
+                display: none;
+            }
+
+            .bds-view-wrap .bds-view-btn:not(#btnGrid3):not(#btnGrid2) {
+                display: none;
+            }
+
+            .bds-quick-search {
+                max-width: 100%;
+                flex: 1;
+            }
+
+            .bds-sidebar-toggle-btn {
+                display: flex !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .bds-topbar {
+                top: 60px;
+            }
+
+            .bds-toolbar {
+                gap: 5px;
+            }
+
+            .bds-nhu-cau-tab {
+                padding: 5px 10px;
+                font-size: .75rem;
+            }
+
+            .bds-nhu-cau-tab i {
+                display: none;
+            }
         }
 
         /* ════════════ MAIN LAYOUT ════════════ */
@@ -924,34 +1006,33 @@
     <div class="bds-topbar">
         <div class="container-fluid px-4">
             <form method="GET" action="{{ route('frontend.bat-dong-san.index') }}" id="formFilter">
+                <input type="hidden" name="nhu_cau" value="{{ $nhuCau }}">
 
-                <div class="bds-topbar-inner">
+                {{-- ── Toolbar chính (1 hàng) ── --}}
+                <div class="bds-toolbar">
 
                     {{-- Tabs Mua / Thuê --}}
                     <div class="bds-nhu-cau-tabs">
                         <a href="{{ route('frontend.bat-dong-san.index', array_merge(request()->except(['nhu_cau', 'page']), ['nhu_cau' => 'ban'])) }}"
                             class="bds-nhu-cau-tab {{ $isBan ? 'active' : '' }}">
-                            <i class="fas fa-tag"></i> Mua căn hộ
+                            <i class="fas fa-tag"></i> Mua
                         </a>
                         <a href="{{ route('frontend.bat-dong-san.index', array_merge(request()->except(['nhu_cau', 'page']), ['nhu_cau' => 'thue'])) }}"
                             class="bds-nhu-cau-tab thue {{ !$isBan ? 'active thue' : '' }}">
-                            <i class="fas fa-key"></i> Thuê căn hộ
+                            <i class="fas fa-key"></i> Thuê
                         </a>
                     </div>
 
-                    <input type="hidden" name="nhu_cau" value="{{ $nhuCau }}">
-
-                    {{-- Ô tìm kiếm nhanh --}}
+                    {{-- Tìm kiếm --}}
                     <div class="bds-quick-search">
                         <i class="fas fa-search"></i>
                         <input type="text" name="timkiem" value="{{ request('timkiem') }}"
                             placeholder="Tìm tiêu đề, địa chỉ..." id="inputTimkiem">
                     </div>
 
-                    {{-- Quick selects: Dự án → Tòa → Phòng ngủ --}}
-                    <div class="bds-quick-selects">
+                    {{-- Filter pills — scroll ngang --}}
+                    <div class="bds-filter-pills">
 
-                        {{-- Khu vực --}}
                         <select name="khu_vuc" class="bds-qs {{ request('khu_vuc') ? 'has-value' : '' }}"
                             onchange="this.form.submit()" id="qsKhuVuc">
                             <option value="">🏘 Khu vực</option>
@@ -962,7 +1043,6 @@
                             @endforeach
                         </select>
 
-                        {{-- Dự án (lọc theo khu vực nếu có) --}}
                         <select name="du_an" class="bds-qs {{ request('du_an') ? 'has-value' : '' }}"
                             onchange="loadToa(this.value); this.form.submit()" id="qsDuAn">
                             <option value="">🏢 Dự án</option>
@@ -974,7 +1054,6 @@
                             @endforeach
                         </select>
 
-                        {{-- Tòa (hiện khi có dự án) --}}
                         <select name="toa" class="bds-qs {{ request('toa') ? 'has-value' : '' }}" id="qsToa"
                             onchange="this.form.submit()" style="{{ !request('du_an') ? 'display:none' : '' }}">
                             <option value="">🏬 Tất cả tòa</option>
@@ -985,21 +1064,16 @@
                             @endforeach
                         </select>
 
-                        {{-- Phòng ngủ --}}
                         <select name="sophongngu" class="bds-qs {{ request('sophongngu') ? 'has-value' : '' }}"
                             onchange="this.form.submit()">
                             <option value="">🛏 Phòng ngủ</option>
                             <option value="studio" {{ request('sophongngu') == 'studio' ? 'selected' : '' }}>Studio
                             </option>
-                            <option value="1" {{ request('sophongngu') == '1' ? 'selected' : '' }}>1 Phòng ngủ
-                            </option>
-                            <option value="2" {{ request('sophongngu') == '2' ? 'selected' : '' }}>2 Phòng ngủ
-                            </option>
-                            <option value="3" {{ request('sophongngu') == '3' ? 'selected' : '' }}>3 Phòng ngủ trở
-                                lên</option>
+                            <option value="1" {{ request('sophongngu') == '1' ? 'selected' : '' }}>1 PN</option>
+                            <option value="2" {{ request('sophongngu') == '2' ? 'selected' : '' }}>2 PN</option>
+                            <option value="3" {{ request('sophongngu') == '3' ? 'selected' : '' }}>3 PN+</option>
                         </select>
 
-                        {{-- Giá --}}
                         <select name="muc_gia" class="bds-qs {{ request('muc_gia') ? 'has-value' : '' }}"
                             onchange="this.form.submit()">
                             <option value="">💰 Mức giá</option>
@@ -1011,34 +1085,35 @@
                                 <option value="5-10ty" {{ request('muc_gia') == '5-10ty' ? 'selected' : '' }}>5 – 10 tỷ
                                 </option>
                                 <option value="tren10ty" {{ request('muc_gia') == 'tren10ty' ? 'selected' : '' }}>Trên 10
-                                    tỷ
-                                </option>
+                                    tỷ</option>
                             @else
-                                <option value="duoi10tr" {{ request('muc_gia') == 'duoi10tr' ? 'selected' : '' }}>Dưới 10
-                                    triệu/tháng</option>
-                                <option value="10-20tr" {{ request('muc_gia') == '10-20tr' ? 'selected' : '' }}>10 – 20
-                                    triệu/tháng</option>
-                                <option value="20-50tr" {{ request('muc_gia') == '20-50tr' ? 'selected' : '' }}>20 – 50
-                                    triệu/tháng</option>
-                                <option value="tren50tr" {{ request('muc_gia') == 'tren50tr' ? 'selected' : '' }}>Trên 50
-                                    triệu/tháng</option>
+                                <option value="duoi10tr" {{ request('muc_gia') == 'duoi10tr' ? 'selected' : '' }}>Dưới
+                                    10tr/tháng</option>
+                                <option value="10-20tr" {{ request('muc_gia') == '10-20tr' ? 'selected' : '' }}>10 –
+                                    20tr/tháng</option>
+                                <option value="20-50tr" {{ request('muc_gia') == '20-50tr' ? 'selected' : '' }}>20 –
+                                    50tr/tháng</option>
+                                <option value="tren50tr" {{ request('muc_gia') == 'tren50tr' ? 'selected' : '' }}>Trên
+                                    50tr/tháng</option>
                             @endif
                         </select>
 
                     </div>
 
-                    {{-- Sort + View toggle --}}
-                    <div class="bds-sort-wrap">
-                        <select name="sap_xep" class="bds-sort" onchange="this.form.submit()">
-                            <option value="moinhat" {{ request('sap_xep', 'moinhat') == 'moinhat' ? 'selected' : '' }}>Mới
-                                nhất</option>
-                            <option value="giatang" {{ request('sap_xep') == 'giatang' ? 'selected' : '' }}>Giá: Thấp → Cao
-                            </option>
-                            <option value="giagiam" {{ request('sap_xep') == 'giagiam' ? 'selected' : '' }}>Giá: Cao → Thấp
-                            </option>
-                            <option value="dientich" {{ request('sap_xep') == 'dientich' ? 'selected' : '' }}>Diện tích lớn
-                                nhất</option>
-                        </select>
+                    {{-- Sort --}}
+                    <select name="sap_xep" class="bds-sort" onchange="this.form.submit()">
+                        <option value="moinhat" {{ request('sap_xep', 'moinhat') == 'moinhat' ? 'selected' : '' }}>Mới nhất
+                        </option>
+                        <option value="giatang" {{ request('sap_xep') == 'giatang' ? 'selected' : '' }}>Giá thấp → cao
+                        </option>
+                        <option value="giagiam" {{ request('sap_xep') == 'giagiam' ? 'selected' : '' }}>Giá cao → thấp
+                        </option>
+                        <option value="dientich" {{ request('sap_xep') == 'dientich' ? 'selected' : '' }}>Diện tích lớn
+                        </option>
+                    </select>
+
+                    {{-- View toggle --}}
+                    <div class="bds-view-wrap">
                         <button type="button" class="bds-view-btn active" id="btnGrid3" onclick="setView('grid3')"
                             title="3 cột">
                             <i class="fas fa-th"></i>
@@ -1052,21 +1127,23 @@
                             <i class="fas fa-list"></i>
                         </button>
                     </div>
+
                 </div>
 
-                {{-- ── Active filter chips ── --}}
+                {{-- ── Row 2: Active filter chips ── --}}
                 @if (count($activeFilters) > 0)
                     <div class="bds-active-filters">
-                        <span style="font-size:.75rem;color:#aaa;font-weight:700;white-space:nowrap">Đang lọc:</span>
+                        <span style="font-size:.72rem;color:#aaa;font-weight:700;white-space:nowrap;flex-shrink:0">
+                            <i class="fas fa-filter" style="font-size:.65rem"></i> Đang lọc:
+                        </span>
 
                         @if (request('timkiem'))
                             <span class="bds-filter-chip">
-                                🔍 "{{ request('timkiem') }}"
+                                🔍 "{{ Str::limit(request('timkiem'), 20) }}"
                                 <button type="button" onclick="removeFilter('timkiem')"><i
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
-
                         @if (request('khu_vuc'))
                             <span class="bds-filter-chip">
                                 🏘
@@ -1075,16 +1152,14 @@
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
-
                         @if (request('du_an'))
                             <span class="bds-filter-chip">
                                 🏢
-                                {{ \Str::limit(($duAns ?? collect())->firstWhere('id', request('du_an'))?->ten_du_an ?? 'Dự án', 20) }}
+                                {{ Str::limit(($duAns ?? collect())->firstWhere('id', request('du_an'))?->ten_du_an ?? 'Dự án', 18) }}
                                 <button type="button" onclick="removeFilter('du_an', true)"><i
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
-
                         @if (request('toa'))
                             <span class="bds-filter-chip">
                                 🏬 Tòa {{ request('toa') }}
@@ -1092,7 +1167,6 @@
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
-
                         @if (request('sophongngu'))
                             <span class="bds-filter-chip">
                                 🛏 {{ request('sophongngu') == 'studio' ? 'Studio' : request('sophongngu') . ' PN' }}
@@ -1100,7 +1174,6 @@
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
-
                         @if (request('muc_gia'))
                             <span class="bds-filter-chip">
                                 💰 Đã chọn mức giá
@@ -1122,21 +1195,20 @@
 
             </form>
 
-            {{-- Nút mở sidebar trên mobile --}}
-            <button class="bds-sidebar-toggle-btn" id="btnOpenSidebar"
-                style="display:none;margin-top:8px;width:100%;padding:9px;border:1.5px solid #e8e8e8;
-                       border-radius:10px;background:#fff;font-weight:700;font-size:.85rem;
-                       cursor:pointer;align-items:center;justify-content:center;gap:8px;color:#1a3c5e">
+            {{-- Mobile: nút bộ lọc nâng cao --}}
+            <button class="bds-sidebar-toggle-btn" id="btnOpenSidebar">
                 <i class="fas fa-sliders-h" style="color:var(--primary)"></i>
                 Bộ lọc nâng cao
                 @if (count($activeFilters) > 0)
                     <span
                         style="background:var(--primary);color:#fff;border-radius:10px;
-                         padding:1px 7px;font-size:.72rem">{{ count($activeFilters) }}</span>
+                    padding:1px 7px;font-size:.7rem;">{{ count($activeFilters) }}</span>
                 @endif
             </button>
+
         </div>
     </div>
+
 
     {{-- ══════════════════════════════════════════
     NỘI DUNG CHÍNH
