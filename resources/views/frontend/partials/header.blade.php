@@ -35,28 +35,34 @@
 
             {{-- ── Logo ── --}}
             <a href="{{ route('frontend.home') }}" class="navbar-logo">
-                <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land Logo" style="height: 40px; margin-right: 12px">
+                <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land Logo"
+                    style="height: 40px; margin-right: 12px">
             </a>
 
             {{-- ── Menu chính (desktop) ── --}}
             <ul class="nav-menu" id="navMenu">
                 <li class="nav-item">
-                    <a href="{{ route('frontend.home') }}" class="nav-link {{ request()->routeIs('frontend.home') ? 'active' : '' }}">Trang chủ</a>
+                    <a href="{{ route('frontend.home') }}"
+                        class="nav-link {{ request()->routeIs('frontend.home') ? 'active' : '' }}">Trang chủ</a>
                 </li>
 
                 {{-- Mua căn hộ --}}
                 <li class="nav-item has-dropdown">
-                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}" class="nav-link {{ request()->routeIs('frontend.bat-dong-san.*') && request('nhu_cau') === 'ban' ? 'active' : '' }}">
+                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
+                        class="nav-link {{ request()->routeIs('frontend.bat-dong-san.*') && request('nhu_cau') === 'ban' ? 'active' : '' }}">
                         Mua căn hộ <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown can-ho-mega">
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}" class="dropdown-all"><span><i class="fas fa-th-large"></i> Tất cả khu vực bán</span></a>
+                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
+                                    class="dropdown-all"><span><i class="fas fa-th-large"></i> Tất cả khu vực
+                                        bán</span></a>
                                 @forelse($khuVucMenu ?? [] as $kv)
                                     @if ($loop->iteration <= 5)
-                                        <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc_id' => $kv->id]) }}">
+                                        <a
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc_id' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
                                             <small class="badge-pn">{{ $kv->so_du_an ?? 0 }} dự án</small>
                                         </a>
@@ -65,107 +71,149 @@
                                     <a href="#"><span>Đang cập nhật khu vực...</span></a>
                                 @endforelse
                                 <div class="dropdown-divider"></div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}" class="highlight-link"><span><i class="fas fa-arrow-right"></i> Xem tất cả khu vực</span></a>
+                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
+                                    class="highlight-link"><span><i class="fas fa-arrow-right"></i> Xem tất cả khu
+                                        vực</span></a>
                             </div>
                             <div class="can-ho-col can-ho-col-right">
                                 <div class="can-ho-col-title"><i class="fas fa-city"></i> Theo dự án</div>
                                 @forelse($duAnMenu ?? [] as $da)
-                                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'du_an' => $da->id]) }}">
-                                        <span><i class="fas fa-building"></i> {{ Str::limit($da->ten_du_an, 22) }}</span>
+                                    <a
+                                        href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'du_an' => $da->id]) }}">
+                                        <span><i class="fas fa-building"></i>
+                                            {{ Str::limit($da->ten_du_an, 22) }}</span>
                                         <small class="badge-pn">{{ $da->so_can_ban ?? 0 }} căn</small>
                                     </a>
                                 @empty
-                                    <a href="{{ route('frontend.du-an.index') }}"><span><i class="fas fa-building"></i> Xem tất cả dự án</span></a>
+                                    <a href="{{ route('frontend.du-an.index') }}"><span><i class="fas fa-building"></i>
+                                            Xem tất cả dự án</span></a>
                                 @endforelse
                                 <div class="dropdown-divider"></div>
-                                <a href="{{ route('frontend.du-an.index') }}" class="highlight-link"><span><i class="fas fa-arrow-right"></i> Xem tất cả dự án</span></a>
+                                <a href="{{ route('frontend.du-an.index') }}" class="highlight-link"><span><i
+                                            class="fas fa-arrow-right"></i> Xem tất cả dự án</span></a>
                             </div>
                         </div>
                         <div class="can-ho-footer">
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'noi_bat' => 1]) }}"><i class="fas fa-fire"></i> Căn hộ nổi bật</a>
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'sap_xep' => 'moi_nhat']) }}"><i class="fas fa-clock"></i> Mới đăng gần đây</a>
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'gia_den' => 2000000000]) }}"><i class="fas fa-tags"></i> Dưới 2 tỷ</a>
+                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'noi_bat' => 1]) }}"><i
+                                    class="fas fa-fire"></i> Căn hộ nổi bật</a>
+                            <a
+                                href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'sap_xep' => 'moi_nhat']) }}"><i
+                                    class="fas fa-clock"></i> Mới đăng gần đây</a>
+                            <a
+                                href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'gia_den' => 2000000000]) }}"><i
+                                    class="fas fa-tags"></i> Dưới 2 tỷ</a>
                         </div>
                     </div>
                 </li>
 
                 {{-- Thuê căn hộ --}}
                 <li class="nav-item has-dropdown">
-                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}" class="nav-link {{ request()->routeIs('frontend.bat-dong-san.*') && request('nhu_cau') === 'thue' ? 'active' : '' }}">
+                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                        class="nav-link {{ request()->routeIs('frontend.bat-dong-san.*') && request('nhu_cau') === 'thue' ? 'active' : '' }}">
                         Thuê căn hộ <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown can-ho-mega">
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}" class="dropdown-all dropdown-all-blue"><span><i class="fas fa-th-large"></i> Tất cả khu vực thuê</span></a>
+                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                                    class="dropdown-all dropdown-all-blue"><span><i class="fas fa-th-large"></i> Tất cả
+                                        khu vực thuê</span></a>
                                 @forelse($khuVucMenu ?? [] as $kv)
                                     @if ($loop->iteration <= 4)
-                                        <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc_id' => $kv->id]) }}">
+                                        <a
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc_id' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
-                                            <small class="badge-pn badge-pn-blue">{{ $kv->so_du_an ?? 0 }} dự án</small>
+                                            <small class="badge-pn badge-pn-blue">{{ $kv->so_du_an ?? 0 }} dự
+                                                án</small>
                                         </a>
                                     @endif
                                 @empty
                                     <a href="#"><span>Đang cập nhật khu vực...</span></a>
                                 @endforelse
                                 <div class="dropdown-divider"></div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}" class="highlight-link-blue"><span><i class="fas fa-arrow-right"></i> Xem tất cả khu vực</span></a>
+                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                                    class="highlight-link-blue"><span><i class="fas fa-arrow-right"></i> Xem tất cả khu
+                                        vực</span></a>
                             </div>
                             <div class="can-ho-col can-ho-col-right">
                                 <div class="can-ho-col-title"><i class="fas fa-city"></i> Theo dự án</div>
                                 @forelse($duAnMenu ?? [] as $da)
-                                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'du_an' => $da->id]) }}">
-                                        <span><i class="fas fa-building"></i> {{ Str::limit($da->ten_du_an, 22) }}</span>
+                                    <a
+                                        href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'du_an' => $da->id]) }}">
+                                        <span><i class="fas fa-building"></i>
+                                            {{ Str::limit($da->ten_du_an, 22) }}</span>
                                         <small class="badge-pn badge-pn-blue">{{ $da->so_can_thue ?? 0 }} căn</small>
                                     </a>
                                 @empty
-                                    <a href="{{ route('frontend.du-an.index') }}"><span><i class="fas fa-building"></i> Xem tất cả dự án</span></a>
+                                    <a href="{{ route('frontend.du-an.index') }}"><span><i
+                                                class="fas fa-building"></i> Xem tất cả dự án</span></a>
                                 @endforelse
                                 <div class="dropdown-divider"></div>
-                                <a href="{{ route('frontend.du-an.index') }}" class="highlight-link-blue"><span><i class="fas fa-arrow-right"></i> Xem tất cả dự án</span></a>
+                                <a href="{{ route('frontend.du-an.index') }}" class="highlight-link-blue"><span><i
+                                            class="fas fa-arrow-right"></i> Xem tất cả dự án</span></a>
                             </div>
                         </div>
                         <div class="can-ho-footer can-ho-footer-blue">
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'vao_o' => 'ngay']) }}"><i class="fas fa-bolt"></i> Vào ở ngay</a>
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'noi_that' => 'full']) }}"><i class="fas fa-couch"></i> Full nội thất</a>
-                            <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'gia_den' => 10000000]) }}"><i class="fas fa-tags"></i> Dưới 10 tr/th</a>
+                            <a
+                                href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'vao_o' => 'ngay']) }}"><i
+                                    class="fas fa-bolt"></i> Vào ở ngay</a>
+                            <a
+                                href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'noi_that' => 'full']) }}"><i
+                                    class="fas fa-couch"></i> Full nội thất</a>
+                            <a
+                                href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'gia_den' => 10000000]) }}"><i
+                                    class="fas fa-tags"></i> Dưới 10 tr/th</a>
                         </div>
                     </div>
                 </li>
 
                 {{-- Các Menu khác --}}
                 <li class="nav-item has-dropdown">
-                    <a href="{{ route('frontend.du-an.index') }}" class="nav-link {{ request()->routeIs('frontend.du-an.*') ? 'active' : '' }}">
+                    <a href="{{ route('frontend.du-an.index') }}"
+                        class="nav-link {{ request()->routeIs('frontend.du-an.*') ? 'active' : '' }}">
                         Dự án <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown">
-                        <a href="{{ route('frontend.du-an.index') }}" class="dropdown-all"><span><i class="fas fa-th-large"></i> Tất cả dự án</span><small>{{ $tongSoDuAn ?? 0 }} dự án</small></a>
+                        <a href="{{ route('frontend.du-an.index') }}" class="dropdown-all"><span><i
+                                    class="fas fa-th-large"></i> Tất cả dự án</span><small>{{ $tongSoDuAn ?? 0 }} dự
+                                án</small></a>
                         @if (isset($khuVucMenu) && $khuVucMenu->count() > 0)
                             <div class="dropdown-divider"></div>
                             @foreach ($khuVucMenu as $kv)
-                                <a href="{{ route('frontend.du-an.index', ['khu_vuc' => $kv->id]) }}"><span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span><small>{{ $kv->so_du_an }} dự án</small></a>
+                                <a href="{{ route('frontend.du-an.index', ['khu_vuc' => $kv->id]) }}"><span><i
+                                            class="fas fa-map-marker-alt"></i>
+                                        {{ $kv->ten_khu_vuc }}</span><small>{{ $kv->so_du_an }} dự án</small></a>
                             @endforeach
                         @endif
                     </div>
                 </li>
 
                 <li class="nav-item has-dropdown">
-                    <a href="{{ route('frontend.tin-tuc.index') }}" class="nav-link {{ request()->routeIs('frontend.tin-tuc.*', 'frontend.bai-viet.*') ? 'active' : '' }}">
+                    <a href="{{ route('frontend.tin-tuc.index') }}"
+                        class="nav-link {{ request()->routeIs('frontend.tin-tuc.*', 'frontend.bai-viet.*') ? 'active' : '' }}">
                         Tin tức <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown">
-                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'tin_tuc']) }}"><i class="fas fa-newspaper me-2"></i> Thị trường BĐS</a>
-                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'kien_thuc']) }}"><i class="fas fa-book me-2"></i> Kiến thức nhà đất</a>
-                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'phong_thuy']) }}"><i class="fas fa-yin-yang me-2"></i> Phong thủy</a>
+                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'tin_tuc']) }}"><i
+                                class="fas fa-newspaper me-2"></i> Thị trường BĐS</a>
+                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'kien_thuc']) }}"><i
+                                class="fas fa-book me-2"></i> Kiến thức nhà đất</a>
+                        <a href="{{ route('frontend.tin-tuc.index', ['loai' => 'phong_thuy']) }}"><i
+                                class="fas fa-yin-yang me-2"></i> Phong thủy</a>
                     </div>
                 </li>
 
-                <li class="nav-item"><a href="{{ route('frontend.gioi-thieu') }}" class="nav-link {{ request()->routeIs('frontend.gioi-thieu') ? 'active' : '' }}">Giới thiệu</a></li>
-                <li class="nav-item"><a href="{{ route('frontend.noi-that') }}" class="nav-link {{ request()->routeIs('frontend.noi-that') ? 'active' : '' }}">Nội Thất</a></li>
+                <li class="nav-item"><a href="{{ route('frontend.gioi-thieu') }}"
+                        class="nav-link {{ request()->routeIs('frontend.gioi-thieu') ? 'active' : '' }}">Giới
+                        thiệu</a></li>
+                <li class="nav-item"><a href="{{ route('frontend.noi-that') }}"
+                        class="nav-link {{ request()->routeIs('frontend.noi-that') ? 'active' : '' }}">Nội Thất</a>
+                </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('frontend.ky-gui.create') }}" class="nav-link nav-link-cta {{ request()->routeIs('frontend.ky-gui.*') ? 'active' : '' }}">
+                    <a href="{{ route('frontend.ky-gui.create') }}"
+                        class="nav-link nav-link-cta {{ request()->routeIs('frontend.ky-gui.*') ? 'active' : '' }}">
                         <i class="fas fa-paper-plane me-1"></i> Ký gửi BĐS
                     </a>
                 </li>
@@ -183,7 +231,8 @@
                     <div class="kh-profile-wrap" id="khProfileWrap">
                         <div class="kh-avatar-btn" id="khAvatarBtn">
                             <div class="kh-avatar">{{ strtoupper(mb_substr($kh->ho_ten ?? 'K', 0, 1)) }}</div>
-                            <span class="kh-name d-none d-md-inline">{{ Str::limit($kh->ho_ten ?? 'Tài khoản', 12) }}</span>
+                            <span
+                                class="kh-name d-none d-md-inline">{{ Str::limit($kh->ho_ten ?? 'Tài khoản', 12) }}</span>
                             <i class="fas fa-chevron-down kh-chevron" id="khChevron"></i>
                         </div>
                         <div class="kh-dropdown" id="khDropdown">
@@ -196,23 +245,28 @@
                             </div>
                             <div class="kh-dd-body">
                                 <button class="kh-dd-item" onclick="openModalHoSo('thong-tin')">
-                                    <span class="kh-dd-icon" style="background:#fff5ef;color:#FF8C42;"><i class="fas fa-user-edit"></i></span>
+                                    <span class="kh-dd-icon"
+                                        style="background:var(--primary-soft);color:var(--primary-color);"><i
+                                            class="fas fa-user-edit"></i></span>
                                     <span>Đổi thông tin</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </button>
                                 <div class="kh-dd-divider"></div>
                                 <a href="{{ route('frontend.yeu-thich.index') }}" class="kh-dd-item">
-                                    <span class="kh-dd-icon" style="background:#fff1f2;color:#e11d48;"><i class="fas fa-heart"></i></span>
+                                    <span class="kh-dd-icon" style="background:#fff1f2;color:#e11d48;"><i
+                                            class="fas fa-heart"></i></span>
                                     <span>BĐS yêu thích</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </a>
                                 <a href="{{ route('khach-hang.lich-hen-cua-toi') }}" class="kh-dd-item">
-                                    <span class="kh-dd-icon" style="background:#f0fdf4;color:#16a34a;"><i class="fas fa-calendar-check"></i></span>
+                                    <span class="kh-dd-icon" style="background:#f0fdf4;color:#16a34a;"><i
+                                            class="fas fa-calendar-check"></i></span>
                                     <span>Lịch hẹn của tôi</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </a>
                                 <a href="{{ route('khach-hang.ky-gui-cua-toi') }}" class="kh-dd-item">
-                                    <span class="kh-dd-icon" style="background:#fefce8;color:#ca8a04;"><i class="fas fa-file-signature"></i></span>
+                                    <span class="kh-dd-icon" style="background:#fefce8;color:#ca8a04;"><i
+                                            class="fas fa-file-signature"></i></span>
                                     <span>Ký gửi của tôi</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </a>
@@ -220,7 +274,8 @@
                                 <form action="{{ route('khach-hang.logout') }}" method="POST">
                                     @csrf
                                     <button type="submit" class="kh-dd-item" style="color:#dc2626;">
-                                        <span class="kh-dd-icon" style="background:#fff5f5;color:#dc2626;"><i class="fas fa-sign-out-alt"></i></span>
+                                        <span class="kh-dd-icon" style="background:#fff5f5;color:#dc2626;"><i
+                                                class="fas fa-sign-out-alt"></i></span>
                                         <span>Đăng xuất</span>
                                     </button>
                                 </form>
@@ -228,8 +283,9 @@
                         </div>
                     </div>
                 @else
-                    {{-- Nút gọi Open Modal ở file auth-modal.blade.php --}}
-                    <button type="button" class="btn-header-login" onclick="openAuthModal('login')">
+                    {{-- SỬ DỤNG CLASS DÙNG CHUNG --}}
+                    <button type="button" class="btn btn-primary-theme px-3 py-2 fw-bold"
+                        style="border-radius:10px; font-size:.82rem;" onclick="openAuthModal('login')">
                         <i class="fas fa-user me-1"></i> Đăng nhập
                     </button>
                 @endauth
@@ -242,174 +298,4 @@
     </div>
 </nav>
 
-{{-- Overlay mobile --}}
 <div class="nav-overlay" id="navOverlay"></div>
-
-{{-- Gọi File Auth Modal --}}
-
-{{-- ============================================================
-     CSS CHO HEADER
-============================================================ --}}
-<style>
-    .topbar{background:#1a3c5e;padding:.45rem 0;font-size:.8rem}
-    .topbar-inner{display:flex;justify-content:space-between;align-items:center;gap:1rem}
-    .topbar-left, .topbar-right{display:flex;align-items:center;gap:1.2rem}
-    .topbar-left span, .topbar-left a{color:rgba(255,255,255,.8);display:flex;align-items:center;gap:.4rem;text-decoration:none}
-    .topbar-left i{color:#e8a020;font-size:.75rem}
-    .topbar-phone{background:#e8a020;color:#1a3c5e!important;font-weight:800;padding:.25rem .8rem;border-radius:20px;text-decoration:none!important;display:flex;align-items:center;gap:.4rem;transition:background .2s}
-    .topbar-phone:hover{background:#f5c842}
-    .topbar-socials{display:flex;gap:.5rem}
-    .topbar-socials a{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;font-size:.75rem;text-decoration:none;transition:background .2s,color .2s}
-    .topbar-socials a:hover{background:#e8a020;color:#fff}
-    .main-navbar{background:#fff;box-shadow:0 2px 20px rgba(0,0,0,.08);position:sticky;top:0;z-index:1000;transition:box-shadow .3s}
-    .main-navbar.scrolled{box-shadow:0 4px 30px rgba(0,0,0,.15)}
-    .navbar-inner{display:flex;align-items:center;justify-content:space-between;height:68px;gap:.5rem;flex-wrap:nowrap}
-    .navbar-logo, .navbar-actions{flex-shrink:0}
-    .nav-menu{list-style:none;margin:0;padding:0;display:flex;align-items:center;gap:0;flex:1;justify-content:center}
-    .nav-item{position:relative;margin:0 5px;padding:3px}
-    .nav-link{display:flex;align-items:center;gap:.2rem;padding:.45rem .5rem;color:#333;font-weight:600;font-size:.85rem;text-decoration:none;border-radius:8px;transition:color .2s,background .2s;white-space:nowrap}
-    .nav-link:hover, .nav-link.active{color:#1a3c5e;background:#f0f6ff}
-    .nav-link.active{color:#e8a020}
-    .nav-arrow{font-size:.6rem;color:#bbb;transition:transform .25s}
-    .nav-item.has-dropdown:hover .nav-arrow{transform:rotate(180deg)}
-    .nav-link-cta{background:linear-gradient(135deg,#e8a020,#f5c842)!important;color:#1a3c5e!important;border-radius:8px;padding:.45rem .9rem!important}
-    .nav-link-cta:hover{background:linear-gradient(135deg,#d4911c,#e8a020)!important;box-shadow:0 4px 15px rgba(232,160,32,.35)}
-    .nav-dropdown{display:none;position:absolute;top:calc(100% + 1px);left:0;background:#fff;border-radius:12px;box-shadow:0 15px 50px rgba(0,0,0,.15);border:1px solid #f0f0f0;min-width:220px;padding:.6rem;z-index:999;animation:dropIn .2s ease}
-    @keyframes dropIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
-    .nav-item.has-dropdown:hover>.nav-dropdown{display:block}
-    .nav-dropdown a{display:flex;align-items:center;padding:.52rem .85rem;color:#444;font-size:.87rem;font-weight:500;text-decoration:none;border-radius:8px;white-space:nowrap;transition:background .15s,color .15s}
-    .nav-dropdown a span{display:flex;align-items:center;gap:.45rem;flex:1;min-width:0}
-    .nav-dropdown a:hover{background:#f0f6ff;color:#1a3c5e;font-weight:600}
-    .nav-dropdown a i{color:#2d6a9f;width:16px;text-align:center}
-    .nav-dropdown a small{color:#bbb;font-size:.72rem;font-weight:500;padding-left:.5rem;flex-shrink:0}
-    .dropdown-divider{height:1px;background:#f0f0f0;margin:.4rem .6rem}
-    .dropdown-all{background:#f0f6ff;font-weight:700!important;color:#1a3c5e!important;border-radius:8px;margin-bottom:.2rem}
-    .dropdown-all i{color:#1a3c5e!important}
-    .dropdown-all:hover{background:#dceeff!important}
-    .dropdown-all-blue{background:#eef5ff!important;color:#2d6a9f!important}
-    .dropdown-all-blue i{color:#2d6a9f!important}
-    .dropdown-all-blue:hover{background:#dceeff!important}
-    .highlight-link{color:#e8a020!important;font-weight:600!important}
-    .highlight-link i{color:#e8a020!important}
-    .highlight-link:hover{background:#fff8e7!important}
-    .highlight-link-blue{color:#2d6a9f!important;font-weight:600!important}
-    .highlight-link-blue i{color:#2d6a9f!important}
-    .highlight-link-blue:hover{background:#eef5ff!important}
-    .can-ho-mega{padding:0!important;overflow:hidden;left:50%!important;transform:translateX(-50%)!important}
-    .can-ho-mega-inner{display:grid;grid-template-columns:1fr 1fr}
-    .can-ho-col{padding:.75rem .30rem}
-    .can-ho-col-right{border-left:1px solid #f0f0f0;background:#fafcff}
-    .can-ho-col-title{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:1px;color:#e8a020;padding:.15rem .85rem .5rem;border-bottom:2px solid #e8a020;margin-bottom:.35rem;display:flex;align-items:center;gap:.35rem}
-    .badge-pn{font-size:.68rem;font-weight:600;background:#f0f6ff;color:#2d6a9f;padding:.12rem .42rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
-    .badge-pn-blue{background:#eef5ff;color:#2d6a9f}
-    .can-ho-footer{border-top:1px solid #f0f0f0;background:#f8f9ff;padding:.55rem .85rem;display:flex;gap:.4rem;flex-wrap:wrap}
-    .can-ho-footer-blue{background:#f0f6ff}
-    .can-ho-footer a{font-size:.76rem;font-weight:600;padding:.28rem .65rem;border-radius:20px;background:#fff;border:1px solid #e0e8f0;color:#555;text-decoration:none;display:flex;align-items:center;gap:.3rem;transition:all .15s;white-space:nowrap;justify-content:flex-start}
-    .can-ho-footer a i{color:#e8a020;font-size:.76rem}
-    .can-ho-footer-blue a i{color:#2d6a9f}
-    .can-ho-footer a:hover{background:#1a3c5e;color:#fff;border-color:#1a3c5e}
-    .can-ho-footer a:hover i{color:#f5c842}
-    .navbar-actions{display:flex;align-items:center;gap:.4rem}
-    .action-btn{position:relative;width:38px;height:38px;border-radius:10px;background:#f0f6ff;border:none;color:#1a3c5e;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none;transition:background .2s,transform .2s}
-    .action-btn:hover{background:#1a3c5e;color:#e8a020;transform:scale(1.05)}
-    .action-badge{position:absolute;top:-4px;right:-4px;background:#e74c3c;color:#fff;font-size:.62rem;font-weight:700;width:17px;height:17px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
-    .btn-header-login{padding:.45rem 1rem;border-radius:10px;background:linear-gradient(135deg,#FF8C42,#FF5722);color:#fff;font-size:.82rem;font-weight:700;text-decoration:none;border:none;cursor:pointer;transition:all .2s;box-shadow:0 3px 10px rgba(255,140,66,.3);font-family:inherit}
-    .btn-header-login:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(255,140,66,.4)}
-
-    .hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:.4rem}
-    .hamburger span{display:block;width:22px;height:2px;background:#1a3c5e;border-radius:2px;transition:all .3s}
-    .hamburger.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px)}
-    .hamburger.open span:nth-child(2){opacity:0}
-    .hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px)}
-    .nav-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:998}
-    .nav-overlay.show{display:block}
-
-    .kh-profile-wrap{position:relative}
-    .kh-avatar-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem .6rem;border-radius:10px;border:none;background:none;transition:background .2s}
-    .kh-avatar-btn:hover{background:rgba(255,140,66,.08)}
-    .kh-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#FF8C42,#FF5722);color:#fff;font-size:.9rem;font-weight:900;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(255,140,66,.35)}
-    .kh-name{font-size:.82rem;font-weight:700;color:#1a3c5e}
-    .kh-chevron{font-size:.6rem;color:#9ca3af;transition:transform .25s}
-    .kh-profile-wrap.open .kh-chevron{transform:rotate(180deg)}
-    .kh-dropdown{position:absolute;top:calc(100% + 10px);right:0;width:240px;background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(0,0,0,.14);opacity:0;visibility:hidden;pointer-events:none;transform:translateY(8px) scale(.97);transform-origin:top right;transition:all .22s cubic-bezier(.19,1,.22,1);z-index:2000}
-    .kh-profile-wrap.open .kh-dropdown{opacity:1;visibility:visible;pointer-events:all;transform:translateY(0) scale(1)}
-    .kh-dd-header{background:linear-gradient(135deg,#0F172A,#1a3c5e);border-radius:16px 16px 0 0;padding:.4rem 1rem;display:flex;align-items:center;gap:.75rem}
-    .kh-dd-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#FF8C42,#FF5722);color:#fff;font-size:.95rem;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.2)}
-    .kh-dd-name{font-size:.85rem;font-weight:800;color:#fff}
-    .kh-dd-sdt{font-size:.68rem;color:rgba(255,255,255,.6)}
-    .kh-dd-body{padding:.4rem 0 .5rem}
-    .kh-dd-item{display:flex;align-items:center;gap:.7rem;width:100%;padding:.55rem .9rem;background:none;border:none;cursor:pointer;font-size:.82rem;font-weight:600;color:#374151;text-decoration:none;transition:background .15s}
-    .kh-dd-item:hover{background:#fff8f3;color:#FF8C42}
-    .kh-dd-icon{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.78rem}
-    .kh-dd-arr{font-size:.55rem;color:#d1d5db;margin-left:auto}
-    .kh-dd-divider{height:1px;background:#f3f4f6;margin:.3rem .9rem}
-
-    @media (max-width:1199px){
-        .hamburger{display:flex}
-        .nav-menu{position:fixed;top:0;left:-100%;width:300px;height:100vh;background:#fff;flex-direction:column;align-items:flex-start;padding:5rem 1rem 2rem;gap:0;overflow-y:auto;z-index:999;box-shadow:5px 0 30px rgba(0,0,0,.15);transition:left .3s ease;flex:none}
-        .nav-menu.open{left:0}
-        .nav-item{width:100%}
-        .nav-link{width:100%;padding:.72rem 1rem;font-size:.9rem;border-radius:8px}
-        .nav-item.has-dropdown:hover>.nav-dropdown, .nav-item.has-dropdown:hover>.can-ho-mega{display:none}
-        .nav-item.has-dropdown.mobile-open>.nav-dropdown, .nav-item.has-dropdown.mobile-open>.can-ho-mega{display:block!important}
-        .nav-dropdown, .can-ho-mega{position:static!important;width:100%!important;transform:none!important;box-shadow:none!important;border:none!important;border-radius:0!important;padding:0 0 0 .5rem!important;animation:none!important;background:#f8faff;border-left:3px solid #e0eaf5!important;margin:.2rem 0 .4rem 1rem}
-        .can-ho-mega-inner{grid-template-columns:1fr}
-        .can-ho-col-right{border-left:none;border-top:1px solid #f0f0f0;background:#fff}
-        .topbar-left span:not(:first-child){display:none}
-    }
-    @media (max-width:575px){.topbar-left{display:none}}
-</style>
-
-{{-- ============================================================
-     JAVASCRIPT CHO HEADER
-============================================================ --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const navbar = document.getElementById('mainNavbar');
-        window.addEventListener('scroll', () => navbar?.classList.toggle('scrolled', window.scrollY > 50));
-
-        const hamburger = document.getElementById('hamburger');
-        const navMenu = document.getElementById('navMenu');
-        const navOverlay = document.getElementById('navOverlay');
-
-        function closeMenu() {
-            hamburger?.classList.remove('open');
-            navMenu?.classList.remove('open');
-            navOverlay?.classList.remove('show');
-            document.body.style.overflow = '';
-        }
-
-        hamburger?.addEventListener('click', () => {
-            hamburger.classList.toggle('open');
-            navMenu.classList.toggle('open');
-            navOverlay.classList.toggle('show');
-            document.body.style.overflow = navMenu.classList.contains('open') ? 'hidden' : '';
-        });
-        navOverlay?.addEventListener('click', closeMenu);
-
-        document.querySelectorAll('.nav-item.has-dropdown > .nav-link').forEach(link => {
-            link.addEventListener('click', function(e) {
-                if (window.innerWidth >= 1200) return;
-                e.preventDefault();
-                const item = this.closest('.nav-item');
-                const isOpen = item.classList.contains('mobile-open');
-                document.querySelectorAll('.nav-item.has-dropdown.mobile-open').forEach(el => el.classList.remove('mobile-open'));
-                if (!isOpen) item.classList.add('mobile-open');
-            });
-        });
-
-        let _khOpen = false;
-        document.getElementById('khAvatarBtn')?.addEventListener('click', e => {
-            e.stopPropagation();
-            _khOpen = !_khOpen;
-            document.getElementById('khProfileWrap').classList.toggle('open', _khOpen);
-        });
-        document.addEventListener('click', e => {
-            const wrap = document.getElementById('khProfileWrap');
-            if (wrap && !wrap.contains(e.target)) {
-                _khOpen = false;
-                wrap.classList.remove('open');
-            }
-        });
-    });
-</script>

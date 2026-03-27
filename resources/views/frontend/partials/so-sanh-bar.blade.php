@@ -12,7 +12,7 @@
         bottom: 0;
         left: 0;
         right: 0;
-        background: var(--navy);
+        background: var(--secondary);
         color: #fff;
         padding: .8rem 1.5rem;
         z-index: 980;
@@ -92,7 +92,7 @@
     }
 
     .ss-btn-compare {
-        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        background: linear-gradient(135deg, #d9834a, var(--primary));
         color: #fff;
         border: none;
         border-radius: 8px;
@@ -109,7 +109,7 @@
 
     .ss-btn-compare:hover {
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(255, 140, 66, .4);
+        box-shadow: 0 4px 14px rgba(192, 102, 42, .4);
     }
 
     .ss-btn-page {
@@ -134,8 +134,8 @@
     }
 
     .ss-btn-clear {
-        background: rgba(231, 76, 60, .25);
-        border: 1px solid rgba(231, 76, 60, .4);
+        background: rgba(198, 40, 40, .2);
+        border: 1px solid rgba(198, 40, 40, .35);
         color: #ffb3ae;
         padding: .45rem .9rem;
         border-radius: 8px;
@@ -146,8 +146,18 @@
     }
 
     .ss-btn-clear:hover {
-        background: rgba(231, 76, 60, .4);
+        background: rgba(198, 40, 40, .4);
         color: #fff;
+    }
+
+    /* Modal header & badge */
+    #soSanhModal .modal-header {
+        background: var(--secondary);
+    }
+
+    #soSanhModal .modal-header .badge {
+        background: var(--primary) !important;
+        font-size: .7rem;
     }
 
     @media (max-width: 576px) {
@@ -176,7 +186,7 @@
             <button type="button" class="ss-btn-compare" onclick="openSoSanhModal()">
                 <i class="fas fa-chart-bar"></i> So sánh ngay
             </button>
-            <button type="button" class="ss-btn-page" onclick="moTrangSoSanh()" style="font-size:.75rem">
+            <button type="button" class="ss-btn-page" onclick="moTrangSoSanh()">
                 <i class="fas fa-expand-alt"></i> Xem đầy đủ
             </button>
             <button type="button" class="ss-btn-clear" onclick="clearSoSanh()">
@@ -191,25 +201,23 @@
     <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 rounded-4" style="box-shadow: 0 24px 60px rgba(0,0,0,.18)">
 
-            <div class="modal-header border-0 p-3" style="background: var(--navy)">
+            <div class="modal-header border-0 p-3">
                 <h5 class="modal-title fw-bold mb-0 text-white">
-                    <i class="fas fa-balance-scale me-2" style="color:var(--primary)"></i>
+                    <i class="fas fa-balance-scale me-2" style="color: var(--primary)"></i>
                     Bảng So Sánh Chi Tiết
-                    <span class="badge ms-2" style="background:var(--primary);font-size:.7rem"
-                        id="soSanhModalCount"></span>
+                    <span class="badge ms-2" id="soSanhModalCount"></span>
                 </h5>
                 <div class="d-flex align-items-center gap-2">
-                    <button type="button" class="ss-btn-page" onclick="moTrangSoSanh()" style="font-size:.75rem">
+                    <button type="button" class="ss-btn-page" onclick="moTrangSoSanh()">
                         <i class="fas fa-expand-alt"></i> Xem đầy đủ
                     </button>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
             </div>
 
-            {{-- Loading state --}}
             <div class="modal-body p-0" id="soSanhModalBody">
                 <div class="text-center py-5" id="soSanhLoading">
-                    <div class="spinner-border" style="color:var(--primary)" role="status"></div>
+                    <div class="spinner-border" style="color: var(--primary)" role="status"></div>
                     <p class="mt-2 text-muted fw-bold">Đang tải dữ liệu so sánh...</p>
                 </div>
             </div>
@@ -220,10 +228,9 @@
 
 {{-- ── JS So Sánh ── --}}
 <script>
-    /* Lấy list từ localStorage, key 'tcl_sosánh' giống master gốc */
     var soSanhList = JSON.parse(localStorage.getItem('tcl_sosánh') || '[]');
 
-    /* ── Thêm BĐS vào danh sách ── */
+    /* ── Thêm BĐS ── */
     window.addSoSanh = function(id, ten) {
         id = parseInt(id);
         if (soSanhList.find(function(x) {
@@ -251,7 +258,6 @@
             return x.id !== id;
         });
         saveSoSanh();
-        /* Nếu modal đang mở và còn đủ BĐS → load lại, không thì đóng */
         var modalEl = document.getElementById('soSanhModal');
         if (modalEl && modalEl.classList.contains('show')) {
             if (soSanhList.length >= 2) {
@@ -266,7 +272,6 @@
     window.clearSoSanh = function() {
         soSanhList = [];
         saveSoSanh();
-        /* Đóng modal nếu đang mở */
         var modalEl = document.getElementById('soSanhModal');
         if (modalEl && modalEl.classList.contains('show')) {
             bootstrap.Modal.getInstance(modalEl)?.hide();
@@ -296,7 +301,9 @@
         if (countEl) countEl.textContent = soSanhList.length;
         if (itemsEl) {
             itemsEl.innerHTML = soSanhList.map(function(item) {
-                var shortName = item.ten.length > 22 ? item.ten.substring(0, 22) + '…' : item.ten;
+                var shortName = item.ten.length > 22 ?
+                    item.ten.substring(0, 22) + '…' :
+                    item.ten;
                 return '<span class="ss-item-chip">' + shortName +
                     '<button class="ss-item-remove" onclick="removeSoSanh(' + item.id + ')" title="Xóa">' +
                     '<i class="fas fa-times"></i></button></span>';
@@ -312,10 +319,8 @@
         var countBadge = document.getElementById('soSanhModalCount');
         if (!modalEl) return;
 
-        /* Cập nhật badge đếm */
         if (countBadge) countBadge.textContent = soSanhList.length + ' BĐS';
 
-        /* Hiện loading */
         if (modalBody) {
             modalBody.innerHTML =
                 '<div class="text-center py-5">' +
@@ -324,10 +329,8 @@
                 '</div>';
         }
 
-        /* Mở modal trước */
         bootstrap.Modal.getOrCreateInstance(modalEl).show();
 
-        /* Fetch AJAX */
         var ids = soSanhList.map(function(item) {
             return item.id;
         }).join(',');
@@ -349,7 +352,7 @@
             });
     };
 
-    /* Mở trang so sánh đầy đủ kèm IDs từ localStorage */
+    /* ── Mở trang so sánh đầy đủ ── */
     window.moTrangSoSanh = function() {
         if (soSanhList.length === 0) {
             showFlash('Chưa có BĐS nào trong danh sách so sánh.', 'warning');
@@ -362,7 +365,6 @@
         window.open(url, '_blank');
     };
 
-
-    /* ── Khởi tạo khi load trang ── */
+    /* ── Khởi tạo ── */
     document.addEventListener('DOMContentLoaded', renderSoSanhBar);
 </script>

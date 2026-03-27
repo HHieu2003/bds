@@ -1,74 +1,67 @@
 <section class="hero-search-section position-relative d-flex align-items-center justify-content-center">
-    {{-- Ảnh nền và lớp phủ Gradient Xanh Navy --}}
+    {{-- Ảnh nền zoom chậm và lớp phủ Gradient Navy/Đen --}}
     <div class="hero-bg" style="background-image: url('/images/anh-nhan-vien-cong-ty-Thanh-Cong-Land-1536x702.webp');">
     </div>
-    <div class="hero-overlay"
-        style="background: linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.4) 100%);"></div>
+    <div class="hero-overlay"></div>
 
-    <div class="container position-relative z-1 text-center" data-aos="zoom-in" data-aos-duration="800">
+    <div class="container position-relative z-1 text-center" data-aos="zoom-in" data-aos-duration="1000">
 
-        {{-- Tiêu đề Banner --}}
-        <div class="mb-5">
-            <span class="badge rounded-pill px-3 py-2 mb-3 fw-bold"
-                style="background-color: rgba(255,140,66,0.2); color: #FF8C42; border: 1px solid #FF8C42; font-size: 0.85rem; letter-spacing: 1px;">
+        {{-- ── TIÊU ĐỀ BANNER (Đã giảm margin để thu gọn chiều cao) ── --}}
+        <div class="mb-3">
+            <span class="badge rounded-pill px-3 py-2 mb-2 fw-bold"
+                style="background-color: var(--primary-light); color: var(--primary); border: 1px solid var(--primary); font-size: 0.85rem; letter-spacing: 1px; backdrop-filter: blur(4px);">
                 <i class="fas fa-star me-1"></i> THÀNH CÔNG LAND
             </span>
-            <h1 class="display-4 fw-bold text-white serif-font mb-3 text-shadow">
-                Khởi Nguồn <span style="color: #FF8C42;">Tổ Ấm</span>, Kiến Tạo <span style="color: #FF8C42;">Tương
+            <h1 class="display-4 fw-bold text-white serif-font mb-2 text-shadow" style="line-height: 1.2;">
+                Khởi Nguồn <span class="text-primary-brand">Tổ Ấm</span>, Kiến Tạo <span
+                    class="text-primary-brand">Tương
                     Lai</span>
             </h1>
-            <p class="fs-5 text-light opacity-75 fw-light mx-auto" style="max-width: 700px;">
+            <p class="fs-6 text-light opacity-75 fw-light mx-auto mb-0">
                 Hơn 5,000+ bất động sản cao cấp đang chờ bạn khám phá. Tìm kiếm ngay ngôi nhà mơ ước của bạn!
             </p>
         </div>
 
-        {{-- Form Tìm Kiếm Nổi (Floating Card) --}}
-        <div class="search-card bg-white p-2 p-md-4 rounded-4 shadow-lg mx-auto" style="max-width: 950px;">
-
+        {{-- ── FORM TÌM KIẾM (LUXURY STYLE - Thiết kế mỏng gọn hơn) ── --}}
+        <div class="search-card bg-white mx-auto">
             <form action="{{ route('frontend.bat-dong-san.index') }}" method="GET" id="heroSearchForm">
 
                 {{-- Tabs Ẩn: Lưu giá trị Nhu Cầu (Bán / Thuê) --}}
                 <input type="hidden" name="nhu_cau" id="nhuCauInput" value="ban">
 
-                {{-- Nút chuyển đổi Mua / Thuê --}}
-                <div class="d-flex justify-content-center justify-content-md-start mb-4 gap-2 border-bottom pb-3">
-                    <button type="button" class="btn btn-search-tab active px-4 py-2 rounded-pill fw-bold"
-                        onclick="setNhuCau('ban', this)">
-                        Mua Bất Động Sản
-                    </button>
-                    <button type="button" class="btn btn-search-tab px-4 py-2 rounded-pill fw-bold"
-                        onclick="setNhuCau('thue', this)">
-                        Thuê Bất Động Sản
-                    </button>
+                {{-- Nút chuyển đổi Mua / Thuê (Dạng Segmented Control) --}}
+                <div class="search-tabs-wrapper mb-3 text-start">
+                    <div class="search-tabs d-inline-flex p-1 rounded-pill bg-light border">
+                        <button type="button" class="btn btn-search-tab active rounded-pill px-4 py-2 fw-bold"
+                            onclick="setNhuCau('ban', this)">Mua Bán</button>
+                        <button type="button" class="btn btn-search-tab rounded-pill px-4 py-2 fw-bold"
+                            onclick="setNhuCau('thue', this)">Cho Thuê</button>
+                    </div>
                 </div>
 
-                {{-- Các ô nhập liệu --}}
-                <div class="row g-3 align-items-center text-start">
+                {{-- Các ô nhập liệu (Đã giảm chiều cao ô nhập liệu) --}}
+                <div class="row g-2 align-items-end text-start">
 
-                    {{-- Ô Từ khóa --}}
-                    <div class="col-lg-4 col-md-6">
-                        <label class="form-label fw-bold small text-muted mb-1 ps-2">Từ khóa tìm kiếm</label>
-                        <div class="input-group search-input-group rounded-pill overflow-hidden bg-light">
-                            <span class="input-group-text bg-transparent border-0 ps-4 text-muted"><i
-                                    class="fas fa-search"></i></span>
+                    {{-- 1. Ô Từ khóa --}}
+                    <div class="col-lg-3 col-md-6">
+                        <label class="form-label search-label">Từ khóa</label>
+                        <div class="search-input-group d-flex align-items-center px-3">
+                            <i class="fas fa-search search-icon"></i>
                             <input type="text" name="tu_khoa"
-                                class="form-control border-0 bg-transparent shadow-none py-3"
-                                placeholder="Tên dự án, đường, quận...">
+                                class="form-control border-0 bg-transparent shadow-none" placeholder="Tòa, đường...">
                         </div>
                     </div>
 
-                    {{-- Ô Khu vực --}}
-                    <div class="col-lg-3 col-md-6">
-                        <label class="form-label fw-bold small text-muted mb-1 ps-2">Khu vực</label>
-                        <div class="input-group search-input-group rounded-pill overflow-hidden bg-light">
-                            <span class="input-group-text bg-transparent border-0 ps-4" style="color: #FF8C42;"><i
-                                    class="fas fa-map-marker-alt"></i></span>
-                            <select name="khu_vuc"
-                                class="form-select border-0 bg-transparent shadow-none py-3 text-dark fw-semibold cursor-pointer">
-                                <option value="">Tất cả khu vực</option>
-                                {{-- Tận dụng biến $khuVucMenu từ AppServiceProvider --}}
-                                @if (isset($khuVucMenu))
-                                    @foreach ($khuVucMenu as $kv)
+                    {{-- 2. Ô Khu vực --}}
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label search-label">Khu vực</label>
+                        <div class="search-input-group d-flex align-items-center px-3">
+                            <i class="fas fa-map-marker-alt search-icon"></i>
+                            <select name="khu_vuc_id"
+                                class="form-select border-0 bg-transparent shadow-none cursor-pointer">
+                                <option value="">Tất cả</option>
+                                @if (isset($khuVuc))
+                                    @foreach ($khuVuc as $kv)
                                         <option value="{{ $kv->id }}">{{ $kv->ten_khu_vuc }}</option>
                                     @endforeach
                                 @endif
@@ -76,15 +69,32 @@
                         </div>
                     </div>
 
-                    {{-- Ô Mức giá --}}
+                    {{-- 3. Ô Dự án --}}
                     <div class="col-lg-3 col-md-6">
-                        <label class="form-label fw-bold small text-muted mb-1 ps-2">Mức giá</label>
-                        <div class="input-group search-input-group rounded-pill overflow-hidden bg-light">
-                            <span class="input-group-text bg-transparent border-0 ps-4" style="color: #FF8C42;"><i
-                                    class="fas fa-money-bill-wave"></i></span>
+                        <label class="form-label search-label">Dự án</label>
+                        <div class="search-input-group d-flex align-items-center px-3">
+                            <i class="fas fa-building search-icon"></i>
+                            <select name="du_an"
+                                class="form-select border-0 bg-transparent shadow-none cursor-pointer">
+                                <option value="">Tất cả dự án</option>
+                                @if (isset($danhSachDuAn))
+                                    @foreach ($danhSachDuAn as $da)
+                                        <option value="{{ $da->id }}">{{ Str::limit($da->ten_du_an, 25) }}
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                        </div>
+                    </div>
+
+                    {{-- 4. Ô Mức giá --}}
+                    <div class="col-lg-2 col-md-6">
+                        <label class="form-label search-label">Mức giá</label>
+                        <div class="search-input-group d-flex align-items-center px-3">
+                            <i class="fas fa-money-bill-wave search-icon"></i>
                             <select name="muc_gia"
-                                class="form-select border-0 bg-transparent shadow-none py-3 text-dark fw-semibold cursor-pointer">
-                                <option value="">Tất cả mức giá</option>
+                                class="form-select border-0 bg-transparent shadow-none cursor-pointer">
+                                <option value="">Tất cả</option>
                                 <option value="duoi-2">Dưới 2 Tỷ</option>
                                 <option value="2-5">2 - 5 Tỷ</option>
                                 <option value="5-10">5 - 10 Tỷ</option>
@@ -93,11 +103,11 @@
                         </div>
                     </div>
 
-                    {{-- Nút Tìm Kiếm --}}
-                    <div class="col-lg-2 col-md-6 mt-4 mt-lg-0 pt-lg-4">
-                        <button type="submit"
-                            class="btn btn-primary w-100 rounded-pill fw-bold py-3 text-white d-flex align-items-center justify-content-center btn-search-submit">
-                            <i class="fas fa-search me-2"></i> Tìm Ngay
+                    {{-- 5. Nút Tìm Kiếm --}}
+                    <div class="col-lg-2 col-md-12 mt-3 mt-lg-0">
+                        <button type="submit" class="btn-primary-brand w-100 justify-content-center"
+                            style="height: 46px; border-radius: 12px; font-size: 0.95rem;">
+                            <i class="fas fa-search me-1"></i> Tìm
                         </button>
                     </div>
 
@@ -109,125 +119,146 @@
 </section>
 
 {{-- ==========================================
-     CSS CHUẨN MÀU CAM & XANH NAVY
+     CSS CỤC BỘ DÀNH RIÊNG CHO HERO BANNER
 ========================================== --}}
-<style>
-    /* Bố cục Hero */
-    .hero-search-section {
-        min-height: 85vh;
-        /* Chiều cao banner */
-        padding-top: 50px;
-        padding-bottom: 80px;
-        overflow: hidden;
-    }
+@push('styles')
+    <style>
+        /* ÉP CHIỀU CAO BANNER THẤP XUỐNG 60VH */
+        .hero-search-section {
+            height: 55vh;
+            /* Chiều cao cố định bằng 60% màn hình */
+            min-height: 450px;
+            overflow: hidden;
+        }
 
-    .hero-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-size: cover;
-        background-position: center;
-        z-index: 0;
-        transform: scale(1.02);
-        /* Zoom nhẹ ảnh nền */
-    }
+        .hero-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: 0;
+        }
 
-    .hero-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-    }
+        @keyframes slowZoom {
+            0% {
+                transform: scale(1);
+            }
 
-    .text-shadow {
-        text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    }
+            100% {
+                transform: scale(1.1);
+            }
+        }
 
-    /* Thiết kế Form Card */
-    .search-card {
-        transition: transform 0.3s ease;
-    }
+        .hero-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 0;
+            background: linear-gradient(135deg, rgba(27, 58, 107, 0.9) 0%, rgba(28, 18, 9, 0.6) 100%);
+        }
 
-    .search-card:hover {
-        transform: translateY(-5px);
-    }
+        .text-shadow {
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
 
-    /* Thiết kế Input Group */
-    .search-input-group {
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
+        /* FORM CARD TÌM KIẾM */
+        .search-card {
+            max-width: 1050px;
+            border-radius: 20px;
+            padding: 1.5rem 2rem;
+            /* Giảm padding bên trong form để form mỏng đi */
+            box-shadow: 0 20px 50px rgba(28, 18, 9, 0.25);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
 
-    .search-input-group:focus-within {
-        background-color: #fff !important;
-        border-color: #FF8C42;
-        box-shadow: 0 0 0 4px rgba(255, 140, 66, 0.15);
-    }
+        .search-card:hover {
+            transform: translateY(-5px);
+        }
 
-    .form-control:focus,
-    .form-select:focus {
-        background-color: transparent !important;
-    }
+        .search-tabs {
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
 
-    /* Tabs Mua/Thuê */
-    .btn-search-tab {
-        background-color: transparent;
-        color: #64748B;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-    }
+        .btn-search-tab {
+            color: var(--text-muted);
+            border: none;
+            font-size: 0.85rem;
+            transition: all 0.3s;
+        }
 
-    .btn-search-tab:hover {
-        color: #0F172A;
-        background-color: #f1f5f9;
-    }
+        .btn-search-tab.active {
+            background-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(196, 145, 42, 0.3);
+        }
 
-    .btn-search-tab.active {
-        background-color: #fff4ed;
-        color: #FF8C42;
-        border-color: #FF8C42;
-    }
+        .search-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--secondary);
+            margin-bottom: 0.3rem;
+            padding-left: 0.3rem;
+        }
 
-    /* Nút Submit */
-    .btn-search-submit {
-        background: linear-gradient(135deg, #FF8C42 0%, #ff6b1a 100%);
-        border: none;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(255, 140, 66, 0.3);
-    }
+        .search-input-group {
+            background-color: #f8fafc;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            height: 46px;
+            /* Giảm chiều cao ô nhập liệu cho gọn gàng */
+            transition: all var(--transition);
+        }
 
-    .btn-search-submit:hover {
-        background: linear-gradient(135deg, #e67a32 0%, #e65c00 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(255, 140, 66, 0.4);
-    }
+        .search-input-group:focus-within {
+            background-color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
 
-    .cursor-pointer {
-        cursor: pointer;
-    }
-</style>
+        .search-icon {
+            color: var(--primary);
+            font-size: 0.95rem;
+            width: 20px;
+            text-align: center;
+        }
+
+        .search-input-group .form-control,
+        .search-input-group .form-select {
+            color: var(--text-heading);
+            font-weight: 600;
+            font-size: 0.9rem;
+            padding: 0.2rem;
+        }
+
+        /* Đáp ứng trên giao diện điện thoại */
+        @media (max-width: 991px) {
+            .hero-search-section {
+                height: auto;
+                min-height: 100vh;
+                padding: 100px 0 50px;
+            }
+
+            .search-card {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+@endpush
 
 {{-- ==========================================
-     JS XỬ LÝ CHUYỂN TAB MUA / THUÊ
+     JS CỤC BỘ DÀNH RIÊNG CHO HERO BANNER
 ========================================== --}}
 @push('scripts')
     <script>
         function setNhuCau(value, btnElement) {
-            // 1. Cập nhật giá trị vào thẻ input hidden
             document.getElementById('nhuCauInput').value = value;
-
-            // 2. Xóa class active ở tất cả các tab
             const tabs = document.querySelectorAll('.btn-search-tab');
             tabs.forEach(tab => tab.classList.remove('active'));
-
-            // 3. Thêm class active vào tab vừa được click
             btnElement.classList.add('active');
 
-            // Hiệu ứng nhẹ: thay đổi chữ "Mức giá" tương ứng
             const selectGia = document.querySelector('select[name="muc_gia"]');
             if (value === 'thue') {
                 selectGia.options[1].text = "Dưới 10 Triệu";

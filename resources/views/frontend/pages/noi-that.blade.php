@@ -1,7 +1,8 @@
 @extends('frontend.layouts.master')
 
 @section('title', 'Nội thất Thành Công Land — Thiết kế & Thi công nội thất cao cấp')
-@section('meta_description', 'Đơn vị thiết kế và thi công nội thất uy tín tại Hà Nội. Chuyên biệt căn hộ Vinhomes Smart
+@section('meta_description',
+    'Đơn vị thiết kế và thi công nội thất uy tín tại Hà Nội. Chuyên biệt căn hộ Vinhomes Smart
     City với phong cách hiện đại, tối giản và sang trọng.')
 
 @section('breadcrumb')

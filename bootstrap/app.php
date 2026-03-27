@@ -12,7 +12,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
 
+        $middleware->validateCsrfTokens(except: [
+            'khach-hang/logout',
+            'tai-khoan/dang-xuat',
+        ]);
         // ✅ THÊM ĐOẠN NÀY — redirect đúng trang login theo URL
         $middleware->redirectGuestsTo(function (Request $request) {
 

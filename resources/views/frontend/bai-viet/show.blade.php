@@ -3,94 +3,141 @@
 @section('title', $baiViet->tieu_de . ' - Thành Công Land')
 
 @section('content')
-    <section class="py-5 bg-light" style="min-height: 80vh;">
-        <div class="container py-3">
+
+    {{-- ── READING PROGRESS BAR ── --}}
+    <div id="readingProgress"></div>
+
+    {{-- ── HERO BANNER BÀI VIẾT ── --}}
+    <section class="bvct-hero">
+        <div class="bvct-hero-overlay"></div>
+        <div class="container position-relative z-1">
 
             {{-- Breadcrumb --}}
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb mb-0">
-                    <li class="breadcrumb-item"><a href="{{ route('frontend.home') }}"
-                            class="text-decoration-none text-muted hover-orange"><i class="fas fa-home"></i> Trang chủ</a>
+            <nav aria-label="breadcrumb" class="mb-4" data-aos="fade-down" data-aos-duration="500">
+                <ol class="breadcrumb mb-0 bvct-breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('frontend.home') }}">
+                            <i class="fas fa-home me-1"></i>Trang chủ
+                        </a>
                     </li>
-                    <li class="breadcrumb-item"><a href="{{ route('frontend.tin-tuc.index') }}"
-                            class="text-decoration-none text-muted hover-orange">Tin tức</a></li>
-                    <li class="breadcrumb-item active fw-bold" aria-current="page" style="color: #FF8C42;">Chi tiết</li>
+                    <li class="breadcrumb-item">
+                        <a href="{{ route('frontend.tin-tuc.index') }}">Tin tức</a>
+                    </li>
+                    <li class="breadcrumb-item active">Chi tiết</li>
                 </ol>
             </nav>
 
+            {{-- Badge loại --}}
+            <div data-aos="fade-up" data-aos-duration="500" data-aos-delay="100">
+                <span class="bvct-hero-badge">
+                    <i class="fas fa-tag me-1"></i>{{ $baiViet->loai_bai_viet ?? 'Tin Tức' }}
+                </span>
+            </div>
+
+            {{-- Tiêu đề --}}
+            <h1 class="bvct-hero-title" data-aos="fade-up" data-aos-duration="600" data-aos-delay="150">
+                {{ $baiViet->tieu_de }}
+            </h1>
+
+            {{-- Meta --}}
+            <div class="bvct-hero-meta" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
+                <span>
+                    <i class="far fa-calendar-alt me-1"></i>
+                    {{ \Carbon\Carbon::parse($baiViet->thoi_diem_dang ?? $baiViet->created_at)->format('d/m/Y H:i') }}
+                </span>
+                <span class="bvct-meta-sep">•</span>
+                <span>
+                    <i class="far fa-eye me-1"></i>{{ $baiViet->luot_xem ?? 0 }} lượt xem
+                </span>
+                <span class="bvct-meta-sep">•</span>
+                <span>
+                    <i class="fas fa-pen-nib me-1"></i>Ban Biên Tập Thành Công Land
+                </span>
+            </div>
+
+        </div>
+    </section>
+
+    {{-- ── MAIN CONTENT ── --}}
+    <section class="py-5 bg-alt-section">
+        <div class="container">
             <div class="row g-5">
 
-                {{-- NỘI DUNG BÀI VIẾT --}}
+                {{-- ── CỘT TRÁI: NỘI DUNG ── --}}
                 <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
 
-                        {{-- Tiêu đề & Thông tin phụ --}}
-                        <div class="border-bottom pb-4 mb-4">
-                            <div class="badge bg-light text-dark mb-3 px-3 py-2 border fw-bold"
-                                style="color: #FF8C42 !important; border-color: #FF8C42 !important;">
-                                {{ $baiViet->loai_bai_viet ?? 'Tin Tức' }}
-                            </div>
-                            <h1 class="fw-bold serif-font mb-3" style="color: #0F172A; line-height: 1.4;">
-                                {{ $baiViet->tieu_de }}</h1>
-                            <div class="d-flex align-items-center text-muted small fw-semibold">
-                                <span class="me-4"><i class="far fa-calendar-alt me-1 text-primary"></i> Đăng ngày:
-                                    {{ \Carbon\Carbon::parse($baiViet->thoi_diem_dang ?? $baiViet->created_at)->format('d/m/Y H:i') }}</span>
-                                <span><i class="far fa-eye me-1 text-secondary"></i> Lượt xem:
-                                    {{ $baiViet->luot_xem ?? 0 }}</span>
-                            </div>
-                        </div>
+                    {{-- Card nội dung chính --}}
+                    <article class="bvct-card" data-aos="fade-up" data-aos-duration="600">
 
-                        {{-- Mô tả ngắn (Sapo) --}}
+                        {{-- Sapo --}}
                         @if ($baiViet->mo_ta_ngan)
-                            <p class="fw-bold fs-6 mb-4" style="color: #334155; line-height: 1.8;">
+                            <div class="bvct-sapo">
                                 {!! $baiViet->mo_ta_ngan !!}
-                            </p>
+                            </div>
                         @endif
 
-                        {{-- Nội dung chính (SEO Content) --}}
-                        <div class="article-content text-justify" style="color: #475569;">
+                        {{-- Nội dung bài viết --}}
+                        <div class="article-content">
                             {!! $baiViet->noi_dung !!}
                         </div>
 
-                        {{-- Tác giả & Chia sẻ --}}
-                        <div class="d-flex justify-content-between align-items-center mt-5 pt-4 border-top">
-                            <div class="fw-bold text-dark"><i class="fas fa-pen-nib me-2 text-muted"></i>Ban Biên Tập Thành
-                                Công Land</div>
-                            <div class="d-flex gap-2">
-                                <span class="text-muted fw-semibold me-2 mt-1">Chia sẻ:</span>
+                        {{-- Footer bài viết --}}
+                        <div class="bvct-footer">
+                            <div class="bvct-author">
+                                <div class="bvct-author-avatar">
+                                    <i class="fas fa-pen-nib"></i>
+                                </div>
+                                <div>
+                                    <div class="bvct-author-name">Ban Biên Tập Thành Công Land</div>
+                                    <div class="bvct-author-role">Biên tập viên</div>
+                                </div>
+                            </div>
+                            <div class="bvct-share">
+                                <span class="bvct-share-label">Chia sẻ:</span>
                                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(url()->current()) }}"
-                                    target="_blank" class="btn btn-sm btn-light rounded-circle text-primary"
-                                    style="width: 32px; height: 32px;"><i class="fab fa-facebook-f"></i></a>
+                                    target="_blank" class="bvct-share-btn bvct-share-fb" title="Chia sẻ Facebook">
+                                    <i class="fab fa-facebook-f"></i>
+                                </a>
                                 <a href="https://twitter.com/intent/tweet?url={{ urlencode(url()->current()) }}"
-                                    target="_blank" class="btn btn-sm btn-light rounded-circle text-info"
-                                    style="width: 32px; height: 32px;"><i class="fab fa-twitter"></i></a>
+                                    target="_blank" class="bvct-share-btn bvct-share-tw" title="Chia sẻ Twitter">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                <button class="bvct-share-btn bvct-share-copy" onclick="copyLink()" title="Sao chép link">
+                                    <i class="fas fa-link" id="copyIcon"></i>
+                                </button>
                             </div>
                         </div>
-                    </div>
 
-                    {{-- TIN LIÊN QUAN --}}
+                    </article>
+
+                    {{-- ── TIN LIÊN QUAN ── --}}
                     @if ($tinLienQuan->count() > 0)
-                        <div class="mt-5">
-                            <h4 class="fw-bold serif-font mb-4"
-                                style="color: #0F172A; border-left: 4px solid #FF8C42; padding-left: 10px;">Bài Viết Cùng
-                                Chuyên Mục</h4>
+                        <div class="mt-5" data-aos="fade-up" data-aos-duration="600" data-aos-delay="100">
+                            <h4 class="bvct-related-title">
+                                <span></span>Bài Viết Cùng Chuyên Mục
+                            </h4>
                             <div class="row g-4">
                                 @foreach ($tinLienQuan as $bv)
-                                    <div class="col-md-4">
+                                    <div class="col-md-4" data-aos="fade-up" data-aos-duration="500"
+                                        data-aos-delay="{{ $loop->iteration * 80 }}">
                                         <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-up">
                                             <a href="{{ route('frontend.tin-tuc.show', $bv->slug) }}"
-                                                class="overflow-hidden d-block" style="height: 160px;">
+                                                class="bvct-related-thumb overflow-hidden d-block">
                                                 <img src="{{ $bv->hinh_anh ? asset('storage/' . $bv->hinh_anh) : asset('images/default-news.jpg') }}"
-                                                    class="card-img-top w-100 h-100 project-img"
-                                                    style="object-fit: cover; transition: 0.5s;">
+                                                    class="w-100 h-100 project-img" style="object-fit:cover;"
+                                                    alt="{{ $bv->tieu_de }}">
                                             </a>
                                             <div class="card-body p-3">
                                                 <h6 class="fw-bold mb-2">
                                                     <a href="{{ route('frontend.tin-tuc.show', $bv->slug) }}"
-                                                        class="text-decoration-none text-dark line-clamp-2 hover-orange">{{ $bv->tieu_de }}</a>
+                                                        class="card-title-link line-clamp-2">
+                                                        {{ $bv->tieu_de }}
+                                                    </a>
                                                 </h6>
-                                                <small class="text-muted"><i class="far fa-calendar-alt me-1"></i>
-                                                    {{ \Carbon\Carbon::parse($bv->thoi_diem_dang ?? $bv->created_at)->format('d/m/Y') }}</small>
+                                                <small class="text-muted">
+                                                    <i class="far fa-calendar-alt me-1"></i>
+                                                    {{ \Carbon\Carbon::parse($bv->thoi_diem_dang ?? $bv->created_at)->format('d/m/Y') }}
+                                                </small>
                                             </div>
                                         </div>
                                     </div>
@@ -98,46 +145,70 @@
                             </div>
                         </div>
                     @endif
+
                 </div>
 
-                {{-- SIDEBAR --}}
+                {{-- ── SIDEBAR ── --}}
                 <div class="col-lg-4">
                     <div class="position-sticky" style="top: 100px;">
-                        {{-- Form Ký gửi nhanh --}}
-                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden mb-4">
-                            <div class="p-4 text-center text-white"
-                                style="background: linear-gradient(135deg, #0F172A, #1A2948);">
-                                <h5 class="fw-bold mb-1">Tư Vấn Miễn Phí</h5>
-                                <p class="small opacity-75 mb-0">Hỗ trợ pháp lý, định giá nhà đất</p>
+
+                        {{-- Card Tư vấn --}}
+                        <div class="bvct-consult-card mb-4" data-aos="fade-left" data-aos-duration="600"
+                            data-aos-delay="100">
+                            <div class="bvct-consult-header">
+                                <div class="bvct-consult-icon">
+                                    <i class="fas fa-headset"></i>
+                                </div>
+                                <div>
+                                    <h5 class="fw-bold mb-1">Tư Vấn Miễn Phí</h5>
+                                    <p class="small opacity-75 mb-0">Hỗ trợ pháp lý, định giá nhà đất</p>
+                                </div>
                             </div>
-                            <div class="card-body p-4 bg-white">
+                            <div class="bvct-consult-body">
                                 <form action="#" method="POST">
-                                    <div class="mb-3"><input type="text" class="form-control bg-light border-0"
-                                            placeholder="Số điện thoại của bạn *" required></div>
-                                    <button type="button" class="btn w-100 fw-bold py-2 text-white shadow-sm"
-                                        style="background-color: #FF8C42; border-radius: 8px;">Yêu Cầu Gọi Lại</button>
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control bvct-input"
+                                            placeholder="Họ và tên của bạn">
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="text" class="form-control bvct-input"
+                                            placeholder="Số điện thoại *" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary-brand w-100 py-2">
+                                        <i class="fas fa-phone-alt me-2"></i>Yêu Cầu Gọi Lại
+                                    </button>
                                 </form>
                             </div>
                         </div>
 
-                        {{-- Tin nổi bật Sidebar --}}
-                        <div class="card border-0 shadow-sm rounded-4">
+                        {{-- Tin đọc nhiều --}}
+                        <div class="card border-0 shadow-sm rounded-4" data-aos="fade-left" data-aos-duration="600"
+                            data-aos-delay="200">
                             <div class="card-body p-4">
-                                <h5 class="fw-bold serif-font mb-4">Tin Đọc Nhiều Nhất</h5>
+                                <h5 class="section-title fw-bold mb-4">
+                                    <i class="fas fa-fire me-2 text-primary-brand"></i>Tin Đọc Nhiều Nhất
+                                </h5>
                                 @foreach ($tinNoiBat as $tin)
-                                    <div class="d-flex mb-3 align-items-center pb-3 border-bottom border-light">
-                                        <div class="fs-4 fw-bold me-3" style="color: #e2e8f0;">0{{ $loop->iteration }}
+                                    <div class="bvct-hot-item {{ !$loop->last ? 'border-bottom mb-3 pb-3' : '' }}">
+                                        <div class="bvct-hot-num">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}
                                         </div>
                                         <div>
-                                            <h6 class="mb-1 fw-bold" style="font-size: 0.9rem;">
+                                            <h6 class="mb-1 fw-bold" style="font-size:.875rem">
                                                 <a href="{{ route('frontend.tin-tuc.show', $tin->slug) }}"
-                                                    class="text-dark text-decoration-none line-clamp-2 hover-orange">{{ $tin->tieu_de }}</a>
+                                                    class="text-dark text-decoration-none line-clamp-2 bv-hover-link">
+                                                    {{ $tin->tieu_de }}
+                                                </a>
                                             </h6>
+                                            <small class="text-muted">
+                                                <i class="far fa-calendar-alt me-1"></i>
+                                                {{ \Carbon\Carbon::parse($tin->thoi_diem_dang ?? $tin->created_at)->format('d/m/Y') }}
+                                            </small>
                                         </div>
                                     </div>
                                 @endforeach
                             </div>
                         </div>
+
                     </div>
                 </div>
 
@@ -145,81 +216,466 @@
         </div>
     </section>
 
+    {{-- ── STYLES ── --}}
     <style>
-        .hover-up {
-            transition: all 0.3s ease;
+        /* ── Reading Progress Bar ── */
+        #readingProgress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 3px;
+            width: 0%;
+            background: linear-gradient(90deg, #d9834a, var(--primary));
+            z-index: 9999;
+            transition: width .1s linear;
+            border-radius: 0 2px 2px 0;
         }
 
-        .hover-up:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
-        }
-
-        .hover-up:hover .project-img {
-            transform: scale(1.08);
-        }
-
-        .hover-orange {
-            transition: 0.2s;
-        }
-
-        .hover-orange:hover {
-            color: #FF8C42 !important;
-        }
-
-        .line-clamp-2 {
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        /* ── Hero ── */
+        .bvct-hero {
+            position: relative;
+            padding: 4rem 0 3rem;
+            background:
+                linear-gradient(rgba(28, 18, 9, 0.82), rgba(28, 18, 9, 0.82)),
+                url('{{ $baiViet->hinh_anh ? asset('storage/' . $baiViet->hinh_anh) : asset('images/default-news.jpg') }}') center / cover fixed;
             overflow: hidden;
         }
 
-        /* ĐỊNH DẠNG NỘI DUNG BÀI VIẾT CHUẨN BÁO CHÍ */
-        .article-content {
-            font-size: 1.1rem;
+        .bvct-hero::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: var(--bg-alt);
+            clip-path: ellipse(55% 100% at 50% 100%);
+        }
+
+        .bvct-breadcrumb .breadcrumb-item a {
+            color: rgba(255, 255, 255, .75);
+            text-decoration: none;
+            transition: color var(--transition);
+        }
+
+        .bvct-breadcrumb .breadcrumb-item a:hover {
+            color: var(--primary);
+        }
+
+        .bvct-breadcrumb .breadcrumb-item.active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .bvct-breadcrumb .breadcrumb-item+.breadcrumb-item::before {
+            color: rgba(255, 255, 255, .4);
+        }
+
+        .bvct-hero-badge {
+            display: inline-flex;
+            align-items: center;
+            background: var(--primary);
+            color: #fff;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: .3rem .9rem;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            letter-spacing: .3px;
+        }
+
+        .bvct-hero-title {
+            color: #fff;
+            font-size: clamp(1.6rem, 3vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1.35;
+            max-width: 780px;
+            margin-bottom: 1.2rem;
+        }
+
+        .bvct-hero-meta {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+            color: rgba(255, 255, 255, .7);
+            font-size: .85rem;
+        }
+
+        .bvct-meta-sep {
+            color: rgba(255, 255, 255, .3);
+        }
+
+        /* ── Card nội dung ── */
+        .bvct-card {
+            background: #fff;
+            border-radius: 20px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            animation: fadeInUp .5s ease both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ── Sapo ── */
+        .bvct-sapo {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-body);
             line-height: 1.8;
+            padding: 1.2rem 1.5rem;
+            border-left: 4px solid var(--primary);
+            background: var(--primary-light);
+            border-radius: 0 12px 12px 0;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Nội dung bài viết ── */
+        .article-content {
+            font-size: 1.05rem;
+            line-height: 1.9;
+            color: var(--text-body);
         }
 
         .article-content p {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.3rem;
         }
 
         .article-content img {
             max-width: 100% !important;
             height: auto !important;
-            border-radius: 8px;
+            border-radius: 12px;
             margin: 1.5rem auto;
             display: block;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm);
         }
 
         .article-content h2,
         .article-content h3 {
-            color: #0F172A;
-            font-weight: 700;
-            margin-top: 2rem;
+            color: var(--text-heading);
+            font-weight: 800;
+            margin-top: 2.2rem;
             margin-bottom: 1rem;
-            font-family: serif;
+            padding-left: .8rem;
+            border-left: 4px solid var(--primary);
         }
 
         .article-content a {
-            color: #FF8C42;
-            text-decoration: none;
+            color: var(--primary);
             font-weight: 600;
+            text-decoration: none;
+            border-bottom: 1px dashed var(--primary);
+            transition: opacity var(--transition);
         }
 
         .article-content a:hover {
-            text-decoration: underline;
+            opacity: .75;
         }
 
         .article-content blockquote {
-            border-left: 4px solid #FF8C42;
-            padding-left: 1rem;
+            border-left: 4px solid var(--primary);
+            padding: 1rem 1.2rem;
             font-style: italic;
-            color: #64748B;
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 0 8px 8px 0;
+            color: var(--text-muted);
+            background: var(--bg-alt);
+            border-radius: 0 12px 12px 0;
+            margin: 1.5rem 0;
+        }
+
+        .article-content ul,
+        .article-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .article-content li {
+            margin-bottom: .5rem;
+        }
+
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+            font-size: .95rem;
+        }
+
+        .article-content th {
+            background: var(--secondary);
+            color: #fff;
+            padding: .7rem 1rem;
+            text-align: left;
+        }
+
+        .article-content td {
+            padding: .6rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .article-content tr:nth-child(even) td {
+            background: var(--bg-alt);
+        }
+
+        /* ── Footer bài viết ── */
+        .bvct-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .bvct-author {
+            display: flex;
+            align-items: center;
+            gap: .8rem;
+        }
+
+        .bvct-author-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: var(--secondary);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .bvct-author-name {
+            font-weight: 700;
+            color: var(--text-heading);
+            font-size: .9rem;
+        }
+
+        .bvct-author-role {
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+
+        .bvct-share {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .bvct-share-label {
+            font-size: .82rem;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .bvct-share-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .85rem;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition);
+        }
+
+        .bvct-share-fb {
+            background: #e8f0fe;
+            color: #1877f2;
+        }
+
+        .bvct-share-fb:hover {
+            background: #1877f2;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .bvct-share-tw {
+            background: #e7f5fd;
+            color: #1da1f2;
+        }
+
+        .bvct-share-tw:hover {
+            background: #1da1f2;
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .bvct-share-copy {
+            background: var(--primary-light);
+            color: var(--primary);
+        }
+
+        .bvct-share-copy:hover {
+            background: var(--primary);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        /* ── Tiêu đề tin liên quan ── */
+        .bvct-related-title {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            color: var(--text-heading);
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .bvct-related-title span {
+            display: inline-block;
+            width: 4px;
+            height: 22px;
+            background: var(--primary);
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .bvct-related-thumb {
+            height: 160px;
+            display: block;
+        }
+
+        /* ── Sidebar: Tư vấn ── */
+        .bvct-consult-card {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(27, 58, 107, .15);
+            border: 1px solid var(--border);
+        }
+
+        .bvct-consult-header {
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            padding: 1.4rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bvct-consult-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, .12);
+            border: 1px solid rgba(255, 255, 255, .2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        .bvct-consult-body {
+            background: #fff;
+            padding: 1.5rem;
+        }
+
+        .bvct-input {
+            background: var(--bg-alt) !important;
+            border: 1.5px solid var(--border) !important;
+            border-radius: 8px !important;
+            padding: .65rem .9rem !important;
+            font-size: .9rem !important;
+            transition: border-color var(--transition), box-shadow var(--transition) !important;
+        }
+
+        .bvct-input:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 0 3px var(--primary-light) !important;
+            background: #fff !important;
+            outline: none !important;
+        }
+
+        /* ── Sidebar: Tin hot ── */
+        .bvct-hot-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .9rem;
+        }
+
+        .bvct-hot-num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--border);
+            flex-shrink: 0;
+            min-width: 32px;
+        }
+
+        .bvct-hot-item:first-child .bvct-hot-num {
+            color: var(--primary);
+        }
+
+        .bvct-hot-item:nth-child(2) .bvct-hot-num {
+            color: var(--text-muted);
+        }
+
+        .bv-hover-link {
+            transition: color var(--transition);
+        }
+
+        .bv-hover-link:hover {
+            color: var(--primary) !important;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 767px) {
+            .bvct-card {
+                padding: 1.5rem;
+            }
+
+            .bvct-hero {
+                padding: 3rem 0 2.5rem;
+            }
+
+            .bvct-footer {
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
     </style>
+
+    {{-- ── SCRIPTS ── --}}
+    <script>
+        /* Reading Progress Bar */
+        window.addEventListener('scroll', function() {
+            const article = document.querySelector('.article-content');
+            const bar = document.getElementById('readingProgress');
+            if (!article || !bar) return;
+
+            const rect = article.getBoundingClientRect();
+            const total = article.offsetHeight;
+            const scrolled = Math.max(0, -rect.top);
+            const pct = Math.min(100, (scrolled / total) * 100);
+            bar.style.width = pct + '%';
+        });
+
+        /* Copy Link */
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(function() {
+                const icon = document.getElementById('copyIcon');
+                icon.className = 'fas fa-check';
+                setTimeout(function() {
+                    icon.className = 'fas fa-link';
+                }, 2000);
+            });
+        }
+    </script>
+
 @endsection

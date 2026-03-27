@@ -13,7 +13,7 @@ class BatDongSanController extends Controller
     public function index(Request $request)
     {
         // 1. Khởi tạo Query mặc định: Chỉ lấy BĐS đang hiển thị và còn hàng
-        $query = BatDongSan::with(['duAn', 'khuVuc'])
+        $query = BatDongSan::with(['duAn.khuVuc']) // Tối ưu N+1 query lồng nhau
             ->where('hien_thi', 1)
             ->when($request->toa,     fn($q) => $q->where('toa', $request->toa))
             ->when($request->noithat, fn($q) => $q->where('noi_that', $request->noithat))
@@ -24,12 +24,25 @@ class BatDongSanController extends Controller
             $query->where('nhu_cau', $request->nhu_cau);
         }
 
-        // 3. Lọc theo Từ khóa (Tìm trong Tiêu đề hoặc Địa chỉ)
+        // 3. Lọc theo TỪ KHÓA (Tối ưu tìm kiếm đa tầng: Tiêu đề, Tòa, Mã BĐS, Tên Dự án, Địa chỉ, Tên Khu vực)
         if ($request->filled('tu_khoa')) {
             $tuKhoa = $request->tu_khoa;
             $query->where(function ($q) use ($tuKhoa) {
+                // Các trường nằm trực tiếp trên bảng bat_dong_san
                 $q->where('tieu_de', 'like', '%' . $tuKhoa . '%')
-                    ->orWhere('dia_chi', 'like', '%' . $tuKhoa . '%');
+                    ->orWhere('toa', 'like', '%' . $tuKhoa . '%')
+                    ->orWhere('ma_bat_dong_san', 'like', '%' . $tuKhoa . '%')
+
+                    // Tìm lồng vào bảng du_an (Dự án)
+                    ->orWhereHas('duAn', function ($qDuAn) use ($tuKhoa) {
+                        $qDuAn->where('ten_du_an', 'like', '%' . $tuKhoa . '%')
+                            ->orWhere('dia_chi', 'like', '%' . $tuKhoa . '%') // dia_chi nằm ở bảng dự án
+
+                            // Tiếp tục tìm lồng vào bảng khu_vuc (Từ dự án chọc sang khu vực)
+                            ->orWhereHas('khuVuc', function ($qKhuVuc) use ($tuKhoa) {
+                                $qKhuVuc->where('ten_khu_vuc', 'like', '%' . $tuKhoa . '%');
+                            });
+                    });
             });
         }
 
@@ -88,13 +101,14 @@ class BatDongSanController extends Controller
             elseif ($request->sap_xep == 'gia_cao') $query->orderBy('gia', 'desc');
             elseif ($request->sap_xep == 'moi_nhat') $query->orderBy('created_at', 'desc');
         } else {
-            $query->orderBy('noi_bat', 'desc')->orderBy('created_at', 'desc'); // Mặc định: Nổi bật lên trước, sau đó là mới nhất
+            // Mặc định: Nổi bật lên trước, sau đó là mới nhất
+            $query->orderBy('noi_bat', 'desc')->orderBy('created_at', 'desc');
         }
-
 
         $toaList = BatDongSan::whereNotNull('toa')
             ->when($request->du_an, fn($q) => $q->where('du_an_id', $request->du_an))
             ->distinct()->pluck('toa')->sort()->values();
+
         // 10. Phân trang (12 BĐS / 1 trang) và giữ nguyên param trên URL
         $batDongSans = $query->paginate(12)->withQueryString();
 
@@ -102,23 +116,30 @@ class BatDongSanController extends Controller
         $khuVucs = KhuVuc::where('hien_thi', 1)->whereNull('khu_vuc_cha_id')->get();
         $duAns = DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get();
 
-        return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns'));
+        return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns', 'toaList'));
     }
 
     public function show($slug)
     {
-        $bds = BatDongSan::with(['duAn', 'khuVuc'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
+        $bds = BatDongSan::with(['duAn.khuVuc'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
 
-        // Tăng lượt xem (Tính năng thực tế)
+        // Tăng lượt xem
         $bds->increment('luot_xem');
 
         // Bất động sản liên quan (Cùng dự án hoặc cùng khu vực)
-        $bdsLienQuan = BatDongSan::where('id', '!=', $bds->id)
+        $bdsLienQuan = BatDongSan::with(['duAn.khuVuc'])
+            ->where('id', '!=', $bds->id)
             ->where('hien_thi', 1)
             ->where('nhu_cau', $bds->nhu_cau)
             ->where(function ($q) use ($bds) {
-                if ($bds->du_an_id) $q->where('du_an_id', $bds->du_an_id);
-                else $q->where('khu_vuc_id', $bds->khu_vuc_id);
+                if ($bds->du_an_id) {
+                    $q->where('du_an_id', $bds->du_an_id);
+                } else {
+                    // Nếu không có dự án thì tìm theo khu vực của dự án
+                    $q->whereHas('duAn', function ($qDuAn) use ($bds) {
+                        $qDuAn->where('khu_vuc_id', $bds->duAn->khu_vuc_id ?? null);
+                    });
+                }
             })
             ->limit(4)->get();
 

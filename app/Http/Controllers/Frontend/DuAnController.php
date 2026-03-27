@@ -14,7 +14,7 @@ class DuAnController extends Controller
         // 1. Khởi tạo query lấy các dự án đang hiển thị
         $query = DuAn::with('khuVuc')->where('hien_thi', 1);
 
-        // 2. Kiểm tra nếu có bấm lọc từ Header (Truyền lên ?khu_vuc=...)
+        // 2. Lọc theo KHU VỰC
         if ($request->filled('khu_vuc')) {
             $khu_vuc = $request->khu_vuc;
 
@@ -29,13 +29,19 @@ class DuAnController extends Controller
             }
         }
 
-        // 3. Phân trang: Lấy 12 dự án mỗi trang, sắp xếp theo thứ tự hiển thị ưu tiên
+        // 3. Lọc theo TỪ KHÓA (Tên dự án) - Bổ sung thêm để form search ngoài view hoạt động
+        if ($request->filled('tu_khoa')) {
+            $tu_khoa = $request->tu_khoa;
+            $query->where('ten_du_an', 'LIKE', '%' . $tu_khoa . '%');
+        }
+
+        // 4. Phân trang: Lấy 12 dự án mỗi trang, sắp xếp theo thứ tự hiển thị ưu tiên
         $duAns = $query->orderBy('thu_tu_hien_thi', 'asc')
             ->orderBy('created_at', 'desc')
             ->paginate(12);
 
-        // Lấy danh sách khu vực để làm bộ lọc ở thanh Sidebar (nếu cần)
-        $khuVucs = KhuVuc::where('hien_thi', 1)->whereNull('khu_vuc_cha_id')->get();
+        // 5. SỬA TẠI ĐÂY: Bỏ whereNull('khu_vuc_cha_id') để lấy TOÀN BỘ khu vực đang được cho phép hiển thị
+        $khuVucs = KhuVuc::where('hien_thi', 1)->get();
 
         return view('frontend.du-an.index', compact('duAns', 'khuVucs'));
     }

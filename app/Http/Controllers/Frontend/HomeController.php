@@ -12,53 +12,26 @@ class HomeController extends Controller
 {
     public function index()
     {
-        $bdsNoiBat = BatDongSan::with('duAn')
-            ->where('hien_thi', true)
-            ->where('noi_bat', true)
-            ->where('trang_thai', 'con_hang')
-            ->orderBy('thu_tu_hien_thi')
-            ->limit(8)
-            ->get();
+        $bdsNoiBat = BatDongSan::with('duAn')->where('hien_thi', true)->where('noi_bat', true)->where('trang_thai', 'con_hang')->orderBy('thu_tu_hien_thi')->limit(8)->get();
+        $bdsBan = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        $bdsThue = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        $duAnNoiBat = DuAn::with('khuVuc')->orderBy('thu_tu_hien_thi')->get();
+        $baiVietMoi = BaiViet::where('hien_thi', true)->orderByDesc('thoi_diem_dang')->limit(3)->get();
 
-        $bdsBan = BatDongSan::with('duAn')
-            ->where('hien_thi', true)
-            ->where('nhu_cau', 'ban')
-            ->where('trang_thai', 'con_hang')
-            ->latest()
-            ->limit(6)
-            ->get();
+        $khuVuc = KhuVuc::where('hien_thi', true)->orderBy('thu_tu_hien_thi')->get();
 
-        $bdsThue = BatDongSan::with('duAn')
-            ->where('hien_thi', true)
-            ->where('nhu_cau', 'thue')
-            ->where('trang_thai', 'con_hang')
-            ->latest()
-            ->limit(6)
-            ->get();
+        // THÊM DÒNG NÀY: Lấy toàn bộ dự án để đưa vào Form tìm kiếm
+        $danhSachDuAn = DuAn::where('hien_thi', true)->orderBy('ten_du_an')->get();
 
-        $duAnNoiBat = DuAn::with('khuVuc')
-
-            ->orderBy('thu_tu_hien_thi')
-
-            ->get();
-
-        $baiVietMoi = BaiViet::where('hien_thi', true)
-            ->orderByDesc('thoi_diem_dang')
-            ->limit(3)
-            ->get();
-
-        $khuVuc = KhuVuc::where('hien_thi', true)
-            ->whereNull('khu_vuc_cha_id')
-            ->orderBy('thu_tu_hien_thi')
-            ->get();
-
+        // Thêm 'danhSachDuAn' vào compact
         return view('frontend.home.index', compact(
             'bdsNoiBat',
             'bdsBan',
             'bdsThue',
             'duAnNoiBat',
             'baiVietMoi',
-            'khuVuc'
+            'khuVuc',
+            'danhSachDuAn'
         ));
     }
 
