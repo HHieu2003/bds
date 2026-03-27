@@ -46,7 +46,7 @@ class HomeController extends Controller
         });
 
         $duAnNoiBat = DuAn::with('khuVuc')->orderBy('thu_tu_hien_thi')->get();
-        $baiVietMoi = BaiViet::where('hien_thi', true)->orderByDesc('thoi_diem_dang')->limit(3)->get();
+        $baiVietMoi = BaiViet::where('hien_thi', true)->orderByDesc('thoi_diem_dang')->limit(8)->get();
 
         $khuVuc = KhuVuc::where('hien_thi', true)->orderBy('thu_tu_hien_thi')->get();
 

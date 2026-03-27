@@ -53,7 +53,6 @@
             max-height: 60px;
             object-fit: contain;
 
-            opacity: 0.7;
             transition: all 0.4s ease;
         }
 

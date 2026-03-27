@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-           TRANG CHI TIẾT BĐS — Global Styles
-        ═══════════════════════════════════════ */
+                                   TRANG CHI TIẾT BĐS — Global Styles
+                                ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -106,27 +106,31 @@
         /* Overlay "+N ảnh" */
         .gal-more-overlay {
             position: absolute;
-            inset: 0;
-            background: rgba(15, 23, 42, .65);
+            right: 10px;
+            bottom: 10px;
+            background: rgba(0, 0, 0, .62);
+            color: #fff;
+            border-radius: 10px;
+            padding: .45rem .6rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: .3rem;
-            color: #fff;
+            gap: .15rem;
             font-weight: 800;
-            backdrop-filter: blur(2px);
-        }
-
-        .gal-more-overlay span {
-            font-size: 1.6rem;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .28);
+            border: 1px solid rgba(255, 255, 255, .22);
             line-height: 1;
         }
 
+        .gal-more-overlay span {
+            font-size: 1.1rem;
+        }
+
         .gal-more-overlay small {
-            font-size: .72rem;
-            opacity: .85;
-            letter-spacing: .5px;
+            font-size: .62rem;
+            letter-spacing: .45px;
+            opacity: .92;
         }
 
         /* Badge nhu cầu trên gallery */
@@ -432,7 +436,7 @@
             pointer-events: none;
         }
 
-        .mo-ta-preview.expanded~.mo-ta-fade {
+        .mo-ta-preview.expanded .mo-ta-fade {
             display: none;
         }
 
@@ -1080,8 +1084,8 @@
                                     <p class="text-muted fst-italic">Đang cập nhật mô tả cho bất động sản này...</p>
                                 @endif
                             </div>
+                            <div class="mo-ta-fade" id="motaFade"></div>
                         </div>
-                        <div class="mo-ta-fade" id="motaFade"></div>
                         <button class="btn-read-more" id="btnReadMore" onclick="toggleMoTa()">
                             <i class="fas fa-chevron-down" id="iconReadMore"></i>
                             <span id="txtReadMore">Xem thêm nội dung</span>
@@ -1220,6 +1224,15 @@
                             </div>
                         @endforeach
                     </div>
+                </div>
+            @else
+                <div class="related-section"
+                    style="background: #fff; border-radius: 16px; padding: 2rem 1.8rem; text-align: center;">
+                    <h3 class="section-title mb-3">Bất Động Sản Tương Tự</h3>
+                    <p style="color: #9ca3af; font-size: 0.95rem; margin: 0;">
+                        <i class="fas fa-inbox me-2" style="color: #FF8C42;"></i>
+                        Không có bất động sản nào tương tự
+                    </p>
                 </div>
             @endif
 
