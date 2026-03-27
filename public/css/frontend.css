@@ -1497,7 +1497,7 @@ ol {
     display: grid;
     grid-template-columns: 1.8fr 1fr 1fr 1.5fr;
     gap: 2.5rem;
-    padding: 3rem 0 1rem;
+    padding: 2rem 0 0.5rem;
 }
 
 .footer-logo {
@@ -1687,7 +1687,6 @@ ol {
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 1rem;
-    padding: 1.2rem 0 2rem;
 }
 .footer-bottom-left p {
     margin: 0;

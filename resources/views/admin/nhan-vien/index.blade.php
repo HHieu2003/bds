@@ -1,6 +1,10 @@
 @extends('admin.layouts.master')
 @section('title', 'Quản lý Nhân viên')
 
+@section('page_title', 'Bất động sản')
+@section('page_parent', 'Quản lý')   {{-- tuỳ chọn, có thể bỏ --}}
+
+
 @section('content')
 
     {{-- ══ THỐNG KÊ ══ --}}
