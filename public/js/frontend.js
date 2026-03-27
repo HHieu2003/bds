@@ -32,18 +32,36 @@ document.addEventListener("DOMContentLoaded", function () {
     navOverlay?.addEventListener("click", closeMenu);
 
     // Xử lý mở Menu con trên Mobile
+    // Xử lý mở Menu con trên Mobile - ACCORDION
     document
         .querySelectorAll(".nav-item.has-dropdown > .nav-link")
         .forEach((link) => {
             link.addEventListener("click", function (e) {
                 if (window.innerWidth >= 1200) return;
                 e.preventDefault();
+
                 const item = this.closest(".nav-item");
                 const isOpen = item.classList.contains("mobile-open");
+
+                // Đóng tất cả dropdown khác
                 document
                     .querySelectorAll(".nav-item.has-dropdown.mobile-open")
                     .forEach((el) => el.classList.remove("mobile-open"));
-                if (!isOpen) item.classList.add("mobile-open");
+
+                // Toggle cái hiện tại
+                if (!isOpen) {
+                    item.classList.add("mobile-open");
+
+                    // Scroll menu để item vừa mở không bị khuất
+                    setTimeout(() => {
+                        const navMenu = document.getElementById("navMenu");
+                        const itemTop = item.offsetTop;
+                        navMenu.scrollTo({
+                            top: itemTop - 60,
+                            behavior: "smooth",
+                        });
+                    }, 50);
+                }
             });
         });
 

@@ -1,7 +1,7 @@
 {{-- ============================================================
-     TOPBAR
+     TOPBAR — ẨN HOÀN TOÀN TRÊN MOBILE
 ============================================================ --}}
-<div class="topbar">
+<div class="topbar d-none d-lg-block">
     <div class="container-fluid px-4">
         <div class="topbar-inner">
             <div class="topbar-left">
@@ -30,17 +30,28 @@
      MAIN NAVBAR
 ============================================================ --}}
 <nav class="main-navbar" id="mainNavbar">
-    <div class="container-fluid px-4">
+    <div class="container-fluid px-3 px-md-4">
         <div class="navbar-inner">
+
+            {{-- ── Hamburger (mobile - bên TRÁI) ── --}}
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
 
             {{-- ── Logo ── --}}
             <a href="{{ route('frontend.home') }}" class="navbar-logo">
-                <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land Logo"
-                    style="height: 40px; margin-right: 12px">
+                <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land Logo" class="navbar-logo-img">
             </a>
 
             {{-- ── Menu chính (desktop) ── --}}
             <ul class="nav-menu" id="navMenu">
+                {{-- Nút đóng menu trên mobile --}}
+                <li class="nav-close-item">
+                    <button class="nav-close-btn" id="navClose" aria-label="Đóng menu">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </li>
+
                 <li class="nav-item">
                     <a href="{{ route('frontend.home') }}"
                         class="nav-link {{ request()->routeIs('frontend.home') ? 'active' : '' }}">Trang chủ</a>
@@ -53,6 +64,7 @@
                         Mua căn hộ <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown can-ho-mega">
+                        
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
@@ -133,8 +145,8 @@
                                 @endforelse
                                 <div class="dropdown-divider"></div>
                                 <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
-                                    class="highlight-link-blue"><span><i class="fas fa-arrow-right"></i> Xem tất cả khu
-                                        vực</span></a>
+                                    class="highlight-link-blue"><span><i class="fas fa-arrow-right"></i> Xem tất cả
+                                        khu vực</span></a>
                             </div>
                             <div class="can-ho-col can-ho-col-right">
                                 <div class="can-ho-col-title"><i class="fas fa-city"></i> Theo dự án</div>
@@ -168,7 +180,7 @@
                     </div>
                 </li>
 
-                {{-- Các Menu khác --}}
+                {{-- Dự án --}}
                 <li class="nav-item has-dropdown">
                     <a href="{{ route('frontend.du-an.index') }}"
                         class="nav-link {{ request()->routeIs('frontend.du-an.*') ? 'active' : '' }}">
@@ -189,6 +201,7 @@
                     </div>
                 </li>
 
+                {{-- Tin tức --}}
                 <li class="nav-item has-dropdown">
                     <a href="{{ route('frontend.tin-tuc.index') }}"
                         class="nav-link {{ request()->routeIs('frontend.tin-tuc.*', 'frontend.bai-viet.*') ? 'active' : '' }}">
@@ -217,9 +230,16 @@
                         <i class="fas fa-paper-plane me-1"></i> Ký gửi BĐS
                     </a>
                 </li>
+
+                {{-- Thông tin liên hệ mobile (chỉ hiện trong menu) --}}
+                <li class="nav-mobile-contact d-lg-none">
+                    <a href="tel:+84336123130" class="nav-mobile-phone">
+                        <i class="fas fa-phone-alt"></i> 0336 123 130
+                    </a>
+                </li>
             </ul>
 
-            {{-- ── Actions ── --}}
+            {{-- ── Actions (desktop + mobile) ── --}}
             <div class="navbar-actions">
                 <a href="{{ route('frontend.yeu-thich.index') }}" class="action-btn" title="BĐS yêu thích">
                     <i class="far fa-heart"></i>
@@ -283,16 +303,11 @@
                         </div>
                     </div>
                 @else
-                    {{-- SỬ DỤNG CLASS DÙNG CHUNG --}}
-                    <button type="button" class="btn btn-primary-theme px-3 py-2 fw-bold"
-                        style="border-radius:10px; font-size:.82rem;" onclick="openAuthModal('login')">
-                        <i class="fas fa-user me-1"></i> Đăng nhập
+                    <button type="button" class="btn-login-mobile" onclick="openAuthModal('login')">
+                        <i class="fas fa-user"></i>
+                        <span class="d-none d-sm-inline">Đăng nhập</span>
                     </button>
                 @endauth
-
-                <button class="hamburger" id="hamburger" aria-label="Menu">
-                    <span></span><span></span><span></span>
-                </button>
             </div>
         </div>
     </div>
