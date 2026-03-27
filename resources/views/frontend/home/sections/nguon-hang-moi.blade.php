@@ -31,9 +31,10 @@
                                         class="badge-hot shadow-sm">Đang Bán</span></div>
                                 <div class="position-absolute top-0 end-0 m-3 z-1">
                                     <button
-                                        class="btn btn-light rounded-circle shadow-sm text-muted heart-icon-{{ $bds->id }} fav-btn"
-                                        onclick="toggleYeuThich(this, {{ $bds->id }})" title="Lưu tin này"><i
-                                            class="fas fa-heart"></i></button>
+                                        class="btn btn-light rounded-circle shadow-sm text-muted heart-icon-{{ $bds->id }} fav-btn {{ $bds->isYeuThich ?? false ? 'liked' : '' }}"
+                                        onclick="toggleYeuThich(this, {{ $bds->id }})"
+                                        title="{{ $bds->isYeuThich ?? false ? 'Bỏ yêu thích' : 'Lưu tin này' }}"><i
+                                            class="{{ $bds->isYeuThich ?? false ? 'fas' : 'far' }} fa-heart"></i></button>
                                 </div>
                                 <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                                     class="overflow-hidden d-block bg-light img-wrapper" style="height: 220px;">
@@ -83,9 +84,10 @@
                                         class="badge-moi shadow-sm">Cho Thuê</span></div>
                                 <div class="position-absolute top-0 end-0 m-3 z-1">
                                     <button
-                                        class="btn btn-light rounded-circle shadow-sm text-muted heart-icon-{{ $bds->id }} fav-btn"
-                                        onclick="toggleYeuThich(this, {{ $bds->id }})" title="Lưu tin này"><i
-                                            class="fas fa-heart"></i></button>
+                                        class="btn btn-light rounded-circle shadow-sm text-muted heart-icon-{{ $bds->id }} fav-btn {{ $bds->isYeuThich ?? false ? 'liked' : '' }}"
+                                        onclick="toggleYeuThich(this, {{ $bds->id }})"
+                                        title="{{ $bds->isYeuThich ?? false ? 'Bỏ yêu thích' : 'Lưu tin này' }}"><i
+                                            class="{{ $bds->isYeuThich ?? false ? 'fas' : 'far' }} fa-heart"></i></button>
                                 </div>
                                 <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                                     class="overflow-hidden d-block bg-light img-wrapper" style="height: 220px;">

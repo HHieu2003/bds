@@ -2184,7 +2184,7 @@ ol {
     background: var(--secondary);
     color: #fff;
     padding: 0.8rem 1.5rem;
-    z-index: 980;
+    z-index: 9999;
     box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
     animation: slideUpBar 0.3s ease;
 }

@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-       TRANG CHI TIẾT BĐS — Global Styles
-    ═══════════════════════════════════════ */
+           TRANG CHI TIẾT BĐS — Global Styles
+        ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1156,9 +1156,11 @@
 
                         {{-- Nút Lưu & So sánh --}}
                         <div class="action-btns">
-                            <button class="btn-action btn-save" id="btnLuuTin"
-                                onclick="toggleYeuThich(this, {{ $bds->id }})">
-                                <i class="far fa-heart"></i> Lưu tin
+                            <button
+                                class="btn-action btn-save heart-icon-{{ $bds->id }} {{ $bds->isYeuThich ?? false ? 'liked' : '' }}"
+                                id="btnLuuTin" onclick="toggleYeuThich(this, {{ $bds->id }})"
+                                title="{{ $bds->isYeuThich ?? false ? 'Bỏ yêu thích' : 'Lưu tin' }}">
+                                <i class="{{ $bds->isYeuThich ?? false ? 'fas' : 'far' }} fa-heart"></i> Lưu tin
                             </button>
                             <button class="btn-action btn-compare"
                                 onclick="addSoSanh({{ $bds->id }}, '{{ addslashes($bds->tieu_de) }}')">

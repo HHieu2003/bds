@@ -962,16 +962,27 @@ function showFlash(message, type = "info") {
     }, 2400);
 }
 
+function applyYeuThichUiById(batDongSanId, isLiked) {
+    document
+        .querySelectorAll(`.heart-icon-${batDongSanId}`)
+        .forEach((targetBtn) => {
+            const icon = targetBtn.querySelector("i");
+            targetBtn.classList.toggle("liked", isLiked);
+            targetBtn.title = isLiked ? "Bỏ yêu thích" : "Lưu tin";
+            if (icon) {
+                icon.className = isLiked ? "fas fa-heart" : "far fa-heart";
+            }
+        });
+}
+
 function toggleYeuThich(btn, batDongSanId) {
     if (!window.APP || !window.APP.isLoggedIn) {
         window.openAuthModal("login");
         showFlash("Vui lòng đăng nhập để lưu yêu thích.", "info");
         return;
     }
-    var icon = btn.querySelector("i");
     var wasLiked = btn.classList.contains("liked");
-    btn.classList.toggle("liked", !wasLiked);
-    if (icon) icon.className = wasLiked ? "far fa-heart" : "fas fa-heart";
+    applyYeuThichUiById(batDongSanId, !wasLiked);
 
     fetch(window.APP.routes.yeuThichToggle, {
         method: "POST",
@@ -985,12 +996,7 @@ function toggleYeuThich(btn, batDongSanId) {
         .then((r) => r.json())
         .then((data) => {
             if (data.success) {
-                btn.classList.toggle("liked", data.is_liked);
-                if (icon)
-                    icon.className = data.is_liked
-                        ? "fas fa-heart"
-                        : "far fa-heart";
-                btn.title = data.is_liked ? "Bỏ yêu thích" : "Yêu thích";
+                applyYeuThichUiById(batDongSanId, data.is_liked);
                 if (typeof showFlash === "function")
                     showFlash(
                         data.is_liked
@@ -999,9 +1005,7 @@ function toggleYeuThich(btn, batDongSanId) {
                         data.is_liked ? "success" : "info",
                     );
             } else {
-                btn.classList.toggle("liked", wasLiked);
-                if (icon)
-                    icon.className = wasLiked ? "fas fa-heart" : "far fa-heart";
+                applyYeuThichUiById(batDongSanId, wasLiked);
                 showFlash(
                     data.message || "Không thể lưu tin lúc này.",
                     "warning",
@@ -1009,9 +1013,7 @@ function toggleYeuThich(btn, batDongSanId) {
             }
         })
         .catch(() => {
-            btn.classList.toggle("liked", wasLiked);
-            if (icon)
-                icon.className = wasLiked ? "fas fa-heart" : "far fa-heart";
+            applyYeuThichUiById(batDongSanId, wasLiked);
             showFlash("Lỗi kết nối. Vui lòng thử lại.", "danger");
         });
 }

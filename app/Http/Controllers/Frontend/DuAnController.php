@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\DuAn;
 use App\Models\KhuVuc;
+use App\Models\YeuThich;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class DuAnController extends Controller
 {
@@ -50,6 +52,19 @@ class DuAnController extends Controller
     {
         // Hàm này dành cho trang chi tiết dự án (bạn có thể code sau)
         $duAn = DuAn::with(['khuVuc', 'batDongSans'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
+
+        $favoriteMap = collect();
+        if (Auth::guard('customer')->check()) {
+            $favoriteMap = YeuThich::where('khach_hang_id', Auth::guard('customer')->id())
+                ->whereIn('bat_dong_san_id', $duAn->batDongSans->pluck('id'))
+                ->pluck('bat_dong_san_id')
+                ->flip();
+        }
+
+        $duAn->batDongSans->transform(function ($item) use ($favoriteMap) {
+            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
+            return $item;
+        });
 
         return view('frontend.du-an.show', compact('duAn'));
     }

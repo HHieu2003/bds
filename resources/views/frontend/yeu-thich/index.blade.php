@@ -36,7 +36,8 @@
 
                             {{-- Nút Bỏ Yêu Thích (Gọi hàm JS để xóa) --}}
                             <div class="position-absolute top-0 end-0 m-2 z-1">
-                                <button class="btn btn-light rounded-circle shadow-sm text-danger liked"
+                                <button
+                                    class="btn btn-light rounded-circle shadow-sm text-danger liked heart-icon-{{ $bds->id }}"
                                     style="width: 35px; height: 35px; padding: 0;"
                                     onclick="toggleYeuThich(this, {{ $bds->id }})" title="Bỏ lưu tin này">
                                     <i class="fas fa-heart"></i>

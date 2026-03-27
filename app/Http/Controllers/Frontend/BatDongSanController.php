@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\BatDongSan;
 use App\Models\DuAn;
 use App\Models\KhuVuc;
+use App\Models\YeuThich;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class BatDongSanController extends Controller
 {
@@ -112,6 +114,18 @@ class BatDongSanController extends Controller
         // 10. Phân trang (12 BĐS / 1 trang) và giữ nguyên param trên URL
         $batDongSans = $query->paginate(12)->withQueryString();
 
+        $favoriteMap = collect();
+        if (Auth::guard('customer')->check()) {
+            $favoriteMap = YeuThich::where('khach_hang_id', Auth::guard('customer')->id())
+                ->whereIn('bat_dong_san_id', $batDongSans->pluck('id'))
+                ->pluck('bat_dong_san_id')
+                ->flip();
+        }
+        $batDongSans->getCollection()->transform(function ($item) use ($favoriteMap) {
+            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
+            return $item;
+        });
+
         // 11. Lấy dữ liệu cho Sidebar Filter
         $khuVucs = KhuVuc::where('hien_thi', 1)->whereNull('khu_vuc_cha_id')->get();
         $duAns = DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get();
@@ -142,6 +156,21 @@ class BatDongSanController extends Controller
                 }
             })
             ->limit(4)->get();
+
+        $favoriteMap = collect();
+        if (Auth::guard('customer')->check()) {
+            $ids = collect([$bds->id])->merge($bdsLienQuan->pluck('id'))->unique()->values();
+            $favoriteMap = YeuThich::where('khach_hang_id', Auth::guard('customer')->id())
+                ->whereIn('bat_dong_san_id', $ids)
+                ->pluck('bat_dong_san_id')
+                ->flip();
+        }
+
+        $bds->setAttribute('isYeuThich', $favoriteMap->has($bds->id));
+        $bdsLienQuan->transform(function ($item) use ($favoriteMap) {
+            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
+            return $item;
+        });
 
         return view('frontend.bat-dong-san.show', compact('bds', 'bdsLienQuan'));
     }

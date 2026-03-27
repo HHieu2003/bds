@@ -250,7 +250,6 @@
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
-            transform: scale(1.05);
             transition: transform 8s ease;
         }
 
