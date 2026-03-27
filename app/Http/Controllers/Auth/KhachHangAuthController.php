@@ -176,7 +176,7 @@ class KhachHangAuthController extends Controller
         return view('frontend.auth.forgot');
     }
 
-   public function sendReset(Request $request)
+    public function sendReset(Request $request)
     {
         // 1. Validate định dạng email cơ bản
         $v = Validator::make($request->all(), [
@@ -303,10 +303,28 @@ class KhachHangAuthController extends Controller
     // ══════════════════════════════════════════════════
     // TRANG CÁ NHÂN & CẬP NHẬT THÔNG TIN
     // ══════════════════════════════════════════════════
-    public function profile() { return view('frontend.auth.profile'); }
-    public function lichSuXem() { return view('frontend.auth.lich_su_xem'); }
-    public function kyGuiCuaToi() { return view('frontend.auth.ky_gui_cua_toi'); }
-    public function lichHenCuaToi() { return view('frontend.auth.lich_hen_cua_toi'); }
+    public function profile()
+    {
+        return view('frontend.auth.profile');
+    }
+    public function lichSuXem()
+    {
+        return view('frontend.auth.lich_su_xem');
+    }
+    public function kyGuiCuaToi()
+    {
+        // Lấy danh sách ký gửi của khách hàng đang đăng nhập, sắp xếp mới nhất
+        $kyGuis = \App\Models\KyGui::where('khach_hang_id', auth('customer')->id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(10); // Phân trang 10 dòng/trang
+
+        // Truyền biến $kyGuis sang view
+        return view('frontend.ky-gui.my-list', compact('kyGuis'));
+    }
+    public function lichHenCuaToi()
+    {
+        return view('frontend.auth.lich_hen_cua_toi');
+    }
 
     public function updateProfile(Request $request)
     {
