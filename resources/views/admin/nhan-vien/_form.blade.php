@@ -1,798 +1,565 @@
 @php
     $isEdit = isset($nhanVien) && $nhanVien !== null;
-    $oldVaiTro = old('vai_tro', $isEdit ? $nhanVien->vai_tro : 'sale');
+    $action = $isEdit ? route('nhanvien.admin.nhan-vien.update', $nhanVien) : route('nhanvien.admin.nhan-vien.store');
+    $method = $isEdit ? 'PUT' : 'POST';
+    $vatRos = \App\Models\NhanVien::VAI_TRO;
 @endphp
-
-<div class="nv-form-grid">
-
-    {{-- ══════════ CỘT TRÁI ══════════ --}}
-    <div class="nv-form-left">
-
-        {{-- ① THÔNG TIN CÁ NHÂN --}}
-        <div class="nv-fc">
-            <div class="nv-fc-head"><i class="fas fa-user"></i> Thông tin cá nhân</div>
-            <div class="nv-fc-body">
-
-                <div class="nv-row2">
-                    <div class="nv-fg">
-                        <label class="nv-fl req">Họ và tên</label>
-                        <input type="text" name="ho_ten" class="nv-fi @error('ho_ten') nv-fi-err @enderror"
-                            value="{{ old('ho_ten', $isEdit ? $nhanVien->ho_ten : '') }}"
-                            placeholder="VD: Nguyễn Văn An" autofocus>
-                        @error('ho_ten')
-                            <div class="nv-fe"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="nv-fg">
-                        <label class="nv-fl">Số điện thoại</label>
-                        <input type="text" name="so_dien_thoai"
-                            class="nv-fi @error('so_dien_thoai') nv-fi-err @enderror"
-                            value="{{ old('so_dien_thoai', $isEdit ? $nhanVien->so_dien_thoai : '') }}"
-                            placeholder="VD: 0912345678">
-                        @error('so_dien_thoai')
-                            <div class="nv-fe"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="nv-row2">
-                    <div class="nv-fg">
-                        <label class="nv-fl req">Email đăng nhập</label>
-                        <input type="email" name="email" class="nv-fi @error('email') nv-fi-err @enderror"
-                            value="{{ old('email', $isEdit ? $nhanVien->email : '') }}"
-                            placeholder="VD: nhanvien@company.com">
-                        @error('email')
-                            <div class="nv-fe"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    <div class="nv-fg">
-                        <label class="nv-fl {{ $isEdit ? '' : 'req' }}">
-                            Mật khẩu
-                            @if ($isEdit)
-                                <span class="nv-hint">để trống = không thay đổi</span>
-                            @endif
-                        </label>
-                        <div class="nv-pw-wrap">
-                            <input type="password" name="password" id="nvPwd"
-                                class="nv-fi @error('password') nv-fi-err @enderror"
-                                placeholder="{{ $isEdit ? '••••••••' : 'Tối thiểu 6 ký tự' }}"
-                                autocomplete="new-password">
-                            <button type="button" class="nv-pw-eye" onclick="toggleNvPwd()">
-                                <i class="fas fa-eye" id="nvPwdIcon"></i>
-                            </button>
-                        </div>
-                        @error('password')
-                            <div class="nv-fe"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                        @enderror
-                    </div>
-                </div>
-
-                <div class="nv-fg">
-                    <label class="nv-fl">Địa chỉ</label>
-                    <input type="text" name="dia_chi" class="nv-fi"
-                        value="{{ old('dia_chi', $isEdit ? $nhanVien->dia_chi : '') }}"
-                        placeholder="VD: 123 Nguyễn Trãi, Hà Nội">
-                </div>
-
-            </div>
-        </div>
-
-        {{-- ② VAI TRÒ & PHÂN QUYỀN --}}
-        <div class="nv-fc">
-            <div class="nv-fc-head"><i class="fas fa-shield-alt"></i> Vai trò & Phân quyền</div>
-            <div class="nv-fc-body">
-
-                <div class="nv-role-grid">
-                    @foreach (\App\Models\NhanVien::VAI_TRO as $v => $info)
-                        <label class="nv-role-card {{ $oldVaiTro == $v ? 'active' : '' }}"
-                            style="{{ $oldVaiTro == $v ? 'border-color:' . $info['color'] . ';background:' . $info['bg'] : '' }}">
-                            <input type="radio" name="vai_tro" value="{{ $v }}"
-                                {{ $oldVaiTro == $v ? 'checked' : '' }} style="display:none">
-                            <i class="{{ $info['icon'] }}"
-                                style="font-size:1.6rem;color:{{ $info['color'] }};margin-bottom:6px"></i>
-                            <div class="nv-role-name" style="color:{{ $oldVaiTro == $v ? $info['color'] : '#555' }}">
-                                {{ $info['label'] }}
-                            </div>
-                            <div class="nv-role-desc">
-                                @switch($v)
-                                    @case('admin')
-                                        Toàn quyền hệ thống
-                                    @break
-
-                                    @case('nguon_hang')
-                                        Quản lý nguồn BĐS
-                                    @break
-
-                                    @case('sale')
-                                        Kinh doanh, tư vấn
-                                    @break
-                                @endswitch
-                            </div>
-                            @if ($oldVaiTro == $v)
-                                <div class="nv-role-check">
-                                    <i class="fas fa-check-circle" style="color:{{ $info['color'] }}"></i>
-                                </div>
-                            @endif
-                        </label>
-                    @endforeach
-                </div>
-
-                @error('vai_tro')
-                    <div class="nv-fe" style="margin-top:8px">
-                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                    </div>
-                @enderror
-
-                {{-- Cảnh báo khi chọn admin --}}
-                <div id="adminWarn"
-                    style="display:{{ $oldVaiTro == 'admin' ? 'flex' : 'none' }};margin-top:14px;background:#fff8f0;border:1px solid #fde5c3;border-radius:8px;padding:10px 14px;gap:8px;font-size:.8rem;color:#e67e22">
-                    <i class="fas fa-exclamation-triangle" style="margin-top:1px;flex-shrink:0"></i>
-                    <span>Vai trò <strong>Admin</strong> có toàn quyền truy cập hệ thống. Chỉ cấp cho người tin
-                        cậy!</span>
-                </div>
-
-            </div>
-        </div>
-
-    </div>{{-- end left --}}
-
-    {{-- ══════════ CỘT PHẢI — SIDEBAR ══════════ --}}
-    <div class="nv-form-right">
-
-        {{-- NÚT LƯU --}}
-        <div class="nv-fc">
-            <div class="nv-fc-body" style="padding:16px">
-                <button type="submit" class="nv-btn-save" form="nvForm">
-                    <i class="fas fa-save"></i>
-                    {{ $isEdit ? 'Lưu thay đổi' : 'Thêm nhân viên' }}
-                </button>
-                <a href="{{ route('nhanvien.admin.nhan-vien.index') }}" class="nv-btn-cancel">
-                    <i class="fas fa-times"></i> Hủy bỏ
-                </a>
-            </div>
-        </div>
-
-        {{-- ẢNH ĐẠI DIỆN --}}
-        <div class="nv-fc">
-            <div class="nv-fc-head"><i class="fas fa-camera"></i> Ảnh đại diện</div>
-            <div class="nv-fc-body">
-
-                <div class="nv-avatar-preview-wrap">
-                    <img id="avatarPreview"
-                        src="{{ $isEdit ? $nhanVien->anh_dai_dien_url : 'https://ui-avatars.com/api/?name=NV&background=1a3c5e&color=fff&size=100&bold=true' }}"
-                        alt="Avatar" class="nv-avatar-lg">
-                    @if ($isEdit && $nhanVien->anh_dai_dien)
-                        <div class="nv-avatar-current-lbl">Ảnh hiện tại</div>
-                    @endif
-                </div>
-
-                <input type="file" id="nvAvatarInput" name="anh_dai_dien"
-                    accept="image/jpeg,image/png,image/webp" style="display:none">
-
-                <label for="nvAvatarInput" class="nv-upload-lbl">
-                    <i class="fas fa-upload"></i>
-                    {{ $isEdit && $nhanVien->anh_dai_dien ? 'Đổi ảnh' : 'Chọn ảnh' }}
-                </label>
-                <div id="avatarFname" class="nv-fname-hint"></div>
-                <div class="nv-upload-hint">JPEG, PNG, WEBP • Tối đa 2MB</div>
-
-                @error('anh_dai_dien')
-                    <div class="nv-fe" style="margin-top:6px">
-                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                    </div>
-                @enderror
-
-            </div>
-        </div>
-
-        {{-- TRẠNG THÁI --}}
-        <div class="nv-fc">
-            <div class="nv-fc-head"><i class="fas fa-toggle-on"></i> Trạng thái tài khoản</div>
-            <div class="nv-fc-body">
-                <div class="nv-tg-row">
-                    <div class="nv-tg-info">
-                        <span>Kích hoạt tài khoản</span>
-                        <small>Cho phép nhân viên đăng nhập hệ thống</small>
-                    </div>
-                    <label class="nv-sw">
-                        <input type="checkbox" name="kich_hoat" value="1"
-                            {{ old('kich_hoat', $isEdit ? $nhanVien->kich_hoat : true) ? 'checked' : '' }}>
-                        <span class="nv-sw-track"><span class="nv-sw-thumb"></span></span>
-                    </label>
-                </div>
-            </div>
-        </div>
-
-        {{-- THÔNG TIN HỆ THỐNG --}}
-        @if ($isEdit)
-            <div class="nv-fc">
-                <div class="nv-fc-head"><i class="fas fa-info-circle"></i> Thông tin hệ thống</div>
-                <div class="nv-fc-body">
-                    <div class="nv-sysinfo">
-
-                        <div class="nv-sysrow">
-                            <span class="nv-syskey"><i class="fas fa-hashtag"></i> ID</span>
-                            <span class="nv-sysval"
-                                style="font-family:monospace;background:#f0f4ff;color:#2d6a9f;padding:.1rem .4rem;border-radius:4px">
-                                #{{ $nhanVien->id }}
-                            </span>
-                        </div>
-
-                        <div class="nv-sysrow">
-                            <span class="nv-syskey"><i class="fas fa-calendar-plus"></i> Tạo lúc</span>
-                            <span class="nv-sysval">{{ $nhanVien->created_at->format('d/m/Y H:i') }}</span>
-                        </div>
-
-                        <div class="nv-sysrow">
-                            <span class="nv-syskey"><i class="fas fa-sync"></i> Cập nhật</span>
-                            <span class="nv-sysval">{{ $nhanVien->updated_at->format('d/m/Y H:i') }}</span>
-                        </div>
-
-                        @if ($nhanVien->dang_nhap_cuoi_at)
-                            <div class="nv-sysrow">
-                                <span class="nv-syskey"><i class="fas fa-sign-in-alt"></i> Đăng nhập cuối</span>
-                                <span class="nv-sysval">{{ $nhanVien->dang_nhap_cuoi_at->format('d/m/Y H:i') }}</span>
-                            </div>
-                        @endif
-
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- NÚT LƯU dưới cùng --}}
-        <div class="nv-fc">
-            <div class="nv-fc-body" style="padding:16px">
-                <button type="submit" class="nv-btn-save" form="nvForm">
-                    <i class="fas fa-save"></i>
-                    {{ $isEdit ? 'Lưu thay đổi' : 'Thêm nhân viên' }}
-                </button>
-            </div>
-        </div>
-
-    </div>{{-- end right --}}
-
-</div>{{-- end nv-form-grid --}}
 
 @push('styles')
     <style>
-        /* BREADCRUMB & HEADER */
-        .nv-form-hdr {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 12px
-        }
-
-        .nv-bc {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: .8rem;
-            color: #aaa;
-            margin-bottom: 6px
-        }
-
-        .nv-bc a {
-            color: #aaa;
-            text-decoration: none
-        }
-
-        .nv-bc a:hover {
-            color: #FF8C42
-        }
-
-        .nv-bc .fa-chevron-right {
-            font-size: .65rem
-        }
-
-        .nv-form-ttl {
-            font-size: 1.3rem;
-            font-weight: 700;
-            color: #1a3c5e;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        .nv-form-ttl i {
-            color: #FF8C42
-        }
-
-        /* GRID */
-        .nv-form-grid {
-            display: grid;
-            grid-template-columns: 1fr 290px;
-            gap: 20px;
-            align-items: start
-        }
-
-        @media(max-width:980px) {
-            .nv-form-grid {
-                grid-template-columns: 1fr
-            }
-
-            .nv-form-right {
-                order: -1
-            }
-        }
-
-        /* CARD */
-        .nv-fc {
+        /* ── Form styles ── */
+        .nv-form-card {
             background: #fff;
             border-radius: 14px;
-            border: 1px solid #f0f2f5;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, .05);
-            margin-bottom: 18px;
-            overflow: hidden
+            border: 1px solid #eef0f5;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+            overflow: hidden;
+            margin-bottom: 1rem;
         }
 
-        .nv-fc:last-child {
-            margin-bottom: 0
-        }
-
-        .nv-fc-head {
-            padding: 12px 18px;
-            background: linear-gradient(135deg, #f8faff, #eef3ff);
-            border-bottom: 1px solid #e8eeff;
-            font-weight: 700;
-            font-size: .86rem;
-            color: #1a3c5e;
+        .nv-form-section-head {
+            padding: .85rem 1.25rem;
+            background: linear-gradient(to right, #f8faff, #fff);
+            border-bottom: 1px solid #eef0f5;
             display: flex;
             align-items: center;
-            gap: 8px
+            gap: .5rem;
+            font-weight: 800;
+            font-size: .84rem;
+            color: #1a3c5e;
         }
 
-        .nv-fc-head i {
-            color: #FF8C42
+        .nv-form-section-head i {
+            color: #FF8C42;
         }
 
-        .nv-hint {
-            font-weight: 400;
-            color: #bbb;
-            font-size: .72rem;
-            margin-left: 4px
-        }
-
-        .nv-fc-body {
-            padding: 18px
-        }
-
-        /* FORM */
-        .nv-row2 {
+        .nv-form-body {
+            padding: 1.25rem;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 14px
+            gap: .85rem 1.1rem;
+        }
+
+        .nv-form-body.cols-1 {
+            grid-template-columns: 1fr;
         }
 
         @media(max-width:600px) {
-            .nv-row2 {
-                grid-template-columns: 1fr
+            .nv-form-body {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        .col-span-2 {
+            grid-column: span 2;
+        }
+
+        @media(max-width:600px) {
+            .col-span-2 {
+                grid-column: span 1;
             }
         }
 
         .nv-fg {
-            margin-bottom: 14px
-        }
-
-        .nv-fg:last-child {
-            margin-bottom: 0
+            margin: 0;
         }
 
         .nv-fl {
             display: block;
             font-weight: 700;
-            font-size: .75rem;
-            color: #666;
-            margin-bottom: 5px;
+            font-size: .74rem;
+            color: #555;
+            margin-bottom: .4rem;
             text-transform: uppercase;
-            letter-spacing: .3px
+            letter-spacing: .4px;
         }
 
-        .nv-fl.req::after {
-            content: ' *';
-            color: #e74c3c
+        .nv-fl .req {
+            color: #e74c3c;
         }
 
         .nv-fi {
             width: 100%;
-            height: 40px;
-            border: 1.5px solid #e8e8e8;
-            border-radius: 8px;
-            padding: 0 12px;
+            height: 42px;
+            border: 1.5px solid #e8eaef;
+            border-radius: 9px;
+            padding: 0 .9rem;
             font-size: .875rem;
-            color: #333;
-            background: #fafafa;
+            color: #1a3c5e;
+            background: #fafbfc;
             outline: none;
             font-family: inherit;
-            transition: border-color .2s, background .2s, box-shadow .2s;
-            box-sizing: border-box
+            transition: border-color .2s, box-shadow .2s;
         }
 
         .nv-fi:focus {
             border-color: #FF8C42;
             background: #fff;
-            box-shadow: 0 0 0 3px rgba(255, 140, 66, .1)
+            box-shadow: 0 0 0 3px rgba(255, 140, 66, .1);
         }
 
-        .nv-fi.nv-fi-err {
+        .nv-fi.is-invalid {
             border-color: #e74c3c;
-            background: #fff8f8
+            box-shadow: 0 0 0 3px rgba(231, 76, 60, .08);
         }
 
-        .nv-fe {
-            font-size: .78rem;
+        .nv-fi-hint {
+            font-size: .73rem;
+            color: #aaa;
+            margin-top: .3rem;
+            display: block;
+        }
+
+        .nv-err {
+            font-size: .75rem;
             color: #e74c3c;
-            margin-top: 4px;
+            margin-top: .3rem;
             display: flex;
             align-items: center;
-            gap: 4px
+            gap: .3rem;
+        }
+
+        select.nv-fi {
+            appearance: none;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23aaa' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right .9rem center;
+            background-color: #fafbfc;
+            padding-right: 2.2rem;
         }
 
         .nv-pw-wrap {
-            position: relative
+            position: relative;
         }
 
         .nv-pw-wrap .nv-fi {
-            padding-right: 42px
+            padding-right: 2.8rem;
         }
 
         .nv-pw-eye {
             position: absolute;
-            right: 10px;
+            right: .75rem;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
             cursor: pointer;
             color: #bbb;
-            font-size: .85rem;
-            padding: 0
+            font-size: .82rem;
+            padding: 0;
+            transition: color .15s;
         }
 
         .nv-pw-eye:hover {
-            color: #555
+            color: #555;
         }
 
-        /* VAI TRÒ CARDS */
+        /* Avatar upload */
+        .nv-ava-upload {
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            flex-wrap: wrap;
+        }
+
+        .nv-ava-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #eef0f5;
+            background: #f4f6fb;
+            flex-shrink: 0;
+        }
+
+        .nv-ava-upload-box {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .nv-file-label {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            height: 38px;
+            padding: 0 1rem;
+            border: 1.5px dashed #d0d8e8;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: .82rem;
+            color: #888;
+            background: #fafbfc;
+            transition: all .2s;
+        }
+
+        .nv-file-label:hover {
+            border-color: #FF8C42;
+            color: #FF8C42;
+            background: #fff5ef;
+        }
+
+        #avatarFile {
+            display: none;
+        }
+
+        /* Role cards */
         .nv-role-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px
-        }
-
-        @media(max-width:500px) {
-            .nv-role-grid {
-                grid-template-columns: 1fr
-            }
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: .65rem;
         }
 
         .nv-role-card {
-            border: 2px solid #f0f2f5;
-            border-radius: 12px;
-            padding: 16px 10px;
-            text-align: center;
+            border: 2px solid #eef0f5;
+            border-radius: 10px;
+            padding: .85rem 1rem;
             cursor: pointer;
             transition: all .2s;
-            background: #fafafa;
-            position: relative
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: .7rem;
         }
 
         .nv-role-card:hover {
-            border-color: #dde5f5;
-            background: #f5f8ff
+            border-color: #FF8C42;
+            background: #fff9f5;
         }
 
-        .nv-role-card.active {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, .08)
+        .nv-role-card.selected {
+            border-color: #FF8C42 !important;
+            background: #fff5ef !important;
+            box-shadow: 0 0 0 3px rgba(255, 140, 66, .12);
+        }
+
+        .nv-role-card input {
+            display: none;
+        }
+
+        .nv-role-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+            flex-shrink: 0;
         }
 
         .nv-role-name {
             font-weight: 700;
-            font-size: .85rem;
-            margin-bottom: 4px
+            font-size: .82rem;
+            color: #1a3c5e;
         }
 
         .nv-role-desc {
-            font-size: .72rem;
+            font-size: .71rem;
             color: #aaa;
-            line-height: 1.4
+            margin-top: .1rem;
         }
 
-        .nv-role-check {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: .95rem
+        /* Form actions */
+        .nv-form-actions {
+            display: flex;
+            gap: .75rem;
+            justify-content: flex-end;
+            padding: 1rem 1.25rem;
+            background: #fafbfc;
+            border-top: 1px solid #eef0f5;
+            border-radius: 0 0 14px 14px;
         }
 
-        /* AVATAR UPLOAD */
-        .nv-avatar-preview-wrap {
-            text-align: center;
-            margin-bottom: 14px
-        }
-
-        .nv-avatar-lg {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 3px solid #f0f2f5;
-            display: inline-block
-        }
-
-        .nv-avatar-current-lbl {
-            font-size: .72rem;
-            color: #aaa;
-            margin-top: 4px
-        }
-
-        .nv-upload-lbl {
+        .nv-btn-submit {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            background: #f0f4ff;
-            color: #1a3c5e;
-            border: 1.5px solid #d5e0f5;
-            padding: 8px 16px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: .82rem;
-            cursor: pointer;
-            transition: all .2s;
-            margin-bottom: 6px;
-            width: 100%;
-            justify-content: center
-        }
-
-        .nv-upload-lbl:hover {
-            background: #1a3c5e;
-            color: #fff;
-            border-color: #1a3c5e
-        }
-
-        .nv-fname-hint {
-            font-size: .75rem;
-            color: #FF8C42;
-            font-weight: 500;
-            margin-bottom: 6px;
-            text-align: center;
-            min-height: 18px
-        }
-
-        .nv-upload-hint {
-            font-size: .72rem;
-            color: #bbb;
-            text-align: center;
-            line-height: 1.6
-        }
-
-        /* TOGGLE */
-        .nv-tg-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px
-        }
-
-        .nv-tg-info span {
-            display: block;
-            font-weight: 600;
-            font-size: .875rem;
-            color: #333;
-            margin-bottom: 2px
-        }
-
-        .nv-tg-info small {
-            color: #bbb;
-            font-size: .77rem
-        }
-
-        .nv-sw {
-            position: relative;
-            cursor: pointer;
-            display: inline-block;
-            flex-shrink: 0
-        }
-
-        .nv-sw input {
-            position: absolute;
-            opacity: 0;
-            width: 0;
-            height: 0
-        }
-
-        .nv-sw-track {
-            display: block;
-            width: 44px;
-            height: 25px;
-            background: #dde0e8;
-            border-radius: 13px;
-            transition: background .25s;
-            position: relative
-        }
-
-        .nv-sw input:checked~.nv-sw-track {
-            background: #27ae60
-        }
-
-        .nv-sw-thumb {
-            position: absolute;
-            width: 19px;
-            height: 19px;
-            background: #fff;
-            border-radius: 50%;
-            top: 3px;
-            left: 3px;
-            transition: transform .25s;
-            box-shadow: 0 1px 5px rgba(0, 0, 0, .2)
-        }
-
-        .nv-sw input:checked~.nv-sw-track .nv-sw-thumb {
-            transform: translateX(19px)
-        }
-
-        /* SAVE / CANCEL */
-        .nv-btn-save {
-            width: 100%;
-            height: 48px;
-            background: linear-gradient(135deg, #FF8C42, #f5a623);
+            gap: .5rem;
+            height: 42px;
+            padding: 0 1.5rem;
+            background: linear-gradient(135deg, #FF8C42, #e8721e);
             color: #fff;
             border: none;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: .95rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            box-shadow: 0 4px 14px rgba(255, 140, 66, .35);
-            transition: all .2s;
-            margin-bottom: 10px
-        }
-
-        .nv-btn-save:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 20px rgba(255, 140, 66, .45)
-        }
-
-        .nv-btn-cancel {
-            width: 100%;
-            height: 40px;
-            background: #f5f5f5;
-            color: #888;
-            border: 1.5px solid #e8e8e8;
-            border-radius: 10px;
-            font-weight: 600;
+            border-radius: 9px;
+            font-weight: 800;
             font-size: .875rem;
-            display: flex;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(255, 140, 66, .3);
+            transition: all .2s;
+        }
+
+        .nv-btn-submit:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(255, 140, 66, .4);
+        }
+
+        .nv-btn-back {
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            gap: 6px;
-            text-decoration: none;
-            transition: all .2s
-        }
-
-        .nv-btn-cancel:hover {
-            background: #ffeee0;
-            color: #FF8C42;
-            border-color: #FF8C42
-        }
-
-        /* SYSINFO */
-        .nv-sysinfo {}
-
-        .nv-sysrow {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 6px 0;
-            border-bottom: 1px solid #fafafa
-        }
-
-        .nv-sysrow:last-child {
-            border-bottom: none
-        }
-
-        .nv-syskey {
-            font-size: .75rem;
-            color: #bbb;
-            display: flex;
-            align-items: center;
-            gap: 4px
-        }
-
-        .nv-sysval {
-            font-size: .78rem;
-            font-weight: 600;
+            gap: .5rem;
+            height: 42px;
+            padding: 0 1.1rem;
+            background: #f5f5f7;
             color: #555;
-            text-align: right
+            border: 1.5px solid #e8e8e8;
+            border-radius: 9px;
+            font-weight: 600;
+            font-size: .84rem;
+            text-decoration: none;
+            transition: all .2s;
+        }
+
+        .nv-btn-back:hover {
+            background: #eee;
+            color: #1a3c5e;
         }
     </style>
 @endpush
 
+<form action="{{ $action }}" method="POST" enctype="multipart/form-data" id="nvFormMain">
+    @csrf
+    @if ($isEdit)
+        @method('PUT')
+    @endif
+
+    {{-- ── SECTION 1: Thông tin cơ bản ── --}}
+    <div class="nv-form-card">
+        <div class="nv-form-section-head">
+            <i class="fas fa-user-circle"></i> Thông tin cơ bản
+        </div>
+        <div class="nv-form-body">
+
+            {{-- Avatar --}}
+            <div class="nv-fg col-span-2">
+                <label class="nv-fl">Ảnh đại diện</label>
+                <div class="nv-ava-upload">
+                    <img id="avatarPreview"
+                        src="{{ $isEdit && $nhanVien->anh_dai_dien_url ? $nhanVien->anh_dai_dien_url : asset('images/default-avatar.png') }}"
+                        alt="Preview" class="nv-ava-preview"
+                        onerror="this.src='{{ asset('images/default-avatar.png') }}'">
+                    <div class="nv-ava-upload-box">
+                        <label class="nv-file-label" for="avatarFile">
+                            <i class="fas fa-camera"></i>
+                            {{ $isEdit ? 'Đổi ảnh' : 'Chọn ảnh' }}
+                        </label>
+                        <input type="file" id="avatarFile" name="anh_dai_dien"
+                            accept="image/jpeg,image/png,image/webp" onchange="previewAvatar(this)">
+                        <span class="nv-fi-hint">JPG, PNG, WebP — tối đa 2MB</span>
+                        @error('anh_dai_dien')
+                            <span class="nv-err"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                        @enderror
+                    </div>
+                </div>
+            </div>
+
+            {{-- Họ tên --}}
+            <div class="nv-fg col-span-2">
+                <label class="nv-fl">Họ và tên <span class="req">*</span></label>
+                <input type="text" name="ho_ten" class="nv-fi @error('ho_ten') is-invalid @enderror"
+                    value="{{ old('ho_ten', $isEdit ? $nhanVien->ho_ten : '') }}" placeholder="Nguyễn Văn A" required>
+                @error('ho_ten')
+                    <span class="nv-err"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                @enderror
+            </div>
+
+            {{-- Email --}}
+            <div class="nv-fg">
+                <label class="nv-fl">Email đăng nhập <span class="req">*</span></label>
+                <input type="email" name="email" class="nv-fi @error('email') is-invalid @enderror"
+                    value="{{ old('email', $isEdit ? $nhanVien->email : '') }}" placeholder="nhanvien@example.com"
+                    required {{ $isEdit ? 'readonly' : '' }}>
+                @if ($isEdit)
+                    <span class="nv-fi-hint">Email đăng nhập không thể thay đổi</span>
+                @endif
+                @error('email')
+                    <span class="nv-err"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                @enderror
+            </div>
+
+            {{-- SĐT --}}
+            <div class="nv-fg">
+                <label class="nv-fl">Số điện thoại</label>
+                <input type="tel" name="so_dien_thoai" class="nv-fi @error('so_dien_thoai') is-invalid @enderror"
+                    value="{{ old('so_dien_thoai', $isEdit ? $nhanVien->so_dien_thoai : '') }}"
+                    placeholder="0912 345 678">
+                @error('so_dien_thoai')
+                    <span class="nv-err"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                @enderror
+            </div>
+
+        </div>
+    </div>
+
+    {{-- ── SECTION 2: Mật khẩu ── --}}
+    <div class="nv-form-card">
+        <div class="nv-form-section-head">
+            <i class="fas fa-lock"></i>
+            {{ $isEdit ? 'Đổi mật khẩu (để trống nếu không đổi)' : 'Thiết lập mật khẩu' }}
+        </div>
+        <div class="nv-form-body">
+
+            <div class="nv-fg">
+                <label class="nv-fl">
+                    Mật khẩu @if (!$isEdit)
+                        <span class="req">*</span>
+                    @endif
+                </label>
+                <div class="nv-pw-wrap">
+                    <input type="password" name="mat_khau" id="fPw1"
+                        class="nv-fi @error('mat_khau') is-invalid @enderror"
+                        placeholder="{{ $isEdit ? 'Để trống nếu không đổi' : 'Tối thiểu 6 ký tự' }}"
+                        autocomplete="new-password" {{ !$isEdit ? 'required' : '' }}>
+                    <button type="button" class="nv-pw-eye" onclick="fTogglePw('fPw1','fEye1')">
+                        <i class="fas fa-eye" id="fEye1"></i>
+                    </button>
+                </div>
+                @error('mat_khau')
+                    <span class="nv-err"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
+                @enderror
+            </div>
+
+            <div class="nv-fg">
+                <label class="nv-fl">Xác nhận mật khẩu @if (!$isEdit)
+                        <span class="req">*</span>
+                    @endif
+                </label>
+                <div class="nv-pw-wrap">
+                    <input type="password" name="mat_khau_confirmation" id="fPw2" class="nv-fi"
+                        placeholder="Nhập lại mật khẩu" autocomplete="new-password" {{ !$isEdit ? 'required' : '' }}>
+                    <button type="button" class="nv-pw-eye" onclick="fTogglePw('fPw2','fEye2')">
+                        <i class="fas fa-eye" id="fEye2"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    {{-- ── SECTION 3: Vai trò & Trạng thái ── --}}
+    <div class="nv-form-card">
+        <div class="nv-form-section-head">
+            <i class="fas fa-shield-alt"></i> Vai trò & Quyền hạn
+        </div>
+        <div class="nv-form-body cols-1">
+
+            <div class="nv-fg">
+                <label class="nv-fl">Vai trò <span class="req">*</span></label>
+                <div class="nv-role-grid" id="roleGrid">
+                    @foreach ($vatRos as $key => $info)
+                        @php $isSelected = old('vai_tro', $isEdit ? $nhanVien->vai_tro : '') === $key; @endphp
+                        <label class="nv-role-card {{ $isSelected ? 'selected' : '' }}"
+                            onclick="selectRole('{{ $key }}', this)">
+                            <input type="radio" name="vai_tro" value="{{ $key }}"
+                                {{ $isSelected ? 'checked' : '' }}>
+                            <div class="nv-role-icon"
+                                style="background:{{ $info['bg'] }};color:{{ $info['color'] }}">
+                                <i class="{{ $info['icon'] }}"></i>
+                            </div>
+                            <div>
+                                <div class="nv-role-name">{{ $info['label'] }}</div>
+                                <div class="nv-role-desc">
+                                    @switch($key)
+                                        @case('admin')
+                                            Toàn quyền hệ thống
+                                        @break
+
+                                        @case('sale')
+                                            Quản lý BĐS & KH
+                                        @break
+
+                                        @case('nguon_hang')
+                                            Quản lý nguồn hàng
+                                        @break
+
+                                        @default
+                                            {{ $key }}
+                                    @endswitch
+                                </div>
+                            </div>
+                        </label>
+                    @endforeach
+                </div>
+                @error('vai_tro')
+                    <span class="nv-err" style="margin-top:.4rem">
+                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                    </span>
+                @enderror
+            </div>
+
+            {{-- Kích hoạt --}}
+            <div class="nv-fg">
+                <label class="nv-fl">Trạng thái tài khoản</label>
+                <div style="display:flex;align-items:center;gap:.85rem;margin-top:.25rem">
+                    <label class="nv-sw" style="cursor:pointer">
+                        <input type="hidden" name="kich_hoat" value="0">
+                        <input type="checkbox" name="kich_hoat" value="1" id="kichHoatToggle"
+                            {{ old('kich_hoat', $isEdit ? $nhanVien->kich_hoat : true) ? 'checked' : '' }}>
+                        <span class="nv-sw-track"><span class="nv-sw-thumb"></span></span>
+                    </label>
+                    <span id="kichHoatLabel" style="font-size:.84rem;font-weight:600;color:#16a34a">
+                        Đang hoạt động
+                    </span>
+                </div>
+            </div>
+
+        </div>
+
+        {{-- Actions --}}
+        <div class="nv-form-actions">
+            <a href="{{ route('nhanvien.admin.nhan-vien.index') }}" class="nv-btn-back">
+                <i class="fas fa-times"></i> Hủy
+            </a>
+            <button type="submit" class="nv-btn-submit">
+                <i class="fas fa-{{ $isEdit ? 'save' : 'user-plus' }}"></i>
+                {{ $isEdit ? 'Lưu thay đổi' : 'Tạo nhân viên' }}
+            </button>
+        </div>
+    </div>
+
+</form>
+
 @push('scripts')
     <script>
-        const roleColors = {
-            admin: {
-                color: '#e74c3c',
-                bg: '#fff0f0'
-            },
-            nguon_hang: {
-                color: '#8e44ad',
-                bg: '#f5eeff'
-            },
-            sale: {
-                color: '#2d6a9f',
-                bg: '#e8f4fd'
-            },
-        };
-
-        // ── Chọn vai trò ──
-        document.querySelectorAll('.nv-role-card').forEach(card => {
-            card.addEventListener('click', function() {
-                const val = this.querySelector('input').value;
-                const c = roleColors[val] || {
-                    color: '#999',
-                    bg: '#f5f5f5'
-                };
-
-                document.querySelectorAll('.nv-role-card').forEach(cl => {
-                    cl.classList.remove('active');
-                    cl.style.borderColor = '#f0f2f5';
-                    cl.style.background = '#fafafa';
-                    cl.querySelector('.nv-role-name').style.color = '#555';
-                    const ck = cl.querySelector('.nv-role-check');
-                    if (ck) ck.remove();
-                });
-
-                this.classList.add('active');
-                this.style.borderColor = c.color;
-                this.style.background = c.bg;
-                this.querySelector('.nv-role-name').style.color = c.color;
-
-                // Thêm check icon
-                const chk = document.createElement('div');
-                chk.className = 'nv-role-check';
-                chk.innerHTML = '<i class="fas fa-check-circle" style="color:' + c.color + '"></i>';
-                this.appendChild(chk);
-
-                // Cảnh báo admin
-                document.getElementById('adminWarn').style.display = val === 'admin' ? 'flex' : 'none';
-            });
-        });
-
-        // ── Preview avatar ──
-        const avatarInput = document.getElementById('nvAvatarInput');
-        const avatarPreview = document.getElementById('avatarPreview');
-        const avatarFname = document.getElementById('avatarFname');
-
-        if (avatarInput) {
-            avatarInput.addEventListener('change', function() {
-                const file = this.files[0];
-                if (!file) return;
+        /* ── Preview avatar ── */
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = e => {
-                    avatarPreview.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-                avatarFname.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
-            });
+                reader.onload = e => document.getElementById('avatarPreview').src = e.target.result;
+                reader.readAsDataURL(input.files[0]);
+            }
         }
 
-        // ── Toggle password ──
-        function toggleNvPwd() {
-            const inp = document.getElementById('nvPwd');
-            const icon = document.getElementById('nvPwdIcon');
+        /* ── Toggle password visibility ── */
+        function fTogglePw(id, eid) {
+            const inp = document.getElementById(id);
+            const ico = document.getElementById(eid);
             inp.type = inp.type === 'password' ? 'text' : 'password';
-            icon.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+            ico.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+        }
+
+        /* ── Select vai trò ── */
+        function selectRole(val, el) {
+            document.querySelectorAll('.nv-role-card').forEach(c => c.classList.remove('selected'));
+            el.classList.add('selected');
+            el.querySelector('input[type=radio]').checked = true;
+        }
+
+        /* ── Kích hoạt toggle label ── */
+        const kh = document.getElementById('kichHoatToggle');
+        const khLbl = document.getElementById('kichHoatLabel');
+        if (kh && khLbl) {
+            function updateKhLabel() {
+                if (kh.checked) {
+                    khLbl.textContent = 'Đang hoạt động';
+                    khLbl.style.color = '#16a34a';
+                } else {
+                    khLbl.textContent = 'Vô hiệu hóa';
+                    khLbl.style.color = '#e74c3c';
+                }
+            }
+            kh.addEventListener('change', updateKhLabel);
+            updateKhLabel();
         }
     </script>
 @endpush

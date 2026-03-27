@@ -1,53 +1,39 @@
-{{-- edit.blade.php --}}
 @extends('admin.layouts.master')
 @section('title', 'Sửa — ' . $nhanVien->ho_ten)
+@section('page_title', 'Chỉnh sửa nhân viên')
+@section('page_parent', 'Nhân viên')
 
 @section('content')
-    <div class="nv-form-hdr">
-        <div>
-            <div class="nv-bc">
-                <a href="{{ route('nhanvien.admin.nhan-vien.index') }}">
-                    <i class="fas fa-id-badge"></i> Nhân viên
-                </a>
-                <i class="fas fa-chevron-right"></i>
-                <span>{{ $nhanVien->ho_ten }}</span>
+    <div style="max-width:780px;margin:0 auto">
+
+        {{-- Header --}}
+        <div class="nv-page-header" style="margin-bottom:1.25rem">
+            <div style="display:flex;align-items:center;gap:.85rem">
+                <div class="nv-ava-wrap">
+                    <img src="{{ $nhanVien->anh_dai_dien_url }}" alt="{{ $nhanVien->ho_ten }}"
+                        style="width:48px;height:48px;border-radius:50%;object-fit:cover;
+                            border:2.5px solid #eef0f5"
+                        onerror="this.src='{{ asset('images/default-avatar.png') }}'">
+                    <span class="nv-dot {{ $nhanVien->kich_hoat ? 'on' : 'off' }}"></span>
+                </div>
+                <div>
+                    <h1 class="nv-page-title" style="font-size:1.1rem">
+                        {{ $nhanVien->ho_ten }}
+                    </h1>
+                    <p class="nv-page-sub">
+                        Tham gia {{ $nhanVien->created_at->format('d/m/Y') }}
+                        @if ($nhanVien->dang_nhap_cuoi_at)
+                            &nbsp;·&nbsp; Đăng nhập {{ $nhanVien->dang_nhap_cuoi_at->diffForHumans() }}
+                        @endif
+                    </p>
+                </div>
             </div>
-            <h1 class="nv-form-ttl">
-                <i class="fas fa-user-edit"></i> Chỉnh sửa nhân viên
-            </h1>
+            <a href="{{ route('nhanvien.admin.nhan-vien.index') }}" class="nv-btn-cancel"
+                style="display:inline-flex;align-items:center;gap:.4rem;text-decoration:none">
+                <i class="fas fa-arrow-left"></i> Quay lại
+            </a>
         </div>
-        <a href="{{ route('nhanvien.admin.nhan-vien.show', $nhanVien) }}" class="nv-btn-show">
-            <i class="fas fa-eye"></i> Xem chi tiết
-        </a>
+
+        @include('admin.nhan-vien._form', ['nhanVien' => $nhanVien])
     </div>
-
-    <form id="nvForm" method="POST" action="{{ route('nhanvien.admin.nhan-vien.update', $nhanVien) }}"
-        enctype="multipart/form-data">
-        @csrf @method('PUT')
-        @include('admin.nhan-vien._form')
-    </form>
 @endsection
-
-@push('styles')
-    <style>
-        .nv-btn-show {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: #f0f4ff;
-            color: #1a3c5e;
-            border: 1.5px solid #d5e0f5;
-            padding: 9px 18px;
-            border-radius: 10px;
-            font-weight: 600;
-            font-size: .875rem;
-            text-decoration: none;
-            transition: all .2s
-        }
-
-        .nv-btn-show:hover {
-            background: #1a3c5e;
-            color: #fff
-        }
-    </style>
-@endpush

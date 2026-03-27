@@ -1,64 +1,49 @@
 /* =========================================================
-   ADMIN.JS — THÀNH CÔNG LAND  v2.0
-   Modules: Sidebar | Topbar | Flash | Confirm | Toast
-            | DataTable | Form Helpers | Utilities
+   ADMIN.JS — THÀNH CÔNG LAND  v3.0
+   Modules:
+     1. Sidebar        5. Toast
+     2. Topbar         6. Confirm Modal
+     3. Flash          7. Form Helpers
+     4. AJAX Utilities 8. Table Helpers
+     9. UI Utilities   10. DOMContentLoaded init
 ========================================================= */
-
 "use strict";
 
 /* =========================================================
-   1. SIDEBAR TOGGLE
+   1. SIDEBAR
 ========================================================= */
-(function initSidebar() {
-    var sidebarCollapsed =
-        localStorage.getItem("adminSidebarCollapsed") === "true";
-    var sidebar = document.getElementById("sidebar");
-    var topbar = document.getElementById("topbar");
-    var mainWrap = document.getElementById("main-wrapper");
+(function () {
+    var collapsed = localStorage.getItem("sidebarCollapsed") === "true";
 
-    function applySidebarState() {
-        var sidebar = document.getElementById("sidebar");
-        var topbar = document.getElementById("topbar");
-        var mainWrap = document.getElementById("main-wrapper");
-        var toggleBtn = document.querySelector(".btn-toggle-sidebar i");
-
+    function applyState() {
+        var sb = document.getElementById("sidebar");
+        var tb = document.getElementById("topbar");
+        var mw = document.getElementById("main-wrapper");
+        if (!sb) return;
         if (window.innerWidth > 992) {
-            if (sidebarCollapsed) {
-                sidebar && sidebar.classList.add("collapsed");
-                topbar && topbar.classList.add("sidebar-collapsed");
-                mainWrap && mainWrap.classList.add("sidebar-collapsed");
-                // Icon đổi chiều
-                if (toggleBtn) toggleBtn.style.transform = "rotate(180deg)";
-            } else {
-                sidebar && sidebar.classList.remove("collapsed");
-                topbar && topbar.classList.remove("sidebar-collapsed");
-                mainWrap && mainWrap.classList.remove("sidebar-collapsed");
-                if (toggleBtn) toggleBtn.style.transform = "";
-            }
+            sb.classList.toggle("collapsed", collapsed);
+            tb && tb.classList.toggle("sidebar-collapsed", collapsed);
+            mw && mw.classList.toggle("sidebar-collapsed", collapsed);
         }
     }
-
-    applySidebarState();
+    applyState();
 
     window.toggleSidebar = function () {
+        var sb = document.getElementById("sidebar");
+        var ov = document.getElementById("sidebarOverlay");
         if (window.innerWidth <= 992) {
-            // Mobile: show/hide hoàn toàn
-            var sidebar = document.getElementById("sidebar");
-            var overlay = document.getElementById("sidebarOverlay");
-            sidebar && sidebar.classList.toggle("mobile-open");
-            overlay && overlay.classList.toggle("show");
+            sb && sb.classList.toggle("mobile-open");
+            ov && ov.classList.toggle("show");
         } else {
-            // Desktop: thu nhỏ/mở rộng
-            sidebarCollapsed = !sidebarCollapsed;
-            localStorage.setItem("adminSidebarCollapsed", sidebarCollapsed);
-            applySidebarState();
+            collapsed = !collapsed;
+            localStorage.setItem("sidebarCollapsed", collapsed);
+            applyState();
         }
     };
-    applySidebarState;
+
     window.closeMobileSidebar = function () {
-        sidebar?.classList.remove("mobile-open");
+        document.getElementById("sidebar")?.classList.remove("mobile-open");
         document.getElementById("sidebarOverlay")?.classList.remove("show");
-        document.body.style.overflow = "";
     };
 
     var resizeTimer;
@@ -67,43 +52,43 @@
         resizeTimer = setTimeout(function () {
             if (window.innerWidth > 992) {
                 closeMobileSidebar();
-                applySidebarState();
+                applyState();
             }
         }, 100);
     });
 })();
 
 /* =========================================================
-   2. TOPBAR — USER DROPDOWN
+   2. TOPBAR USER DROPDOWN
 ========================================================= */
-(function initTopbar() {
-    var btn = document.getElementById("topbarUserBtn");
-    var dropdown = document.getElementById("userDropdown");
-    var chevron = btn?.querySelector(".topbar-user-chevron");
-
+(function () {
     window.toggleUserDropdown = function () {
-        var isOpen = dropdown?.classList.toggle("show");
-        if (chevron) chevron.style.transform = isOpen ? "rotate(180deg)" : "";
+        var dd = document.getElementById("userDropdown");
+        var btn = document.getElementById("topbarUserBtn");
+        var ch = btn?.querySelector(".topbar-user-chevron");
+        if (!dd) return;
+        var open = dd.classList.toggle("show");
+        if (ch) ch.style.transform = open ? "rotate(180deg)" : "";
     };
 
     document.addEventListener("click", function (e) {
         if (!e.target.closest("#topbarUserBtn")) {
-            dropdown?.classList.remove("show");
-            if (chevron) chevron.style.transform = "";
+            var dd = document.getElementById("userDropdown");
+            var ch = document.querySelector(".topbar-user-chevron");
+            dd?.classList.remove("show");
+            if (ch) ch.style.transform = "";
         }
     });
 })();
 
 /* =========================================================
-   3. FLASH MESSAGES — AUTO DISMISS
+   3. FLASH — AUTO DISMISS
 ========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
-    var flashes = document.querySelectorAll(".flash-admin");
-
-    flashes.forEach(function (el, i) {
+    document.querySelectorAll(".flash-admin").forEach(function (el, i) {
         setTimeout(
             function () {
-                el.style.transition = "opacity .4s ease, transform .4s ease";
+                el.style.transition = "opacity .4s, transform .4s";
                 el.style.opacity = "0";
                 el.style.transform = "translateY(-6px)";
                 setTimeout(function () {
@@ -113,86 +98,132 @@ document.addEventListener("DOMContentLoaded", function () {
             5000 + i * 300,
         );
     });
+
+    // Close button
+    document.querySelectorAll(".flash-admin-close").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+            var el = this.closest(".flash-admin");
+            if (!el) return;
+            el.style.transition = "opacity .3s, transform .3s";
+            el.style.opacity = "0";
+            el.style.transform = "translateY(-6px)";
+            setTimeout(function () {
+                el.remove();
+            }, 320);
+        });
+    });
 });
 
 /* =========================================================
-   4. CONFIRM DELETE MODAL
+   4. AJAX UTILITIES
 ========================================================= */
-var _confirmCallback = null;
 
-window.confirmDelete = function (message, callback) {
-    var modal = document.getElementById("confirmModal");
-    var msgEl = document.getElementById("confirmMessage");
-    if (!modal) return;
-    if (msgEl && message) msgEl.textContent = message;
-    _confirmCallback = callback;
-    modal.classList.add("show");
-    document.body.style.overflow = "hidden";
+/** CSRF token helper */
+function getCsrf() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || "";
+}
+
+/**
+ * AJAX PATCH toggle active status
+ * @param {string}            url
+ * @param {HTMLInputElement}  checkbox
+ * @param {Function|null}     onSuccess(data)
+ */
+window.ajaxToggle = function (url, checkbox, onSuccess) {
+    fetch(url, {
+        method: "PATCH",
+        headers: { "X-CSRF-TOKEN": getCsrf(), Accept: "application/json" },
+    })
+        .then(function (r) {
+            return r.json();
+        })
+        .then(function (d) {
+            if (d.ok) {
+                showAdminToast(d.msg || "Đã cập nhật!", "success");
+                if (typeof onSuccess === "function") onSuccess(d);
+            } else {
+                checkbox.checked = !checkbox.checked;
+                showAdminToast(d.msg || "Không thể thực hiện!", "error");
+            }
+        })
+        .catch(function () {
+            checkbox.checked = !checkbox.checked;
+            showAdminToast("Lỗi kết nối!", "error");
+        });
 };
 
-window.closeConfirmModal = function () {
-    var modal = document.getElementById("confirmModal");
-    modal?.classList.remove("show");
-    document.body.style.overflow = "";
-    _confirmCallback = null;
+/**
+ * Generic AJAX POST / PATCH
+ * @param {string}   url
+ * @param {object}   data
+ * @param {Function} onSuccess(res)
+ * @param {Function} onError(res)
+ * @param {string}   method  default 'POST'
+ */
+window.ajaxPost = function (url, data, onSuccess, onError, method) {
+    fetch(url, {
+        method: method || "POST",
+        headers: {
+            "X-CSRF-TOKEN": getCsrf(),
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        },
+        body: JSON.stringify(data),
+    })
+        .then(function (r) {
+            return r.json();
+        })
+        .then(function (res) {
+            if (res.ok || res.success) {
+                if (typeof onSuccess === "function") onSuccess(res);
+            } else {
+                showAdminToast(
+                    res.message || res.msg || "Có lỗi xảy ra!",
+                    "error",
+                );
+                if (typeof onError === "function") onError(res);
+            }
+        })
+        .catch(function () {
+            showAdminToast("Lỗi kết nối, thử lại sau!", "error");
+            if (typeof onError === "function") onError(null);
+        });
 };
-
-window.executeConfirm = function () {
-    if (typeof _confirmCallback === "function") {
-        _confirmCallback();
-    }
-    closeConfirmModal();
-};
-
-// Đóng khi click ra ngoài
-document.addEventListener("click", function (e) {
-    var modal = document.getElementById("confirmModal");
-    if (modal && e.target === modal) closeConfirmModal();
-});
-
-// Phím ESC
-document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape") closeConfirmModal();
-});
 
 /* =========================================================
    5. TOAST NOTIFICATION
 ========================================================= */
-window.showAdminToast = function (message, type) {
-    type = type || "success";
+var toastPalette = {
+    success: {
+        bg: "#f0fff4",
+        borderL: "#27ae60",
+        color: "#1a7a45",
+        icon: "fa-check-circle",
+    },
+    error: {
+        bg: "#fff5f5",
+        borderL: "#e74c3c",
+        color: "#c0392b",
+        icon: "fa-times-circle",
+    },
+    warning: {
+        bg: "#fffbeb",
+        borderL: "#f59e0b",
+        color: "#92400e",
+        icon: "fa-exclamation-triangle",
+    },
+    info: {
+        bg: "#eff8ff",
+        borderL: "#2563eb",
+        color: "#1e40af",
+        icon: "fa-info-circle",
+    },
+};
 
-    var palette = {
-        success: {
-            bg: "#f0fff4",
-            border: "#27ae60",
-            color: "#276749",
-            borderColor: "#bbf7d0",
-            icon: "fa-check-circle",
-        },
-        error: {
-            bg: "#fff5f5",
-            border: "#e74c3c",
-            color: "#c0392b",
-            borderColor: "#fecaca",
-            icon: "fa-times-circle",
-        },
-        warning: {
-            bg: "#fffbeb",
-            border: "#f59e0b",
-            color: "#92400e",
-            borderColor: "#fde68a",
-            icon: "fa-exclamation-triangle",
-        },
-        info: {
-            bg: "#eff8ff",
-            border: "#2563eb",
-            color: "#1e40af",
-            borderColor: "#bfdbfe",
-            icon: "fa-info-circle",
-        },
-    };
-
-    var tone = palette[type] || palette.info;
+window.showAdminToast = function (message, type, duration) {
+    type = type || "info";
+    duration = duration || 4000;
+    var tone = toastPalette[type] || toastPalette.info;
 
     var root = document.getElementById("adminToastRoot");
     if (!root) {
@@ -201,16 +232,16 @@ window.showAdminToast = function (message, type) {
         document.body.appendChild(root);
     }
 
-    var toast = document.createElement("div");
-    toast.className = "admin-toast";
-    toast.style.cssText = [
-        "background:" + tone.bg,
-        "border-left:4px solid " + tone.border,
-        "border-color:" + tone.borderColor,
-        "color:" + tone.color,
-    ].join(";");
-
-    toast.innerHTML =
+    var t = document.createElement("div");
+    t.className = "admin-toast";
+    t.style.cssText =
+        "background:" +
+        tone.bg +
+        ";border-left:4px solid " +
+        tone.borderL +
+        ";color:" +
+        tone.color;
+    t.innerHTML =
         '<i class="fas ' +
         tone.icon +
         '" style="font-size:.9rem;flex-shrink:0"></i>' +
@@ -218,48 +249,103 @@ window.showAdminToast = function (message, type) {
         message +
         "</span>" +
         "<button onclick=\"this.closest('.admin-toast').remove()\" " +
-        'style="background:none;border:none;cursor:pointer;color:inherit;' +
-        'opacity:.45;padding:0;font-size:.78rem;flex-shrink:0;transition:opacity .2s" ' +
+        'style="background:none;border:none;cursor:pointer;color:inherit;opacity:.45;padding:0;font-size:.78rem;flex-shrink:0;transition:opacity .2s" ' +
         'onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.45">' +
         '<i class="fas fa-times"></i></button>';
-
-    root.appendChild(toast);
+    root.appendChild(t);
 
     setTimeout(function () {
-        toast.style.transition = "opacity .3s ease, transform .3s ease";
-        toast.style.opacity = "0";
-        toast.style.transform = "translateX(30px)";
+        t.style.transition = "opacity .3s, transform .3s";
+        t.style.opacity = "0";
+        t.style.transform = "translateX(30px)";
         setTimeout(function () {
-            toast.remove();
+            t.remove();
         }, 320);
-    }, 4200);
-
-    return toast;
+    }, duration);
+    return t;
 };
 
 /* =========================================================
-   6. FORM HELPERS
+   6. CONFIRM DELETE MODAL
+========================================================= */
+var _confirmCb = null;
+
+window.confirmDelete = function (label, callback, sub) {
+    var modal = document.getElementById("confirmModal");
+    if (!modal) {
+        if (
+            confirm(
+                'Xóa "' +
+                    label +
+                    '"?\n' +
+                    (sub || "Thao tác không thể hoàn tác!"),
+            )
+        )
+            callback();
+        return;
+    }
+    var nameEl = modal.querySelector(".confirm-name");
+    var subEl = modal.querySelector(".confirm-sub");
+    if (nameEl) nameEl.textContent = label;
+    if (subEl) subEl.textContent = sub || "Thao tác này không thể hoàn tác!";
+    _confirmCb = callback;
+    modal.classList.add("show");
+    document.body.style.overflow = "hidden";
+};
+
+window.closeConfirmModal = function () {
+    document.getElementById("confirmModal")?.classList.remove("show");
+    document.body.style.overflow = "";
+    _confirmCb = null;
+};
+
+window.executeConfirm = function () {
+    if (typeof _confirmCb === "function") _confirmCb();
+    closeConfirmModal();
+};
+
+document.addEventListener("click", function (e) {
+    if (e.target.id === "confirmModal") closeConfirmModal();
+});
+document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") closeConfirmModal();
+});
+
+/* =========================================================
+   7. FORM HELPERS
 ========================================================= */
 
-// Preview ảnh trước khi upload
-window.previewImage = function (inputEl, imgEl) {
-    if (!inputEl || !inputEl.files || !inputEl.files[0]) return;
+/** Toggle password eye */
+window.togglePwEye = function (inputId, iconId) {
+    var inp = document.getElementById(inputId);
+    var ico = document.getElementById(iconId);
+    if (!inp) return;
+    inp.type = inp.type === "password" ? "text" : "password";
+    if (ico)
+        ico.className =
+            inp.type === "password" ? "fas fa-eye" : "fas fa-eye-slash";
+};
+
+/** Preview single image */
+window.previewImage = function (inputEl, imgElOrId) {
+    if (!inputEl?.files?.[0]) return;
+    var img =
+        typeof imgElOrId === "string"
+            ? document.getElementById(imgElOrId)
+            : imgElOrId;
     var reader = new FileReader();
     reader.onload = function (e) {
-        if (imgEl) imgEl.src = e.target.result;
+        if (img) img.src = e.target.result;
     };
     reader.readAsDataURL(inputEl.files[0]);
 };
 
-// Preview nhiều ảnh (grid)
+/** Preview multiple images into a grid */
 window.previewMultiImages = function (inputEl, gridEl) {
     if (!inputEl || !gridEl) return;
-    var files = Array.from(inputEl.files || []);
     gridEl.innerHTML = "";
-
-    files.forEach(function (file, idx) {
+    Array.from(inputEl.files || []).forEach(function (file, idx) {
         if (!file.type.startsWith("image/")) return;
-
         var reader = new FileReader();
         reader.onload = function (e) {
             var item = document.createElement("div");
@@ -278,151 +364,167 @@ window.previewMultiImages = function (inputEl, gridEl) {
     });
 };
 
-// Submit form với confirm
-window.deleteWithConfirm = function (formId, label) {
-    confirmDelete(
-        'Xóa "' + (label || "mục này") + '"? Hành động này không thể hoàn tác.',
-        function () {
-            var form = document.getElementById(formId);
-            if (form) form.submit();
-        },
-    );
+/** Role card selector */
+window.selectRoleCard = function (val, clickedEl) {
+    clickedEl
+        .closest(".role-card-grid")
+        .querySelectorAll(".role-card")
+        .forEach(function (c) {
+            c.classList.remove("selected");
+        });
+    clickedEl.classList.add("selected");
+    var radio = clickedEl.querySelector("input[type=radio]");
+    if (radio) radio.checked = true;
 };
 
-// Validate field required trực tiếp
-window.validateRequired = function (inputEl, errorId, label) {
-    var el =
-        typeof inputEl === "string"
-            ? document.getElementById(inputEl)
-            : inputEl;
+/** Toggle switch label update */
+window.updateToggleLabel = function (checkboxEl, labelEl) {
+    if (!checkboxEl || !labelEl) return;
+    function update() {
+        labelEl.textContent = checkboxEl.checked
+            ? "Đang hoạt động"
+            : "Vô hiệu hóa";
+        labelEl.className =
+            "toggle-label " + (checkboxEl.checked ? "on" : "off");
+    }
+    checkboxEl.addEventListener("change", update);
+    update();
+};
+
+/** Show loading on button */
+window.btnLoading = function (el, text) {
+    if (!el) return;
+    el._orig = el.innerHTML;
+    el._dis = el.disabled;
+    el.disabled = true;
+    el.innerHTML =
+        '<i class="fas fa-circle-notch fa-spin"></i> ' +
+        (text || "Đang xử lý...");
+};
+
+/** Restore button */
+window.btnRestore = function (el) {
+    if (!el || !el._orig) return;
+    el.innerHTML = el._orig;
+    el.disabled = el._dis || false;
+    delete el._orig;
+    delete el._dis;
+};
+
+/** Simple field validation */
+window.validateField = function (inputId, errorId, label) {
+    var el = document.getElementById(inputId);
     var err = document.getElementById(errorId);
     if (!el) return true;
-
-    var val = el.value.trim();
-    if (!val) {
-        el.classList.add("is-invalid");
-        if (err) {
-            err.innerHTML =
-                '<i class="fas fa-exclamation-circle"></i> ' +
-                (label || "Trường này") +
-                " không được để trống";
-            err.style.display = "flex";
-        }
-        el.focus();
-        return false;
-    }
-
-    el.classList.remove("is-invalid");
+    var empty = !el.value.trim();
+    el.classList.toggle("is-invalid", empty);
     if (err) {
-        err.innerHTML = "";
-        err.style.display = "none";
+        err.innerHTML = empty
+            ? '<i class="fas fa-exclamation-circle"></i> ' +
+              (label || "Trường này") +
+              " không được để trống"
+            : "";
+        err.style.display = empty ? "flex" : "none";
     }
-    return true;
+    if (empty) el.focus();
+    return !empty;
 };
 
 /* =========================================================
-   7. AJAX UTILITIES
+   8. TABLE HELPERS
 ========================================================= */
 
-// Toggle trạng thái (AJAX POST)
-window.ajaxToggleStatus = function (url, csrfToken, onSuccess) {
-    fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN":
-                csrfToken ||
-                document.querySelector('meta[name="csrf-token"]')?.content,
-            Accept: "application/json",
-        },
-    })
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (data) {
-            if (data.success) {
-                showAdminToast(
-                    data.message || "Cập nhật thành công",
-                    "success",
-                );
-                if (typeof onSuccess === "function") onSuccess(data);
-            } else {
-                showAdminToast(data.message || "Có lỗi xảy ra", "error");
-            }
-        })
-        .catch(function () {
-            showAdminToast("Lỗi kết nối, thử lại sau", "error");
+/** Initialize select-all checkbox */
+window.initSelectAll = function (selectAllId, rowClass) {
+    var sa = document.getElementById(selectAllId);
+    if (!sa) return;
+    function syncHeader() {
+        var all = document.querySelectorAll("." + rowClass);
+        var checked = document.querySelectorAll("." + rowClass + ":checked");
+        sa.indeterminate = checked.length > 0 && checked.length < all.length;
+        sa.checked = checked.length > 0 && checked.length === all.length;
+        _updateBulkBar(checked.length);
+    }
+    sa.addEventListener("change", function () {
+        document.querySelectorAll("." + rowClass).forEach(function (cb) {
+            cb.checked = sa.checked;
         });
+        _updateBulkBar(
+            document.querySelectorAll("." + rowClass + ":checked").length,
+        );
+    });
+    document.querySelectorAll("." + rowClass).forEach(function (cb) {
+        cb.addEventListener("change", syncHeader);
+    });
 };
 
-// AJAX POST chung
-window.ajaxPost = function (url, data, onSuccess, onError) {
-    var csrf = document.querySelector('meta[name="csrf-token"]')?.content;
+function _updateBulkBar(count) {
+    var bar = document.getElementById("bulkActionBar");
+    var label = document.querySelector(".bulk-count");
+    if (bar) bar.style.display = count > 0 ? "flex" : "none";
+    if (label) label.textContent = count + " mục được chọn";
+}
 
-    fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": csrf,
-            Accept: "application/json",
-        },
-        body: JSON.stringify(data),
-    })
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (res) {
-            if (res.success) {
-                if (typeof onSuccess === "function") onSuccess(res);
-            } else {
-                showAdminToast(res.message || "Có lỗi xảy ra", "error");
-                if (typeof onError === "function") onError(res);
+window.getSelectedIds = function (rowClass) {
+    return Array.from(
+        document.querySelectorAll(
+            "." + (rowClass || "row-checkbox") + ":checked",
+        ),
+    ).map(function (cb) {
+        return cb.value;
+    });
+};
+
+/** Highlight search keyword in table cells */
+window.highlightKeyword = function (keyword, selector) {
+    if (!keyword || keyword.length < 2) return;
+    var regex = new RegExp(
+        "(" + keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
+        "gi",
+    );
+    document
+        .querySelectorAll(selector || ".table-admin td")
+        .forEach(function (el) {
+            if (el.children.length === 0 && el.textContent.match(regex)) {
+                el.innerHTML = el.textContent.replace(regex, "<mark>$1</mark>");
             }
-        })
-        .catch(function () {
-            showAdminToast("Lỗi kết nối, thử lại sau", "error");
-            if (typeof onError === "function") onError(null);
         });
 };
 
 /* =========================================================
-   8. UI UTILITIES
+   9. UI UTILITIES
 ========================================================= */
 
-// Copy to clipboard
-window.copyToClipboard = function (text, successMsg) {
+/** Copy to clipboard */
+window.copyToClipboard = function (text, msg) {
+    function fallback() {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.cssText = "position:absolute;left:-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand("copy");
+            showAdminToast(msg || "Đã sao chép!", "success");
+        } catch (e) {
+            showAdminToast("Không thể sao chép", "error");
+        }
+        document.body.removeChild(ta);
+    }
     if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard
             .writeText(text)
             .then(function () {
-                showAdminToast(successMsg || "Đã sao chép: " + text, "success");
+                showAdminToast(msg || "Đã sao chép!", "success");
             })
-            .catch(function () {
-                fallbackCopy(text, successMsg);
-            });
+            .catch(fallback);
     } else {
-        fallbackCopy(text, successMsg);
+        fallback();
     }
 };
 
-function fallbackCopy(text, msg) {
-    var el = document.createElement("textarea");
-    el.value = text;
-    el.style.cssText = "position:absolute;left:-9999px;top:-9999px";
-    document.body.appendChild(el);
-    el.select();
-    try {
-        document.execCommand("copy");
-        showAdminToast(msg || "Đã sao chép", "success");
-    } catch (e) {
-        showAdminToast("Không thể sao chép", "error");
-    }
-    document.body.removeChild(el);
-}
-
-// Format tiền
+/** Format money (VND) */
 window.formatMoney = function (num) {
-    if (num === null || num === undefined || num === "") return "—";
     num = parseFloat(num);
     if (isNaN(num)) return "—";
     if (num >= 1e9) return (num / 1e9).toFixed(2).replace(/\.?0+$/, "") + " tỷ";
@@ -430,26 +532,27 @@ window.formatMoney = function (num) {
     return num.toLocaleString("vi-VN") + " đ";
 };
 
-// Format số có dấu phẩy
+/** Format number */
 window.formatNumber = function (num) {
-    if (!num && num !== 0) return "—";
-    return Number(num).toLocaleString("vi-VN");
+    return num === null || num === undefined || num === ""
+        ? "—"
+        : Number(num).toLocaleString("vi-VN");
 };
 
-// Debounce
+/** Debounce */
 window.debounce = function (fn, delay) {
     var timer;
     return function () {
-        var args = arguments;
-        var ctx = this;
+        var a = arguments,
+            ctx = this;
         clearTimeout(timer);
         timer = setTimeout(function () {
-            fn.apply(ctx, args);
+            fn.apply(ctx, a);
         }, delay || 300);
     };
 };
 
-// Throttle
+/** Throttle */
 window.throttle = function (fn, limit) {
     var last = 0;
     return function () {
@@ -462,60 +565,10 @@ window.throttle = function (fn, limit) {
 };
 
 /* =========================================================
-   9. TABLE HELPERS
-========================================================= */
-
-// Select all checkbox
-window.initSelectAll = function (selectAllId, checkboxClass) {
-    var selectAll = document.getElementById(selectAllId);
-    if (!selectAll) return;
-
-    selectAll.addEventListener("change", function () {
-        document.querySelectorAll("." + checkboxClass).forEach(function (cb) {
-            cb.checked = selectAll.checked;
-        });
-        updateBulkBar();
-    });
-
-    document.querySelectorAll("." + checkboxClass).forEach(function (cb) {
-        cb.addEventListener("change", function () {
-            var all = document.querySelectorAll("." + checkboxClass);
-            var done = document.querySelectorAll(
-                "." + checkboxClass + ":checked",
-            );
-            selectAll.indeterminate =
-                done.length > 0 && done.length < all.length;
-            selectAll.checked = done.length === all.length;
-            updateBulkBar();
-        });
-    });
-};
-
-function updateBulkBar() {
-    var bar = document.getElementById("bulkActionBar");
-    var count = document.querySelectorAll(".row-checkbox:checked").length;
-    if (bar) {
-        bar.style.display = count > 0 ? "flex" : "none";
-        var countEl = bar.querySelector(".bulk-count");
-        if (countEl) countEl.textContent = count + " mục được chọn";
-    }
-}
-
-window.getSelectedIds = function (checkboxClass) {
-    return Array.from(
-        document.querySelectorAll(
-            "." + (checkboxClass || "row-checkbox") + ":checked",
-        ),
-    ).map(function (cb) {
-        return cb.value;
-    });
-};
-
-/* =========================================================
-   10. SEARCH BAR — LIVE SEARCH HELPER
+   10. DOMContentLoaded — AUTO INIT
 ========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
-    // Auto submit filter form khi thay đổi select
+    /* ── Auto-submit select có class .filter-auto-submit ── */
     document.querySelectorAll(".filter-auto-submit").forEach(function (el) {
         el.addEventListener("change", function () {
             var form = this.closest("form");
@@ -523,92 +576,42 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    // Search với debounce
-    var searchInputs = document.querySelectorAll(".search-debounce");
-    searchInputs.forEach(function (input) {
-        var debouncedSubmit = debounce(function () {
-            var form = input.closest("form");
-            if (form) form.submit();
-        }, 600);
-        input.addEventListener("input", debouncedSubmit);
+    /* ── Search debounce với class .search-debounce ── */
+    document.querySelectorAll(".search-debounce").forEach(function (input) {
+        input.addEventListener(
+            "input",
+            debounce(function () {
+                var form = input.closest("form");
+                if (form) form.submit();
+            }, 600),
+        );
     });
 
-    // Highlight từ tìm kiếm trong table
-    var searchVal =
-        new URLSearchParams(window.location.search).get("search") || "";
-    if (searchVal.length > 1) {
-        highlightText(document.querySelectorAll(".table-admin td"), searchVal);
-    }
-});
+    /* ── Highlight từ khóa tìm kiếm ── */
+    var kw =
+        new URLSearchParams(window.location.search).get("tukhoa") ||
+        new URLSearchParams(window.location.search).get("search") ||
+        "";
+    if (kw.length > 1) highlightKeyword(kw);
 
-function highlightText(elements, keyword) {
-    var regex = new RegExp(
-        "(" + keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
-        "gi",
-    );
-    elements.forEach(function (el) {
-        if (el.children.length === 0 && el.textContent.match(regex)) {
-            el.innerHTML = el.textContent.replace(
-                regex,
-                '<mark style="background:#fff3cd;padding:0 2px;border-radius:2px">$1</mark>',
-            );
-        }
-    });
-}
-
-/* =========================================================
-   11. LOADING SPINNER
-========================================================= */
-window.showLoading = function (el, text) {
-    if (!el) return;
-    el._origHTML = el.innerHTML;
-    el._origDisabled = el.disabled;
-    el.disabled = true;
-    el.innerHTML =
-        '<i class="fas fa-circle-notch fa-spin"></i> ' +
-        (text || "Đang xử lý...");
-};
-
-window.hideLoading = function (el) {
-    if (!el || !el._origHTML) return;
-    el.innerHTML = el._origHTML;
-    el.disabled = el._origDisabled || false;
-    delete el._origHTML;
-    delete el._origDisabled;
-};
-
-/* =========================================================
-   12. INIT TOOLTIPS (Tự động với data-tip)
-========================================================= */
-document.addEventListener("DOMContentLoaded", function () {
+    /* ── Tooltip: [data-tip] ── */
     document.querySelectorAll("[data-tip]").forEach(function (el) {
         var tip = null;
-
         el.addEventListener("mouseenter", function () {
             tip = document.createElement("div");
             tip.textContent = el.getAttribute("data-tip");
-            tip.style.cssText = [
-                "position:fixed",
-                "background:#1a3c5e",
-                "color:#fff",
-                "padding:.3rem .65rem",
-                "border-radius:6px",
-                "font-size:.72rem",
-                "font-weight:600",
-                "pointer-events:none",
-                "z-index:99999",
-                "white-space:nowrap",
-                "box-shadow:0 4px 12px rgba(0,0,0,.2)",
-                "animation:fadeIn .15s ease",
-            ].join(";");
+            tip.style.cssText =
+                "position:fixed;background:#1a3c5e;color:#fff;" +
+                "padding:.32rem .7rem;border-radius:6px;font-size:.72rem;" +
+                "font-weight:600;pointer-events:none;z-index:99999;" +
+                "white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);" +
+                "animation:fadeIn .15s ease";
             document.body.appendChild(tip);
-            positionTip(el, tip);
+            _positionTip(el, tip);
         });
-
         el.addEventListener("mousemove", function () {
-            positionTip(el, tip);
+            _positionTip(el, tip);
         });
-
         el.addEventListener("mouseleave", function () {
             if (tip) {
                 tip.remove();
@@ -617,13 +620,46 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    function positionTip(el, tip) {
-        if (!tip) return;
-        var rect = el.getBoundingClientRect();
-        var tipW = tip.offsetWidth;
-        var left = rect.left + rect.width / 2 - tipW / 2;
-        left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
-        tip.style.left = left + "px";
-        tip.style.top = rect.bottom + 6 + "px";
-    }
+    /* ── Toggle switches với [data-toggle-url] ── */
+    document
+        .querySelectorAll(".toggle-sw input[data-toggle-url]")
+        .forEach(function (chk) {
+            chk.addEventListener("change", function () {
+                ajaxToggle(this.dataset.toggleUrl, this, function (d) {
+                    // Cập nhật status dot nếu có trong cùng row/card
+                    var wrap = chk.closest("tr, .mobile-card");
+                    if (wrap) {
+                        var dot = wrap.querySelector(".status-dot");
+                        if (dot) {
+                            dot.className =
+                                "status-dot " + (chk.checked ? "on" : "off");
+                        }
+                    }
+                });
+            });
+        });
+
+    /* ── Confirm delete: form nào có [data-confirm-delete] ── */
+    document.querySelectorAll("[data-confirm-delete]").forEach(function (el) {
+        el.addEventListener("click", function (e) {
+            e.preventDefault();
+            var label = this.dataset.confirmDelete || "mục này";
+            var form =
+                this.closest("form") ||
+                document.getElementById(this.dataset.formId);
+            confirmDelete(label, function () {
+                if (form) form.submit();
+            });
+        });
+    });
 });
+
+function _positionTip(el, tip) {
+    if (!tip) return;
+    var r = el.getBoundingClientRect();
+    var tipW = tip.offsetWidth;
+    var left = r.left + r.width / 2 - tipW / 2;
+    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+    tip.style.left = left + "px";
+    tip.style.top = r.bottom + 6 + "px";
+}
