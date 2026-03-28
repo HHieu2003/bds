@@ -54,6 +54,7 @@ class BaiVietController extends Controller
             'hien_thi'   => BaiViet::where('hien_thi', true)->count(),
             'an'         => BaiViet::where('hien_thi', false)->count(),
             'noi_bat'    => BaiViet::where('noi_bat', true)->count(),
+            'tong_luot_xem' => (int) BaiViet::sum('luot_xem'),
             'tin_tuc'    => BaiViet::where('loai_bai_viet', 'tin_tuc')->count(),
             'kien_thuc'  => BaiViet::where('loai_bai_viet', 'kien_thuc')->count(),
         ];

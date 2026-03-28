@@ -56,12 +56,13 @@
                 </div>
             </div>
         </div>
+
         <div class="col-6 col-sm-3">
             <div class="stat-card">
-                <div class="stat-icon orange"><i class="fas fa-star"></i></div>
+                <div class="stat-icon yellow"><i class="fas fa-eye"></i></div>
                 <div>
-                    <div class="stat-num">{{ $thongKe['noi_bat'] }}</div>
-                    <div class="stat-label">Nổi bật</div>
+                    <div class="stat-num">{{ number_format($thongKe['tong_luot_xem'] ?? 0) }}</div>
+                    <div class="stat-label">Tổng lượt xem</div>
                 </div>
             </div>
         </div>
