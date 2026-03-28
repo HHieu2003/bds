@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\KhuVuc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class KhuVucController extends Controller
 {
@@ -23,7 +22,6 @@ class KhuVucController extends Controller
             $kw = '%' . $request->tim_kiem . '%';
             $query->where(function ($q) use ($kw) {
                 $q->where('ten_khu_vuc', 'like', $kw)
-                    ->orWhere('ma_hanh_chinh', 'like', $kw)
                     ->orWhere('slug', 'like', $kw);
             });
         }
@@ -223,12 +221,6 @@ class KhuVucController extends Controller
             'cap_khu_vuc'     => 'required|in:tinh_thanh,quan_huyen,phuong_xa',
             'khu_vuc_cha_id'  => 'nullable|exists:khu_vuc,id',
             'ten_khu_vuc'     => 'required|string|max:150',
-            'ma_hanh_chinh'   => [
-                'nullable',
-                'string',
-                'max:20',
-                Rule::unique('khu_vuc', 'ma_hanh_chinh')->ignore($ignoreId)->whereNull('deleted_at'),
-            ],
             'mo_ta'           => 'nullable|string',
             'hien_thi'        => 'nullable|boolean',
             'thu_tu_hien_thi' => 'nullable|integer|min:0|max:9999',

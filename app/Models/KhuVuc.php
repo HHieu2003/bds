@@ -17,7 +17,6 @@ class KhuVuc extends Model
         'khu_vuc_cha_id',
         'ten_khu_vuc',
         'slug',
-        'ma_hanh_chinh',
         'mo_ta',
         'hien_thi',
         'thu_tu_hien_thi',

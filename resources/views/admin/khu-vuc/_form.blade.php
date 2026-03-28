@@ -53,21 +53,6 @@
                         @enderror
                     </div>
 
-                    {{-- Mã hành chính --}}
-                    <div class="kv-fg">
-                        <label class="kv-fl">
-                            Mã hành chính
-                            <span class="kv-hint">VD: 01, 10, 268</span>
-                        </label>
-                        <input type="text" name="ma_hanh_chinh"
-                            class="kv-fi @error('ma_hanh_chinh') kv-fi-err @enderror"
-                            value="{{ old('ma_hanh_chinh', $isEdit ? $khuVuc->ma_hanh_chinh : '') }}"
-                            placeholder="Mã theo chuẩn Bộ Nội vụ...">
-                        @error('ma_hanh_chinh')
-                            <div class="kv-fe"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
-                        @enderror
-                    </div>
-
                 </div>
 
                 {{-- Mô tả --}}

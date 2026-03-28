@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\KhuVuc;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class KhuVucSeeder extends Seeder
 {
@@ -15,7 +14,6 @@ class KhuVucSeeder extends Seeder
             'cap_khu_vuc'     => 'tinh_thanh',
             'ten_khu_vuc'     => 'Hà Nội',
             'slug'            => 'ha-noi',
-            'ma_hanh_chinh'   => '01',
             'hien_thi'        => true,
             'thu_tu_hien_thi' => 1,
             'seo_title'       => 'Bất động sản Hà Nội',
@@ -24,9 +22,9 @@ class KhuVucSeeder extends Seeder
 
         // Cấp 2: Quận/Huyện
         $quanHuyen = [
-            ['ten' => 'Vinhomes Smart City',    'slug' => 'Vinhomes Smart City',    'ma' => '268', 'thu_tu' => 1],
-            ['ten' => 'Cầu Giấy',   'slug' => 'cau-giay',   'ma' => '007', 'thu_tu' => 3],
-            ['ten' => 'Nam Từ Liêm', 'slug' => 'nam-tu-liem', 'ma' => '020', 'thu_tu' => 2],
+            ['ten' => 'Vinhomes Smart City', 'slug' => 'Vinhomes Smart City', 'thu_tu' => 1],
+            ['ten' => 'Cầu Giấy', 'slug' => 'cau-giay', 'thu_tu' => 3],
+            ['ten' => 'Nam Từ Liêm', 'slug' => 'nam-tu-liem', 'thu_tu' => 2],
         ];
 
         foreach ($quanHuyen as $q) {
@@ -35,7 +33,6 @@ class KhuVucSeeder extends Seeder
                 'khu_vuc_cha_id'   => $haNoi->id,
                 'ten_khu_vuc'      => $q['ten'],
                 'slug'             => $q['slug'],
-                'ma_hanh_chinh'    => $q['ma'],
                 'hien_thi'         => true,
                 'thu_tu_hien_thi'  => $q['thu_tu'],
                 'seo_title'        => 'Bất động sản ' . $q['ten'],

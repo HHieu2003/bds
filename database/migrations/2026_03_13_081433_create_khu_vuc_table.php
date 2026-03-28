@@ -21,7 +21,6 @@ return new class extends Migration
 
             $table->string('ten_khu_vuc');
             $table->string('slug')->unique();
-            $table->string('ma_hanh_chinh')->nullable()->unique();
             $table->text('mo_ta')->nullable();
 
             $table->boolean('hien_thi')->default(true);
