@@ -79,15 +79,6 @@
         </div>
     @endif
 
-    {{-- Flash success --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible d-flex align-items-center gap-2 mb-4" role="alert">
-            <i class="fas fa-check-circle flex-shrink-0"></i>
-            <span>{{ session('success') }}</span>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    @endif
-
     <form action="{{ route('nhanvien.admin.nhan-vien.update', $nhanVien) }}" method="POST" enctype="multipart/form-data"
         id="nvEditForm" novalidate>
         @csrf

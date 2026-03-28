@@ -285,6 +285,12 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             // Bài viết
             // → nhanvien.admin.bai-viet.*
             Route::resource('bai-viet', BaiVietController::class);
+            Route::patch('bai-viet/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])
+                ->name('bai-viet.toggle-hien-thi');
+            Route::patch('bai-viet/{baiViet}/noi-bat', [BaiVietController::class, 'toggleNoiBat'])
+                ->name('bai-viet.toggle-noi-bat');
+            Route::post('bai-viet/bulk-action', [BaiVietController::class, 'bulkAction'])
+                ->name('bai-viet.bulk-action');
 
             // Liên hệ
             Route::prefix('khu-vuc')->name('khu-vuc.')->group(function () {

@@ -62,10 +62,34 @@ class BaiViet extends Model
         return null;
     }
 
+    public function getAnhDaiDienAttribute(): ?string
+    {
+        return $this->hinh_anh;
+    }
+
+    public function setAnhDaiDienAttribute($value): void
+    {
+        $this->attributes['hinh_anh'] = $value;
+    }
+
     public function getLoaiInfoAttribute(): array
     {
         return self::LOAI[$this->loai_bai_viet]
             ?? ['label' => $this->loai_bai_viet, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => 'fas fa-file'];
+    }
+
+    public function getTrangThaiAttribute(): string
+    {
+        if (!$this->hien_thi) {
+            return 'an';
+        }
+
+        return 'hien_thi';
+    }
+
+    public function getNgayDangAttribute()
+    {
+        return $this->thoi_diem_dang;
     }
 
     // ── Scopes ──

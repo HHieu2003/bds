@@ -37,23 +37,7 @@
     <div id="main-wrapper">
         <div class="main-content">
 
-            {{-- Flash Messages — dùng Bootstrap .alert --}}
-            @foreach (['success', 'error', 'info', 'warning'] as $type)
-                @if (session($type))
-                    <div class="alert alert-{{ $type === 'error' ? 'danger' : $type }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
-                        role="alert">
-                        <i
-                            class="fas {{ match ($type) {
-                                'success' => 'fa-check-circle',
-                                'error' => 'fa-exclamation-circle',
-                                'info' => 'fa-info-circle',
-                                default => 'fa-exclamation-triangle',
-                            } }} flex-shrink-0"></i>
-                        <span class="flex-grow-1">{{ session($type) }}</span>
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
-                    </div>
-                @endif
-            @endforeach
+            {{-- Flash Messages: hiển thị bằng toast góc phải trên (xử lý ở script cuối trang) --}}
 
             {{-- Nội dung từng trang --}}
             @yield('content')
@@ -86,6 +70,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/admin.js') }}"></script>
+
+    @php
+        $flashToasts = [];
+        foreach (['success', 'error', 'info', 'warning'] as $type) {
+            if (session()->has($type)) {
+                $flashToasts[] = [
+                    'type' => $type,
+                    'message' => (string) session($type),
+                ];
+            }
+        }
+    @endphp
+    @if (!empty($flashToasts))
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toasts = @json($flashToasts);
+                toasts.forEach((item, idx) => {
+                    if (typeof showAdminToast !== 'function' || !item?.message) {
+                        return;
+                    }
+                    const type = item.type === 'error' ? 'error' : item.type;
+                    setTimeout(() => showAdminToast(item.message, type), idx * 180);
+                });
+            });
+        </script>
+    @endif
+
     @stack('scripts')
 
 </body>
