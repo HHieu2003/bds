@@ -37,21 +37,20 @@
     <div id="main-wrapper">
         <div class="main-content">
 
-            {{-- Flash Messages --}}
+            {{-- Flash Messages — dùng Bootstrap .alert --}}
             @foreach (['success', 'error', 'info', 'warning'] as $type)
                 @if (session($type))
-                    <div class="flash-admin flash-admin-{{ $type }}">
+                    <div class="alert alert-{{ $type === 'error' ? 'danger' : $type }} alert-dismissible fade show d-flex align-items-center gap-2 mb-3"
+                        role="alert">
                         <i
                             class="fas {{ match ($type) {
                                 'success' => 'fa-check-circle',
                                 'error' => 'fa-exclamation-circle',
                                 'info' => 'fa-info-circle',
                                 default => 'fa-exclamation-triangle',
-                            } }}"></i>
-                        <span>{{ session($type) }}</span>
-                        <button class="flash-admin-close" onclick="this.closest('.flash-admin').remove()">
-                            <i class="fas fa-times"></i>
-                        </button>
+                            } }} flex-shrink-0"></i>
+                        <span class="flex-grow-1">{{ session($type) }}</span>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Đóng"></button>
                     </div>
                 @endif
             @endforeach
@@ -62,22 +61,24 @@
         </div>
     </div>
 
-    {{-- ── Confirm Delete Modal (dùng chung) ── --}}
+    {{-- ── Confirm Delete Modal (custom — dùng chung toàn admin) ── --}}
     <div id="confirmModal">
         <div class="confirm-box">
             <div class="confirm-icon">
                 <i class="fas fa-trash-alt"></i>
             </div>
             <div class="confirm-title">Xác nhận xóa</div>
-            <div class="confirm-sub" id="confirmMessage">
-                Bạn có chắc muốn xóa mục này? Hành động này không thể hoàn tác.
-            </div>
+            <p class="confirm-sub">
+                Bạn có chắc muốn xóa
+                <strong class="confirm-name text-danger"></strong>?<br>
+                <span class="confirm-sub"></span>
+            </p>
             <div class="confirm-actions">
-                <button class="btn-secondary-admin" onclick="closeConfirmModal()">
-                    <i class="fas fa-times"></i> Hủy
+                <button class="btn btn-secondary" onclick="closeConfirmModal()">
+                    <i class="fas fa-times me-1"></i> Hủy
                 </button>
-                <button class="btn-danger-admin" onclick="executeConfirm()">
-                    <i class="fas fa-trash-alt"></i> Xóa ngay
+                <button class="btn btn-danger" onclick="executeConfirm()">
+                    <i class="fas fa-trash-alt me-1"></i> Xóa ngay
                 </button>
             </div>
         </div>
@@ -86,7 +87,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ asset('js/admin.js') }}"></script>
     @stack('scripts')
-
 
 </body>
 

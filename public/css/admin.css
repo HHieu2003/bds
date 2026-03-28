@@ -1,6 +1,8 @@
 /* =========================================================
-   ADMIN.CSS — THÀNH CÔNG LAND  v3.0
-   Design System: Tokens → Layout → Components → Responsive
+   ADMIN.CSS — THÀNH CÔNG LAND  v4.0
+   Chỉ giữ những gì Bootstrap 5 KHÔNG có sẵn.
+   Bootstrap đảm nhiệm: card, table, form, btn-base,
+   badge, modal, pagination, alert, grid.
 ========================================================= */
 
 /* =========================================================
@@ -68,51 +70,66 @@
     --t: 0.2s ease;
     --t-sl: 0.35s ease;
 }
-
 /* =========================================================
-   2. RESET
+. RESET CƠ BẢN & TYPOGRAPHY
 ========================================================= */
 *,
 *::before,
 *::after {
     box-sizing: border-box;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    font-family: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+    font-size: 15px;
+    color: var(--text-body);
+    background: var(--bg-main); /* Đổi nền web thành Trắng kem */
+    line-height: 1.65;
+    overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: var(--text-heading);
+    font-weight: 700;
+}
+a {
+    text-decoration: none;
+    color: inherit;
+    transition: color var(--transition);
+}
+img {
+    max-width: 100%;
+    height: auto;
+}
+ul,
+ol {
     margin: 0;
     padding: 0;
+    list-style: none;
 }
-html,
-body {
-    height: 100%;
-}
+
+/* =========================================================
+   2. BASE OVERRIDES (chỉ thứ Bootstrap Reboot chưa làm)
+========================================================= */
 body {
     font-family:
         "Be Vietnam Pro",
         system-ui,
         -apple-system,
         sans-serif;
-    font-size: 14px;
-    line-height: 1.55;
     background: var(--bg);
-    color: var(--text);
-    overflow-x: hidden;
+    font-size: 14px;
     -webkit-font-smoothing: antialiased;
 }
-a {
-    text-decoration: none;
-    color: inherit;
-}
-img {
-    max-width: 100%;
-    display: block;
-}
-button {
-    font-family: inherit;
-}
-input,
-select,
-textarea {
-    font-family: inherit;
-}
 
+/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 5px;
     height: 5px;
@@ -156,7 +173,6 @@ textarea {
 #sidebar.collapsed .sidebar-logo-text,
 #sidebar.collapsed .nav-link-text,
 #sidebar.collapsed .nav-group-label,
-#sidebar.collapsed .nav-badge,
 #sidebar.collapsed .sidebar-user-info {
     opacity: 0 !important;
     max-width: 0 !important;
@@ -173,10 +189,6 @@ textarea {
     padding: 0 4px !important;
     font-size: 0.58rem !important;
     border-radius: 8px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    /* Không dùng max-width nữa */
     max-width: unset !important;
     opacity: 1 !important;
     pointer-events: none !important;
@@ -219,7 +231,7 @@ textarea {
     transform: rotate(180deg);
 }
 
-/* Tooltip on collapsed */
+/* Tooltip khi collapsed */
 #sidebar.collapsed .nav-link-item {
     position: relative;
 }
@@ -289,7 +301,6 @@ textarea {
     font-weight: 900;
     color: #fff;
     line-height: 1.15;
-    letter-spacing: 0.2px;
 }
 .sidebar-logo-text .sub {
     font-size: 0.64rem;
@@ -383,6 +394,7 @@ textarea {
         opacity var(--t),
         max-width var(--t);
 }
+
 .nav-badge {
     flex-shrink: 0;
     font-size: 0.6rem;
@@ -515,7 +527,7 @@ textarea {
 }
 
 /* =========================================================
-   4. TOPBAR
+   4. TOPBAR (layout custom — Bootstrap .navbar không đủ)
 ========================================================= */
 #topbar {
     position: fixed;
@@ -619,6 +631,7 @@ textarea {
     background: var(--border);
     flex-shrink: 0;
 }
+
 .topbar-icon-btn {
     width: 36px;
     height: 36px;
@@ -640,6 +653,7 @@ textarea {
     border-color: var(--primary);
     color: var(--primary);
 }
+
 .notif-dot {
     position: absolute;
     top: 7px;
@@ -813,7 +827,7 @@ textarea {
 }
 
 /* =========================================================
-   5. MAIN LAYOUT
+   5. MAIN LAYOUT (sidebar offset — Bootstrap không có)
 ========================================================= */
 #main-wrapper {
     margin-left: var(--sidebar-w);
@@ -843,60 +857,8 @@ textarea {
 }
 
 /* =========================================================
-   6. PAGE HEADER
+   6. STAT CARDS (grid + icon màu — Bootstrap .card không đủ)
 ========================================================= */
-.page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-.page-header-title {
-    font-size: 1.3rem;
-    font-weight: 900;
-    color: var(--navy);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    line-height: 1.2;
-}
-.page-header-title i {
-    color: var(--primary);
-    font-size: 1.1rem;
-}
-.page-header-sub {
-    font-size: 0.8rem;
-    color: var(--text-sub);
-    margin-top: 0.3rem;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-.page-header-sub .dot {
-    width: 3px;
-    height: 3px;
-    border-radius: 50%;
-    background: var(--text-muted);
-    display: inline-block;
-}
-.page-header-actions {
-    display: flex;
-    gap: 0.6rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-/* =========================================================
-   7. STAT CARDS
-========================================================= */
-.stat-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
 .stat-card {
     background: var(--surface);
     border-radius: var(--r);
@@ -913,7 +875,6 @@ textarea {
     color: inherit;
     position: relative;
     overflow: hidden;
-    cursor: default;
 }
 .stat-card::after {
     content: "";
@@ -934,6 +895,7 @@ textarea {
 .stat-card:hover::after {
     opacity: 1;
 }
+
 .stat-icon {
     width: 50px;
     height: 50px;
@@ -980,6 +942,7 @@ textarea {
     background: var(--blue-bg);
     color: var(--blue);
 }
+
 .stat-num {
     font-size: 1.65rem;
     font-weight: 900;
@@ -1009,81 +972,49 @@ textarea {
 }
 
 /* =========================================================
-   8. CARD COMPONENT
+   7. CARD OVERRIDES (Bootstrap .card + override màu custom)
 ========================================================= */
-.card-admin {
-    background: var(--surface);
-    border-radius: var(--r);
-    border: 1px solid var(--border);
+.card {
+    border-color: var(--border);
     box-shadow: var(--sh);
-    overflow: hidden;
+    border-radius: var(--r);
     transition: box-shadow var(--t);
 }
-.card-admin:hover {
+.card:hover {
     box-shadow: var(--sh-md);
 }
-.card-admin-header {
-    padding: 0.9rem 1.25rem;
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
+.card-header {
     background: linear-gradient(to right, var(--bg-alt), var(--surface));
-}
-.card-admin-title {
+    border-bottom-color: var(--border);
+    padding: 0.9rem 1.25rem;
     font-size: 0.88rem;
     font-weight: 800;
     color: var(--navy);
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-}
-.card-admin-title i {
-    color: var(--primary);
-    font-size: 0.85rem;
-}
-.card-admin-body {
-    padding: 1.25rem;
-}
-.card-admin-footer {
-    padding: 0.75rem 1.25rem;
-    border-top: 1px solid var(--border);
-    background: var(--bg-alt);
-    display: flex;
-    align-items: center;
     justify-content: space-between;
     gap: 0.5rem;
 }
-
-/* Grid helpers */
-.grid-2 {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+.card-header i {
+    color: var(--primary);
+    font-size: 0.85rem;
 }
-.grid-3 {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
+.card-body {
+    padding: 1.25rem;
+}
+.card-footer {
+    background: var(--bg-alt);
+    border-top-color: var(--border);
+    padding: 0.75rem 1.25rem;
 }
 
 /* =========================================================
-   9. TABLE COMPONENT
+   8. TABLE OVERRIDES (Bootstrap .table + custom styles)
 ========================================================= */
-.table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-.table-admin {
-    width: 100%;
-    border-collapse: collapse;
+.table {
     font-size: 0.83rem;
 }
-.table-admin thead th {
-    padding: 0.72rem 1rem;
+.table thead th {
     background: var(--bg-alt);
     border-bottom: 2px solid var(--border);
     font-weight: 800;
@@ -1092,26 +1023,24 @@ textarea {
     font-size: 0.67rem;
     letter-spacing: 0.7px;
     white-space: nowrap;
-    text-align: left;
+    padding: 0.72rem 1rem;
 }
-.table-admin td {
+.table td {
     padding: 0.8rem 1rem;
-    border-bottom: 1px solid #f3f4f6;
     vertical-align: middle;
     color: var(--text);
-    transition: background var(--t);
+    border-color: #f3f4f6;
 }
-.table-admin tr:last-child td {
-    border-bottom: none;
+.table > tbody > tr:last-child > td {
+    border-bottom: 0;
 }
-.table-admin tbody tr:hover td {
+.table-hover > tbody > tr:hover > td {
     background: #fdfeff;
 }
-.table-admin tbody tr.row-highlight td {
-    background: #fffdf5 !important;
-}
-.table-admin tbody tr.row-highlight:hover td {
-    background: #fff9e8 !important;
+
+.table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* Table thumbnail */
@@ -1125,7 +1054,7 @@ textarea {
     flex-shrink: 0;
 }
 
-/* ─ Avatar ─ */
+/* Avatar */
 .avatar {
     border-radius: 50%;
     object-fit: cover;
@@ -1152,7 +1081,7 @@ textarea {
     border-width: 3px;
 }
 
-/* ─ Status Dot ─ */
+/* Status dot */
 .dot-wrap {
     position: relative;
     display: inline-block;
@@ -1174,7 +1103,7 @@ textarea {
     background: var(--red);
 }
 
-/* ─ Person cell ─ */
+/* Person cell */
 .person-cell {
     display: flex;
     align-items: center;
@@ -1205,7 +1134,7 @@ textarea {
     margin-top: 0.1rem;
 }
 
-/* ─ Contact cell ─ */
+/* Contact cell */
 .contact-row {
     display: flex;
     align-items: center;
@@ -1229,7 +1158,7 @@ textarea {
     color: var(--primary);
 }
 
-/* ─ Table empty ─ */
+/* Table empty */
 .table-empty {
     text-align: center;
     padding: 3.5rem 1rem;
@@ -1259,54 +1188,44 @@ textarea {
 }
 
 /* =========================================================
-   10. BUTTONS
+   9. BUTTON OVERRIDES (Bootstrap .btn + màu custom brand)
 ========================================================= */
-/* ─ Base ─ */
+/* Base override */
 .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    border-radius: var(--r-sm);
-    border: none;
-    padding: 0.55rem 1.1rem;
-    font-size: 0.83rem;
-    font-weight: 700;
-    cursor: pointer;
     font-family: inherit;
+    font-weight: 700;
+    font-size: 0.83rem;
+    border-radius: var(--r-sm);
     transition: all var(--t);
-    text-decoration: none;
-    white-space: nowrap;
-    line-height: 1.4;
-}
-.btn:disabled {
-    opacity: 0.55;
-    cursor: not-allowed;
-    transform: none !important;
 }
 
-/* ─ Variants ─ */
+/* Brand primary (orange) — Bootstrap không có */
 .btn-primary {
     background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    border-color: var(--primary-dark);
     color: #fff;
     box-shadow: 0 3px 12px var(--primary-glow);
 }
-.btn-primary:hover {
-    transform: translateY(-1px);
+.btn-primary:hover,
+.btn-primary:focus {
     filter: brightness(1.05);
     color: #fff;
     box-shadow: 0 5px 18px var(--primary-glow);
+    border-color: var(--primary-dark);
 }
 
+/* Navy */
 .btn-navy {
     background: linear-gradient(135deg, var(--navy), var(--navy-light));
+    border: none;
     color: #fff;
 }
 .btn-navy:hover {
-    transform: translateY(-1px);
     filter: brightness(1.08);
     color: #fff;
 }
 
+/* Secondary (light gray) */
 .btn-secondary {
     background: var(--bg-alt);
     color: var(--text);
@@ -1318,6 +1237,7 @@ textarea {
     color: var(--navy);
 }
 
+/* Danger (soft) */
 .btn-danger {
     background: var(--red-bg);
     color: var(--red);
@@ -1329,39 +1249,7 @@ textarea {
     border-color: var(--red);
 }
 
-.btn-success {
-    background: var(--green-bg);
-    color: var(--green);
-    border: 1px solid #bbf7d0;
-}
-.btn-success:hover {
-    background: var(--green);
-    color: #fff;
-    border-color: var(--green);
-}
-
-.btn-warning {
-    background: var(--yellow-bg);
-    color: var(--yellow);
-    border: 1px solid #fde68a;
-}
-.btn-warning:hover {
-    background: var(--yellow);
-    color: #fff;
-    border-color: var(--yellow);
-}
-
-/* ─ Sizes ─ */
-.btn-sm {
-    padding: 0.35rem 0.75rem;
-    font-size: 0.78rem;
-}
-.btn-lg {
-    padding: 0.7rem 1.5rem;
-    font-size: 0.9rem;
-}
-
-/* ─ Action buttons (table) ─ */
+/* Action buttons (table icons) */
 .btn-action {
     width: 30px;
     height: 30px;
@@ -1424,9 +1312,16 @@ textarea {
 }
 
 /* =========================================================
-   11. BADGES & STATUS
+   10. BADGE OVERRIDES + CUSTOM STATUS BADGES
 ========================================================= */
+/* Bootstrap .badge override */
 .badge {
+    font-weight: 700;
+    letter-spacing: 0.1px;
+}
+
+/* Status badges với dot — Bootstrap không có */
+.badge-status {
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -1435,9 +1330,8 @@ textarea {
     font-size: 0.71rem;
     font-weight: 700;
     white-space: nowrap;
-    letter-spacing: 0.1px;
 }
-.badge::before {
+.badge-status::before {
     content: "";
     width: 5px;
     height: 5px;
@@ -1446,30 +1340,6 @@ textarea {
     flex-shrink: 0;
 }
 
-/* Role badge (không có dot) */
-.role-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    font-size: 0.74rem;
-    font-weight: 700;
-    padding: 0.25rem 0.7rem;
-    border-radius: 20px;
-    white-space: nowrap;
-}
-
-/* Me badge */
-.me-badge {
-    font-size: 0.6rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-    color: #fff;
-    padding: 0.1rem 0.42rem;
-    border-radius: 5px;
-    letter-spacing: 0.3px;
-}
-
-/* Status */
 .badge-active {
     background: #d1fae5;
     color: #065f46;
@@ -1528,6 +1398,26 @@ textarea {
     background: var(--red);
 }
 
+/* Role badge */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    padding: 0.25rem 0.7rem;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+.me-badge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    padding: 0.1rem 0.42rem;
+    border-radius: 5px;
+}
+
 /* Count chip */
 .count-chip {
     display: inline-flex;
@@ -1560,21 +1450,13 @@ textarea {
 }
 
 /* =========================================================
-   12. FORM COMPONENTS
+   11. FORM OVERRIDES (Bootstrap .form-control + custom)
 ========================================================= */
-.form-group {
-    margin-bottom: 1.1rem;
-}
-.form-group:last-child {
-    margin-bottom: 0;
-}
 .form-label {
-    display: block;
     font-weight: 700;
     font-size: 0.78rem;
     color: var(--navy);
     margin-bottom: 0.42rem;
-    letter-spacing: 0.1px;
 }
 .form-label .req {
     color: var(--red);
@@ -1585,52 +1467,28 @@ textarea {
     color: var(--text-muted);
     margin-top: 0.3rem;
 }
-
-/* ─ Controls ─ */
-.form-control {
-    width: 100%;
-    height: 42px;
-    padding: 0 0.9rem;
-    border: 1.5px solid var(--border);
-    border-radius: var(--r-sm);
-    font-size: 0.84rem;
-    color: var(--text);
-    background: var(--surface);
-    font-family: inherit;
-    transition:
-        border-color var(--t),
-        box-shadow var(--t);
-    outline: none;
+.form-error {
+    font-size: 0.74rem;
+    color: var(--red);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
 }
-.form-control:focus {
+
+/* Override focus ring màu brand */
+.form-control:focus,
+.form-select:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px var(--primary-glow);
-    background: var(--surface);
 }
-.form-control.is-invalid {
+.form-control.is-invalid,
+.form-select.is-invalid {
     border-color: var(--red);
     box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
 }
-.form-control::placeholder {
-    color: var(--text-muted);
-}
-textarea.form-control {
-    height: auto;
-    min-height: 90px;
-    padding: 0.65rem 0.9rem;
-    resize: vertical;
-}
-select.form-control {
-    appearance: none;
-    cursor: pointer;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23aaa' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.9rem center;
-    background-color: var(--surface);
-    padding-right: 2.4rem;
-}
 
-/* ─ Filter controls (smaller) ─ */
+/* Filter bar controls (nhỏ hơn .form-control) */
 .filter-ctrl {
     height: 38px;
     border: 1.5px solid var(--border);
@@ -1669,20 +1527,23 @@ select.filter-ctrl {
     padding-right: 2rem;
 }
 
-/* ─ Form error ─ */
-.form-error {
-    font-size: 0.74rem;
-    color: var(--red);
-    margin-top: 0.3rem;
+/* Filter bar box */
+.filter-box {
+    background: var(--surface);
+    border-radius: var(--r-lg);
+    border: 1px solid var(--border);
+    padding: 1rem 1.15rem;
+    margin-bottom: 1rem;
+    box-shadow: var(--sh-sm);
+}
+.filter-box-row {
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
     align-items: center;
-    gap: 0.3rem;
 }
 
-/* ─ Password toggle ─ */
-.pw-wrap {
-    position: relative;
-}
+/* Password toggle */
 .pw-wrap .form-control {
     padding-right: 2.8rem;
 }
@@ -1703,38 +1564,7 @@ select.filter-ctrl {
     color: var(--text);
 }
 
-/* ─ Form grid ─ */
-.form-row {
-    display: grid;
-    gap: 1rem;
-}
-.form-row-2 {
-    grid-template-columns: 1fr 1fr;
-}
-.form-row-3 {
-    grid-template-columns: 1fr 1fr 1fr;
-}
-.col-span-2 {
-    grid-column: span 2;
-}
-
-/* ─ Filter bar box ─ */
-.filter-box {
-    background: var(--surface);
-    border-radius: var(--r-lg);
-    border: 1px solid var(--border);
-    padding: 1rem 1.15rem;
-    margin-bottom: 1rem;
-    box-shadow: var(--sh-sm);
-}
-.filter-box-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    align-items: center;
-}
-
-/* ─ Image upload ─ */
+/* Image upload */
 .img-upload-wrap {
     border: 2px dashed var(--border);
     border-radius: var(--r);
@@ -1759,6 +1589,7 @@ select.filter-ctrl {
     color: var(--text-sub);
     margin: 0;
 }
+
 .img-preview-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -1799,7 +1630,7 @@ select.filter-ctrl {
     opacity: 1;
 }
 
-/* ─ Avatar upload ─ */
+/* Avatar upload */
 .avatar-upload {
     display: flex;
     align-items: center;
@@ -1826,7 +1657,7 @@ select.filter-ctrl {
     background: var(--primary-soft);
 }
 
-/* ─ Role card selector ─ */
+/* Role card selector */
 .role-card-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(175px, 1fr));
@@ -1843,13 +1674,12 @@ select.filter-ctrl {
     align-items: center;
     gap: 0.7rem;
 }
-.role-card:hover {
+.role-card:hover,
+.role-card.selected {
     border-color: var(--primary);
     background: var(--primary-soft);
 }
 .role-card.selected {
-    border-color: var(--primary);
-    background: var(--primary-soft);
     box-shadow: 0 0 0 3px var(--primary-glow);
 }
 .role-card input[type="radio"] {
@@ -1876,7 +1706,7 @@ select.filter-ctrl {
     margin-top: 0.1rem;
 }
 
-/* ─ Toggle switch ─ */
+/* Toggle switch (Bootstrap không có kiểu này) */
 .toggle-sw {
     position: relative;
     cursor: pointer;
@@ -1920,8 +1750,6 @@ select.filter-ctrl {
 .toggle-sw input:checked ~ .toggle-sw-track .toggle-sw-thumb {
     transform: translateX(18px);
 }
-
-/* ─ Toggle label ─ */
 .toggle-label {
     font-size: 0.84rem;
     font-weight: 600;
@@ -1933,7 +1761,6 @@ select.filter-ctrl {
     color: var(--red);
 }
 
-/* ─ Result info ─ */
 .result-info {
     font-size: 0.78rem;
     color: var(--text-sub);
@@ -1944,20 +1771,8 @@ select.filter-ctrl {
 }
 
 /* =========================================================
-   13. FLASH & TOAST
+   12. FLASH (dùng Bootstrap .alert, chỉ cần animation)
 ========================================================= */
-.flash-admin {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.88rem 1.15rem;
-    border-radius: var(--r);
-    font-size: 0.84rem;
-    font-weight: 600;
-    margin-bottom: 1.2rem;
-    animation: flashIn 0.3s ease;
-    position: relative;
-}
 @keyframes flashIn {
     from {
         opacity: 0;
@@ -1968,43 +1783,11 @@ select.filter-ctrl {
         transform: translateY(0);
     }
 }
-.flash-admin-success {
-    background: #f0fff4;
-    border-left: 4px solid #27ae60;
-    color: #276749;
-}
-.flash-admin-error {
-    background: var(--red-bg);
-    border-left: 4px solid var(--red);
-    color: #c0392b;
-}
-.flash-admin-info {
-    background: var(--blue-bg);
-    border-left: 4px solid var(--blue);
-    color: #1e40af;
-}
-.flash-admin-warning {
-    background: var(--yellow-bg);
-    border-left: 4px solid var(--yellow);
-    color: #92400e;
-}
-.flash-admin-close {
-    margin-left: auto;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: inherit;
-    opacity: 0.4;
-    font-size: 0.82rem;
-    padding: 0;
-    flex-shrink: 0;
-    transition: opacity var(--t);
-}
-.flash-admin-close:hover {
-    opacity: 1;
+.alert {
+    animation: flashIn 0.3s ease;
 }
 
-/* Toast */
+/* Toast container */
 #adminToastRoot {
     position: fixed;
     top: 1.1rem;
@@ -2042,101 +1825,8 @@ select.filter-ctrl {
 }
 
 /* =========================================================
-   14. MODAL & CONFIRM
+   13. CONFIRM MODAL (custom — dùng riêng)
 ========================================================= */
-.modal-backdrop {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 20, 40, 0.55);
-    z-index: 9000;
-    backdrop-filter: blur(3px);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-    animation: fadeIn 0.18s ease;
-}
-.modal-backdrop.show {
-    display: flex;
-}
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-.modal-box {
-    background: var(--surface);
-    border-radius: var(--r-xl);
-    width: 100%;
-    max-width: 440px;
-    box-shadow: var(--sh-xl);
-    overflow: hidden;
-    animation: scaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-@keyframes scaleIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-.modal-box-lg {
-    max-width: 640px;
-}
-
-.modal-head {
-    padding: 1rem 1.25rem;
-    background: linear-gradient(135deg, var(--bg-alt), var(--surface));
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-weight: 800;
-    font-size: 0.9rem;
-    color: var(--navy);
-}
-.modal-head i {
-    color: var(--primary);
-    margin-right: 0.4rem;
-}
-.modal-close-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--r-sm);
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--t);
-}
-.modal-close-btn:hover {
-    background: var(--red-bg);
-    color: var(--red);
-}
-.modal-body {
-    padding: 1.25rem;
-}
-.modal-footer {
-    padding: 0.85rem 1.25rem;
-    border-top: 1px solid var(--border);
-    background: var(--bg-alt);
-    display: flex;
-    gap: 0.6rem;
-    justify-content: flex-end;
-}
-
-/* ─ Confirm Modal ─ */
 #confirmModal {
     display: none;
     position: fixed;
@@ -2151,6 +1841,15 @@ select.filter-ctrl {
 #confirmModal.show {
     display: flex;
 }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 .confirm-box {
     background: var(--surface);
     border-radius: var(--r-xl);
@@ -2160,6 +1859,16 @@ select.filter-ctrl {
     text-align: center;
     box-shadow: var(--sh-xl);
     animation: scaleIn 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 .confirm-icon {
     width: 64px;
@@ -2193,7 +1902,7 @@ select.filter-ctrl {
 }
 
 /* =========================================================
-   15. PAGINATION
+   14. PAGINATION OVERRIDES (Bootstrap .pagination + màu)
 ========================================================= */
 .pagination-wrap {
     display: flex;
@@ -2212,59 +1921,32 @@ select.filter-ctrl {
 .pagi-info strong {
     color: var(--navy);
 }
-.pagi-links {
-    display: flex;
-    gap: 0.3rem;
-    align-items: center;
-    flex-wrap: wrap;
-}
-.pagi-btn {
-    min-width: 32px;
-    height: 32px;
-    padding: 0 0.6rem;
-    border-radius: var(--r-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+
+/* Override Bootstrap pagination màu */
+.page-item .page-link {
+    color: var(--text);
+    border-color: var(--border);
     font-size: 0.78rem;
     font-weight: 700;
-    color: var(--text);
-    cursor: pointer;
-    transition: all var(--t);
-    text-decoration: none;
 }
-.pagi-btn:hover:not(.active):not(.dis) {
+.page-item .page-link:hover {
     background: var(--primary);
     border-color: var(--primary);
     color: #fff;
 }
-.pagi-btn.active {
+.page-item.active .page-link {
     background: var(--primary);
     border-color: var(--primary);
-    color: #fff;
     box-shadow: 0 2px 8px var(--primary-glow);
-    cursor: default;
 }
-.pagi-btn.dis {
+.page-item.disabled .page-link {
     opacity: 0.38;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-.pagi-dots {
-    min-width: 24px;
-    text-align: center;
-    color: var(--text-muted);
-    font-weight: 700;
-    font-size: 0.82rem;
 }
 
 /* =========================================================
-   16. MISC COMPONENTS
+   15. MISC COMPONENTS
 ========================================================= */
-
-/* ─ Mobile card list ─ */
+/* Mobile card list */
 @media (min-width: 641px) {
     .mobile-card-list {
         display: none;
@@ -2317,7 +1999,7 @@ select.filter-ctrl {
     border-top: 1px solid var(--border);
 }
 
-/* ─ Progress bar ─ */
+/* Progress bar */
 .progress-bar {
     height: 6px;
     background: #f3f4f6;
@@ -2330,7 +2012,7 @@ select.filter-ctrl {
     transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ─ Empty state ─ */
+/* Empty state */
 .empty-state {
     text-align: center;
     padding: 2.5rem 1rem;
@@ -2347,10 +2029,7 @@ select.filter-ctrl {
     margin: 0;
 }
 
-/* ─ Tooltip (data-tip) ─ */
-/* handled via JS */
-
-/* ─ Select-all bulk bar ─ */
+/* Bulk bar */
 #bulkActionBar {
     display: none;
     align-items: center;
@@ -2366,22 +2045,46 @@ select.filter-ctrl {
     color: var(--primary);
 }
 
-/* ─ Search highlight ─ */
+/* Search highlight */
 mark {
     background: #fff3cd;
     padding: 0 2px;
     border-radius: 2px;
 }
 
-/* =========================================================
-   17. RESPONSIVE
-========================================================= */
-@media (max-width: 1200px) {
-    .form-row-3 {
-        grid-template-columns: 1fr 1fr;
-    }
+/* Page header helpers (dùng Bootstrap d-flex, chỉ style tiêu đề) */
+.page-header-title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    line-height: 1.2;
+}
+.page-header-title i {
+    color: var(--primary);
+    font-size: 1.1rem;
+}
+.page-header-sub {
+    font-size: 0.8rem;
+    color: var(--text-sub);
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.page-header-sub .dot {
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: var(--text-muted);
+    display: inline-block;
 }
 
+/* =========================================================
+   16. RESPONSIVE
+========================================================= */
 @media (max-width: 992px) {
     #sidebar {
         transform: translateX(-100%);
@@ -2393,76 +2096,35 @@ mark {
         width: var(--sidebar-w) !important;
         box-shadow: var(--sh-xl);
     }
-    #topbar {
-        left: 0 !important;
-    }
+    #topbar,
     #main-wrapper {
+        left: 0 !important;
         margin-left: 0 !important;
     }
     .bc-current {
         max-width: 120px;
     }
-    .grid-2,
-    .grid-3 {
-        grid-template-columns: 1fr;
-    }
     .sidebar-collapse-btn {
         display: none;
     }
 }
-
 @media (max-width: 768px) {
     .main-content {
         padding: 1rem;
     }
-    .page-header {
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    .page-header-actions {
-        width: 100%;
-    }
-    .stat-cards {
-        grid-template-columns: 1fr 1fr;
-    }
-    .table-admin th,
-    .table-admin td {
-        padding: 0.55rem 0.65rem;
-    }
-    .filter-box {
-        padding: 0.75rem 1rem;
-    }
-    .form-row-2 {
-        grid-template-columns: 1fr;
-    }
-    .col-span-2 {
-        grid-column: span 1;
-    }
-    .pagination-wrap {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.6rem;
-    }
-    .confirm-box {
-        padding: 1.75rem 1.5rem;
+    .page-header-title {
+        font-size: 1.05rem;
     }
 }
-
 @media (max-width: 480px) {
     .main-content {
         padding: 0.75rem;
-    }
-    .stat-cards {
-        grid-template-columns: 1fr;
     }
     .topbar-user-info,
     .topbar-user-chevron {
         display: none;
     }
-    .page-header-title {
-        font-size: 1.05rem;
-    }
-    .card-admin-body {
+    .card-body {
         padding: 1rem;
     }
 }

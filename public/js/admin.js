@@ -1,11 +1,8 @@
 /* =========================================================
-   ADMIN.JS — THÀNH CÔNG LAND  v3.0
-   Modules:
-     1. Sidebar        5. Toast
-     2. Topbar         6. Confirm Modal
-     3. Flash          7. Form Helpers
-     4. AJAX Utilities 8. Table Helpers
-     9. UI Utilities   10. DOMContentLoaded init
+   ADMIN.JS — THÀNH CÔNG LAND  v4.0
+   Dùng Bootstrap 5 cho: Modal, Toast, Alert.
+   Chỉ giữ custom: Sidebar, Topbar dropdown,
+   Confirm delete, Form helpers, Table helpers, Utilities.
 ========================================================= */
 "use strict";
 
@@ -70,7 +67,6 @@
         var open = dd.classList.toggle("show");
         if (ch) ch.style.transform = open ? "rotate(180deg)" : "";
     };
-
     document.addEventListener("click", function (e) {
         if (!e.target.closest("#topbarUserBtn")) {
             var dd = document.getElementById("userDropdown");
@@ -82,84 +78,53 @@
 })();
 
 /* =========================================================
-   3. FLASH — AUTO DISMISS
+   3. FLASH — AUTO DISMISS (Bootstrap .alert)
+   Bootstrap .alert-dismissible + data-bs-dismiss="alert"
+   tự xử lý nút X, chỉ cần tự dismiss sau 5s
 ========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".flash-admin").forEach(function (el, i) {
-        setTimeout(
-            function () {
-                el.style.transition = "opacity .4s, transform .4s";
-                el.style.opacity = "0";
-                el.style.transform = "translateY(-6px)";
-                setTimeout(function () {
-                    el.remove();
-                }, 420);
-            },
-            5000 + i * 300,
-        );
-    });
-
-    // Close button
-    document.querySelectorAll(".flash-admin-close").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-            var el = this.closest(".flash-admin");
-            if (!el) return;
-            el.style.transition = "opacity .3s, transform .3s";
-            el.style.opacity = "0";
-            el.style.transform = "translateY(-6px)";
-            setTimeout(function () {
-                el.remove();
-            }, 320);
+    document
+        .querySelectorAll(".alert:not(.alert-permanent)")
+        .forEach(function (el, i) {
+            setTimeout(
+                function () {
+                    // Dùng Bootstrap Alert API nếu có
+                    var bsAlert = bootstrap.Alert.getOrCreateInstance(el);
+                    bsAlert && bsAlert.close();
+                },
+                5000 + i * 300,
+            );
         });
-    });
 });
 
 /* =========================================================
    4. AJAX UTILITIES
 ========================================================= */
-
-/** CSRF token helper */
 function getCsrf() {
     return document.querySelector('meta[name="csrf-token"]')?.content || "";
 }
 
-/**
- * AJAX PATCH toggle active status
- * @param {string}            url
- * @param {HTMLInputElement}  checkbox
- * @param {Function|null}     onSuccess(data)
- */
 window.ajaxToggle = function (url, checkbox, onSuccess) {
     fetch(url, {
         method: "PATCH",
         headers: { "X-CSRF-TOKEN": getCsrf(), Accept: "application/json" },
     })
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (d) {
+        .then((r) => r.json())
+        .then((d) => {
             if (d.ok) {
-                showAdminToast(d.msg || "Đã cập nhật!", "success");
+                showAdminToast(d.msg || "Cập nhật thành công!", "success");
                 if (typeof onSuccess === "function") onSuccess(d);
             } else {
                 checkbox.checked = !checkbox.checked;
                 showAdminToast(d.msg || "Không thể thực hiện!", "error");
             }
         })
-        .catch(function () {
+        .catch(() => {
             checkbox.checked = !checkbox.checked;
             showAdminToast("Lỗi kết nối!", "error");
         });
 };
 
-/**
- * Generic AJAX POST / PATCH
- * @param {string}   url
- * @param {object}   data
- * @param {Function} onSuccess(res)
- * @param {Function} onError(res)
- * @param {string}   method  default 'POST'
- */
 window.ajaxPost = function (url, data, onSuccess, onError, method) {
     fetch(url, {
         method: method || "POST",
@@ -170,10 +135,8 @@ window.ajaxPost = function (url, data, onSuccess, onError, method) {
         },
         body: JSON.stringify(data),
     })
-        .then(function (r) {
-            return r.json();
-        })
-        .then(function (res) {
+        .then((r) => r.json())
+        .then((res) => {
             if (res.ok || res.success) {
                 if (typeof onSuccess === "function") onSuccess(res);
             } else {
@@ -184,7 +147,7 @@ window.ajaxPost = function (url, data, onSuccess, onError, method) {
                 if (typeof onError === "function") onError(res);
             }
         })
-        .catch(function () {
+        .catch(() => {
             showAdminToast("Lỗi kết nối, thử lại sau!", "error");
             if (typeof onError === "function") onError(null);
         });
@@ -192,8 +155,11 @@ window.ajaxPost = function (url, data, onSuccess, onError, method) {
 
 /* =========================================================
    5. TOAST NOTIFICATION
+   Tự viết vì cần style riêng (màu Navy/Orange brand).
+   Bootstrap Toast có thể dùng cho toàn trang nhưng
+   showAdminToast() tiện hơn cho dynamic JS calls.
 ========================================================= */
-var toastPalette = {
+var _toastPalette = {
     success: {
         bg: "#f0fff4",
         borderL: "#27ae60",
@@ -223,7 +189,7 @@ var toastPalette = {
 window.showAdminToast = function (message, type, duration) {
     type = type || "info";
     duration = duration || 4000;
-    var tone = toastPalette[type] || toastPalette.info;
+    var tone = _toastPalette[type] || _toastPalette.info;
 
     var root = document.getElementById("adminToastRoot");
     if (!root) {
@@ -234,39 +200,26 @@ window.showAdminToast = function (message, type, duration) {
 
     var t = document.createElement("div");
     t.className = "admin-toast";
-    t.style.cssText =
-        "background:" +
-        tone.bg +
-        ";border-left:4px solid " +
-        tone.borderL +
-        ";color:" +
-        tone.color;
+    t.style.cssText = `background:${tone.bg};border-left:4px solid ${tone.borderL};color:${tone.color}`;
     t.innerHTML =
-        '<i class="fas ' +
-        tone.icon +
-        '" style="font-size:.9rem;flex-shrink:0"></i>' +
-        '<span style="flex:1;line-height:1.4">' +
-        message +
-        "</span>" +
-        "<button onclick=\"this.closest('.admin-toast').remove()\" " +
-        'style="background:none;border:none;cursor:pointer;color:inherit;opacity:.45;padding:0;font-size:.78rem;flex-shrink:0;transition:opacity .2s" ' +
-        'onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.45">' +
-        '<i class="fas fa-times"></i></button>';
+        `<i class="fas ${tone.icon}" style="font-size:.9rem;flex-shrink:0"></i>` +
+        `<span style="flex:1;line-height:1.4">${message}</span>` +
+        `<button onclick="this.closest('.admin-toast').remove()" style="background:none;border:none;cursor:pointer;color:inherit;opacity:.45;padding:0;font-size:.78rem" ` +
+        `onmouseover="this.style.opacity=1" onmouseout="this.style.opacity=.45"><i class="fas fa-times"></i></button>`;
     root.appendChild(t);
 
     setTimeout(function () {
         t.style.transition = "opacity .3s, transform .3s";
         t.style.opacity = "0";
         t.style.transform = "translateX(30px)";
-        setTimeout(function () {
-            t.remove();
-        }, 320);
+        setTimeout(() => t.remove(), 320);
     }, duration);
     return t;
 };
 
 /* =========================================================
-   6. CONFIRM DELETE MODAL
+   6. CONFIRM DELETE MODAL (custom — không dùng Bootstrap Modal
+   vì cần API confirmDelete(label, callback) đồng bộ toàn trang)
 ========================================================= */
 var _confirmCb = null;
 
@@ -274,12 +227,7 @@ window.confirmDelete = function (label, callback, sub) {
     var modal = document.getElementById("confirmModal");
     if (!modal) {
         if (
-            confirm(
-                'Xóa "' +
-                    label +
-                    '"?\n' +
-                    (sub || "Thao tác không thể hoàn tác!"),
-            )
+            confirm(`Xóa "${label}"?\n${sub || "Thao tác không thể hoàn tác!"}`)
         )
             callback();
         return;
@@ -304,18 +252,16 @@ window.executeConfirm = function () {
     closeConfirmModal();
 };
 
-document.addEventListener("click", function (e) {
+document.addEventListener("click", (e) => {
     if (e.target.id === "confirmModal") closeConfirmModal();
 });
-document.addEventListener("keydown", function (e) {
+document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") closeConfirmModal();
 });
 
 /* =========================================================
    7. FORM HELPERS
 ========================================================= */
-
-/** Toggle password eye */
 window.togglePwEye = function (inputId, iconId) {
     var inp = document.getElementById(inputId);
     var ico = document.getElementById(iconId);
@@ -326,7 +272,6 @@ window.togglePwEye = function (inputId, iconId) {
             inp.type === "password" ? "fas fa-eye" : "fas fa-eye-slash";
 };
 
-/** Preview single image */
 window.previewImage = function (inputEl, imgElOrId) {
     if (!inputEl?.files?.[0]) return;
     var img =
@@ -334,50 +279,41 @@ window.previewImage = function (inputEl, imgElOrId) {
             ? document.getElementById(imgElOrId)
             : imgElOrId;
     var reader = new FileReader();
-    reader.onload = function (e) {
+    reader.onload = (e) => {
         if (img) img.src = e.target.result;
     };
     reader.readAsDataURL(inputEl.files[0]);
 };
 
-/** Preview multiple images into a grid */
 window.previewMultiImages = function (inputEl, gridEl) {
     if (!inputEl || !gridEl) return;
     gridEl.innerHTML = "";
     Array.from(inputEl.files || []).forEach(function (file, idx) {
         if (!file.type.startsWith("image/")) return;
         var reader = new FileReader();
-        reader.onload = function (e) {
+        reader.onload = (e) => {
             var item = document.createElement("div");
             item.className = "img-preview-item";
             item.innerHTML =
-                '<img src="' +
-                e.target.result +
-                '" alt="Preview ' +
-                idx +
-                '">' +
-                '<button type="button" class="img-preview-remove" onclick="this.closest(\'.img-preview-item\').remove()">' +
-                '<i class="fas fa-times"></i></button>';
+                `<img src="${e.target.result}" alt="Preview ${idx}">` +
+                `<button type="button" class="img-preview-remove" onclick="this.closest('.img-preview-item').remove()">` +
+                `<i class="fas fa-times"></i></button>`;
             gridEl.appendChild(item);
         };
         reader.readAsDataURL(file);
     });
 };
 
-/** Role card selector */
 window.selectRoleCard = function (val, clickedEl) {
     clickedEl
         .closest(".role-card-grid")
         .querySelectorAll(".role-card")
-        .forEach(function (c) {
-            c.classList.remove("selected");
-        });
+        .forEach((c) => c.classList.remove("selected"));
     clickedEl.classList.add("selected");
     var radio = clickedEl.querySelector("input[type=radio]");
     if (radio) radio.checked = true;
 };
 
-/** Toggle switch label update */
 window.updateToggleLabel = function (checkboxEl, labelEl) {
     if (!checkboxEl || !labelEl) return;
     function update() {
@@ -391,18 +327,14 @@ window.updateToggleLabel = function (checkboxEl, labelEl) {
     update();
 };
 
-/** Show loading on button */
 window.btnLoading = function (el, text) {
     if (!el) return;
     el._orig = el.innerHTML;
     el._dis = el.disabled;
     el.disabled = true;
-    el.innerHTML =
-        '<i class="fas fa-circle-notch fa-spin"></i> ' +
-        (text || "Đang xử lý...");
+    el.innerHTML = `<i class="fas fa-circle-notch fa-spin"></i> ${text || "Đang xử lý..."}`;
 };
 
-/** Restore button */
 window.btnRestore = function (el) {
     if (!el || !el._orig) return;
     el.innerHTML = el._orig;
@@ -411,7 +343,6 @@ window.btnRestore = function (el) {
     delete el._dis;
 };
 
-/** Simple field validation */
 window.validateField = function (inputId, errorId, label) {
     var el = document.getElementById(inputId);
     var err = document.getElementById(errorId);
@@ -420,9 +351,7 @@ window.validateField = function (inputId, errorId, label) {
     el.classList.toggle("is-invalid", empty);
     if (err) {
         err.innerHTML = empty
-            ? '<i class="fas fa-exclamation-circle"></i> ' +
-              (label || "Trường này") +
-              " không được để trống"
+            ? `<i class="fas fa-exclamation-circle"></i> ${label || "Trường này"} không được để trống`
             : "";
         err.style.display = empty ? "flex" : "none";
     }
@@ -433,8 +362,6 @@ window.validateField = function (inputId, errorId, label) {
 /* =========================================================
    8. TABLE HELPERS
 ========================================================= */
-
-/** Initialize select-all checkbox */
 window.initSelectAll = function (selectAllId, rowClass) {
     var sa = document.getElementById(selectAllId);
     if (!sa) return;
@@ -446,16 +373,16 @@ window.initSelectAll = function (selectAllId, rowClass) {
         _updateBulkBar(checked.length);
     }
     sa.addEventListener("change", function () {
-        document.querySelectorAll("." + rowClass).forEach(function (cb) {
-            cb.checked = sa.checked;
-        });
+        document
+            .querySelectorAll("." + rowClass)
+            .forEach((cb) => (cb.checked = sa.checked));
         _updateBulkBar(
             document.querySelectorAll("." + rowClass + ":checked").length,
         );
     });
-    document.querySelectorAll("." + rowClass).forEach(function (cb) {
-        cb.addEventListener("change", syncHeader);
-    });
+    document
+        .querySelectorAll("." + rowClass)
+        .forEach((cb) => cb.addEventListener("change", syncHeader));
 };
 
 function _updateBulkBar(count) {
@@ -470,32 +397,24 @@ window.getSelectedIds = function (rowClass) {
         document.querySelectorAll(
             "." + (rowClass || "row-checkbox") + ":checked",
         ),
-    ).map(function (cb) {
-        return cb.value;
-    });
+    ).map((cb) => cb.value);
 };
 
-/** Highlight search keyword in table cells */
 window.highlightKeyword = function (keyword, selector) {
     if (!keyword || keyword.length < 2) return;
     var regex = new RegExp(
         "(" + keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")",
         "gi",
     );
-    document
-        .querySelectorAll(selector || ".table-admin td")
-        .forEach(function (el) {
-            if (el.children.length === 0 && el.textContent.match(regex)) {
-                el.innerHTML = el.textContent.replace(regex, "<mark>$1</mark>");
-            }
-        });
+    document.querySelectorAll(selector || ".table td").forEach(function (el) {
+        if (el.children.length === 0 && el.textContent.match(regex))
+            el.innerHTML = el.textContent.replace(regex, "<mark>$1</mark>");
+    });
 };
 
 /* =========================================================
    9. UI UTILITIES
 ========================================================= */
-
-/** Copy to clipboard */
 window.copyToClipboard = function (text, msg) {
     function fallback() {
         var ta = document.createElement("textarea");
@@ -506,24 +425,19 @@ window.copyToClipboard = function (text, msg) {
         try {
             document.execCommand("copy");
             showAdminToast(msg || "Đã sao chép!", "success");
-        } catch (e) {
+        } catch {
             showAdminToast("Không thể sao chép", "error");
         }
         document.body.removeChild(ta);
     }
-    if (navigator.clipboard && window.isSecureContext) {
-        navigator.clipboard
-            .writeText(text)
-            .then(function () {
-                showAdminToast(msg || "Đã sao chép!", "success");
-            })
-            .catch(fallback);
-    } else {
-        fallback();
-    }
+    navigator.clipboard && window.isSecureContext
+        ? navigator.clipboard
+              .writeText(text)
+              .then(() => showAdminToast(msg || "Đã sao chép!", "success"))
+              .catch(fallback)
+        : fallback();
 };
 
-/** Format money (VND) */
 window.formatMoney = function (num) {
     num = parseFloat(num);
     if (isNaN(num)) return "—";
@@ -532,27 +446,22 @@ window.formatMoney = function (num) {
     return num.toLocaleString("vi-VN") + " đ";
 };
 
-/** Format number */
 window.formatNumber = function (num) {
     return num === null || num === undefined || num === ""
         ? "—"
         : Number(num).toLocaleString("vi-VN");
 };
 
-/** Debounce */
 window.debounce = function (fn, delay) {
     var timer;
     return function () {
         var a = arguments,
             ctx = this;
         clearTimeout(timer);
-        timer = setTimeout(function () {
-            fn.apply(ctx, a);
-        }, delay || 300);
+        timer = setTimeout(() => fn.apply(ctx, a), delay || 300);
     };
 };
 
-/** Throttle */
 window.throttle = function (fn, limit) {
     var last = 0;
     return function () {
@@ -568,51 +477,45 @@ window.throttle = function (fn, limit) {
    10. DOMContentLoaded — AUTO INIT
 ========================================================= */
 document.addEventListener("DOMContentLoaded", function () {
-    /* ── Auto-submit select có class .filter-auto-submit ── */
-    document.querySelectorAll(".filter-auto-submit").forEach(function (el) {
+    /* ── Auto-submit select ── */
+    document.querySelectorAll(".filter-auto-submit").forEach((el) =>
         el.addEventListener("change", function () {
-            var form = this.closest("form");
-            if (form) form.submit();
-        });
-    });
+            this.closest("form")?.submit();
+        }),
+    );
 
-    /* ── Search debounce với class .search-debounce ── */
-    document.querySelectorAll(".search-debounce").forEach(function (input) {
+    /* ── Search debounce ── */
+    document.querySelectorAll(".search-debounce").forEach((input) =>
         input.addEventListener(
             "input",
             debounce(function () {
-                var form = input.closest("form");
-                if (form) form.submit();
+                input.closest("form")?.submit();
             }, 600),
-        );
-    });
+        ),
+    );
 
-    /* ── Highlight từ khóa tìm kiếm ── */
+    /* ── Highlight từ khóa ── */
     var kw =
         new URLSearchParams(window.location.search).get("tukhoa") ||
         new URLSearchParams(window.location.search).get("search") ||
         "";
     if (kw.length > 1) highlightKeyword(kw);
 
-    /* ── Tooltip: [data-tip] ── */
+    /* ── Tooltip [data-tip] ── */
     document.querySelectorAll("[data-tip]").forEach(function (el) {
         var tip = null;
         el.addEventListener("mouseenter", function () {
             tip = document.createElement("div");
             tip.textContent = el.getAttribute("data-tip");
             tip.style.cssText =
-                "position:fixed;background:#1a3c5e;color:#fff;" +
-                "padding:.32rem .7rem;border-radius:6px;font-size:.72rem;" +
-                "font-weight:600;pointer-events:none;z-index:99999;" +
-                "white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);" +
-                "animation:fadeIn .15s ease";
+                "position:fixed;background:#1a3c5e;color:#fff;padding:.32rem .7rem;" +
+                "border-radius:6px;font-size:.72rem;font-weight:600;pointer-events:none;z-index:99999;" +
+                "white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2);animation:fadeIn .15s ease";
             document.body.appendChild(tip);
             _positionTip(el, tip);
         });
-        el.addEventListener("mousemove", function () {
-            _positionTip(el, tip);
-        });
-        el.addEventListener("mouseleave", function () {
+        el.addEventListener("mousemove", () => _positionTip(el, tip));
+        el.addEventListener("mouseleave", () => {
             if (tip) {
                 tip.remove();
                 tip = null;
@@ -620,26 +523,24 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    /* ── Toggle switches với [data-toggle-url] ── */
+    /* ── Toggle switches [data-toggle-url] ── */
     document
         .querySelectorAll(".toggle-sw input[data-toggle-url]")
         .forEach(function (chk) {
             chk.addEventListener("change", function () {
-                ajaxToggle(this.dataset.toggleUrl, this, function (d) {
-                    // Cập nhật status dot nếu có trong cùng row/card
+                ajaxToggle(this.dataset.toggleUrl, this, function () {
                     var wrap = chk.closest("tr, .mobile-card");
                     if (wrap) {
                         var dot = wrap.querySelector(".status-dot");
-                        if (dot) {
+                        if (dot)
                             dot.className =
                                 "status-dot " + (chk.checked ? "on" : "off");
-                        }
                     }
                 });
             });
         });
 
-    /* ── Confirm delete: form nào có [data-confirm-delete] ── */
+    /* ── Confirm delete [data-confirm-delete] ── */
     document.querySelectorAll("[data-confirm-delete]").forEach(function (el) {
         el.addEventListener("click", function (e) {
             e.preventDefault();
@@ -647,7 +548,7 @@ document.addEventListener("DOMContentLoaded", function () {
             var form =
                 this.closest("form") ||
                 document.getElementById(this.dataset.formId);
-            confirmDelete(label, function () {
+            confirmDelete(label, () => {
                 if (form) form.submit();
             });
         });
@@ -658,8 +559,10 @@ function _positionTip(el, tip) {
     if (!tip) return;
     var r = el.getBoundingClientRect();
     var tipW = tip.offsetWidth;
-    var left = r.left + r.width / 2 - tipW / 2;
-    left = Math.max(8, Math.min(left, window.innerWidth - tipW - 8));
+    var left = Math.max(
+        8,
+        Math.min(r.left + r.width / 2 - tipW / 2, window.innerWidth - tipW - 8),
+    );
     tip.style.left = left + "px";
     tip.style.top = r.bottom + 6 + "px";
 }

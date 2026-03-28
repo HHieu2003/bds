@@ -183,6 +183,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             // ── Chỉ Admin ──
             Route::middleware('check.role:admin')->group(function () {
+                // Trong group route admin nhan-vien
+                Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])
+                    ->name('nhanvien.admin.nhan-vien.edit-data');
 
                 // Quản lý nhân viên
                 // → nhanvien.admin.nhan-vien.*

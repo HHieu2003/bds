@@ -61,6 +61,11 @@ class AdminAuthController extends Controller
         // Đăng nhập thành công
         $request->session()->regenerate();
 
+        // Cập nhật mốc đăng nhập cuối để hiển thị trong trang quản lý nhân viên.
+        \App\Models\NhanVien::whereKey($nhanVien->id)->update([
+            'dang_nhap_cuoi_at' => now(),
+        ]);
+
         return redirect()
             ->intended(route('nhanvien.dashboard'))
             ->with('success', 'Chào mừng ' . $nhanVien->ho_ten . ' quay trở lại!');

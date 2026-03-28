@@ -44,7 +44,7 @@
                 </a>
                 <p class="footer-desc">
                     Đơn vị phân phối bất động sản uy tín hàng đầu tại Vinhomes Smart City
-                    và khu vực phía Tây Hà Nội. Kết nối giá trị — kiến tạo thành công.
+                    và khu vực phía Tây Hà Nội. <br> Kết nối giá trị — kiến tạo thành công.
                 </p>
 
                 <div class="footer-license">
@@ -125,7 +125,7 @@
                         <div class="contact-icon"><i class="fas fa-phone-alt"></i></div>
                         <div class="contact-body">
                             <span class="contact-label">Hotline tư vấn 24/7</span>
-                            <a href="tel:+840123456789" class="contact-phone">0123 456 789</a>
+                            <a href="tel:+84336123130" class="contact-phone">0336 123 130</a>
                         </div>
                     </li>
                     <li>

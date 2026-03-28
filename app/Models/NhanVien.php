@@ -40,6 +40,20 @@ class NhanVien extends Authenticatable
         'sale'       => ['label' => 'Sale',         'color' => '#2d6a9f', 'bg' => '#e8f4fd', 'icon' => 'fas fa-user-tie'],
     ];
 
+    const VAI_TRO_ALIAS = [
+        'nguon' => 'nguon_hang',
+    ];
+
+    public static function normalizeVaiTro(?string $vaiTro): ?string
+    {
+        if ($vaiTro === null) {
+            return null;
+        }
+
+        $normalized = strtolower(trim($vaiTro));
+        return self::VAI_TRO_ALIAS[$normalized] ?? $normalized;
+    }
+
     // ══════════════════════════════
     // HELPERS VAI TRÒ
     // ══════════════════════════════
@@ -50,22 +64,25 @@ class NhanVien extends Authenticatable
      */
     public function hasRole(string|array $roles): bool
     {
-        return in_array($this->vai_tro, (array) $roles);
+        $currentRole = self::normalizeVaiTro($this->vai_tro);
+        $normalizedRoles = array_map(fn($role) => self::normalizeVaiTro($role), (array) $roles);
+
+        return in_array($currentRole, $normalizedRoles, true);
     }
 
     public function isAdmin(): bool
     {
-        return $this->vai_tro === 'admin';
+        return self::normalizeVaiTro($this->vai_tro) === 'admin';
     }
 
     public function isSale(): bool
     {
-        return $this->vai_tro === 'sale';
+        return self::normalizeVaiTro($this->vai_tro) === 'sale';
     }
 
     public function isNguonHang(): bool
     {
-        return $this->vai_tro === 'nguon_hang';
+        return self::normalizeVaiTro($this->vai_tro) === 'nguon_hang';
     }
 
     // ══════════════════════════════
@@ -74,7 +91,7 @@ class NhanVien extends Authenticatable
 
     public function getVaiTroLabelAttribute(): string
     {
-        return match ($this->vai_tro) {
+        return match (self::normalizeVaiTro($this->vai_tro)) {
             'admin'      => 'Quản trị viên',
             'sale'       => 'Sale',
             'nguon_hang' => 'Nguồn hàng',
@@ -84,7 +101,9 @@ class NhanVien extends Authenticatable
 
     public function getVaiTroInfoAttribute(): array
     {
-        return self::VAI_TRO[$this->vai_tro]
+        $normalizedRole = self::normalizeVaiTro($this->vai_tro);
+
+        return self::VAI_TRO[$normalizedRole]
             ?? ['label' => $this->vai_tro, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => 'fas fa-user'];
     }
 
@@ -110,7 +129,7 @@ class NhanVien extends Authenticatable
 
     public function getIsAdminAttribute(): bool
     {
-        return $this->vai_tro === 'admin';
+        return self::normalizeVaiTro($this->vai_tro) === 'admin';
     }
 
     // ══════════════════════════════

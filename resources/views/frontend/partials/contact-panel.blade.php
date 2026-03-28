@@ -20,7 +20,8 @@
         <div class="cp-header-content">
             <div class="cp-brand">
                 <div class="cp-brand-logo">
-                    <i class="fas fa-building"></i>
+                    <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land" width="40"
+                        onerror="this.outerHTML='<i class=\'fas fa-building\'></i>'">
                 </div>
                 <div class="cp-brand-text">
                     <div class="cp-brand-name">Thành Công Land</div>
@@ -56,7 +57,6 @@
         <a href="https://zalo.me/0336123130" target="_blank" class="cp-channel cp-channel--zalo">
             <div class="cp-ch-icon">
                 <img src="{{ asset('images/zalo-icon.png') }}" alt="Zalo" width="22"
-                    style="filter:brightness(0) invert(1);"
                     onerror="this.outerHTML='<i class=\'fas fa-comment-dots\'></i>'">
             </div>
             <div class="cp-ch-info">

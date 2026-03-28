@@ -116,7 +116,7 @@ class DuAnSeeder extends Seeder
             ],
             // TOÀN BỘ DỰ ÁN SMART CITY ĐƯỢC MAP VỀ slug_kv = 'Vinhomes Smart City' THEO KHU VỰC ĐÃ KHAI BÁO
             [
-                'ten'        => 'Vinhomes Smart City - SAPPHIRE 1',
+                'ten'        => 'SAPPHIRE 1',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Đại lộ Thăng Long và tuyến đường sắt đô thị số 6 (Smart City)',
                 'chu_dt'     => 'Vinhomes',
@@ -128,7 +128,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS+1, 2PN-1VS, 2PN-2VS+1, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - SAPPHIRE 2',
+                'ten'        => 'SAPPHIRE 2',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Nằm giữa phân khu The Sapphire 1 và the metrolines (Smart City)',
                 'chu_dt'     => 'Vinhomes',
@@ -140,7 +140,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS+1, 2PN-1VS, 2PN-2VS+1, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - SAPPHIRE 3',
+                'ten'        => 'SAPPHIRE 3',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Cạnh Vinschool và The Diamond (Smart City)',
                 'chu_dt'     => 'Vinhomes',
@@ -152,7 +152,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS+1, 2PN-1VS, 2PN-2VS+1, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - SAPPHIRE 4',
+                'ten'        => 'SAPPHIRE 4',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Trục đường giao thông chính kết nối đại lộ Thăng Long (Smart City)',
                 'chu_dt'     => 'Vinhomes',
@@ -164,7 +164,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS+1, 2PN-1VS, 2PN-2VS+1, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - THE MIAMI',
+                'ten'        => 'THE MIAMI',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Chân cầu vượt số 2, ngõ phía Tây Smart City',
                 'chu_dt'     => 'Công ty Cổ phần Đầu tư Xây dựng Thái Sơn (công ty con của Vinhomes)',
@@ -176,7 +176,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - THE SAKURA',
+                'ten'        => 'THE SAKURA',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Trung tâm The Metroline, Smart City',
                 'chu_dt'     => 'Samty Việt Nam',
@@ -188,7 +188,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - TONKIN',
+                'ten'        => 'TONKIN',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Vùng lõi KĐT Smart City',
                 'chu_dt'     => 'Vinhomes',
@@ -200,7 +200,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - CANOPY',
+                'ten'        => 'CANOPY',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Vùng lõi KĐT Smart City',
                 'chu_dt'     => 'Newlife (Đại diện GIC)',
@@ -212,7 +212,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - IMPERIA',
+                'ten'        => 'IMPERIA',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Khu đô thị Vinhomes Smart City',
                 'chu_dt'     => 'Công ty cổ phần HBI (thành viên MIK GROUP)',
@@ -224,7 +224,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN+1-2VS, 2PN+1-1VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - THE SOLA PARK',
+                'ten'        => 'THE SOLA PARK',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Đại lộ Ánh Sáng, Vinhomes Smart City',
                 'chu_dt'     => 'Công ty cổ phần HBI (thành viên MIK GROUP)',
@@ -236,7 +236,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - MASTERI WEST HEIGHTS',
+                'ten'        => 'MASTERI WEST HEIGHTS',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Trục đường chính, đối diện Central Park (Smart City)',
                 'chu_dt'     => 'Masterise Homes',
@@ -248,7 +248,7 @@ class DuAnSeeder extends Seeder
                 'can_ho'     => 'STUDIO, 1PN-1VS, 1PN+1-2VS, 2PN-2VS, 2PN+1-2VS, 3PN-2VS',
             ],
             [
-                'ten'        => 'Vinhomes Smart City - LUMIERE EVERGREEN',
+                'ten'        => 'LUMIERE EVERGREEN',
                 'slug_kv'    => 'Vinhomes Smart City',
                 'dia_chi'    => 'Đại lộ Ánh Sáng, KĐT Vinhomes Smart City',
                 'chu_dt'     => 'Masterise Homes',

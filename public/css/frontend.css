@@ -1,9 +1,6 @@
 /* =========================================================
    1. HỆ THỐNG BIẾN MÀU LUXURY (CSS VARIABLES)
 ========================================================= */
-/* =========================================================
-   1. HỆ THỐNG BIẾN MÀU LUXURY (CSS VARIABLES)
-========================================================= */
 :root {
     /* --- Tông màu Chủ đạo (Brand Colors) --- */
     --primary: #c0662a; /* Bronze - Logo, CTA, Icon, Highlight (30%) */
@@ -32,6 +29,7 @@
     /* --- Đổ bóng & Hiệu ứng (Shadows & Transitions) --- */
     --shadow-gold: 0 8px 24px rgba(192, 102, 42, 0.18); /* Shadow Bronze cho Card BĐS */
     --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 16px 36px rgba(18, 40, 75, 0.18);
     --transition: 0.3s ease;
     --border: #e5e7eb;
 }
@@ -1948,7 +1946,7 @@ ol {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 0.65rem;
+    margin-bottom: 0.15rem;
 }
 .cp-brand {
     display: flex;
@@ -1956,7 +1954,7 @@ ol {
     gap: 0.7rem;
 }
 .cp-brand-logo {
-    width: 42px;
+    width: 70px;
     height: 42px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(196, 145, 42, 0.4);

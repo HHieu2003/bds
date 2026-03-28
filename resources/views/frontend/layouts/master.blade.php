@@ -30,6 +30,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <meta name="author" content="Thành Công Land">
+    <link rel="preload" as="style" href="{{ asset('css/frontend.css') }}">
 
     {{-- File CSS Tổng (Có tham số thời gian để ép trình duyệt nhận CSS mới) --}}
     <link rel="stylesheet" href="{{ asset('css/frontend.css') }}?v={{ time() }}">
@@ -101,45 +103,6 @@
                 soSanhModal: '{{ route('frontend.so-sanh.modal', [], false) }}'
             }
         };
-
-        /* Xử lý Nút Yêu Thích (Phải nằm đây vì dùng Blade) */
-        function toggleYeuThich(btn, batDongSanId) {
-            if (!APP.isLoggedIn) {
-                window.openAuthModal('login');
-                showFlash('Vui lòng đăng nhập để lưu yêu thích.', 'info');
-                return;
-            }
-            var icon = btn.querySelector('i');
-            var wasLiked = btn.classList.contains('liked');
-            btn.classList.toggle('liked', !wasLiked);
-            if (icon) icon.className = wasLiked ? 'far fa-heart' : 'fas fa-heart';
-
-            fetch(APP.routes.yeuThichToggle, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': APP.csrfToken,
-                    'Accept': 'application/json'
-                },
-                body: JSON.stringify({
-                    bat_dong_san_id: batDongSanId
-                })
-            }).then(r => r.json()).then(data => {
-                if (data.success) {
-                    btn.classList.toggle('liked', data.is_liked);
-                    if (icon) icon.className = data.is_liked ? 'fas fa-heart' : 'far fa-heart';
-                    btn.title = data.is_liked ? 'Bỏ yêu thích' : 'Yêu thích';
-                    if (typeof showFlash === 'function') showFlash(data.message, data.is_liked ? 'success' :
-                        'info');
-                } else {
-                    btn.classList.toggle('liked', wasLiked);
-                    if (icon) icon.className = wasLiked ? 'fas fa-heart' : 'far fa-heart';
-                }
-            }).catch(() => {
-                btn.classList.toggle('liked', wasLiked);
-                if (icon) icon.className = wasLiked ? 'fas fa-heart' : 'far fa-heart';
-            });
-        }
     </script>
 
     {{-- LOAD FILE FRONTEND.JS (Chống Cache Cực Mạnh) --}}
