@@ -15,6 +15,7 @@ class BatDongSan extends Model
     protected $fillable = [
         'du_an_id',
         'nhan_vien_phu_trach_id',
+        'chu_nha_id',
         'tieu_de',
         'slug',
         'ma_bat_dong_san',
@@ -116,5 +117,9 @@ class BatDongSan extends Model
     public function khuVuc()
     {
         return $this->belongsTo(KhuVuc::class, 'khu_vuc_id', 'id');
+    }
+    public function chuNha()
+    {
+        return $this->belongsTo(ChuNha::class, 'chu_nha_id');
     }
 }

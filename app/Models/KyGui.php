@@ -51,8 +51,8 @@ class KyGui extends Model
         'can_ho'    => ['label' => 'Căn hộ chung cư', 'icon' => 'fas fa-building',       'color' => '#2d6a9f'],
         'nha_pho'   => ['label' => 'Nhà phố',         'icon' => 'fas fa-home',            'color' => '#e67e22'],
         'biet_thu'  => ['label' => 'Biệt thự',        'icon' => 'fas fa-landmark',        'color' => '#9b59b6'],
-        'dat_nen'   => ['label' => 'Đất nền',          'icon' => 'fas fa-map',             'color' => '#27ae60'],
-        'shophouse' => ['label' => 'Shophouse',        'icon' => 'fas fa-store',           'color' => '#e74c3c'],
+        'dat_nen'   => ['label' => 'Đất nền',         'icon' => 'fas fa-map',             'color' => '#27ae60'],
+        'shophouse' => ['label' => 'Shophouse',       'icon' => 'fas fa-store',           'color' => '#e74c3c'],
     ];
 
     const NHU_CAU = [
@@ -60,11 +60,12 @@ class KyGui extends Model
         'thue' => ['label' => 'Thuê',  'color' => '#27ae60', 'bg' => '#e8f8f0'],
     ];
 
+    // ĐÃ CẬP NHẬT THEO ĐÚNG NGHIỆP VỤ NGUỒN HÀNG
     const TRANG_THAI = [
-        'cho_duyet'   => ['label' => 'Chờ duyệt',   'color' => '#e67e22', 'bg' => '#fff8f0', 'icon' => 'fas fa-clock'],
-        'da_lien_he'  => ['label' => 'Đã liên hệ',  'color' => '#2d6a9f', 'bg' => '#e8f4fd', 'icon' => 'fas fa-phone'],
-        'da_nhan'     => ['label' => 'Đã nhận ký gửi', 'color' => '#27ae60', 'bg' => '#e8f8f0', 'icon' => 'fas fa-check-circle'],
-        'tu_choi'     => ['label' => 'Từ chối',     'color' => '#e74c3c', 'bg' => '#fff0f0', 'icon' => 'fas fa-times-circle'],
+        'cho_duyet'      => ['label' => 'Mới gửi',       'color' => '#e67e22', 'bg' => '#fff8f0', 'icon' => 'fas fa-inbox'],
+        'dang_tham_dinh' => ['label' => 'Đang thẩm định', 'color' => '#2d6a9f', 'bg' => '#e8f4fd', 'icon' => 'fas fa-search'],
+        'da_duyet'       => ['label' => 'Đã duyệt',      'color' => '#27ae60', 'bg' => '#e8f8f0', 'icon' => 'fas fa-check-circle'],
+        'tu_choi'        => ['label' => 'Từ chối',       'color' => '#e74c3c', 'bg' => '#fff0f0', 'icon' => 'fas fa-times-circle'],
     ];
 
     const PHAP_LY = [
@@ -82,16 +83,7 @@ class KyGui extends Model
         'theo_nam'      => 'Thanh toán theo năm',
     ];
 
-    const HUONG_NHA = [
-        'dong',
-        'tay',
-        'nam',
-        'bac',
-        'dong_nam',
-        'dong_bac',
-        'tay_nam',
-        'tay_bac',
-    ];
+    const HUONG_NHA = ['dong', 'tay', 'nam', 'bac', 'dong_nam', 'dong_bac', 'tay_nam', 'tay_bac'];
 
     const NOI_THAT = [
         'nguyen_ban' => 'Nguyên bản',
@@ -105,44 +97,26 @@ class KyGui extends Model
     {
         return $this->belongsTo(KhachHang::class, 'khach_hang_id');
     }
-
     public function nhanVienPhuTrach()
     {
         return $this->belongsTo(NhanVien::class, 'nhan_vien_phu_trach_id');
     }
 
-    // ── Scopes ──
-    public function scopeChoDuyet($query)
-    {
-        return $query->where('trang_thai', 'cho_duyet');
-    }
-
-    public function scopeDaNhan($query)
-    {
-        return $query->where('trang_thai', 'da_nhan');
-    }
-
     // ── Accessors ──
     public function getTrangThaiInfoAttribute(): array
     {
-        return self::TRANG_THAI[$this->trang_thai]
-            ?? ['label' => $this->trang_thai, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => 'fas fa-question'];
+        return self::TRANG_THAI[$this->trang_thai] ?? ['label' => $this->trang_thai, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => 'fas fa-question'];
     }
 
     public function getLoaiHinhInfoAttribute(): array
     {
-        return self::LOAI_HINH[$this->loai_hinh]
-            ?? ['label' => $this->loai_hinh, 'icon' => 'fas fa-home', 'color' => '#999'];
+        return self::LOAI_HINH[$this->loai_hinh] ?? ['label' => $this->loai_hinh, 'icon' => 'fas fa-home', 'color' => '#999'];
     }
 
     public function getGiaHienThiAttribute(): string
     {
-        if ($this->nhu_cau === 'ban' && $this->gia_ban_mong_muon) {
-            return number_format($this->gia_ban_mong_muon / 1_000_000_000, 2) . ' tỷ';
-        }
-        if ($this->nhu_cau === 'thue' && $this->gia_thue_mong_muon) {
-            return number_format($this->gia_thue_mong_muon / 1_000_000) . ' triệu/tháng';
-        }
+        if ($this->nhu_cau === 'ban' && $this->gia_ban_mong_muon) return number_format($this->gia_ban_mong_muon / 1_000_000_000, 2) . ' tỷ';
+        if ($this->nhu_cau === 'thue' && $this->gia_thue_mong_muon) return number_format($this->gia_thue_mong_muon / 1_000_000) . ' tr/tháng';
         return 'Thỏa thuận';
     }
 }

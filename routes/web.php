@@ -179,7 +179,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::resource('du-an', DuAnController::class);
                 Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
                     ->name('du-an.toggle');
-
+                Route::resource('chu-nha', \App\Http\Controllers\Admin\ChuNhaController::class);
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
                     ->name('bat-dong-san.destroy');
 
@@ -192,6 +192,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::put('/{kyGui}',        [AdminKyGuiController::class, 'update'])->name('update');
                     Route::delete('/{kyGui}',     [AdminKyGuiController::class, 'destroy'])->name('destroy');
                     Route::post('/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])->name('xu-ly');
+                    Route::patch('/ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])->name('ky-gui.xu-ly');
+
+                    Route::resource('ky-gui', AdminKyGuiController::class);
                 });
 
                 // Lịch hẹn — Nguồn hàng: xem + xác nhận/từ chối
@@ -201,6 +204,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{lichHen}/xac-nhan', [LichHenController::class, 'xacNhan'])->name('xac-nhan');
                     Route::patch('/{lichHen}/tu-choi',  [LichHenController::class, 'tuChoi'])->name('tu-choi');
                 });
+                Route::patch('/bat-dong-san/{batDongSan}/toggle', [BatDongSanController::class, 'toggle']);
+                Route::patch('/bat-dong-san/{batDongSan}/trang-thai', [BatDongSanController::class, 'updateTrangThai']);
+                Route::delete('/bat-dong-san/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh']);
             });
 
             // ── Admin + Sale ───────────────────

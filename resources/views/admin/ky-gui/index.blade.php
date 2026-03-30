@@ -2,171 +2,160 @@
 @section('title', 'Quản lý Ký gửi')
 
 @section('content')
-
-    {{-- THỐNG KÊ --}}
-    <div class="kg-stat-row">
-        @php
-            $stats = [
-                ['key' => 'tong', 'label' => 'Tổng', 'icon' => 'fas fa-inbox', 'c' => '#2d6a9f', 'b' => '#e8f4fd'],
-                [
-                    'key' => 'cho_duyet',
-                    'label' => 'Chờ duyệt',
-                    'icon' => 'fas fa-clock',
-                    'c' => '#e67e22',
-                    'b' => '#fff8f0',
-                ],
-                [
-                    'key' => 'da_lien_he',
-                    'label' => 'Đã liên hệ',
-                    'icon' => 'fas fa-phone',
-                    'c' => '#9b59b6',
-                    'b' => '#f5eeff',
-                ],
-                [
-                    'key' => 'da_nhan',
-                    'label' => 'Đã nhận',
-                    'icon' => 'fas fa-check-circle',
-                    'c' => '#27ae60',
-                    'b' => '#e8f8f0',
-                ],
-                [
-                    'key' => 'tu_choi',
-                    'label' => 'Từ chối',
-                    'icon' => 'fas fa-times-circle',
-                    'c' => '#e74c3c',
-                    'b' => '#fff0f0',
-                ],
-            ];
-        @endphp
-        @foreach ($stats as $s)
-            <div class="kg-stat-card">
-                <div class="kg-stat-icon" style="background:{{ $s['b'] }};color:{{ $s['c'] }}">
-                    <i class="{{ $s['icon'] }}"></i>
-                </div>
-                <div>
-                    <div class="kg-stat-num" style="color:{{ $s['c'] }}">
-                        {{ number_format($thongKe[$s['key']]) }}
-                    </div>
-                    <div class="kg-stat-lbl">{{ $s['label'] }}</div>
-                </div>
-            </div>
-        @endforeach
-    </div>
-
     {{-- HEADER --}}
-    <div class="kg-header">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h1 class="kg-title"><i class="fas fa-file-signature"></i> Ký gửi BĐS</h1>
-            <p class="kg-sub">Quản lý yêu cầu ký gửi bất động sản từ khách hàng</p>
+            <h1 class="page-header-title mb-1"><i class="fas fa-file-signature text-primary"></i> Quản lý Ký gửi</h1>
+            <p class="page-header-sub mb-0">Nghiệp vụ Nguồn hàng: Tiếp nhận & Thẩm định BĐS</p>
         </div>
-        <a href="{{ route('nhanvien.admin.ky-gui.create') }}" class="kg-btn-add">
-            <i class="fas fa-plus"></i> Thêm ký gửi
+        <a href="{{ route('nhanvien.admin.ky-gui.create') }}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus me-1"></i> Tạo yêu cầu mới
         </a>
     </div>
 
-    {{-- FLASH --}}
+    {{-- FLASH MESSAGES --}}
     @if (session('success'))
-        <div class="kg-flash kg-flash-ok"><i class="fas fa-check-circle"></i> {!! session('success') !!}</div>
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0"><i
+                class="fas fa-check-circle me-1"></i> {!! session('success') !!}<button type="button" class="btn-close"
+                data-bs-dismiss="alert"></button></div>
     @endif
     @if (session('error'))
-        <div class="kg-flash kg-flash-err"><i class="fas fa-exclamation-circle"></i> {!! session('error') !!}</div>
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0"><i
+                class="fas fa-exclamation-circle me-1"></i> {!! session('error') !!}<button type="button" class="btn-close"
+                data-bs-dismiss="alert"></button></div>
     @endif
 
+    {{-- THỐNG KÊ --}}
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-4 col-xl">
+            <div class="stat-card p-3">
+                <div class="stat-icon blue bg-opacity-10"><i class="fas fa-inbox"></i></div>
+                <div>
+                    <div class="stat-num fs-4">{{ number_format($thongKe['tong']) }}</div>
+                    <div class="stat-label">Tổng số</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl">
+            <div class="stat-card p-3">
+                <div class="stat-icon orange bg-opacity-10"><i class="fas fa-clock"></i></div>
+                <div>
+                    <div class="stat-num fs-4">{{ number_format($thongKe['cho_duyet']) }}</div>
+                    <div class="stat-label">Mới gửi</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl">
+            <div class="stat-card p-3">
+                <div class="stat-icon purple bg-opacity-10"><i class="fas fa-search"></i></div>
+                <div>
+                    <div class="stat-num fs-4">{{ number_format($thongKe['dang_tham_dinh']) }}</div>
+                    <div class="stat-label">Đang thẩm định</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-6 col-xl">
+            <div class="stat-card p-3">
+                <div class="stat-icon green bg-opacity-10"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="stat-num fs-4">{{ number_format($thongKe['da_duyet']) }}</div>
+                    <div class="stat-label">Đã duyệt</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6 col-xl">
+            <div class="stat-card p-3">
+                <div class="stat-icon red bg-opacity-10"><i class="fas fa-times-circle"></i></div>
+                <div>
+                    <div class="stat-num fs-4">{{ number_format($thongKe['tu_choi']) }}</div>
+                    <div class="stat-label">Từ chối</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- BỘ LỌC --}}
-    <div class="kg-filter-box">
-        <form method="GET" id="kgFilterForm">
-            <div class="kg-filter-row">
-
-                <input type="text" name="tim_kiem" class="kg-ctrl kg-search" value="{{ request('tim_kiem') }}"
-                    placeholder="🔍 Tìm tên, SĐT, địa chỉ...">
-
-                <select name="trang_thai" class="kg-ctrl">
-                    <option value="">Tất cả trạng thái</option>
-                    @foreach (\App\Models\KyGui::TRANG_THAI as $v => $info)
-                        <option value="{{ $v }}" @selected(request('trang_thai') == $v)>
-                            {{ $info['label'] }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <select name="loai_hinh" class="kg-ctrl">
-                    <option value="">Tất cả loại hình</option>
-                    @foreach (\App\Models\KyGui::LOAI_HINH as $v => $info)
-                        <option value="{{ $v }}" @selected(request('loai_hinh') == $v)>
-                            {{ $info['label'] }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <select name="nhu_cau" class="kg-ctrl">
-                    <option value="">Bán & Thuê</option>
-                    <option value="ban" @selected(request('nhu_cau') == 'ban')>Bán</option>
-                    <option value="thue" @selected(request('nhu_cau') == 'thue')>Thuê</option>
-                </select>
-
-                <select name="nhan_vien_id" class="kg-ctrl">
-                    <option value="">Tất cả nhân viên</option>
-                    @foreach ($nhanViens as $nv)
-                        <option value="{{ $nv->id }}" @selected(request('nhan_vien_id') == $nv->id)>
-                            {{ $nv->ho_ten }}
-                        </option>
-                    @endforeach
-                </select>
-
-                <input type="date" name="tu_ngay" class="kg-ctrl" value="{{ request('tu_ngay') }}" title="Từ ngày">
-                <input type="date" name="den_ngay" class="kg-ctrl" value="{{ request('den_ngay') }}" title="Đến ngày">
-
-                <div class="kg-filter-btns">
-                    <button type="submit" class="kg-btn-filter">
-                        <i class="fas fa-search"></i> Lọc
-                    </button>
-                    @if (request()->hasAny(['tim_kiem', 'trang_thai', 'loai_hinh', 'nhu_cau', 'nhan_vien_id', 'tu_ngay', 'den_ngay']))
-                        <a href="{{ route('nhanvien.admin.ky-gui.index') }}" class="kg-btn-reset">
-                            <i class="fas fa-times"></i> Xóa lọc
-                        </a>
+    <div class="filter-box mb-4">
+        <form method="GET" id="filterForm">
+            <div class="row g-2 align-items-center">
+                <div class="col-12 col-md-3">
+                    <input type="text" name="tim_kiem" class="filter-ctrl filter-ctrl-search w-100"
+                        value="{{ request('tim_kiem') }}" placeholder="🔍 Tìm tên, SĐT chủ nhà...">
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Trạng thái</option>
+                        @foreach (\App\Models\KyGui::TRANG_THAI as $v => $info)
+                            <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $info['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="loai_hinh" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Loại hình</option>
+                        @foreach (\App\Models\KyGui::LOAI_HINH as $v => $info)
+                            <option value="{{ $v }}" @selected(request('loai_hinh') == $v)>{{ $info['label'] }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="nhan_vien_id" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Nhân sự Nguồn</option>
+                        @foreach ($nhanViens as $nv)
+                            <option value="{{ $nv->id }}" @selected(request('nhan_vien_id') == $nv->id)>{{ $nv->ho_ten }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 d-flex gap-1">
+                    <input type="date" name="tu_ngay" class="filter-ctrl w-50" value="{{ request('tu_ngay') }}">
+                    <input type="date" name="den_ngay" class="filter-ctrl w-50" value="{{ request('den_ngay') }}">
+                </div>
+                <div class="col-12 mt-2 d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-navy btn-sm px-3"><i class="fas fa-search"></i> Lọc</button>
+                    @if (request()->hasAny(['tim_kiem', 'trang_thai', 'loai_hinh', 'nhan_vien_id', 'tu_ngay', 'den_ngay']))
+                        <a href="{{ route('nhanvien.admin.ky-gui.index') }}" class="btn btn-danger btn-sm px-3"><i
+                                class="fas fa-times"></i></a>
                     @endif
                 </div>
             </div>
         </form>
     </div>
 
-    {{-- BẢNG --}}
-    <div class="kg-data-box">
-        <div class="kg-data-hdr">
-            <span class="kg-result-info">
+    {{-- BẢNG DỮ LIỆU --}}
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+            <span class="text-muted fw-normal" style="font-size: 0.85rem">
                 @if ($kyGuis->total() > 0)
-                    Hiển thị <strong>{{ $kyGuis->firstItem() }}–{{ $kyGuis->lastItem() }}</strong>
-                    / <strong>{{ number_format($kyGuis->total()) }}</strong> yêu cầu
+                    Hiển thị <strong>{{ $kyGuis->firstItem() }}–{{ $kyGuis->lastItem() }}</strong> /
+                    <strong>{{ number_format($kyGuis->total()) }}</strong> yêu cầu
                 @else
-                    Không có kết quả
+                    Không có kết quả nào
                 @endif
             </span>
         </div>
 
-        <div class="kg-tbl-wrap">
-            <table class="kg-tbl">
-                <thead>
+        <div class="table-responsive tbl-desktop" style="overflow-x: hidden;">
+            <table class="table table-hover align-middle mb-0"
+                style="table-layout: fixed; width: 100%; word-wrap: break-word;">
+                <thead class="bg-light">
                     <tr>
-                        <th style="width:44px">#</th>
-                        <th>Chủ nhà</th>
-                        <th style="width:130px">Loại hình</th>
-                        <th style="width:90px">Nhu cầu</th>
-                        <th>Địa chỉ / Thông tin</th>
-                        <th style="width:130px">Giá mong muốn</th>
-                        <th style="width:150px">Phụ trách</th>
-                        <th style="width:120px">Trạng thái</th>
-                        <th style="width:90px">Ngày gửi</th>
-                        <th style="width:80px;text-align:center">Thao tác</th>
+                        <th class="text-center" style="width: 40px">#</th>
+                        <th style="width: 20%">Khách hàng / Chủ nhà</th>
+                        <th style="width: 15%">Loại BĐS</th>
+                        <th>Địa chỉ / Diện tích</th>
+                        <th style="width: 12%">Giá mong muốn</th>
+                        <th style="width: 15%">Trạng thái</th>
+                        <th class="text-center" style="width: 90px">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @forelse($kyGuis as $kg)
+                    @forelse($kyGuis as $i => $kg)
                         @php
                             $ttInfo = \App\Models\KyGui::TRANG_THAI[$kg->trang_thai] ?? [
                                 'label' => $kg->trang_thai,
                                 'color' => '#999',
                                 'bg' => '#f5f5f5',
-                                'icon' => 'fas fa-question',
+                                'icon' => 'fas fa-info',
                             ];
                             $lhInfo = \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh] ?? [
                                 'label' => $kg->loai_hinh,
@@ -179,130 +168,77 @@
                                 'bg' => '#f5f5f5',
                             ];
                         @endphp
-                        <tr class="{{ $kg->trang_thai === 'cho_duyet' ? 'kg-row-new' : '' }}">
-                            <td style="color:#ccc;font-size:.8rem;text-align:center">
-                                {{ $kyGuis->firstItem() + $loop->index }}
-                            </td>
-
-                            {{-- Chủ nhà --}}
+                        <tr class="{{ $kg->trang_thai === 'cho_duyet' ? 'table-warning' : '' }}">
+                            <td class="text-center text-muted">{{ $kyGuis->firstItem() + $i }}</td>
                             <td>
-                                <div class="kg-owner">
-                                    <a href="{{ route('nhanvien.admin.ky-gui.show', $kg) }}"
-                                        class="kg-owner-name">{{ $kg->ho_ten_chu_nha }}</a>
-                                    <div style="font-size:.76rem;color:#888">
-                                        <i class="fas fa-phone" style="font-size:.65rem"></i>
-                                        {{ $kg->so_dien_thoai }}
-                                    </div>
+                                <a href="{{ route('nhanvien.admin.ky-gui.edit', $kg) }}"
+                                    class="fw-bold text-navy text-decoration-none d-block mb-1">{{ $kg->ho_ten_chu_nha }}</a>
+                                <div class="text-muted" style="font-size: 0.75rem">
+                                    <div><i class="fas fa-phone text-success me-1"></i>{{ $kg->so_dien_thoai }}</div>
                                     @if ($kg->email)
-                                        <div style="font-size:.72rem;color:#bbb">{{ $kg->email }}</div>
+                                        <div><i class="fas fa-envelope text-secondary me-1"></i>{{ $kg->email }}</div>
                                     @endif
                                 </div>
                             </td>
-
-                            {{-- Loại hình --}}
                             <td>
-                                <span style="font-size:.78rem;font-weight:600;color:{{ $lhInfo['color'] }}">
-                                    <i class="{{ $lhInfo['icon'] }}" style="margin-right:4px"></i>
-                                    {{ $lhInfo['label'] }}
-                                </span>
+                                <div class="fw-bold mb-1" style="color: {{ $lhInfo['color'] }}; font-size: 0.85rem;"><i
+                                        class="{{ $lhInfo['icon'] }} me-1"></i>{{ $lhInfo['label'] }}</div>
+                                <span class="badge"
+                                    style="background: {{ $ncInfo['bg'] }}; color: {{ $ncInfo['color'] }}">{{ $ncInfo['label'] }}</span>
                             </td>
-
-                            {{-- Nhu cầu --}}
                             <td>
-                                <span class="kg-badge"
-                                    style="color:{{ $ncInfo['color'] }};background:{{ $ncInfo['bg'] }}">
-                                    {{ $ncInfo['label'] }}
-                                </span>
-                            </td>
-
-                            {{-- Địa chỉ / Thông tin --}}
-                            <td>
-                                <div style="font-size:.82rem;color:#444;max-width:220px">
-                                    @if ($kg->dia_chi)
-                                        <div style="margin-bottom:2px">
-                                            <i class="fas fa-map-marker-alt" style="color:#bbb;font-size:.7rem"></i>
-                                            {{ Str::limit($kg->dia_chi, 50) }}
-                                        </div>
+                                <div class="mb-1 text-truncate" title="{{ $kg->dia_chi }}" style="font-size: 0.85rem">
+                                    <i
+                                        class="fas fa-map-marker-alt text-danger me-1"></i>{{ $kg->dia_chi ?: 'Chưa cập nhật' }}
+                                </div>
+                                <div class="text-muted" style="font-size: 0.8rem">
+                                    <i class="fas fa-vector-square me-1"></i>{{ (float) $kg->dien_tich }}m²
+                                    @if ($kg->so_phong_ngu)
+                                        | {{ $kg->so_phong_ngu }} PN
                                     @endif
-                                    <div style="color:#aaa;font-size:.74rem">
-                                        {{ $kg->dien_tich }} m²
-                                        @if ($kg->so_phong_ngu)
-                                            · {{ $kg->so_phong_ngu }} PN
-                                        @endif
-                                        @if ($kg->so_phong_tam)
-                                            · {{ $kg->so_phong_tam }} WC
-                                        @endif
-                                    </div>
                                 </div>
                             </td>
-
-                            {{-- Giá --}}
-                            <td style="font-size:.85rem;font-weight:700;color:#1a3c5e">
-                                {{ $kg->gia_hien_thi }}
-                            </td>
-
-                            {{-- Phụ trách --}}
                             <td>
-                                @if ($kg->nhanVienPhuTrach)
-                                    <div class="kg-nv">
-                                        <div class="kg-nv-av">
-                                            {{ mb_strtoupper(mb_substr($kg->nhanVienPhuTrach->ho_ten, 0, 1)) }}
-                                        </div>
-                                        <span style="font-size:.8rem">{{ $kg->nhanVienPhuTrach->ho_ten }}</span>
-                                    </div>
-                                @else
-                                    <span class="kg-unassigned">Chưa phân công</span>
-                                @endif
+                                <div class="fw-bold text-primary">{{ $kg->gia_hien_thi }}</div>
                             </td>
-
-                            {{-- Trạng thái --}}
                             <td>
-                                <span class="kg-badge"
-                                    style="color:{{ $ttInfo['color'] }};background:{{ $ttInfo['bg'] }}">
-                                    <i class="{{ $ttInfo['icon'] }}"></i>
-                                    {{ $ttInfo['label'] }}
-                                </span>
-                                @if ($kg->thoi_diem_xu_ly)
-                                    <div style="font-size:.68rem;color:#bbb;margin-top:2px">
-                                        {{ $kg->thoi_diem_xu_ly->format('d/m H:i') }}
-                                    </div>
-                                @endif
+                                <div class="dropdown">
+                                    <span class="badge cursor-pointer dropdown-toggle" data-bs-toggle="dropdown"
+                                        style="background: {{ $ttInfo['bg'] }}; color: {{ $ttInfo['color'] }}; font-size: 0.75rem; white-space: normal; text-align: left;">
+                                        <i class="{{ $ttInfo['icon'] }} me-1"></i>{{ $ttInfo['label'] }}
+                                    </span>
+                                    <ul class="dropdown-menu shadow-sm" style="font-size: 0.85rem">
+                                        @foreach (\App\Models\KyGui::TRANG_THAI as $val => $item)
+                                            <li><a class="dropdown-item tt-update-btn" href="javascript:void(0)"
+                                                    data-id="{{ $kg->id }}" data-val="{{ $val }}"><i
+                                                        class="{{ $item['icon'] }} me-1"
+                                                        style="color:{{ $item['color'] }}"></i> {{ $item['label'] }}</a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                                <div class="text-muted mt-1" style="font-size: 0.7rem" title="Ngày gửi"><i
+                                        class="fas fa-calendar-alt"></i> {{ $kg->created_at->format('d/m/Y H:i') }}</div>
                             </td>
-
-                            {{-- Ngày gửi --}}
-                            <td style="font-size:.78rem;color:#888">
-                                {{ $kg->created_at->format('d/m/Y') }}<br>
-                                <span style="color:#ccc">{{ $kg->created_at->format('H:i') }}</span>
-                            </td>
-
-                            {{-- Thao tác --}}
-                            <td style="text-align:center">
-                                <div class="kg-acts">
-                                    <a href="{{ route('nhanvien.admin.ky-gui.show', $kg) }}" class="kg-act kg-act-view"
-                                        title="Xem chi tiết">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a href="{{ route('nhanvien.admin.ky-gui.edit', $kg) }}" class="kg-act kg-act-edit"
-                                        title="Chỉnh sửa">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <form action="{{ route('nhanvien.admin.ky-gui.destroy', $kg) }}" method="POST"
-                                        style="display:inline;margin:0">
-                                        @csrf @method('DELETE')
-                                        <button type="button" class="kg-act kg-act-del kg-confirm-del"
-                                            data-ten="{{ $kg->ho_ten_chu_nha }}" title="Xóa">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
+                            <td class="text-center">
+                                <div class="btn-actions-group justify-content-center">
+                                    <a href="{{ route('nhanvien.admin.ky-gui.edit', $kg) }}"
+                                        class="btn-action btn-action-edit" title="Sửa/Duyệt"><i
+                                            class="fas fa-pen"></i></a>
+                                    <form id="frmDel_{{ $kg->id }}"
+                                        action="{{ route('nhanvien.admin.ky-gui.destroy', $kg) }}" method="POST"
+                                        class="d-none">@csrf @method('DELETE')</form>
+                                    <button type="button" class="btn-action btn-action-delete btn-delete-kg"
+                                        data-id="{{ $kg->id }}" data-name="{{ $kg->ho_ten_chu_nha }}"
+                                        title="Xóa"><i class="fas fa-trash"></i></button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" style="text-align:center;padding:60px 20px">
-                                <div style="color:#bbb">
-                                    <i class="fas fa-inbox" style="font-size:2.5rem;display:block;margin-bottom:12px"></i>
-                                    Chưa có yêu cầu ký gửi nào
+                            <td colspan="7">
+                                <div class="empty-state"><i class="fas fa-inbox text-muted mb-3"></i>
+                                    <p class="text-muted mb-2">Chưa có yêu cầu ký gửi nào</p>
                                 </div>
                             </td>
                         </tr>
@@ -311,406 +247,91 @@
             </table>
         </div>
 
-        {{-- PHÂN TRANG --}}
+        {{-- Mobile Cards --}}
+        <div class="mobile-card-list">
+            @foreach ($kyGuis as $kg)
+                @php $ttInfo = \App\Models\KyGui::TRANG_THAI[$kg->trang_thai] ?? ['label' => $kg->trang_thai, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => '']; @endphp
+                <div class="mobile-card {{ $kg->trang_thai === 'cho_duyet' ? 'border-warning' : '' }}">
+                    <div class="mobile-card-top">
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="badge"
+                                    style="background: {{ $ttInfo['bg'] }}; color: {{ $ttInfo['color'] }}"><i
+                                        class="{{ $ttInfo['icon'] }}"></i> {{ $ttInfo['label'] }}</span>
+                                <span class="text-muted"
+                                    style="font-size: 0.7rem">{{ $kg->created_at->format('d/m H:i') }}</span>
+                            </div>
+                            <a href="{{ route('nhanvien.admin.ky-gui.edit', $kg) }}"
+                                class="fw-bold text-navy text-decoration-none d-block text-truncate mb-1">{{ $kg->ho_ten_chu_nha }}</a>
+                            <div class="text-muted" style="font-size: 0.75rem"><i
+                                    class="fas fa-phone text-success me-1"></i>{{ $kg->so_dien_thoai }}</div>
+                        </div>
+                    </div>
+                    <div class="mobile-card-meta flex-column align-items-start gap-1">
+                        <div><i class="fas fa-map-marker-alt text-danger w-15px text-center"></i>
+                            {{ Str::limit($kg->dia_chi, 30) ?: 'Chưa cập nhật' }}</div>
+                        <div><i class="fas fa-tag text-primary w-15px text-center"></i> <strong
+                                class="text-primary">{{ $kg->gia_hien_thi }}</strong> - {{ (float) $kg->dien_tich }}m²
+                        </div>
+                    </div>
+                    <div class="mobile-card-foot justify-content-end">
+                        <div class="btn-actions-group">
+                            <a href="{{ route('nhanvien.admin.ky-gui.edit', $kg) }}"
+                                class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
+                            <button type="button" class="btn-action btn-action-delete btn-delete-kg"
+                                data-id="{{ $kg->id }}" data-name="{{ $kg->ho_ten_chu_nha }}"><i
+                                    class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+
         @if ($kyGuis->hasPages())
-            <div style="padding:14px 18px;border-top:1px solid #f5f6fa">
-                {{ $kyGuis->links() }}
-            </div>
+            <div class="card-footer bg-white border-top p-3 d-flex justify-content-center justify-content-md-end">
+                {{ $kyGuis->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
-
 @endsection
-
-@push('styles')
-    <style>
-        .kg-stat-row {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 14px;
-            margin-bottom: 22px
-        }
-
-        @media(max-width:1000px) {
-            .kg-stat-row {
-                grid-template-columns: repeat(3, 1fr)
-            }
-        }
-
-        .kg-stat-card {
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #f0f2f5;
-            padding: 14px 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .04)
-        }
-
-        .kg-stat-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.1rem;
-            flex-shrink: 0
-        }
-
-        .kg-stat-num {
-            font-size: 1.5rem;
-            font-weight: 800;
-            line-height: 1
-        }
-
-        .kg-stat-lbl {
-            font-size: .74rem;
-            color: #aaa;
-            margin-top: 3px
-        }
-
-        .kg-header {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            margin-bottom: 18px;
-            flex-wrap: wrap;
-            gap: 12px
-        }
-
-        .kg-title {
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #1a3c5e;
-            margin: 0 0 4px;
-            display: flex;
-            align-items: center;
-            gap: 9px
-        }
-
-        .kg-title i {
-            color: #FF8C42
-        }
-
-        .kg-sub {
-            color: #aaa;
-            font-size: .83rem;
-            margin: 0
-        }
-
-        .kg-btn-add {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            background: linear-gradient(135deg, #FF8C42, #f5a623);
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            font-weight: 700;
-            font-size: .875rem;
-            text-decoration: none;
-            box-shadow: 0 4px 14px rgba(255, 140, 66, .3);
-            transition: all .2s
-        }
-
-        .kg-btn-add:hover {
-            transform: translateY(-1px);
-            color: #fff
-        }
-
-        .kg-flash {
-            border-radius: 10px;
-            padding: 12px 18px;
-            font-size: .875rem;
-            font-weight: 500;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 8px
-        }
-
-        .kg-flash-ok {
-            background: #e8f8f0;
-            border: 1px solid #b7e4cb;
-            color: #1a7a45
-        }
-
-        .kg-flash-err {
-            background: #fff5f5;
-            border: 1px solid #fcc;
-            color: #c0392b
-        }
-
-        .kg-filter-box {
-            background: #fff;
-            border-radius: 12px;
-            border: 1px solid #f0f2f5;
-            padding: 16px 18px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .04)
-        }
-
-        .kg-filter-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            align-items: center
-        }
-
-        .kg-ctrl {
-            height: 38px;
-            border: 1.5px solid #e8e8e8;
-            border-radius: 8px;
-            padding: 0 12px;
-            font-size: .83rem;
-            color: #333;
-            background: #fafafa;
-            outline: none;
-            transition: border-color .2s
-        }
-
-        .kg-ctrl:focus {
-            border-color: #FF8C42;
-            background: #fff
-        }
-
-        .kg-ctrl.kg-search {
-            flex: 1;
-            min-width: 200px
-        }
-
-        select.kg-ctrl {
-            appearance: none;
-            cursor: pointer;
-            padding-right: 28px;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%23aaa' d='M5 6L0 0h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 10px center
-        }
-
-        .kg-filter-btns {
-            display: flex;
-            gap: 8px
-        }
-
-        .kg-btn-filter {
-            height: 38px;
-            background: #1a3c5e;
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 0 18px;
-            font-weight: 700;
-            font-size: .83rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px
-        }
-
-        .kg-btn-reset {
-            height: 38px;
-            background: #fff5f5;
-            color: #e74c3c;
-            border: 1.5px solid #fcc;
-            border-radius: 8px;
-            padding: 0 14px;
-            font-size: .83rem;
-            font-weight: 600;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px
-        }
-
-        .kg-data-box {
-            background: #fff;
-            border-radius: 14px;
-            border: 1px solid #f0f2f5;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
-            overflow: hidden
-        }
-
-        .kg-data-hdr {
-            padding: 12px 18px;
-            border-bottom: 1px solid #f5f5f5;
-            display: flex;
-            align-items: center;
-            justify-content: space-between
-        }
-
-        .kg-result-info {
-            font-size: .82rem;
-            color: #999
-        }
-
-        .kg-result-info strong {
-            color: #1a3c5e
-        }
-
-        .kg-tbl-wrap {
-            overflow-x: auto
-        }
-
-        .kg-tbl {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 1000px
-        }
-
-        .kg-tbl thead tr {
-            background: #f8faff
-        }
-
-        .kg-tbl th {
-            padding: 10px 13px;
-            font-size: .72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: #6b7a99;
-            border-bottom: 1.5px solid #eef0f5;
-            text-align: left
-        }
-
-        .kg-tbl td {
-            padding: 11px 13px;
-            border-bottom: 1px solid #f5f6fa;
-            vertical-align: middle
-        }
-
-        .kg-tbl tbody tr:last-child td {
-            border-bottom: none
-        }
-
-        .kg-tbl tbody tr:hover {
-            background: #fdfeff
-        }
-
-        .kg-row-new {
-            background: #fffef8 !important
-        }
-
-        .kg-row-new:hover {
-            background: #fffcf0 !important
-        }
-
-        .kg-owner-name {
-            font-weight: 700;
-            color: #1a3c5e;
-            font-size: .87rem;
-            text-decoration: none;
-            display: block
-        }
-
-        .kg-owner-name:hover {
-            color: #FF8C42
-        }
-
-        .kg-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            font-size: .74rem;
-            font-weight: 700;
-            padding: .25rem .6rem;
-            border-radius: 20px;
-            white-space: nowrap
-        }
-
-        .kg-nv {
-            display: flex;
-            align-items: center;
-            gap: 6px
-        }
-
-        .kg-nv-av {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #1a3c5e, #2d6a9f);
-            color: #fff;
-            font-size: .72rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0
-        }
-
-        .kg-unassigned {
-            font-size: .75rem;
-            color: #e67e22;
-            font-weight: 600;
-            font-style: italic
-        }
-
-        .kg-acts {
-            display: flex;
-            gap: 4px;
-            justify-content: center
-        }
-
-        .kg-act {
-            width: 28px;
-            height: 28px;
-            border-radius: 7px;
-            border: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: .75rem;
-            text-decoration: none;
-            transition: all .15s;
-            padding: 0
-        }
-
-        .kg-act-view {
-            background: #f0fff4;
-            color: #27ae60
-        }
-
-        .kg-act-view:hover {
-            background: #27ae60;
-            color: #fff
-        }
-
-        .kg-act-edit {
-            background: #eef3ff;
-            color: #2d6a9f
-        }
-
-        .kg-act-edit:hover {
-            background: #2d6a9f;
-            color: #fff
-        }
-
-        .kg-act-del {
-            background: #fff0f0;
-            color: #e74c3c
-        }
-
-        .kg-act-del:hover {
-            background: #e74c3c;
-            color: #fff
-        }
-    </style>
-@endpush
 
 @push('scripts')
     <script>
-        document.querySelectorAll('#kgFilterForm select').forEach(s => {
-            s.addEventListener('change', () => document.getElementById('kgFilterForm').submit());
-        });
+        document.addEventListener("DOMContentLoaded", function() {
+            const CSRF = document.querySelector('meta[name=csrf-token]').content;
 
-        document.querySelectorAll('.kg-confirm-del').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if (confirm('Xóa yêu cầu ký gửi của "' + this.dataset.ten + '"?')) {
-                    this.closest('form').submit();
-                }
+            document.querySelectorAll('.btn-delete-kg').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const name = this.dataset.name;
+                    const id = this.dataset.id;
+                    confirmDelete('yêu cầu ký gửi của ' + name, function() {
+                        document.getElementById('frmDel_' + id).submit();
+                    });
+                });
+            });
+
+            // AJAX Update Trạng Thái từ Dropdown
+            document.querySelectorAll('.tt-update-btn').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const id = this.dataset.id;
+                    const val = this.dataset.val;
+
+                    fetch(`/nhan-vien/admin/ky-gui/${id}/xu-ly`, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': CSRF,
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                trang_thai: val
+                            })
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.ok) window.location.reload();
+                        }).catch(() => showAdminToast('Lỗi kết nối', 'error'));
+                });
             });
         });
     </script>

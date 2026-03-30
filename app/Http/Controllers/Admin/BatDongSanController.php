@@ -4,8 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\BatDongSan;
+use App\Models\ChuNha;
 use App\Models\DuAn;
-use App\Models\KhuVuc;
 use App\Models\NhanVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -13,356 +13,266 @@ use Illuminate\Support\Str;
 
 class BatDongSanController extends Controller
 {
-    // ── Hằng số dùng toàn bộ module ──
-    const LOAI_HINH = [
-        'can_ho'    => 'Căn hộ chung cư',
-        'nha_pho'   => 'Nhà phố',
-        'biet_thu'  => 'Biệt thự',
-        'dat_nen'   => 'Đất nền',
-        'shophouse' => 'Shophouse',
-    ];
+    // ── LẤY DỮ LIỆU CONSTANTS CHO FORM ──
+    private function getConstants(): array
+    {
+        return [
+            'loai_hinh' => ['can_ho' => 'Căn hộ chung cư', 'nha_pho' => 'Nhà phố', 'biet_thu' => 'Biệt thự', 'dat_nen' => 'Đất nền', 'shophouse' => 'Shophouse'],
+            'nhu_cau'   => ['ban' => 'Bán', 'thue' => 'Cho thuê'],
+            'noi_that'  => ['nguyen_ban' => 'Nguyên bản', 'co_ban' => 'Cơ bản', 'full' => 'Full nội thất', 'cao_cap' => 'Cao cấp'],
+            'phap_ly'   => ['so_hong' => 'Sổ hồng', 'so_do' => 'Sổ đỏ', 'hop_dong' => 'Hợp đồng mua bán', 'chua_co' => 'Chưa có sổ'],
+            'trang_thai' => [
+                'con_hang'  => ['label' => '✅ Còn hàng'],
+                'dat_coc'   => ['label' => '🤝 Đặt cọc'],
+                'da_ban'    => ['label' => '❌ Đã bán'],
+                'dang_thue' => ['label' => '🔑 Đang cho thuê'],
+                'da_thue'   => ['label' => '📦 Đã cho thuê'],
+                'tam_an'    => ['label' => '⏸ Tạm ẩn'],
+            ],
+            'thoi_gian_vao_thue' => ['ngay_lap_tuc' => 'Vào ở ngay', 'sau_1_tuan' => 'Sau 1 tuần', 'sau_1_thang' => 'Sau 1 tháng', 'thoa_thuan' => 'Thỏa thuận'],
+            'hinh_thuc_tt' => ['thang_1' => 'Thanh toán 1 tháng/lần', 'thang_3' => 'Thanh toán 3 tháng/lần', 'thang_6' => 'Thanh toán 6 tháng/lần', 'nam_1' => 'Thanh toán 1 năm/lần']
+        ];
+    }
 
-    const NHU_CAU = [
-        'ban'  => 'Bán',
-        'thue' => 'Cho thuê',
-    ];
-
-    const NOI_THAT = [
-        'co_ban'     => 'Cơ bản',
-        'full'       => 'Full nội thất',
-        'cao_cap'    => 'Cao cấp',
-        'nguyen_ban' => 'Nguyên bản',
-    ];
-
-    const PHAP_LY = [
-        'so_hong'  => 'Sổ hồng',
-        'so_do'    => 'Sổ đỏ',
-        'hop_dong' => 'Hợp đồng mua bán',
-        'chua_co'  => 'Chưa có sổ',
-    ];
-
-    const TRANG_THAI = [
-        'con_hang'  => ['label' => 'Còn hàng',       'color' => '#27ae60', 'bg' => '#e8f8f0'],
-        'dat_coc'   => ['label' => 'Đặt cọc',        'color' => '#e67e22', 'bg' => '#fff3e0'],
-        'da_ban'    => ['label' => 'Đã bán',          'color' => '#e74c3c', 'bg' => '#ffeaea'],
-        'dang_thue' => ['label' => 'Đang cho thuê',  'color' => '#2d6a9f', 'bg' => '#e8f4fd'],
-        'da_thue'   => ['label' => 'Đã cho thuê',    'color' => '#8e44ad', 'bg' => '#f5eeff'],
-        'tam_an'    => ['label' => 'Tạm ẩn',         'color' => '#95a5a6', 'bg' => '#f5f5f5'],
-    ];
-
-    const THOI_GIAN_VAO_THUE = [
-        'vao_luon'   => 'Vào ở ngay',
-        'thang_1'    => 'Sau 1 tháng',
-        'thang_3'    => 'Sau 3 tháng',
-        'sau_ngay_X' => 'Theo thỏa thuận',
-    ];
-
-    const HINH_THUC_TT = [
-        'tien_mat'     => 'Tiền mặt',
-        'chuyen_khoan' => 'Chuyển khoản',
-        '3_coc_1'      => '3 tháng đặt cọc 1 tháng',
-        '3_coc_10tr'   => '3 tháng đặt cọc 10 triệu',
-    ];
-
-    // ──────────────────────────────────────
-    // INDEX
-    // ──────────────────────────────────────
+    // ── INDEX: DANH SÁCH & BỘ LỌC ──
     public function index(Request $request)
     {
-        $query = BatDongSan::with(['duAn.khuVuc', 'nhanVienPhuTrach'])
-            ->withCount('lichHens');
+        // Load các quan hệ cần thiết để tránh lỗi N+1 Query
+        $query = BatDongSan::with(['duAn', 'nhanVienPhuTrach', 'chuNha']);
 
+        // Tìm kiếm từ khóa
         if ($request->filled('tukhoa')) {
-            $query->where(function ($q) use ($request) {
-                $q->where('tieu_de', 'like', '%' . $request->tukhoa . '%')
-                    ->orWhere('ma_bat_dong_san', 'like', '%' . $request->tukhoa . '%')
-                    ->orWhere('ma_can', 'like', '%' . $request->tukhoa . '%');
+            $kw = '%' . $request->tukhoa . '%';
+            $query->where(function ($q) use ($kw) {
+                $q->where('tieu_de', 'like', $kw)
+                    ->orWhere('ma_bat_dong_san', 'like', $kw);
             });
         }
 
-        if ($request->filled('nhu_cau'))    $query->where('nhu_cau', $request->nhu_cau);
-        if ($request->filled('loai_hinh'))  $query->where('loai_hinh', $request->loai_hinh);
+        // Lọc theo dropdown
+        if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
+        if ($request->filled('loai_hinh')) $query->where('loai_hinh', $request->loai_hinh);
         if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
-        if ($request->filled('hien_thi'))   $query->where('hien_thi', $request->hien_thi);
-
-        if ($request->filled('du_an_id')) {
-            $query->where('du_an_id', $request->du_an_id);
-        }
-
-        if ($request->filled('khu_vuc_id')) {
-            $query->whereHas(
-                'duAn',
-                fn($q) =>
-                $q->where('khu_vuc_id', $request->khu_vuc_id)
-            );
-        }
+        if ($request->filled('du_an_id')) $query->where('du_an_id', $request->du_an_id);
 
         // Sắp xếp
-        match ($request->get('sapxep', 'moi_nhat')) {
-            'cu_nhat'   => $query->oldest(),
-            'gia_tang'  => $query->orderByRaw('COALESCE(gia, gia_thue) ASC'),
-            'gia_giam'  => $query->orderByRaw('COALESCE(gia, gia_thue) DESC'),
-            'luot_xem'  => $query->orderByDesc('luot_xem'),
-            default     => $query->orderByDesc('created_at'),
-        };
-
-        $batDongSans = $query->paginate(15)->withQueryString();
-        $duAns       = DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get();
-        $khuVucs     = KhuVuc::whereNull('deleted_at')->orderBy('ten_khu_vuc')->get();
-        $nhanViens = NhanVien::orderBy('ho_ten')->get();
-
-        // Thống kê nhanh
-        $thongKe = [
-            'tong'       => BatDongSan::count(),
-            'con_hang'   => BatDongSan::where('trang_thai', 'con_hang')->count(),
-            'dang_thue'  => BatDongSan::where('trang_thai', 'dang_thue')->count(),
-            'dat_coc'    => BatDongSan::where('trang_thai', 'dat_coc')->count(),
-            'da_ban'     => BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
-        ];
-
-        return view('admin.bat-dong-san.index', compact(
-            'batDongSans',
-            'duAns',
-            'khuVucs',
-            'nhanViens',
-            'thongKe'
-        ));
-    }
-
-    // ──────────────────────────────────────
-    // CREATE / STORE
-    // ──────────────────────────────────────
-    public function create()
-    {
-        return view('admin.bat-dong-san.create', $this->formData());
-    }
-
-    public function store(Request $request)
-    {
-        $data = $this->validateRequest($request);
-        $data['slug']            = $this->taoSlug($data['tieu_de']);
-        $data['ma_bat_dong_san'] = $this->taoMaBDS();
-        $data['hien_thi']        = $request->boolean('hien_thi');
-        $data['noi_bat']         = $request->boolean('noi_bat');
-        $data['thoi_diem_dang']  = $data['thoi_diem_dang'] ?? now();
-
-        if ($request->hasFile('hinh_anh')) {
-            $data['hinh_anh'] = $request->file('hinh_anh')
-                ->store('bat-dong-san', 'public');
+        $sort = $request->sapxep ?? 'moi_nhat';
+        if ($sort === 'moi_nhat') {
+            $query->orderByDesc('thoi_diem_dang')->latest();
+        } elseif ($sort === 'gia_tang') {
+            $query->orderByRaw('COALESCE(gia, gia_thue) ASC');
+        } elseif ($sort === 'gia_giam') {
+            $query->orderByRaw('COALESCE(gia, gia_thue) DESC');
+        } elseif ($sort === 'luot_xem') {
+            $query->orderByDesc('luot_xem');
         }
 
+        $batDongSans = $query->paginate(15)->withQueryString();
+
+        // Thống kê nhanh trên đầu trang
+        $thongKe = [
+            'tong'      => BatDongSan::count(),
+            'con_hang'  => BatDongSan::where('trang_thai', 'con_hang')->count(),
+            'dang_thue' => BatDongSan::where('trang_thai', 'dang_thue')->count(),
+            'dat_coc'   => BatDongSan::where('trang_thai', 'dat_coc')->count(),
+            'da_ban'    => BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
+        ];
+
+        $duAns = DuAn::orderBy('ten_du_an')->get();
+
+        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns'));
+    }
+
+    // ── FORM TẠO MỚI ──
+    public function create()
+    {
+        $duAns = DuAn::orderBy('ten_du_an')->get();
+        $nhanViens = NhanVien::where('kich_hoat', true)->get();
+        $chuNhas = ChuNha::orderBy('ho_ten')->get();
+        $constants = $this->getConstants();
+
+        return view('admin.bat-dong-san.create', compact('duAns', 'nhanViens', 'chuNhas', 'constants'));
+    }
+
+    // ── LƯU DỮ LIỆU TẠO MỚI ──
+    public function store(Request $request)
+    {
+        $data = $this->validateData($request);
+
+        // Xử lý Checkbox & Mã BĐS
+        $data['hien_thi'] = $request->has('hien_thi');
+        $data['noi_bat']  = $request->has('noi_bat');
+        $data['slug']     = Str::slug($data['tieu_de']) . '-' . time();
+        $data['ma_bat_dong_san'] = 'BDS-' . strtoupper(Str::random(6));
+
+        if (empty($data['thoi_diem_dang'])) {
+            $data['thoi_diem_dang'] = now();
+        }
+
+        // Upload Ảnh Đại Diện
+        if ($request->hasFile('hinh_anh')) {
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'public');
+        }
+
+        // Upload Album Ảnh
+        $album = [];
         if ($request->hasFile('album_anh')) {
-            $album = [];
             foreach ($request->file('album_anh') as $file) {
                 $album[] = $file->store('bat-dong-san/album', 'public');
             }
-            $data['album_anh'] = $album;
         }
+        $data['album_anh'] = $album;
 
         BatDongSan::create($data);
 
-        return redirect()
-            ->route('nhanvien.admin.bat-dong-san.index')
-            ->with('success', '✅ Đã thêm bất động sản <strong>' . $data['tieu_de'] . '</strong>!');
+        return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã thêm Bất động sản mới!');
     }
 
-    // ──────────────────────────────────────
-    // EDIT / UPDATE
-    // ──────────────────────────────────────
+    // ── FORM CHỈNH SỬA ──
     public function edit(BatDongSan $batDongSan)
     {
-        return view(
-            'admin.bat-dong-san.edit',
-            array_merge($this->formData(), compact('batDongSan'))
-        );
+        $duAns = DuAn::orderBy('ten_du_an')->get();
+        $nhanViens = NhanVien::where('kich_hoat', true)->get();
+        $chuNhas = ChuNha::orderBy('ho_ten')->get();
+        $constants = $this->getConstants();
+
+        return view('admin.bat-dong-san.edit', compact('batDongSan', 'duAns', 'nhanViens', 'chuNhas', 'constants'));
     }
 
+    // ── CẬP NHẬT DỮ LIỆU ──
     public function update(Request $request, BatDongSan $batDongSan)
     {
-        $data = $this->validateRequest($request, $batDongSan->id);
-        $data['hien_thi'] = $request->boolean('hien_thi');
-        $data['noi_bat']  = $request->boolean('noi_bat');
+        $data = $this->validateData($request);
 
+        $data['hien_thi'] = $request->has('hien_thi');
+        $data['noi_bat']  = $request->has('noi_bat');
+        $data['slug']     = Str::slug($data['tieu_de']) . '-' . $batDongSan->id;
+
+        // Xử lý Ảnh Đại Diện
         if ($request->hasFile('hinh_anh')) {
-            if ($batDongSan->hinh_anh) Storage::disk('public')->delete($batDongSan->hinh_anh);
-            $data['hinh_anh'] = $request->file('hinh_anh')
-                ->store('bat-dong-san', 'public');
+            if ($batDongSan->hinh_anh) {
+                Storage::disk('public')->delete($batDongSan->hinh_anh);
+            }
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'public');
         }
 
-        if ($request->hasFile('album_anh')) {
-            $album = $batDongSan->album_anh ?? [];
-            foreach ($request->file('album_anh') as $file) {
-                $album[] = $file->store('bat-dong-san/album', 'public');
+        // --- XỬ LÝ ALBUM ẢNH (Fix lỗi P1006 Intelephense) ---
+        $albumCu = is_array($batDongSan->album_anh) ? $batDongSan->album_anh : [];
+        $xoaAnh = $request->input('xoa_hinh_anh', []);
+
+        // 1. Xóa ảnh cũ nếu người dùng đánh dấu X trên form
+        if (is_array($xoaAnh) && count($xoaAnh) > 0) {
+            foreach ($xoaAnh as $path) {
+                Storage::disk('public')->delete($path);
+                $albumCu = array_filter($albumCu, fn($p) => $p !== $path);
             }
-            $data['album_anh'] = $album;
         }
+
+        // 2. Thêm ảnh mới
+        $albumMoi = [];
+        if ($request->hasFile('album_anh')) {
+            foreach ($request->file('album_anh') as $file) {
+                $albumMoi[] = $file->store('bat-dong-san/album', 'public');
+            }
+        }
+
+        // 3. Gộp mảng ảnh
+        $data['album_anh'] = array_values(array_merge($albumCu, $albumMoi));
 
         $batDongSan->update($data);
 
-        return redirect()
-            ->route('nhanvien.admin.bat-dong-san.index')
-            ->with('success', '✅ Đã cập nhật <strong>' . $batDongSan->tieu_de . '</strong>!');
+        return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
     }
 
-    // ──────────────────────────────────────
-    // DESTROY
-    // ──────────────────────────────────────
+    // ── XÓA BẤT ĐỘNG SẢN ──
     public function destroy(BatDongSan $batDongSan)
     {
-        $nhanVien = auth('nhanvien')->user();
-        $vaiTro = $nhanVien
-            ? \App\Models\NhanVien::normalizeVaiTro((string) ($nhanVien->vai_tro ?? ''))
-            : null;
-        $canDelete = in_array($vaiTro, ['admin', 'nguon_hang'], true);
-
-        if (! $canDelete) {
-            if (request()->expectsJson()) {
-                return response()->json([
-                    'ok' => false,
-                    'msg' => 'Bạn không có quyền xóa bất động sản.',
-                ], 403);
-            }
-
-            return redirect()
-                ->route('nhanvien.admin.bat-dong-san.index')
-                ->with('error', '❌ Nhân viên sale không có quyền xóa bất động sản. Chỉ Admin và Nguồn hàng được phép.');
-        }
-
+        // Xóa ảnh đại diện
         if ($batDongSan->hinh_anh) {
             Storage::disk('public')->delete($batDongSan->hinh_anh);
         }
-        foreach ($batDongSan->album_anh ?? [] as $img) {
-            Storage::disk('public')->delete($img);
+
+        // Xóa toàn bộ album
+        $album = $batDongSan->album_anh;
+        if (is_array($album)) {
+            foreach ($album as $path) {
+                Storage::disk('public')->delete($path);
+            }
         }
+
         $batDongSan->delete();
 
-        return redirect()
-            ->route('nhanvien.admin.bat-dong-san.index')
-            ->with('success', '🗑️ Đã xóa bất động sản!');
+        return redirect()->back()->with('success', '🗑️ Đã xóa Bất động sản khỏi hệ thống!');
     }
 
-    // ──────────────────────────────────────
-    // AJAX: Toggle hiển thị
-    // ──────────────────────────────────────
-    public function toggleHienThi(BatDongSan $batDongSan)
+    // ════ CÁC HÀM AJAX ════
+
+    // Bật/Tắt Hiển thị (Toggle)
+    public function toggle(BatDongSan $batDongSan)
     {
         $batDongSan->update(['hien_thi' => !$batDongSan->hien_thi]);
-        return response()->json([
-            'ok'       => true,
-            'hien_thi' => $batDongSan->hien_thi,
-        ]);
+        return response()->json(['ok' => true, 'hien_thi' => $batDongSan->hien_thi]);
     }
 
-    // ──────────────────────────────────────
-    // AJAX: Đổi trạng thái
-    // ──────────────────────────────────────
-    public function doiTrangThai(Request $request, BatDongSan $batDongSan)
+    // Đổi trạng thái trực tiếp ở ngoài bảng Index
+    public function updateTrangThai(Request $request, BatDongSan $batDongSan)
     {
-        $request->validate([
-            'trang_thai' => 'required|in:con_hang,dat_coc,da_ban,dang_thue,da_thue,tam_an',
-        ]);
+        $request->validate(['trang_thai' => 'required|string']);
         $batDongSan->update(['trang_thai' => $request->trang_thai]);
-        return response()->json(['ok' => true, 'trang_thai' => $request->trang_thai]);
-    }
-
-    // ──────────────────────────────────────
-    // AJAX: Xóa ảnh trong album
-    // ──────────────────────────────────────
-    public function xoaAnh(Request $request, BatDongSan $batDongSan)
-    {
-        $path  = $request->input('path');
-        $album = $batDongSan->album_anh ?? [];
-
-        if (($key = array_search($path, $album)) !== false) {
-            Storage::disk('public')->delete($path);
-            unset($album[$key]);
-            $batDongSan->update(['album_anh' => array_values($album)]);
-        }
-
         return response()->json(['ok' => true]);
     }
 
-    // ══════════════════════════════════════
-    // PRIVATE HELPERS
-    // ══════════════════════════════════════
-    private function formData(): array
+    // Xóa từng ảnh riêng lẻ bằng nút X (AJAX)
+    public function xoaAnh(Request $request, BatDongSan $batDongSan)
     {
-        return [
-            'duAns'     => DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get(),
-            'nhanViens' => NhanVien::orderBy('ho_ten')->get(),
-            'constants'  => [
-                'loai_hinh'          => self::LOAI_HINH,
-                'nhu_cau'            => self::NHU_CAU,
-                'noi_that'           => self::NOI_THAT,
-                'phap_ly'            => self::PHAP_LY,
-                'trang_thai'         => self::TRANG_THAI,
-                'thoi_gian_vao_thue' => self::THOI_GIAN_VAO_THUE,
-                'hinh_thuc_tt'       => self::HINH_THUC_TT,
-            ],
-        ];
+        $path = $request->path;
+        $album = is_array($batDongSan->album_anh) ? $batDongSan->album_anh : [];
+
+        if (in_array($path, $album)) {
+            Storage::disk('public')->delete($path);
+            $album = array_filter($album, fn($p) => $p !== $path);
+            $batDongSan->update(['album_anh' => array_values($album)]);
+            return response()->json(['ok' => true]);
+        }
+
+        return response()->json(['ok' => false], 400);
     }
 
-    private function validateRequest(Request $request, $ignoreId = null): array
+    // ── HÀM KIỂM TRA DỮ LIỆU ĐẦU VÀO (VALIDATION) ──
+    private function validateData(Request $request)
     {
         return $request->validate([
             'tieu_de'                => 'required|string|max:255',
-            'du_an_id'               => 'nullable|exists:du_an,id',
-            'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
-            'loai_hinh'              => 'required|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
+            'loai_hinh'              => 'required|string',
             'nhu_cau'                => 'required|in:ban,thue',
-            'ma_can'                 => 'nullable|string|max:50',
+            'du_an_id'               => 'nullable|exists:du_an,id',
+            'chu_nha_id'             => 'nullable|exists:chu_nha,id',
+            'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
             'toa'                    => 'nullable|string|max:50',
-            'tang'                   => 'nullable|string|max:20',
-            'dien_tich'              => 'required|numeric|min:1|max:99999',
-            'so_phong_ngu'           => 'nullable|integer|min:0|max:20',
-            'huong_cua'              => 'nullable|string|max:30',
-            'huong_ban_cong'         => 'nullable|string|max:30',
-            'noi_that'               => 'nullable|in:co_ban,full,cao_cap,nguyen_ban',
-            'mo_ta'                  => 'nullable|string',
-            // Bán
+            'tang'                   => 'nullable|string|max:50',
+            'ma_can'                 => 'nullable|string|max:50',
+            'dien_tich'              => 'required|numeric|min:1',
+            'so_phong_ngu'           => 'nullable|integer|min:0',
+            'so_phong_tam'           => 'nullable|integer|min:0',
+            'huong_cua'              => 'nullable|string',
+            'huong_ban_cong'         => 'nullable|string',
+            'noi_that'               => 'nullable|string',
+            'phap_ly'                => 'nullable|string',
             'gia'                    => 'nullable|numeric|min:0',
             'phi_moi_gioi'           => 'nullable|numeric|min:0',
             'phi_sang_ten'           => 'nullable|numeric|min:0',
-            'phap_ly'                => 'nullable|in:so_hong,so_do,hop_dong,chua_co',
-            // Thuê
             'gia_thue'               => 'nullable|numeric|min:0',
-            'thoi_gian_vao_thue'     => 'nullable|string|max:30',
-            'hinh_thuc_thanh_toan'   => 'nullable|string|max:30',
-            // Media
-            'hinh_anh'               => 'nullable|image|mimes:jpeg,png,webp|max:3072',
-            'album_anh.*'            => 'nullable|image|mimes:jpeg,png,webp|max:3072',
-            // Cài đặt
-            'noi_bat'                => 'nullable|boolean',
-            'hien_thi'               => 'nullable|boolean',
-            'trang_thai'             => 'nullable|in:con_hang,dat_coc,da_ban,dang_thue,da_thue,tam_an',
-            'thu_tu_hien_thi'        => 'nullable|integer|min:0|max:9999',
-            'thoi_diem_dang'         => 'nullable|date',
-            // SEO
+            'thoi_gian_vao_thue'     => 'nullable|string',
+            'hinh_thuc_thanh_toan'   => 'nullable|string',
+            'mo_ta'                  => 'nullable|string',
             'seo_title'              => 'nullable|string|max:255',
             'seo_description'        => 'nullable|string|max:500',
             'seo_keywords'           => 'nullable|string|max:255',
+            'hinh_anh'               => 'nullable|image|max:3072',
+            'album_anh.*'            => 'nullable|image|max:3072',
+            'trang_thai'             => 'required|string',
+            'thu_tu_hien_thi'        => 'nullable|integer|min:0',
+            'thoi_diem_dang'         => 'nullable|date',
         ]);
-    }
-
-    private function taoSlug(string $tieude): string
-    {
-        $slug = Str::slug($tieude);
-        $base = $slug;
-        $i    = 1;
-        while (BatDongSan::where('slug', $slug)->exists()) {
-            $slug = $base . '-' . $i++;
-        }
-        return $slug;
-    }
-
-    private function taoMaBDS(): string
-    {
-        $prefix = 'BDS';
-        $year   = date('y');    // 26
-        $last   = BatDongSan::withTrashed()
-            ->where('ma_bat_dong_san', 'like', "{$prefix}{$year}%")
-            ->orderByDesc('id')->first();
-        $seq = $last ? (intval(substr($last->ma_bat_dong_san, -4)) + 1) : 1;
-        return $prefix . $year . str_pad($seq, 4, '0', STR_PAD_LEFT);
     }
 }

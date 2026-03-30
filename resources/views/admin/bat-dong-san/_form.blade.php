@@ -60,7 +60,7 @@
                 </div>
 
                 <div class="row g-3 mb-0">
-                    <div class="col-md-6">
+                    <div class="col-md-4">
                         <label class="form-label">Thuộc dự án <span class="text-muted fw-normal">(Tùy
                                 chọn)</span></label>
                         <select name="du_an_id" class="form-select">
@@ -71,7 +71,18 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-4">
+                        <label class="form-label">Chủ sở hữu <span class="text-muted fw-normal">(Nguồn
+                                hàng)</span></label>
+                        <select name="chu_nha_id" class="form-select border-success border-opacity-50">
+                            <option value="">-- Chưa gán chủ nhà --</option>
+                            @foreach ($chuNhas as $cn)
+                                <option value="{{ $cn->id }}" @selected(old('chu_nha_id', $isEdit ? $batDongSan->chu_nha_id : '') == $cn->id)>{{ $cn->ho_ten }} -
+                                    {{ $cn->so_dien_thoai }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-4">
                         <label class="form-label">NV phụ trách <span class="text-muted fw-normal">(Tùy
                                 chọn)</span></label>
                         <select name="nhan_vien_phu_trach_id" class="form-select">
@@ -448,7 +459,7 @@
             }
             document.getElementById('bdsForm').addEventListener('submit', () => {
                 if (CKEDITOR.instances['moTaBdsEditor']) CKEDITOR.instances['moTaBdsEditor']
-            .updateElement();
+                    .updateElement();
             });
 
             // 2. Logic Nhu cầu -> Hiện giá

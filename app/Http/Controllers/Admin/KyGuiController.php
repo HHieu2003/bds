@@ -11,113 +11,63 @@ use Illuminate\Support\Facades\Storage;
 
 class KyGuiController extends Controller
 {
-    // ── INDEX ──
     public function index(Request $request)
     {
-        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach'])
-            ->withCount([]);
+        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach'])->withCount([]);
 
-        // Tìm kiếm
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
-            $query->where(function ($q) use ($kw) {
-                $q->where('ho_ten_chu_nha', 'like', $kw)
-                    ->orWhere('so_dien_thoai', 'like', $kw)
-                    ->orWhere('dia_chi', 'like', $kw)
-                    ->orWhere('email', 'like', $kw);
-            });
+            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)->orWhere('so_dien_thoai', 'like', $kw)->orWhere('dia_chi', 'like', $kw));
         }
 
-        // Bộ lọc
-        if ($request->filled('trang_thai')) {
-            $query->where('trang_thai', $request->trang_thai);
-        }
-        if ($request->filled('loai_hinh')) {
-            $query->where('loai_hinh', $request->loai_hinh);
-        }
-        if ($request->filled('nhu_cau')) {
-            $query->where('nhu_cau', $request->nhu_cau);
-        }
-        if ($request->filled('nhan_vien_id')) {
-            $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
-        }
-        if ($request->filled('tu_ngay')) {
-            $query->whereDate('created_at', '>=', $request->tu_ngay);
-        }
-        if ($request->filled('den_ngay')) {
-            $query->whereDate('created_at', '<=', $request->den_ngay);
-        }
+        if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
+        if ($request->filled('loai_hinh')) $query->where('loai_hinh', $request->loai_hinh);
+        if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
+        if ($request->filled('nhan_vien_id')) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
+        if ($request->filled('tu_ngay')) $query->whereDate('created_at', '>=', $request->tu_ngay);
+        if ($request->filled('den_ngay')) $query->whereDate('created_at', '<=', $request->den_ngay);
 
         $kyGuis = $query->latest()->paginate(15)->withQueryString();
 
-        // Thống kê nhanh
         $thongKe = [
-            'tong'        => KyGui::count(),
-            'cho_duyet'   => KyGui::where('trang_thai', 'cho_duyet')->count(),
-            'da_lien_he'  => KyGui::where('trang_thai', 'da_lien_he')->count(),
-            'da_nhan'     => KyGui::where('trang_thai', 'da_nhan')->count(),
-            'tu_choi'     => KyGui::where('trang_thai', 'tu_choi')->count(),
+            'tong'           => KyGui::count(),
+            'cho_duyet'      => KyGui::where('trang_thai', 'cho_duyet')->count(),
+            'dang_tham_dinh' => KyGui::where('trang_thai', 'dang_tham_dinh')->count(),
+            'da_duyet'       => KyGui::where('trang_thai', 'da_duyet')->count(),
+            'tu_choi'        => KyGui::where('trang_thai', 'tu_choi')->count(),
         ];
 
-        $nhanViens = NhanVien::where('kich_hoat', true)
-            ->whereIn('vai_tro', ['admin', 'nguon_hang'])
-            ->orderBy('ho_ten')
-            ->get();
+        // Chỉ lấy nhân sự Nguồn hàng (và admin) để xử lý ký gửi
+        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->orderBy('ho_ten')->get();
 
         return view('admin.ky-gui.index', compact('kyGuis', 'thongKe', 'nhanViens'));
     }
 
-    // ── SHOW ──
     public function show(KyGui $kyGui)
     {
         $kyGui->load(['khachHang', 'nhanVienPhuTrach']);
-
-        $nhanViens = NhanVien::where('kich_hoat', true)
-            ->whereIn('vai_tro', ['admin', 'nguon_hang'])
-            ->orderBy('ho_ten')->get();
-
+        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->orderBy('ho_ten')->get();
         return view('admin.ky-gui.show', compact('kyGui', 'nhanViens'));
     }
 
-    // ── XỬ LÝ (duyệt / từ chối / phân công) ──
+    // AJAX cập nhật trạng thái
     public function xuLy(Request $request, KyGui $kyGui)
     {
         $request->validate([
-            'trang_thai'            => 'required|in:da_lien_he,da_nhan,tu_choi',
-            'phan_hoi_cua_admin'    => 'nullable|string|max:1000',
-            'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
+            'trang_thai' => 'required|in:cho_duyet,dang_tham_dinh,da_duyet,tu_choi',
         ]);
 
         $kyGui->update([
-            'trang_thai'                => $request->trang_thai,
-            'phan_hoi_cua_admin'        => $request->phan_hoi_cua_admin,
-            'nhan_vien_phu_trach_id'    => $request->nhan_vien_phu_trach_id
-                ?? $kyGui->nhan_vien_phu_trach_id
-                ?? Auth::guard('nhanvien')->id(),
-            'thoi_diem_xu_ly'           => now(),
+            'trang_thai' => $request->trang_thai,
+            'nhan_vien_phu_trach_id' => $kyGui->nhan_vien_phu_trach_id ?? Auth::guard('nhanvien')->id(),
+            'thoi_diem_xu_ly' => now(),
         ]);
 
-        $labels = KyGui::TRANG_THAI;
-        $label  = $labels[$request->trang_thai]['label'] ?? $request->trang_thai;
+        if ($request->expectsJson()) return response()->json(['ok' => true]);
 
-        return redirect()
-            ->route('nhanvien.admin.ky-gui.show', $kyGui)
-            ->with('success', "✅ Đã chuyển trạng thái sang <strong>{$label}</strong>!");
+        return back()->with('success', 'Cập nhật trạng thái thành công!');
     }
 
-    // ── PHÂN CÔNG NHANH (AJAX) ──
-    public function phanCong(Request $request, KyGui $kyGui)
-    {
-        $request->validate([
-            'nhan_vien_phu_trach_id' => 'required|exists:nhan_vien,id',
-        ]);
-
-        $kyGui->update(['nhan_vien_phu_trach_id' => $request->nhan_vien_phu_trach_id]);
-
-        return response()->json(['ok' => true, 'ho_ten' => $kyGui->nhanVienPhuTrach?->ho_ten]);
-    }
-
-    // ── TẠO MỚI THỦ CÔNG (admin nhập thay khách) ──
     public function create()
     {
         return view('admin.ky-gui.create');
@@ -131,28 +81,25 @@ class KyGuiController extends Controller
         $data['hinh_anh_tham_khao'] = $this->uploadImages($request);
 
         KyGui::create($data);
-
-        return redirect()
-            ->route('nhanvien.admin.ky-gui.index')
-            ->with('success', '✅ Đã tạo ký gửi thành công!');
+        return redirect()->route('nhanvien.admin.ky-gui.index')->with('success', 'Đã tạo ký gửi thành công!');
     }
 
-    // ── EDIT / UPDATE ──
     public function edit(KyGui $kyGui)
     {
         return view('admin.ky-gui.edit', compact('kyGui'));
     }
-
     public function update(Request $request, KyGui $kyGui)
     {
         $data = $this->validateData($request);
 
-        // Xử lý hình ảnh: giữ cũ + thêm mới
-        $hinhCu = $kyGui->hinh_anh_tham_khao ?? [];
+        // Đảm bảo $hinhCu luôn là mảng
+        $hinhCu = is_array($kyGui->hinh_anh_tham_khao) ? $kyGui->hinh_anh_tham_khao : [];
 
-        // Xóa ảnh đã chọn xóa
-        if ($request->has('xoa_hinh_anh')) {
-            foreach ($request->xoa_hinh_anh as $path) {
+        // Ép kiểu xoa_hinh_anh lấy từ form về mảng mặc định
+        $xoaHinhAnh = $request->input('xoa_hinh_anh', []);
+
+        if (is_array($xoaHinhAnh) && count($xoaHinhAnh) > 0) {
+            foreach ($xoaHinhAnh as $path) {
                 Storage::disk('public')->delete($path);
                 $hinhCu = array_filter($hinhCu, fn($p) => $p !== $path);
             }
@@ -162,29 +109,23 @@ class KyGuiController extends Controller
         $data['hinh_anh_tham_khao'] = array_values(array_merge($hinhCu, $hinhMoi));
 
         $kyGui->update($data);
-
-        return redirect()
-            ->route('nhanvien.admin.ky-gui.show', $kyGui)
-            ->with('success', '✅ Đã cập nhật ký gửi!');
+        return redirect()->route('nhanvien.admin.ky-gui.index')->with('success', 'Đã cập nhật ký gửi!');
     }
 
-    // ── DELETE ──
     public function destroy(KyGui $kyGui)
     {
-        // Xóa ảnh tham khảo
-        if ($kyGui->hinh_anh_tham_khao) {
-            foreach ($kyGui->hinh_anh_tham_khao as $path) {
+        // Kiểm tra an toàn trước khi lặp để tránh lỗi P1006
+        $hinhAnh = $kyGui->hinh_anh_tham_khao;
+        if (is_array($hinhAnh) && count($hinhAnh) > 0) {
+            foreach ($hinhAnh as $path) {
                 Storage::disk('public')->delete($path);
             }
         }
-        $kyGui->delete();
 
-        return redirect()
-            ->route('nhanvien.admin.ky-gui.index')
-            ->with('success', '🗑️ Đã xóa yêu cầu ký gửi!');
+        $kyGui->delete();
+        return redirect()->route('nhanvien.admin.ky-gui.index')->with('success', 'Đã xóa yêu cầu ký gửi!');
     }
 
-    // ══ PRIVATE ══
     private function validateData(Request $request): array
     {
         return $request->validate([
@@ -205,6 +146,8 @@ class KyGuiController extends Controller
             'hinh_thuc_thanh_toan'   => 'nullable|string',
             'ghi_chu'                => 'nullable|string|max:2000',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
+            'trang_thai'             => 'nullable|in:cho_duyet,dang_tham_dinh,da_duyet,tu_choi',
+            'nguon_ky_gui'           => 'nullable|string'
         ]);
     }
 

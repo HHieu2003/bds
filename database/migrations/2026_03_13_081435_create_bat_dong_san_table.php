@@ -20,7 +20,9 @@ return new class extends Migration
                 ->nullable()
                 ->constrained('nhan_vien')
                 ->nullOnDelete();
-
+            $table->foreignId('chu_nha_id')
+                ->nullable()
+                ->constrained('chu_nha')->nullOnDelete();
             // =============================================
             // DINH DANH & SEO
             // =============================================
