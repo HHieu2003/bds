@@ -50,8 +50,16 @@ class DuAnController extends Controller
 
     public function show($slug)
     {
-        // Hàm này dành cho trang chi tiết dự án (bạn có thể code sau)
-        $duAn = DuAn::with(['khuVuc', 'batDongSans'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
+        $duAn = DuAn::with([
+            'khuVuc',
+            'batDongSans' => function ($q) {
+                $q->where('hien_thi', 1)
+                    ->where('trang_thai', 'con_hang')
+                    ->orderByDesc('id');
+            },
+        ])->where('slug', $slug)
+            ->where('hien_thi', 1)
+            ->firstOrFail();
 
         $favoriteMap = collect();
         if (Auth::guard('customer')->check()) {

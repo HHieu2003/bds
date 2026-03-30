@@ -7,6 +7,12 @@
         $bdsBan = $duAn->batDongSans ? $duAn->batDongSans->where('nhu_cau', 'ban')->where('hien_thi', 1) : collect();
         $bdsThue = $duAn->batDongSans ? $duAn->batDongSans->where('nhu_cau', 'thue')->where('hien_thi', 1) : collect();
         $tongCan = $bdsBan->count() + $bdsThue->count();
+        $trangThaiLabel = match ($duAn->trang_thai) {
+            'sap_mo_ban' => 'Sắp mở bán',
+            'dang_mo_ban' => 'Đang mở bán',
+            'da_ban_het' => 'Đã bán hết',
+            default => $duAn->trang_thai,
+        };
     @endphp
 
     {{-- ══ 1. HERO ══ --}}
@@ -41,7 +47,7 @@
                 <span><i class="fas fa-map-marker-alt me-1 text-primary-brand"></i>{{ $duAn->dia_chi }}</span>
                 @if ($duAn->trang_thai)
                     <span class="dact-hero-status">
-                        <i class="fas fa-circle me-1" style="font-size:.5rem"></i>{{ $duAn->trang_thai }}
+                        <i class="fas fa-circle me-1" style="font-size:.5rem"></i>{{ $trangThaiLabel }}
                     </span>
                 @endif
             </div>
@@ -54,22 +60,16 @@
                         <span>{{ $duAn->chu_dau_tu }}</span>
                     </div>
                 @endif
-                @if ($duAn->quy_mo)
+                @if ($duAn->don_vi_thi_cong)
                     <div class="dact-qs-item">
-                        <i class="fas fa-chart-area"></i>
-                        <span>{{ $duAn->quy_mo }}</span>
+                        <i class="fas fa-hard-hat"></i>
+                        <span>{{ $duAn->don_vi_thi_cong }}</span>
                     </div>
                 @endif
                 <div class="dact-qs-item">
                     <i class="fas fa-home"></i>
                     <span>{{ $tongCan }} căn đang giao dịch</span>
                 </div>
-                @if ($duAn->phap_ly)
-                    <div class="dact-qs-item">
-                        <i class="fas fa-file-contract"></i>
-                        <span>{{ $duAn->phap_ly }}</span>
-                    </div>
-                @endif
             </div>
 
         </div>
@@ -103,19 +103,19 @@
                                         'val' => $duAn->chu_dau_tu ?? 'Đang cập nhật',
                                     ],
                                     [
-                                        'icon' => 'fa-chart-area',
-                                        'label' => 'Tổng diện tích',
-                                        'val' => $duAn->quy_mo ?? 'Đang cập nhật',
+                                        'icon' => 'fa-hard-hat',
+                                        'label' => 'Đơn vị thi công',
+                                        'val' => $duAn->don_vi_thi_cong ?? 'Đang cập nhật',
                                     ],
                                     [
-                                        'icon' => 'fa-file-contract',
-                                        'label' => 'Pháp lý',
-                                        'val' => $duAn->phap_ly ?? 'Sổ hồng lâu dài',
+                                        'icon' => 'fa-align-left',
+                                        'label' => 'Mô tả ngắn',
+                                        'val' => $duAn->mo_ta_ngan ?? 'Đang cập nhật',
                                     ],
                                     [
                                         'icon' => 'fa-calendar-check',
                                         'label' => 'Tình trạng',
-                                        'val' => $duAn->trang_thai ?? 'Đang mở bán',
+                                        'val' => $trangThaiLabel,
                                     ],
                                     [
                                         'icon' => 'fa-map-marker-alt',
@@ -151,8 +151,8 @@
                             <span></span>Thông Tin Chi Tiết
                         </div>
                         <div class="dact-content-body mt-3">
-                            @if ($duAn->noi_dung)
-                                {!! $duAn->noi_dung !!}
+                            @if ($duAn->noi_dung_chi_tiet)
+                                {!! $duAn->noi_dung_chi_tiet !!}
                             @else
                                 <p class="text-muted fst-italic">Đang cập nhật thông tin chi tiết về dự án này...</p>
                             @endif
@@ -416,7 +416,7 @@
                     rgba(10, 10, 18, .96) 0%,
                     rgba(10, 10, 18, .55) 50%,
                     rgba(0, 0, 0, .15) 100%),
-                url('{{ $duAn->hinh_anh ? asset('storage/' . $duAn->hinh_anh) : 'https://vinhomesland.vn/wp-content/uploads/2021/04/phoi-canh-vinhomes-smart-city.jpg' }}') center / cover fixed;
+                url('{{ $duAn->hinh_anh_dai_dien ? asset('storage/' . $duAn->hinh_anh_dai_dien) : 'https://vinhomesland.vn/wp-content/uploads/2021/04/phoi-canh-vinhomes-smart-city.jpg' }}') center / cover fixed;
             overflow: hidden;
         }
 
