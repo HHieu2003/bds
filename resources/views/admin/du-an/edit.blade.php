@@ -2,21 +2,21 @@
 @section('title', 'Sửa dự án: ' . $duAn->ten_du_an)
 
 @section('content')
-
-    <div class="page-header">
-        <div class="page-header-left">
-            <h1><i class="fas fa-edit"></i> Chỉnh sửa dự án</h1>
-            <p>{{ $duAn->ten_du_an }}</p>
-        </div>
-        <a href="{{ route('nhanvien.admin.du-an.index') }}" class="btn-back">
-            <i class="fas fa-arrow-left"></i> Quay lại danh sách
-        </a>
+    <div class="mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-1" style="font-size: 0.85rem">
+                <li class="breadcrumb-item"><a href="{{ route('nhanvien.admin.du-an.index') }}"
+                        class="text-decoration-none text-muted"><i class="fas fa-city"></i> Dự án</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ Str::limit($duAn->ten_du_an, 30) }}</li>
+            </ol>
+        </nav>
+        <h1 class="page-header-title"><i class="fas fa-edit text-primary"></i> Chỉnh sửa dự án</h1>
     </div>
 
     @if ($errors->any())
-        <div class="errors-summary">
-            <strong><i class="fas fa-exclamation-triangle"></i> Vui lòng kiểm tra lại:</strong>
-            <ul>
+        <div class="alert alert-danger shadow-sm border-0 mb-4">
+            <div class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Vui lòng kiểm tra lại:</div>
+            <ul class="mb-0 ps-3" style="font-size: 0.85rem">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
@@ -25,9 +25,7 @@
     @endif
 
     <form action="{{ route('nhanvien.admin.du-an.update', $duAn) }}" method="POST" enctype="multipart/form-data">
-        @csrf
-        @method('PUT')
+        @csrf @method('PUT')
         @include('admin.du-an._form')
     </form>
-
 @endsection

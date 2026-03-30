@@ -120,8 +120,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-        Route::post('cap-nhat-thong-tin', [KhachHangAuthController::class, 'updateProfile'])
-            ->name('khach-hang.update-profile');
+        Route::post('cap-nhat-thong-tin', [AdminAuthController::class, 'updateProfile'])
+            ->name('update-profile');
         Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])
             ->name('change-password');
 

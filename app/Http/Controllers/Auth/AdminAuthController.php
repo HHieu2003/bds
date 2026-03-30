@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
 class AdminAuthController extends Controller
@@ -85,6 +86,69 @@ class AdminAuthController extends Controller
         return redirect()
             ->route('nhanvien.login')
             ->with('success', 'Đã đăng xuất thành công.');
+    }
+
+    // ══════════════════════════════
+    // CẬP NHẬT HỒ SƠ (NHÂN VIÊN ĐANG ĐĂNG NHẬP)
+    // ══════════════════════════════
+    public function updateProfile(Request $request)
+    {
+        $nhanVien = Auth::guard('nhanvien')->user();
+
+        if (! $nhanVien) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+            ], 401);
+        }
+
+        $validated = $request->validate([
+            'ho_ten' => ['required', 'string', 'max:100'],
+            'email' => [
+                'required',
+                'email',
+                'max:150',
+                Rule::unique('nhan_vien', 'email')->ignore($nhanVien->id)->whereNull('deleted_at'),
+            ],
+            'so_dien_thoai' => [
+                'nullable',
+                'string',
+                'max:20',
+                Rule::unique('nhan_vien', 'so_dien_thoai')->ignore($nhanVien->id)->whereNull('deleted_at'),
+            ],
+            'dia_chi' => ['nullable', 'string', 'max:255'],
+        ], [
+            'ho_ten.required' => 'Vui lòng nhập họ và tên.',
+            'ho_ten.max' => 'Họ và tên không được vượt quá 100 ký tự.',
+            'email.required' => 'Vui lòng nhập email.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.max' => 'Email không được vượt quá 150 ký tự.',
+            'email.unique' => 'Email này đã được sử dụng.',
+            'so_dien_thoai.max' => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'so_dien_thoai.unique' => 'Số điện thoại này đã được sử dụng.',
+            'dia_chi.max' => 'Địa chỉ không được vượt quá 255 ký tự.',
+        ]);
+
+        \App\Models\NhanVien::whereKey($nhanVien->id)->update([
+            'ho_ten' => trim($validated['ho_ten']),
+            'email' => trim($validated['email']),
+            'so_dien_thoai' => $validated['so_dien_thoai'] !== null ? trim($validated['so_dien_thoai']) : null,
+            'dia_chi' => $validated['dia_chi'] !== null ? trim($validated['dia_chi']) : null,
+        ]);
+
+        $fresh = \App\Models\NhanVien::query()->find($nhanVien->id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cập nhật hồ sơ thành công!',
+            'nhan_vien' => [
+                'ho_ten' => $fresh?->ho_ten,
+                'email' => $fresh?->email,
+                'so_dien_thoai' => $fresh?->so_dien_thoai,
+                'dia_chi' => $fresh?->dia_chi,
+                'vai_tro_label' => $fresh?->vai_tro_label,
+            ],
+        ]);
     }
 
     // ══════════════════════════════

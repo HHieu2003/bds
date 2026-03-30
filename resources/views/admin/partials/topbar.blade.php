@@ -75,7 +75,7 @@
                 <div style="display:flex;flex-direction:column;align-items:flex-start;
                             overflow:hidden;max-width:130px;"
                     class="d-none d-md-flex">
-                    <span class="topbar-user-name">{{ $nhanVien->ho_ten }}</span>
+                    <span class="topbar-user-name" id="topbarUserName">{{ $nhanVien->ho_ten }}</span>
                     <span style="font-size:.67rem;color:var(--text-sub);white-space:nowrap;">
                         {{ $nhanVien->vai_tro_label }}
                     </span>
@@ -89,10 +89,10 @@
             <div class="user-dropdown" id="userDropdown">
 
                 <div class="user-dropdown-header">
-                    <div class="uname">{{ $nhanVien->ho_ten }}</div>
+                    <div class="uname" id="topbarDropdownName">{{ $nhanVien->ho_ten }}</div>
                     <div class="urole">{{ $nhanVien->vai_tro_label }}</div>
                     @if ($nhanVien->email)
-                        <div
+                        <div id="topbarDropdownEmail"
                             style="font-size:.7rem;color:var(--text-sub);
                                     margin-top:.2rem;overflow:hidden;
                                     text-overflow:ellipsis;white-space:nowrap;">
@@ -101,7 +101,7 @@
                     @endif
                 </div>
 
-                <a href="#">
+                <a href="#" id="topbarProfileBtn">
                     <i class="fas fa-user-circle"></i> Hồ sơ cá nhân
                 </a>
                 <a href="#" id="topbarChangePasswordBtn">
@@ -125,6 +125,70 @@
 
     </div>
 </header>
+
+<div id="topbarProfileModal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+    <div
+        style="width:min(520px,100%);background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden;">
+        <div
+            style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-size:.92rem;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-user-circle" style="color:var(--primary)"></i> Hồ sơ cá nhân
+            </div>
+            <button type="button" id="closeTopbarProfileModal"
+                style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:#f9fafb;color:var(--text-sub);cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="topbarProfileForm" style="padding:16px;display:grid;gap:10px;">
+            <div>
+                <label for="tb_ho_ten"
+                    style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">Họ và
+                    tên</label>
+                <input id="tb_ho_ten" name="ho_ten" type="text" class="form-control" maxlength="100" required
+                    value="{{ $nhanVien->ho_ten }}">
+            </div>
+
+            <div class="row g-2">
+                <div class="col-12 col-md-6">
+                    <label for="tb_email"
+                        style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">Email</label>
+                    <input id="tb_email" name="email" type="email" class="form-control" maxlength="150" required
+                        value="{{ $nhanVien->email }}">
+                </div>
+                <div class="col-12 col-md-6">
+                    <label for="tb_so_dien_thoai"
+                        style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">Số
+                        điện thoại</label>
+                    <input id="tb_so_dien_thoai" name="so_dien_thoai" type="text" class="form-control"
+                        maxlength="20" value="{{ $nhanVien->so_dien_thoai }}">
+                </div>
+            </div>
+
+            <div>
+                <label for="tb_dia_chi"
+                    style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">Địa
+                    chỉ</label>
+                <input id="tb_dia_chi" name="dia_chi" type="text" class="form-control" maxlength="255"
+                    value="{{ $nhanVien->dia_chi }}">
+            </div>
+
+            <div>
+                <label style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">Vai
+                    trò</label>
+                <input type="text" class="form-control" value="{{ $nhanVien->vai_tro_label }}" readonly>
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+                <button type="button" id="cancelTopbarProfile" class="btn btn-secondary btn-sm">Hủy</button>
+                <button type="submit" id="submitTopbarProfile" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Lưu hồ sơ
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <div id="topbarChangePasswordModal"
     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;align-items:center;justify-content:center;padding:16px;">
@@ -186,6 +250,16 @@
         var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
         var dd = document.getElementById('userDropdown');
         var chevron = document.getElementById('topbarChevron');
+        var topbarUserName = document.getElementById('topbarUserName');
+        var topbarDropdownName = document.getElementById('topbarDropdownName');
+        var topbarDropdownEmail = document.getElementById('topbarDropdownEmail');
+
+        var profileInitial = {
+            ho_ten: @json((string) ($nhanVien->ho_ten ?? '')),
+            email: @json((string) ($nhanVien->email ?? '')),
+            so_dien_thoai: @json((string) ($nhanVien->so_dien_thoai ?? '')),
+            dia_chi: @json((string) ($nhanVien->dia_chi ?? '')),
+        };
 
         function syncChevron() {
             if (chevron) {
@@ -207,6 +281,17 @@
         var form = document.getElementById('topbarChangePasswordForm');
         var submitBtn = document.getElementById('submitTopbarChangePassword');
 
+        var profileModal = document.getElementById('topbarProfileModal');
+        var openProfileBtn = document.getElementById('topbarProfileBtn');
+        var closeProfileBtn = document.getElementById('closeTopbarProfileModal');
+        var cancelProfileBtn = document.getElementById('cancelTopbarProfile');
+        var profileForm = document.getElementById('topbarProfileForm');
+        var profileSubmitBtn = document.getElementById('submitTopbarProfile');
+
+        function normalizeText(v) {
+            return String(v || '').trim();
+        }
+
         function openModal() {
             if (!modal) return;
             modal.style.display = 'flex';
@@ -220,6 +305,32 @@
             modal.style.display = 'none';
             document.body.style.overflow = '';
         }
+
+        function openProfileModal() {
+            if (!profileModal) return;
+            profileModal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('tb_ho_ten')?.focus(), 0);
+        }
+
+        function closeProfileModal() {
+            if (!profileModal) return;
+            profileModal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        openProfileBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            dd?.classList.remove('show');
+            syncChevron();
+            openProfileModal();
+        });
+
+        closeProfileBtn?.addEventListener('click', closeProfileModal);
+        cancelProfileBtn?.addEventListener('click', closeProfileModal);
+        profileModal?.addEventListener('click', function(e) {
+            if (e.target === profileModal) closeProfileModal();
+        });
 
         openBtn?.addEventListener('click', function(e) {
             e.preventDefault();
@@ -235,9 +346,113 @@
         });
 
         document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && modal?.style.display === 'flex') {
+            if (e.key !== 'Escape') return;
+            if (profileModal?.style.display === 'flex') {
+                closeProfileModal();
+                return;
+            }
+            if (modal?.style.display === 'flex') {
                 closeModal();
             }
+        });
+
+        profileForm?.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var fd = new FormData(profileForm);
+            var payload = {
+                ho_ten: normalizeText(fd.get('ho_ten')),
+                email: normalizeText(fd.get('email')),
+                so_dien_thoai: normalizeText(fd.get('so_dien_thoai')),
+                dia_chi: normalizeText(fd.get('dia_chi')),
+            };
+
+            // Tối ưu hiệu năng: không gọi API nếu người dùng chưa thay đổi dữ liệu.
+            if (payload.ho_ten === profileInitial.ho_ten && payload.email === profileInitial.email &&
+                payload.so_dien_thoai === profileInitial.so_dien_thoai && payload.dia_chi === profileInitial
+                .dia_chi) {
+                if (typeof showAdminToast === 'function') {
+                    showAdminToast('Bạn chưa thay đổi thông tin nào.', 'info');
+                }
+                closeProfileModal();
+                return;
+            }
+
+            if (typeof btnLoading === 'function') {
+                btnLoading(profileSubmitBtn, 'Đang lưu...');
+            } else if (profileSubmitBtn) {
+                profileSubmitBtn.disabled = true;
+            }
+
+            fetch('{{ route('nhanvien.update-profile') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(async (r) => {
+                    let data = {};
+                    try {
+                        data = await r.json();
+                    } catch (_) {}
+                    return {
+                        ok: r.ok,
+                        data,
+                    };
+                })
+                .then((res) => {
+                    if (res.ok && (res.data.success || res.data.ok)) {
+                        var nv = res.data?.nhan_vien || {};
+                        var hoTenMoi = normalizeText(nv.ho_ten || payload.ho_ten);
+                        var emailMoi = normalizeText(nv.email || payload.email);
+
+                        profileInitial.ho_ten = hoTenMoi;
+                        profileInitial.email = emailMoi;
+                        profileInitial.so_dien_thoai = normalizeText(nv.so_dien_thoai || payload
+                            .so_dien_thoai);
+                        profileInitial.dia_chi = normalizeText(nv.dia_chi || payload.dia_chi);
+
+                        if (topbarUserName) topbarUserName.textContent = hoTenMoi;
+                        if (topbarDropdownName) topbarDropdownName.textContent = hoTenMoi;
+                        if (topbarDropdownEmail) topbarDropdownEmail.textContent = emailMoi;
+
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(res.data.message || 'Cập nhật hồ sơ thành công!', 'success');
+                        }
+                        closeProfileModal();
+                        return;
+                    }
+
+                    var firstError = null;
+                    if (res.data?.errors) {
+                        for (const key in res.data.errors) {
+                            if (Array.isArray(res.data.errors[key]) && res.data.errors[key].length) {
+                                firstError = res.data.errors[key][0];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (typeof showAdminToast === 'function') {
+                        showAdminToast(firstError || res.data?.message || 'Không thể cập nhật hồ sơ.',
+                            'error');
+                    }
+                })
+                .catch(() => {
+                    if (typeof showAdminToast === 'function') {
+                        showAdminToast('Lỗi kết nối, vui lòng thử lại.', 'error');
+                    }
+                })
+                .finally(() => {
+                    if (typeof btnRestore === 'function') {
+                        btnRestore(profileSubmitBtn);
+                    } else if (profileSubmitBtn) {
+                        profileSubmitBtn.disabled = false;
+                    }
+                });
         });
 
         form?.addEventListener('submit', function(e) {
