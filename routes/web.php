@@ -180,6 +180,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
                     ->name('du-an.toggle');
 
+                Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
+                    ->name('bat-dong-san.destroy');
+
                 Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
                     Route::get('/',               [AdminKyGuiController::class, 'index'])->name('index');
                     Route::get('/create',         [AdminKyGuiController::class, 'create'])->name('create');
@@ -209,7 +212,6 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::post('/',                       [BatDongSanController::class, 'store'])->name('store');
                     Route::get('/{batDongSan}/edit',       [BatDongSanController::class, 'edit'])->name('edit');
                     Route::put('/{batDongSan}',            [BatDongSanController::class, 'update'])->name('update');
-                    Route::delete('/{batDongSan}',         [BatDongSanController::class, 'destroy'])->name('destroy');
                     Route::patch('/{batDongSan}/toggle',   [BatDongSanController::class, 'toggleHienThi'])->name('toggle');
                     Route::patch('/{batDongSan}/trang-thai', [BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
                     Route::delete('/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');

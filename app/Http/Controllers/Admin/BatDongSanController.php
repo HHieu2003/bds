@@ -209,6 +209,25 @@ class BatDongSanController extends Controller
     // ──────────────────────────────────────
     public function destroy(BatDongSan $batDongSan)
     {
+        $nhanVien = auth('nhanvien')->user();
+        $vaiTro = $nhanVien
+            ? \App\Models\NhanVien::normalizeVaiTro((string) ($nhanVien->vai_tro ?? ''))
+            : null;
+        $canDelete = in_array($vaiTro, ['admin', 'nguon_hang'], true);
+
+        if (! $canDelete) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'ok' => false,
+                    'msg' => 'Bạn không có quyền xóa bất động sản.',
+                ], 403);
+            }
+
+            return redirect()
+                ->route('nhanvien.admin.bat-dong-san.index')
+                ->with('error', '❌ Nhân viên sale không có quyền xóa bất động sản. Chỉ Admin và Nguồn hàng được phép.');
+        }
+
         if ($batDongSan->hinh_anh) {
             Storage::disk('public')->delete($batDongSan->hinh_anh);
         }
