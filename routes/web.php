@@ -122,8 +122,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
         Route::post('cap-nhat-thong-tin', [KhachHangAuthController::class, 'updateProfile'])
             ->name('khach-hang.update-profile');
-        Route::post('doi-mat-khau', [KhachHangAuthController::class, 'changePassword'])
-            ->name('khach-hang.change-password');
+        Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])
+            ->name('change-password');
 
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -211,7 +211,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::put('/{batDongSan}',            [BatDongSanController::class, 'update'])->name('update');
                     Route::delete('/{batDongSan}',         [BatDongSanController::class, 'destroy'])->name('destroy');
                     Route::patch('/{batDongSan}/toggle',   [BatDongSanController::class, 'toggleHienThi'])->name('toggle');
-                    Route::patch('/{batDongSan}/trang-thai',[BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
+                    Route::patch('/{batDongSan}/trang-thai', [BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
                     Route::delete('/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');
                 });
 

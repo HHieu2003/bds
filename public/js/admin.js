@@ -88,9 +88,14 @@ document.addEventListener("DOMContentLoaded", function () {
         .forEach(function (el, i) {
             setTimeout(
                 function () {
-                    // Dùng Bootstrap Alert API nếu có
-                    var bsAlert = bootstrap.Alert.getOrCreateInstance(el);
-                    bsAlert && bsAlert.close();
+                    // Ưu tiên Bootstrap Alert API, fallback về remove thủ công.
+                    if (window.bootstrap?.Alert) {
+                        var bsAlert =
+                            window.bootstrap.Alert.getOrCreateInstance(el);
+                        bsAlert && bsAlert.close();
+                    } else {
+                        el.remove();
+                    }
                 },
                 5000 + i * 300,
             );

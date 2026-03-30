@@ -15,7 +15,7 @@ class KhuVucController extends Controller
     public function index(Request $request)
     {
         $query = KhuVuc::with(['cha', 'cha.cha'])
-            ->withCount('con');
+            ->withCount(['con', 'duAn']);
 
         // Tìm kiếm
         if ($request->filled('tim_kiem')) {

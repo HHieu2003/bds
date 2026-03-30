@@ -104,7 +104,7 @@
                 <a href="#">
                     <i class="fas fa-user-circle"></i> Hồ sơ cá nhân
                 </a>
-                <a href="#">
+                <a href="#" id="topbarChangePasswordBtn">
                     <i class="fas fa-key"></i> Đổi mật khẩu
                 </a>
                 <a href="{{ route('frontend.home') }}" target="_blank">
@@ -126,19 +126,201 @@
     </div>
 </header>
 
+<div id="topbarChangePasswordModal"
+    style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;align-items:center;justify-content:center;padding:16px;">
+    <div
+        style="width:min(440px,100%);background:#fff;border-radius:14px;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.22);overflow:hidden;">
+        <div
+            style="padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div style="font-size:.92rem;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:8px;">
+                <i class="fas fa-key" style="color:var(--primary)"></i> Đổi mật khẩu
+            </div>
+            <button type="button" id="closeTopbarChangePasswordModal"
+                style="width:28px;height:28px;border-radius:8px;border:1px solid var(--border);background:#f9fafb;color:var(--text-sub);cursor:pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <form id="topbarChangePasswordForm" style="padding:16px;display:grid;gap:10px;">
+            <div>
+                <label for="tb_mat_khau_cu"
+                    style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">
+                    Mật khẩu hiện tại
+                </label>
+                <input id="tb_mat_khau_cu" name="mat_khau_cu" type="password" autocomplete="current-password"
+                    class="form-control" required>
+            </div>
+
+            <div>
+                <label for="tb_mat_khau_moi"
+                    style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">
+                    Mật khẩu mới
+                </label>
+                <input id="tb_mat_khau_moi" name="mat_khau_moi" type="password" autocomplete="new-password"
+                    class="form-control" required minlength="6" maxlength="50">
+            </div>
+
+            <div>
+                <label for="tb_mat_khau_moi_confirmation"
+                    style="font-size:.76rem;font-weight:700;color:var(--navy);display:block;margin-bottom:4px;">
+                    Xác nhận mật khẩu mới
+                </label>
+                <input id="tb_mat_khau_moi_confirmation" name="mat_khau_moi_confirmation" type="password"
+                    autocomplete="new-password" class="form-control" required minlength="6" maxlength="50">
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:4px;">
+                <button type="button" id="cancelTopbarChangePassword" class="btn btn-secondary btn-sm">Hủy</button>
+                <button type="submit" id="submitTopbarChangePassword" class="btn btn-primary btn-sm">
+                    <i class="fas fa-save"></i> Cập nhật
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {{-- Script inline — đảm bảo chạy ngay cả khi admin.js chưa load --}}
 <script>
-    // Chevron animation khi mở dropdown
+    // Topbar helpers
     (function() {
-        var origToggle = window.toggleUserDropdown;
+        var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        var dd = document.getElementById('userDropdown');
+        var chevron = document.getElementById('topbarChevron');
+
+        function syncChevron() {
+            if (chevron) {
+                chevron.style.transform = dd && dd.classList.contains('show') ? 'rotate(180deg)' : '';
+            }
+        }
+
+        // Chevron animation khi mở dropdown
         window.toggleUserDropdown = function() {
-            var dd = document.getElementById('userDropdown');
-            var chevron = document.getElementById('topbarChevron');
             if (!dd) return;
             dd.classList.toggle('show');
-            if (chevron) {
-                chevron.style.transform = dd.classList.contains('show') ? 'rotate(180deg)' : '';
-            }
+            syncChevron();
         };
+
+        var modal = document.getElementById('topbarChangePasswordModal');
+        var openBtn = document.getElementById('topbarChangePasswordBtn');
+        var closeBtn = document.getElementById('closeTopbarChangePasswordModal');
+        var cancelBtn = document.getElementById('cancelTopbarChangePassword');
+        var form = document.getElementById('topbarChangePasswordForm');
+        var submitBtn = document.getElementById('submitTopbarChangePassword');
+
+        function openModal() {
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            form?.reset();
+            setTimeout(() => document.getElementById('tb_mat_khau_cu')?.focus(), 0);
+        }
+
+        function closeModal() {
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        openBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            dd?.classList.remove('show');
+            syncChevron();
+            openModal();
+        });
+
+        closeBtn?.addEventListener('click', closeModal);
+        cancelBtn?.addEventListener('click', closeModal);
+        modal?.addEventListener('click', function(e) {
+            if (e.target === modal) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal?.style.display === 'flex') {
+                closeModal();
+            }
+        });
+
+        form?.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var fd = new FormData(form);
+            var payload = {
+                mat_khau_cu: String(fd.get('mat_khau_cu') || ''),
+                mat_khau_moi: String(fd.get('mat_khau_moi') || ''),
+                mat_khau_moi_confirmation: String(fd.get('mat_khau_moi_confirmation') || ''),
+            };
+
+            if (payload.mat_khau_moi !== payload.mat_khau_moi_confirmation) {
+                if (typeof showAdminToast === 'function') {
+                    showAdminToast('Xác nhận mật khẩu mới không khớp.', 'warning');
+                }
+                return;
+            }
+
+            if (typeof btnLoading === 'function') {
+                btnLoading(submitBtn, 'Đang cập nhật...');
+            } else if (submitBtn) {
+                submitBtn.disabled = true;
+            }
+
+            fetch('{{ route('nhanvien.change-password') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': csrf,
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                })
+                .then(async (r) => {
+                    let data = {};
+                    try {
+                        data = await r.json();
+                    } catch (_) {}
+                    return {
+                        ok: r.ok,
+                        status: r.status,
+                        data,
+                    };
+                })
+                .then((res) => {
+                    if (res.ok && (res.data.success || res.data.ok)) {
+                        if (typeof showAdminToast === 'function') {
+                            showAdminToast(res.data.message || res.data.msg ||
+                                'Đổi mật khẩu thành công!', 'success');
+                        }
+                        closeModal();
+                        form.reset();
+                        return;
+                    }
+
+                    var firstError = null;
+                    if (res.data?.errors) {
+                        for (const key in res.data.errors) {
+                            if (Array.isArray(res.data.errors[key]) && res.data.errors[key].length) {
+                                firstError = res.data.errors[key][0];
+                                break;
+                            }
+                        }
+                    }
+
+                    if (typeof showAdminToast === 'function') {
+                        showAdminToast(firstError || res.data?.message || res.data?.msg ||
+                            'Không thể đổi mật khẩu.', 'error');
+                    }
+                })
+                .catch(() => {
+                    if (typeof showAdminToast === 'function') {
+                        showAdminToast('Lỗi kết nối, vui lòng thử lại.', 'error');
+                    }
+                })
+                .finally(() => {
+                    if (typeof btnRestore === 'function') {
+                        btnRestore(submitBtn);
+                    } else if (submitBtn) {
+                        submitBtn.disabled = false;
+                    }
+                });
+        });
     })();
 </script>
