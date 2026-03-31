@@ -1,435 +1,348 @@
 @extends('admin.layouts.master')
-
-@section('title', 'Trung Tâm Hỗ Trợ Khách Hàng')
+@section('title', 'Chat Tư vấn trực tuyến')
 
 @section('content')
-    <div class="chat-container-wrapper shadow-sm bg-white rounded-4 border overflow-hidden">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
+        <div>
+            <h1 class="page-header-title mb-1"><i class="fas fa-comments text-info"></i> Tư vấn Khách hàng</h1>
+            <p class="page-header-sub mb-0">Hỗ trợ trực tuyến và Quản lý tương tác</p>
+        </div>
+    </div>
+
+    {{-- GIAO DIỆN CHAT 3 CỘT (Dùng Flexbox để lấp đầy chiều cao) --}}
+    <div class="card border-0 shadow-sm overflow-hidden" style="height: calc(100vh - 140px); min-height: 500px;">
         <div class="row g-0 h-100">
 
-            {{-- ==========================================
-             CỘT TRÁI: DANH SÁCH KHÁCH HÀNG (30%)
-        ========================================== --}}
-            <div class="col-12 col-md-4 col-lg-3 d-flex flex-column border-end h-100 bg-light-gray">
-
-                {{-- Header Sidebar --}}
-                <div class="p-3 bg-white border-bottom">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0 text-dark"><i class="fab fa-facebook-messenger text-primary me-2"></i>Tin nhắn
-                        </h5>
-                        <span
-                            class="badge bg-danger rounded-pill px-2 py-1">{{ $phienChats->where('trang_thai', 'dang_cho')->count() }}
-                            chờ</span>
+            {{-- ════ CỘT 1: DANH SÁCH PHIÊN CHAT (Bên Trái) ════ --}}
+            <div class="col-12 col-md-4 col-lg-3 border-end d-flex flex-column bg-white h-100">
+                {{-- Header + Tìm kiếm --}}
+                <div class="p-3 border-bottom bg-light bg-opacity-50">
+                    <div class="input-group input-group-sm mb-2">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0 shadow-none"
+                            placeholder="Tìm tên, SĐT...">
                     </div>
-                    {{-- Thanh tìm kiếm (UI) --}}
-                    <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-light border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control bg-light border-start-0 shadow-none"
-                            placeholder="Tìm tên khách hàng...">
+                    <div class="d-flex gap-2">
+                        <span class="badge bg-primary rounded-pill cursor-pointer px-3 py-2">Tất cả</span>
+                        <span class="badge bg-light text-dark border rounded-pill cursor-pointer px-3 py-2">Chưa đọc <span
+                                class="text-danger fw-bold ms-1">2</span></span>
                     </div>
                 </div>
 
-                {{-- Danh sách Chat --}}
-                <div class="flex-grow-1 overflow-auto p-2 chat-sidebar-scroll">
-                    @forelse($phienChats as $pc)
-                        @php
-                            $isActive = isset($activeChat) && $activeChat->id == $pc->id;
-                            $lastMsg = $pc->tinNhan->last();
-                            // Tạo màu ngẫu nhiên cho Avatar dựa trên ID
-                            $colors = ['#FF8C42', '#0068FF', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444'];
-                            $avatarColor = $colors[$pc->khach_hang_id % count($colors)];
-                        @endphp
-
-                        <a href="{{ route('nhanvien.admin.chat.show', $pc->id) }}"
-                            class="text-decoration-none d-block p-3 mb-2 rounded-3 chat-list-item {{ $isActive ? 'active shadow-sm' : 'bg-white border-bottom' }}">
-
-                            <div class="d-flex align-items-center">
-                                {{-- Avatar --}}
-                                <div class="position-relative me-3">
-                                    <div class="avatar-circle text-white fw-bold d-flex align-items-center justify-content-center"
-                                        style="width: 45px; height: 45px; border-radius: 50%; background-color: {{ $avatarColor }}; font-size: 1.2rem;">
-                                        {{ mb_strtoupper(mb_substr($pc->khachHang->ho_ten ?? 'K', 0, 1)) }}
-                                    </div>
-                                    @if ($pc->trang_thai == 'dang_cho')
-                                        <span
-                                            class="position-absolute bottom-0 end-0 p-1 bg-danger border border-light rounded-circle"
-                                            title="Đang chờ hỗ trợ"></span>
-                                    @else
-                                        <span
-                                            class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle"
-                                            title="Đang hỗ trợ"></span>
-                                    @endif
-                                </div>
-
-                                {{-- Info --}}
-                                <div class="flex-grow-1 overflow-hidden">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <h6 class="fw-bold mb-0 text-truncate {{ $isActive ? 'text-primary' : 'text-dark' }}"
-                                            style="font-size: 0.95rem;">
-                                            {{ $pc->khachHang->ho_ten ?? 'Khách Ẩn Danh' }}
-                                        </h6>
-                                        <small class="text-muted" style="font-size: 0.75rem;">
-                                            {{ $pc->updated_at->format('H:i') }}
-                                        </small>
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <small class="text-truncate text-muted" style="max-width: 80%; font-size: 0.85rem;">
-                                            {{ $lastMsg ? $lastMsg->noi_dung : 'Bắt đầu trò chuyện...' }}
-                                        </small>
-                                        @if ($pc->chua_doc > 0)
-                                            <span class="badge bg-danger rounded-pill"
-                                                style="font-size: 0.7rem;">{{ $pc->chua_doc }}</span>
-                                        @endif
-                                    </div>
-                                </div>
+                {{-- Danh sách chat (Scrollable) --}}
+                <div class="chat-list flex-grow-1 overflow-auto">
+                    {{-- Ví dụ Chat Item 1 (Đang chọn) --}}
+                    <a href="javascript:void(0)"
+                        class="chat-list-item active d-flex align-items-center p-3 border-bottom text-decoration-none">
+                        <div class="position-relative me-3 flex-shrink-0">
+                            <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                style="width: 45px; height: 45px;">
+                                T
                             </div>
-                        </a>
-                    @empty
-                        <div class="text-center text-muted mt-5 pt-4">
-                            <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png"
-                                style="width: 60px; opacity: 0.2;" class="mb-3">
-                            <p class="small">Hộp thư trống.</p>
+                            <span
+                                class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle"></span>
                         </div>
-                    @endforelse
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Trần Văn B</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;">10:25</small>
+                            </div>
+                            <div class="text-muted text-truncate" style="font-size: 0.8rem;">Bạn: Vâng, để em gửi thông
+                                tin...</div>
+                        </div>
+                    </a>
+
+                    {{-- Ví dụ Chat Item 2 (Có tin nhắn chưa đọc) --}}
+                    <a href="javascript:void(0)"
+                        class="chat-list-item d-flex align-items-center p-3 border-bottom text-decoration-none">
+                        <div class="position-relative me-3 flex-shrink-0">
+                            <img src="{{ asset('images/default-avatar.png') }}" class="rounded-circle object-fit-cover"
+                                style="width: 45px; height: 45px;" alt="">
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Lê Thị C</h6>
+                                <small class="text-primary fw-bold" style="font-size: 0.7rem;">Hôm qua</small>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-dark fw-bold text-truncate" style="font-size: 0.8rem;">Dự án này còn căn
+                                    góc không em?</div>
+                                <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">1</span>
+                            </div>
+                        </div>
+                    </a>
+
+                    {{-- Ví dụ Chat Item 3 (Khách vãng lai) --}}
+                    <a href="javascript:void(0)"
+                        class="chat-list-item d-flex align-items-center p-3 border-bottom text-decoration-none">
+                        <div class="position-relative me-3 flex-shrink-0">
+                            <div class="avatar bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                                style="width: 45px; height: 45px;">
+                                <i class="fas fa-user-secret"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Khách vãng lai
+                                    #8912</h6>
+                                <small class="text-muted" style="font-size: 0.7rem;">T2</small>
+                            </div>
+                            <div class="text-muted text-truncate" style="font-size: 0.8rem;">Cho mình hỏi giá căn hộ</div>
+                        </div>
+                    </a>
                 </div>
             </div>
 
-            {{-- ==========================================
-             CỘT PHẢI: KHUNG CHAT CHI TIẾT (70%)
-        ========================================== --}}
-            <div class="col-12 col-md-8 col-lg-9 d-flex flex-column h-100 bg-chat-pattern position-relative">
+            {{-- ════ CỘT 2: KHUNG CHAT CHÍNH (Ở Giữa) ════ --}}
+            <div class="col-12 col-md-8 col-lg-6 d-flex flex-column h-100 position-relative">
 
-                @if (isset($activeChat))
-                    {{-- HEADER KHUNG CHAT CHI TIẾT --}}
-                    <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white shadow-sm z-1">
-                        <div class="d-flex align-items-center">
-                            <div class="avatar-circle text-white fw-bold d-flex align-items-center justify-content-center me-3"
-                                style="width: 45px; height: 45px; border-radius: 50%; background-color: #0068FF; font-size: 1.2rem;">
-                                {{ mb_strtoupper(mb_substr($activeChat->khachHang->ho_ten ?? 'K', 0, 1)) }}
-                            </div>
-                            <div>
-                                <h5 class="mb-0 fw-bold text-dark">{{ $activeChat->khachHang->ho_ten ?? 'Khách Ẩn Danh' }}
-                                </h5>
-                                <div class="d-flex gap-3 align-items-center mt-1">
-                                    <small class="text-muted"><i class="fas fa-phone-alt me-1 text-success"></i>
-                                        {{ $activeChat->khachHang->so_dien_thoai ?? 'Chưa có SĐT' }}</small>
-                                    <span
-                                        class="badge {{ $activeChat->trang_thai == 'dang_chat' ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger' }} border-0 px-2 py-1"
-                                        style="font-size: 0.7rem;">
-                                        <i class="fas fa-circle ms-0 me-1"
-                                            style="font-size: 0.4rem; vertical-align: middle;"></i>
-                                        {{ $activeChat->trang_thai == 'dang_chat' ? 'Đang hỗ trợ' : 'Đang chờ' }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                {{-- Chat Header --}}
+                <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center shadow-sm z-1">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                            style="width: 40px; height: 40px;">T</div>
                         <div>
-                            <a href="{{ route('nhanvien.admin.khach-hang.show', $activeChat->khach_hang_id ?? 0) }}"
-                                target="_blank" class="btn btn-sm btn-outline-primary fw-bold rounded-pill px-3">
-                                <i class="fas fa-id-card me-1"></i> Xem Hồ Sơ Khách
-                            </a>
+                            <h5 class="mb-0 fw-bold text-navy" style="font-size: 1rem;">Trần Văn B</h5>
+                            <span class="text-success" style="font-size: 0.75rem;"><i class="fas fa-circle"
+                                    style="font-size: 0.5rem; vertical-align: middle;"></i> Đang hoạt động</span>
                         </div>
                     </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light text-primary border rounded-circle" data-bs-toggle="tooltip"
+                            title="Gọi điện"><i class="fas fa-phone-alt"></i></button>
+                        <button class="btn btn-light text-warning border rounded-circle" data-bs-toggle="tooltip"
+                            title="Gắn sao"><i class="fas fa-star"></i></button>
+                    </div>
+                </div>
 
-                    {{-- NỘI DUNG CHAT CHÍNH (AJAX LOAD VÀO ĐÂY) --}}
-                    <div class="flex-grow-1 p-4 overflow-auto chat-box-admin d-flex flex-column" id="adminChatBody">
-                        {{-- JS sẽ đổ HTML vào khu vực này --}}
+                {{-- Nơi chứa tin nhắn (Bong bóng chat) --}}
+                <div class="chat-messages flex-grow-1 p-4 overflow-auto bg-light"
+                    style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ced4da\' fill-opacity=\'0.15\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+
+                    {{-- Dấu thời gian --}}
+                    <div class="text-center mb-4">
+                        <span class="badge bg-secondary bg-opacity-10 text-muted fw-normal px-3 py-1">10:15 Hôm nay</span>
                     </div>
 
-                    {{-- FORM NHẬP TIN NHẮN --}}
-                    <div class="p-3 bg-white border-top">
-                        <form onsubmit="sendAdminMessage(event)">
-                            <input type="hidden" id="adminPhienChatId" value="{{ $activeChat->id }}">
-                            <div class="input-group input-group-lg bg-light rounded-pill p-1 border">
-                                <span class="input-group-text bg-transparent border-0 text-muted ps-3"><i
-                                        class="far fa-smile"></i></span>
-                                <input type="text" id="adminChatInput"
-                                    class="form-control border-0 bg-transparent shadow-none px-2 fs-6"
-                                    placeholder="Nhập câu trả lời của bạn..." autocomplete="off" autofocus>
-                                <button type="submit" class="btn text-white rounded-pill px-4 fw-bold"
-                                    style="background-color: #0068FF;">
-                                    <i class="fas fa-paper-plane me-1"></i> Gửi
-                                </button>
+                    {{-- Nhận (Khách hàng) --}}
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-2"
+                            style="width: 35px; height: 35px; font-size: 0.8rem;">T</div>
+                        <div>
+                            <div class="chat-bubble chat-bubble-received">
+                                Chào admin, mình đang quan tâm đến dự án Vinhomes Smart City. Bên mình còn căn 2 phòng ngủ
+                                nào view hồ không ạ?
                             </div>
-                        </form>
-                        <div class="text-center mt-2">
-                            <small class="text-muted" style="font-size: 0.75rem;"><i class="fas fa-lock me-1"></i>Tin nhắn
-                                được mã hóa nội bộ Thành Công Land</small>
+                            <div class="chat-time text-muted mt-1" style="font-size: 0.7rem; margin-left: 5px;">10:16</div>
                         </div>
                     </div>
-                @else
-                    {{-- MÀN HÌNH TRỐNG KHI CHƯA CHỌN KHÁCH HÀNG NÀO --}}
-                    <div class="d-flex flex-column justify-content-center align-items-center h-100 bg-white">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3068/3068340.png"
-                            style="width: 150px; opacity: 0.5" class="mb-4">
-                        <h4 class="fw-bold text-dark">Trung Tâm Trợ Giúp</h4>
-                        <p class="text-muted text-center" style="max-width: 400px;">
-                            Vui lòng chọn một cuộc hội thoại từ danh sách bên trái để bắt đầu tư vấn và hỗ trợ khách hàng
-                            chốt sale.
-                        </p>
+
+                    {{-- Gửi (Admin/Nhân viên) --}}
+                    <div class="d-flex align-items-start flex-row-reverse mb-4">
+                        <div>
+                            <div class="chat-bubble chat-bubble-sent shadow-sm">
+                                Chào anh Trần Văn B, cảm ơn anh đã quan tâm. Hiện tại dự án bên em đang có 2 quỹ căn 2PN
+                                view hồ cực đẹp ở phân khu Tonkin ạ.
+                            </div>
+                            <div class="chat-time text-muted mt-1 text-end" style="font-size: 0.7rem; margin-right: 5px;">
+                                10:18 <i class="fas fa-check-double text-primary ms-1"></i></div>
+                        </div>
                     </div>
-                @endif
+
+                    {{-- Nhận (Khách gửi kèm ảnh BĐS đang xem) --}}
+                    <div class="d-flex align-items-start mb-4">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-2"
+                            style="width: 35px; height: 35px; font-size: 0.8rem;">T</div>
+                        <div>
+                            <div class="chat-bubble chat-bubble-received p-2">
+                                <div class="d-flex align-items-center bg-white rounded p-2 border mb-1">
+                                    <img src="{{ asset('images/default-bds.jpg') }}"
+                                        style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-2">
+                                    <div>
+                                        <div class="fw-bold" style="font-size: 0.8rem;">Căn hộ 2PN Tonkin</div>
+                                        <div class="text-danger fw-bold" style="font-size: 0.75rem;">3.2 tỷ</div>
+                                    </div>
+                                </div>
+                                Mình xem trên web thấy căn này, có thể gửi thông tin chi tiết cho mình qua Zalo số
+                                0901234567 được không?
+                            </div>
+                            <div class="chat-time text-muted mt-1" style="font-size: 0.7rem; margin-left: 5px;">10:20
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Gửi (Admin trả lời) --}}
+                    <div class="d-flex align-items-start flex-row-reverse mb-4">
+                        <div>
+                            <div class="chat-bubble chat-bubble-sent shadow-sm">
+                                Vâng, để em gửi thông tin mặt bằng và chính sách qua Zalo cho anh ngay nhé!
+                            </div>
+                            <div class="chat-time text-muted mt-1 text-end" style="font-size: 0.7rem; margin-right: 5px;">
+                                10:25 <i class="fas fa-check text-muted ms-1"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Khung nhập tin nhắn --}}
+                <div class="p-3 bg-white border-top z-1">
+                    <form id="chatForm">
+                        <div class="d-flex align-items-end gap-2">
+                            <button type="button" class="btn btn-light text-secondary rounded-circle flex-shrink-0"><i
+                                    class="fas fa-image"></i></button>
+                            <button type="button" class="btn btn-light text-secondary rounded-circle flex-shrink-0"><i
+                                    class="fas fa-paperclip"></i></button>
+                            <textarea class="form-control bg-light border-0 shadow-none" rows="1" placeholder="Nhập tin nhắn..."
+                                style="resize: none; border-radius: 20px; padding: 10px 15px;"></textarea>
+                            <button type="submit" class="btn btn-primary rounded-circle flex-shrink-0"
+                                style="width: 40px; height: 40px;"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {{-- ════ CỘT 3: THÔNG TIN KHÁCH HÀNG / CRM (Bên Phải) ════ --}}
+            <div class="col-lg-3 d-none d-lg-flex flex-column border-start bg-white h-100">
+                <div class="p-3 border-bottom bg-light bg-opacity-50 text-center">
+                    <h6 class="mb-0 fw-bold text-navy">Thông tin Khách hàng</h6>
+                </div>
+
+                <div class="p-4 flex-grow-1 overflow-auto">
+                    {{-- Avatar to ở giữa --}}
+                    <div class="text-center mb-4">
+                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-2"
+                            style="width: 80px; height: 80px; font-size: 2rem;">T</div>
+                        <h5 class="fw-bold text-dark mb-0">Trần Văn B</h5>
+                        <span class="badge bg-warning text-dark mt-1"><i class="fas fa-fire me-1"></i>Tiềm năng
+                            Nóng</span>
+                    </div>
+
+                    {{-- Box liên hệ --}}
+                    <div class="card border-0 bg-light rounded-3 mb-4 p-3 shadow-sm">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-phone-alt text-success me-3" style="width: 15px;"></i>
+                            <span class="fw-bold">0901 234 567</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-envelope text-secondary me-3" style="width: 15px;"></i>
+                            <span>tranvanb@gmail.com</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-user-tag text-info me-3" style="width: 15px;"></i>
+                            <span>Nhu cầu: <strong class="text-info">Mua Căn hộ</strong></span>
+                        </div>
+                    </div>
+
+                    {{-- Thao tác nhanh CRM --}}
+                    <h6 class="fw-bold text-muted mb-3" style="font-size: 0.8rem; text-transform: uppercase;">Thao tác
+                        nhanh CRM</h6>
+
+                    <a href="#"
+                        class="btn btn-outline-primary w-100 mb-2 text-start d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-id-card me-2"></i>Xem hồ sơ CRM</span> <i class="fas fa-chevron-right"
+                            style="font-size: 0.7rem;"></i>
+                    </a>
+
+                    <a href="#"
+                        class="btn btn-outline-danger w-100 mb-2 text-start d-flex justify-content-between align-items-center">
+                        <span><i class="fas fa-calendar-plus me-2"></i>Tạo lịch hẹn xem nhà</span> <i
+                            class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                    </a>
+
+                    <div class="mt-4">
+                        <label class="form-label fw-bold" style="font-size: 0.85rem;">Ghi chú nội bộ</label>
+                        <textarea class="form-control bg-light" rows="3" placeholder="Thêm ghi chú nhanh..."
+                            style="font-size: 0.85rem;">Khách quan tâm phân khu Tonkin, có khả năng chốt trong tháng này.</textarea>
+                        <button class="btn btn-sm btn-navy mt-2 w-100">Lưu ghi chú</button>
+                    </div>
+                </div>
             </div>
 
         </div>
     </div>
 
-    {{-- ==========================================
-     CSS ĐỘC QUYỀN CHO GIAO DIỆN CHAT ZALO 
-========================================== --}}
+    {{-- CSS ĐỘC QUYỀN CHO MODULE CHAT --}}
     <style>
-        /* Bọc toàn cục để căn chỉnh Layout */
-        .chat-container-wrapper {
-            height: calc(100vh - 100px);
-            min-height: 600px;
-        }
-
-        .bg-light-gray {
-            background-color: #f8fafc !important;
-        }
-
-        .bg-chat-pattern {
-            background-color: #e5ecef;
-        }
-
-        /* Màu nền giống Zalo */
-
-        /* Custom Scrollbar gọn gàng */
-        .chat-sidebar-scroll::-webkit-scrollbar,
-        .chat-box-admin::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .chat-sidebar-scroll::-webkit-scrollbar-track,
-        .chat-box-admin::-webkit-scrollbar-track {
-            background: transparent;
-        }
-
-        .chat-sidebar-scroll::-webkit-scrollbar-thumb,
-        .chat-box-admin::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 10px;
-        }
-
-        .chat-sidebar-scroll:hover::-webkit-scrollbar-thumb,
-        .chat-box-admin:hover::-webkit-scrollbar-thumb {
-            background: #94a3b8;
-        }
-
-        /* Hiệu ứng danh sách Sidebar */
+        /* Tinh chỉnh danh sách */
         .chat-list-item {
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .chat-list-item:hover {
-            background-color: #f1f5f9 !important;
+            transition: 0.2s ease;
             cursor: pointer;
         }
 
+        .chat-list-item:hover {
+            background-color: #f8f9fa;
+        }
+
         .chat-list-item.active {
-            background-color: #ffffff !important;
-            border-left: 3px solid #0068FF;
+            background-color: #e8f4fd;
+            border-left: 3px solid var(--bs-primary);
         }
 
-        /* Bong bóng tin nhắn */
-        .chat-row {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 12px;
-            width: 100%;
-        }
-
-        .msg-bubble {
-            max-width: 65%;
-            padding: 10px 16px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            position: relative;
+        /* Bong bóng chat (Giống Zalo/Messenger) */
+        .chat-bubble {
+            max-width: 85%;
+            padding: 10px 15px;
+            font-size: 0.9rem;
+            line-height: 1.4;
             word-wrap: break-word;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        /* System: Thông báo ở giữa */
-        .msg-system {
-            background-color: rgba(0, 0, 0, 0.05);
-            color: #475569;
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            border-radius: 20px;
-            align-self: center;
-            text-align: center;
-            max-width: 80%;
-            box-shadow: none;
+        .chat-bubble-received {
+            background-color: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #e0e0e0;
+            border-radius: 15px 15px 15px 4px;
+            /* Vuông góc dưới trái */
         }
 
-        /* NhanVien (Sale): Xanh lam, bo góc phải dưới, nằm bên phải */
-        .msg-sale {
-            background-color: #0068FF;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-            align-self: flex-end;
+        .chat-bubble-sent {
+            background-color: var(--bs-primary);
+            color: #ffffff;
+            border-radius: 15px 15px 4px 15px;
+            /* Vuông góc dưới phải */
         }
 
-        /* KhachHang: Trắng, bo góc trái dưới, nằm bên trái */
-        .msg-customer {
-            background-color: white;
-            color: #0f172a;
-            border-radius: 18px 18px 18px 4px;
-            align-self: flex-start;
+        /* Tùy chỉnh thanh cuộn cho đẹp */
+        .chat-list::-webkit-scrollbar,
+        .chat-messages::-webkit-scrollbar {
+            width: 5px;
         }
 
-        /* Thời gian tin nhắn */
-        .msg-time {
-            font-size: 0.7rem;
-            margin-top: 4px;
-            opacity: 0.7;
-        }
-
-        .msg-sale .msg-time {
-            text-align: right;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .msg-customer .msg-time {
-            text-align: left;
-            color: #94a3b8;
+        .chat-list::-webkit-scrollbar-thumb,
+        .chat-messages::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 10px;
         }
     </style>
-
-    {{-- ==========================================
-     JAVASCRIPT XỬ LÝ CHAT THỜI GIAN THỰC
-========================================== --}}
-    @if (isset($activeChat))
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const phienChatId = document.getElementById('adminPhienChatId').value;
-                const chatBody = document.getElementById('adminChatBody');
-                const inputField = document.getElementById('adminChatInput');
-
-                // URL API
-                const safeBaseUrl = '{{ url('/') }}'.replace(/\/$/, '');
-                const apiUrl = safeBaseUrl + '/nhan-vien/admin/chat/' + phienChatId;
-
-                // Trạng thái cờ để tránh giật cuộn chuột khi load lại nếu không có tin mới
-                let lastMessageCount = 0;
-
-                // 1. Load lần đầu ngay lập tức
-                fetchAdminMessages();
-
-                // 2. Bật Polling chạy ngầm mỗi 3 giây
-                const chatPolling = setInterval(fetchAdminMessages, 3000);
-
-                // Hàm gọi API lấy tin nhắn
-                function fetchAdminMessages() {
-                    fetch(apiUrl, {
-                            headers: {
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                renderAdminMessages(data.tin_nhans);
-                            }
-                        })
-                        .catch(err => console.error("Lỗi lấy dữ liệu chat:", err));
-                }
-
-                // Hàm render giao diện tin nhắn
-                function renderAdminMessages(messages) {
-                    if (!messages) return;
-
-                    // Nếu không có tin nhắn mới thì không render lại để tránh giật chuột
-                    if (messages.length === lastMessageCount) return;
-                    lastMessageCount = messages.length;
-
-                    chatBody.innerHTML = '';
-
-                    messages.forEach(msg => {
-                        let msgClass = '';
-                        let alignmentClass = '';
-                        let timeHtml = '';
-
-                        // Định dạng thời gian (ví dụ: 14:30)
-                        let dateObj = new Date(msg.created_at);
-                        let timeString = ("0" + dateObj.getHours()).slice(-2) + ":" + ("0" + dateObj
-                        .getMinutes()).slice(-2);
-
-                        // Xác định đối tượng gửi
-                        if (msg.nguoi_gui === 'hethong') {
-                            msgClass = 'msg-system';
-                            timeHtml = ''; // Tin hệ thống ko cần hiện giờ
-                        } else if (msg.nguoi_gui === 'nhanvien') {
-                            msgClass = 'msg-sale';
-                            timeHtml = `<div class="msg-time">${timeString}</div>`;
-                        } else {
-                            // Khách hàng
-                            msgClass = 'msg-customer';
-                            timeHtml = `<div class="msg-time">${timeString}</div>`;
-                        }
-
-                        chatBody.innerHTML += `
-                    <div class="chat-row">
-                        <div class="msg-bubble ${msgClass}">
-                            ${msg.noi_dung}
-                            ${timeHtml}
-                        </div>
-                    </div>
-                `;
-                    });
-
-                    // Tự động cuộn xuống tận cùng
-                    scrollToBottom();
-                }
-
-                function scrollToBottom() {
-                    chatBody.scrollTop = chatBody.scrollHeight;
-                }
-
-                // Bắt sự kiện gửi form (Biến hàm này thành Global để thẻ form gọi được)
-                window.sendAdminMessage = function(e) {
-                    e.preventDefault();
-                    const noiDung = inputField.value.trim();
-                    if (!noiDung) return;
-
-                    // Xóa ô nhập ngay lập tức tạo cảm giác nhanh chóng
-                    inputField.value = '';
-
-                    // (Tùy chọn) In tạm bong bóng ảo ra màn hình trước khi gửi xong
-                    const now = new Date();
-                    const timeString = ("0" + now.getHours()).slice(-2) + ":" + ("0" + now.getMinutes()).slice(-2);
-                    chatBody.innerHTML += `
-                <div class="chat-row">
-                    <div class="msg-bubble msg-sale" style="opacity: 0.7;">
-                        ${noiDung}
-                        <div class="msg-time">${timeString} <i class="fas fa-clock ms-1"></i></div>
-                    </div>
-                </div>
-            `;
-                    scrollToBottom();
-
-                    // Gửi API lên server
-                    fetch(apiUrl + '/tra-loi', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            },
-                            body: JSON.stringify({
-                                noi_dung: noiDung
-                            })
-                        })
-                        .then(res => res.json())
-                        .then(data => {
-                            if (data.success) {
-                                fetchAdminMessages(); // Lấy lại list chuẩn từ CSDL
-                            }
-                        });
-                };
-            });
-        </script>
-    @endif
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Khởi tạo Tooltip
+            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl)
+            });
+
+            // Auto cuộn xuống cuối khung chat
+            const chatMessages = document.querySelector('.chat-messages');
+            if (chatMessages) {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            // Xử lý auto-resize cho textarea nhập tin nhắn
+            const tx = document.querySelector('textarea');
+            tx.setAttribute('style', 'height:' + (tx.scrollHeight) +
+                'px; overflow-y:hidden; resize:none; border-radius:20px; padding:10px 15px;');
+            tx.addEventListener("input", OnInput, false);
+
+            function OnInput() {
+                this.style.height = 'auto';
+                let newHeight = this.scrollHeight;
+                if (newHeight > 100) newHeight = 100; // Max height
+                this.style.height = newHeight + 'px';
+                if (newHeight === 100) this.style.overflowY = 'auto';
+            }
+        });
+    </script>
+@endpush
