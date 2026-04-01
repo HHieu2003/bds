@@ -62,7 +62,14 @@
 
     @include('frontend.partials.footer')
     @include('frontend.partials.contact-panel')
-    @include('frontend.partials.chat-widget')
+
+    @include('frontend.partials.chat-widget', [
+        'chat_loai_ngu_canh' => $chat_loai_ngu_canh ?? '',
+        'chat_ngu_canh_id' => $chat_ngu_canh_id ?? '',
+        'chat_ten_ngu_canh' => $chat_ten_ngu_canh ?? '',
+    ])
+
+
     @include('frontend.partials.auth-modal')
     @include('frontend.partials.so-sanh-bar')
     @include('frontend.partials.modal-khach-hang')
@@ -75,10 +82,15 @@
             csrfToken: '{{ csrf_token() }}',
             baseUrl: '{{ url('/') }}',
             isLoggedIn: {{ Auth::guard('customer')->check() ? 'true' : 'false' }},
+            chatContext: {
+                loai: @json($chat_loai_ngu_canh ?? ''),
+                id: @json($chat_ngu_canh_id ?? ''),
+                ten: @json($chat_ten_ngu_canh ?? '')
+            },
             user: @if (Auth::guard('customer')->check())
                 {
                     id: {{ Auth::guard('customer')->id() }},
-                    name: '{{ Auth::guard('customer')->user()->ho_ten }}'
+                    name: @json(Auth::guard('customer')->user()->ho_ten)
                 }
             @else
                 null
@@ -97,7 +109,12 @@
                 yeuThichToggle: '{{ route('frontend.yeu-thich.toggle', [], false) }}',
                 chatKhoiTao: '{{ route('frontend.chat.khoi-tao', [], false) }}',
                 chatGui: '{{ route('frontend.chat.gui', [], false) }}',
+                chatLichSu: '{{ route('frontend.chat.lich-su', ['id' => '__ID__'], false) }}',
+                chatChuyenNV: '{{ route('frontend.chat.chuyen-nv', [], false) }}',
+                chatChuyenBot: '{{ route('frontend.chat.chuyen-bot', [], false) }}',
+                chatLongPoll: '{{ route('frontend.chat.long-poll', ['id' => '__ID__'], false) }}',
                 soSanhIndex: '{{ route('frontend.so-sanh.index') }}',
+
                 soSanhThem: '{{ url('/so-sanh/them') }}',
                 soSanhXoa: '{{ url('/so-sanh/xoa') }}',
                 soSanhModal: '{{ route('frontend.so-sanh.modal', [], false) }}'

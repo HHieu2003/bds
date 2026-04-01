@@ -1,159 +1,446 @@
 @extends('frontend.layouts.master')
 @section('title', 'Liên hệ với chúng tôi')
 
+@section('breadcrumb')
+    <li class="breadcrumb-item active" aria-current="page">Liên hệ</li>
+@endsection
+
+@push('styles')
+    <style>
+        .lh-page {
+            padding: 48px 0 68px;
+            background: radial-gradient(circle at top right, rgba(var(--primary-rgb), 0.13), transparent 34%),
+                linear-gradient(180deg, #fdf9f5 0%, #f8fafc 45%, #ffffff 100%);
+        }
+
+        .lh-wrapper {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        .lh-hero {
+            border-radius: 24px;
+            border: 1px solid rgba(192, 102, 42, 0.16);
+            background: linear-gradient(140deg, #ffffff 0%, #fff8ef 50%, #f2f7ff 100%);
+            box-shadow: 0 18px 44px rgba(18, 40, 75, 0.12);
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1.45fr 1fr;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .lh-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--secondary);
+            background: rgba(27, 58, 107, 0.08);
+            border: 1px solid rgba(27, 58, 107, 0.16);
+            border-radius: 999px;
+            padding: 7px 12px;
+            margin-bottom: 12px;
+        }
+
+        .lh-title {
+            margin: 0;
+            color: var(--text-heading);
+            font-size: clamp(1.55rem, 2.7vw, 2.35rem);
+            font-weight: 800;
+            line-height: 1.28;
+        }
+
+        .lh-subtitle {
+            margin: 14px 0 0;
+            color: var(--text-body);
+            line-height: 1.75;
+            font-size: 0.96rem;
+        }
+
+        .lh-highlights {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .lh-highlight {
+            background: #fff;
+            border: 1px solid rgba(192, 102, 42, 0.15);
+            border-radius: 14px;
+            padding: 13px;
+        }
+
+        .lh-highlight-title {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .lh-highlight strong {
+            color: var(--text-heading);
+            font-size: 0.93rem;
+            font-weight: 800;
+        }
+
+        .lh-grid {
+            display: grid;
+            grid-template-columns: 1fr 430px;
+            gap: 24px;
+            align-items: start;
+        }
+
+        .lh-card,
+        .lh-form-card {
+            background: #fff;
+            border-radius: 20px;
+            border: 1px solid rgba(18, 40, 75, 0.13);
+            box-shadow: 0 16px 38px rgba(18, 40, 75, 0.09);
+            padding: 24px;
+        }
+
+        .lh-info-list {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .lh-info-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: linear-gradient(135deg, #fffefc, #f8fafc);
+            border: 1px solid rgba(192, 102, 42, 0.14);
+            border-radius: 13px;
+            padding: 12px;
+        }
+
+        .lh-info-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 11px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.95rem;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+
+        .lh-info-body small {
+            display: block;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .lh-info-body a,
+        .lh-info-body span {
+            color: var(--text-body);
+            font-weight: 700;
+            text-decoration: none;
+            line-height: 1.4;
+            font-size: 0.92rem;
+        }
+
+        .lh-map-wrap {
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(27, 58, 107, 0.2);
+            box-shadow: var(--shadow-sm);
+            background: #eef2f7;
+        }
+
+        .lh-map-wrap iframe {
+            width: 100%;
+            height: 360px;
+            border: 0;
+            display: block;
+        }
+
+        .lh-form-card {
+            position: sticky;
+            top: 20px;
+        }
+
+        .lh-form-title {
+            margin: 0 0 16px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .lh-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.81rem;
+            color: var(--text-body);
+            font-weight: 700;
+        }
+
+        .lh-group {
+            margin-bottom: 14px;
+        }
+
+        .lh-input,
+        .lh-textarea {
+            width: 100%;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            color: var(--text-body);
+            background: var(--bg-main);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .lh-input:focus,
+        .lh-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        .lh-textarea {
+            resize: vertical;
+            min-height: 124px;
+        }
+
+        .lh-meta {
+            margin-top: 12px;
+            font-size: 0.76rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lh-success {
+            background: rgba(46, 125, 50, 0.09);
+            border: 1px solid rgba(46, 125, 50, 0.24);
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+            margin-bottom: 15px;
+            color: var(--status-success);
+            font-weight: 600;
+        }
+
+        .lh-error {
+            font-size: 0.76rem;
+            color: var(--status-danger);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        @media (max-width: 991px) {
+            .lh-hero {
+                grid-template-columns: 1fr;
+                padding: 24px;
+            }
+
+            .lh-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .lh-form-card {
+                position: static;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .lh-page {
+                padding: 34px 0 52px;
+            }
+
+            .lh-hero,
+            .lh-card,
+            .lh-form-card {
+                border-radius: 16px;
+                padding: 18px;
+            }
+
+            .lh-highlights {
+                grid-template-columns: 1fr;
+            }
+
+            .lh-map-wrap iframe {
+                height: 300px;
+            }
+        }
+    </style>
+@endpush
+
 @section('content')
-    <div style="background:#f8faff;min-height:60vh;padding:50px 0 70px">
-        <div
-            style="max-width:1100px;margin:0 auto;padding:0 16px;display:grid;grid-template-columns:1fr 420px;gap:40px;align-items:start">
+    @php
+        $contacts = [
+            [
+                'icon' => 'fas fa-phone-volume',
+                'label' => 'Hotline tư vấn',
+                'val' => '0336 123 130',
+                'href' => 'tel:+84336123130',
+            ],
+            [
+                'icon' => 'fas fa-envelope',
+                'label' => 'Email',
+                'val' => 'contact@thanhcongland.vn',
+                'href' => 'mailto:contact@thanhcongland.vn',
+            ],
+            [
+                'icon' => 'fas fa-map-marker-alt',
+                'label' => 'Văn phòng giao dịch',
+                'val' => 'Tòa SA5 Vinhomes Smart City, Tây Mỗ, Nam Từ Liêm, Hà Nội',
+                'href' => null,
+            ],
+            [
+                'icon' => 'fas fa-clock',
+                'label' => 'Giờ làm việc',
+                'val' => 'Thứ 2 - Thứ 7: 8:00 - 17:30 | Chủ nhật: 8:00 - 12:00',
+                'href' => null,
+            ],
+        ];
+    @endphp
 
-            {{-- ── CỘT TRÁI: Thông tin ── --}}
-            <div>
-                <div
-                    style="font-size:.8rem;color:#FF8C42;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">
-                    Liên hệ
+    <section class="lh-page">
+        <div class="lh-wrapper">
+            <div class="lh-hero">
+                <div>
+                    <span class="lh-badge"><i class="fas fa-headset"></i> Chăm sóc khách hàng</span>
+                    <h1 class="lh-title">Liên hệ ngay để được tư vấn bất động sản nhanh và chính xác</h1>
+                    <p class="lh-subtitle">
+                        Thành Công Land hỗ trợ mua bán, cho thuê và ký gửi bất động sản chuyên sâu khu vực Vinhomes Smart
+                        City.
+                        Chúng tôi phản hồi trong vòng <strong class="text-primary-brand">2 giờ làm việc</strong>.
+                    </p>
                 </div>
-                <h1 style="font-size:2rem;font-weight:800;color:#1a3c5e;margin:0 0 16px;line-height:1.3">
-                    Chúng tôi luôn sẵn sàng<br>lắng nghe bạn
-                </h1>
-                <p style="color:#777;font-size:.95rem;line-height:1.7;margin:0 0 36px">
-                    Đội ngũ chuyên viên tư vấn sẽ phản hồi trong vòng
-                    <strong style="color:#FF8C42">2 giờ làm việc</strong>.
-                </p>
+                <div class="lh-highlights">
+                    <div class="lh-highlight">
+                        <div class="lh-highlight-title">Thời gian phản hồi</div>
+                        <strong>Tối đa 2 giờ</strong>
+                    </div>
+                    <div class="lh-highlight">
+                        <div class="lh-highlight-title">Hỗ trợ trực tiếp</div>
+                        <strong>7 ngày / tuần</strong>
+                    </div>
+                    <div class="lh-highlight">
+                        <div class="lh-highlight-title">Kênh liên hệ</div>
+                        <strong>Hotline - Email - Form</strong>
+                    </div>
+                    <div class="lh-highlight">
+                        <div class="lh-highlight-title">Khu vực chính</div>
+                        <strong>Vinhomes Smart City</strong>
+                    </div>
+                </div>
+            </div>
 
-                {{-- Thông tin liên hệ --}}
-                @php
-                    $contacts = [
-                        [
-                            'icon' => 'fas fa-phone',
-                            'color' => '#27ae60',
-                            'label' => 'Hotline tư vấn',
-                            'val' => '0901 234 567',
-                            'href' => 'tel:0901234567',
-                        ],
-                        [
-                            'icon' => 'fas fa-envelope',
-                            'color' => '#3498db',
-                            'label' => 'Email',
-                            'val' => 'info@batdongsan.vn',
-                            'href' => 'mailto:info@batdongsan.vn',
-                        ],
-                        [
-                            'icon' => 'fas fa-map-marker-alt',
-                            'color' => '#e74c3c',
-                            'label' => 'Văn phòng',
-                            'val' => '123 Đường ABC, Hà Nội',
-                            'href' => '#',
-                        ],
-                        [
-                            'icon' => 'fas fa-clock',
-                            'color' => '#f39c12',
-                            'label' => 'Giờ làm việc',
-                            'val' => 'T2-T7: 8:00 - 18:00',
-                            'href' => null,
-                        ],
-                    ];
-                @endphp
+            <div class="lh-grid">
+                <div class="lh-card">
+                    <h2 class="section-title" style="font-size:1.15rem;margin-bottom:12px">Thông tin liên hệ</h2>
+                    <div class="lh-info-list">
+                        @foreach ($contacts as $c)
+                            <div class="lh-info-item">
+                                <div class="lh-info-icon">
+                                    <i class="{{ $c['icon'] }}"></i>
+                                </div>
+                                <div class="lh-info-body">
+                                    <small>{{ $c['label'] }}</small>
+                                    @if ($c['href'])
+                                        <a href="{{ $c['href'] }}">{{ $c['val'] }}</a>
+                                    @else
+                                        <span>{{ $c['val'] }}</span>
+                                    @endif
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
 
-                <div style="display:flex;flex-direction:column;gap:16px;margin-bottom:36px">
-                    @foreach ($contacts as $c)
-                        <div
-                            style="display:flex;align-items:center;gap:16px;padding:16px 20px;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.05);border:1.5px solid #f0f2f5">
-                            <div
-                                style="width:44px;height:44px;border-radius:12px;background:{{ $c['color'] }}18;color:{{ $c['color'] }};display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0">
-                                <i class="{{ $c['icon'] }}"></i>
-                            </div>
-                            <div>
-                                <div style="font-size:.72rem;color:#aaa;margin-bottom:2px">{{ $c['label'] }}</div>
-                                @if ($c['href'])
-                                    <a href="{{ $c['href'] }}"
-                                        style="font-size:.95rem;font-weight:700;color:#1a3c5e;text-decoration:none">
-                                        {{ $c['val'] }}
-                                    </a>
-                                @else
-                                    <div style="font-size:.95rem;font-weight:700;color:#1a3c5e">{{ $c['val'] }}</div>
-                                @endif
-                            </div>
+                    <div class="lh-map-wrap">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d1862.3936209103308!2d105.73223175184341!3d21.001163952083395!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMjHCsDAwJzA0LjIiTiAxMDXCsDQ0JzAyLjciRQ!5e0!3m2!1svi!2s!4v1774940311746!5m2!1svi!2s"
+                            loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+
+                <div class="lh-form-card">
+                    @if (session('lien_he_success'))
+                        <div class="lh-success">
+                            <i class="fas fa-check-circle"></i>
+                            <div><strong>Gửi thành công!</strong> Chúng tôi sẽ liên hệ bạn trong thời gian sớm nhất.</div>
                         </div>
-                    @endforeach
+                    @endif
+
+                    <h2 class="lh-form-title">
+                        <i class="fas fa-paper-plane text-primary-brand"></i>
+                        Gửi yêu cầu tư vấn
+                    </h2>
+
+                    <form method="POST" action="{{ route('frontend.lien-he.store') }}" id="lienHeForm">
+                        @csrf
+
+                        <div class="lh-group">
+                            <label class="lh-label">Họ và tên <span style="color:var(--status-danger)">*</span></label>
+                            <input class="lh-input" type="text" name="ho_ten"
+                                value="{{ old('ho_ten', auth('customer')->user()?->ho_ten ?? '') }}"
+                                placeholder="Nguyễn Văn A"
+                                style="border-color:{{ $errors->has('ho_ten') ? 'var(--status-danger)' : '' }}">
+                            @error('ho_ten')
+                                <div class="lh-error"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="lh-group">
+                            <label class="lh-label">Số điện thoại <span style="color:var(--status-danger)">*</span></label>
+                            <input class="lh-input" type="tel" name="so_dien_thoai"
+                                value="{{ old('so_dien_thoai', auth('customer')->user()?->so_dien_thoai ?? '') }}"
+                                placeholder="0901 234 567"
+                                style="border-color:{{ $errors->has('so_dien_thoai') ? 'var(--status-danger)' : '' }}">
+                            @error('so_dien_thoai')
+                                <div class="lh-error"><i class="fas fa-exclamation-circle"></i> {{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="lh-group">
+                            <label class="lh-label">Email</label>
+                            <input class="lh-input" type="email" name="email"
+                                value="{{ old('email', auth('customer')->user()?->email ?? '') }}"
+                                placeholder="email@example.com">
+                        </div>
+
+                        <div class="lh-group">
+                            <label class="lh-label">Nội dung yêu cầu</label>
+                            <textarea class="lh-textarea" name="noi_dung" placeholder="Bạn cần tư vấn loại hình bất động sản nào?">{{ old('noi_dung') }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn-primary-theme w-100" style="padding:0.75rem 1.1rem">
+                            <i class="fas fa-paper-plane"></i>
+                            Gửi yêu cầu tư vấn
+                        </button>
+
+                        <p class="lh-meta">
+                            <i class="fas fa-shield-alt"></i>
+                            Thông tin của bạn được bảo mật và chỉ phục vụ mục đích tư vấn.
+                        </p>
+                    </form>
                 </div>
             </div>
-
-            {{-- ── CỘT PHẢI: Form ── --}}
-            <div
-                style="background:#fff;border-radius:20px;box-shadow:0 8px 40px rgba(0,0,0,.08);padding:36px;border:1.5px solid #f0f2f5;position:sticky;top:20px">
-
-                @if (session('lien_he_success'))
-                    <div style="background:#e8f8f0;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
-                        <i class="fas fa-check-circle"
-                            style="font-size:2rem;color:#27ae60;display:block;margin-bottom:10px"></i>
-                        <div style="font-weight:700;color:#27ae60;margin-bottom:4px">Gửi thành công!</div>
-                        <div style="font-size:.83rem;color:#555">Chúng tôi sẽ liên hệ bạn sớm nhất.</div>
-                    </div>
-                @endif
-
-                <h2
-                    style="font-size:1.15rem;font-weight:800;color:#1a3c5e;margin:0 0 20px;display:flex;align-items:center;gap:8px">
-                    <i class="fas fa-paper-plane" style="color:#FF8C42"></i>
-                    Gửi yêu cầu tư vấn
-                </h2>
-
-                <form method="POST" action="{{ route('lien-he.store') }}" id="lienHeForm">
-                    @csrf
-
-                    <div style="margin-bottom:14px">
-                        <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:5px">
-                            Họ và tên <span style="color:#e74c3c">*</span>
-                        </label>
-                        <input type="text" name="ho_ten"
-                            value="{{ old('ho_ten', auth('customer')->user()?->ho_ten ?? '') }}" placeholder="Nguyễn Văn A"
-                            style="width:100%;padding:11px 14px;border:1.5px solid {{ $errors->has('ho_ten') ? '#e74c3c' : '#e8e8e8' }};border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box">
-                        @error('ho_ten')
-                            <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div style="margin-bottom:14px">
-                        <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:5px">
-                            Số điện thoại <span style="color:#e74c3c">*</span>
-                        </label>
-                        <input type="tel" name="so_dien_thoai"
-                            value="{{ old('so_dien_thoai', auth('customer')->user()?->so_dien_thoai ?? '') }}"
-                            placeholder="0901 234 567"
-                            style="width:100%;padding:11px 14px;border:1.5px solid {{ $errors->has('so_dien_thoai') ? '#e74c3c' : '#e8e8e8' }};border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box">
-                        @error('so_dien_thoai')
-                            <div style="font-size:.75rem;color:#e74c3c;margin-top:4px">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </div>
-                        @enderror
-                    </div>
-
-                    <div style="margin-bottom:14px">
-                        <label
-                            style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:5px">Email</label>
-                        <input type="email" name="email"
-                            value="{{ old('email', auth('customer')->user()?->email ?? '') }}"
-                            placeholder="email@example.com"
-                            style="width:100%;padding:11px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box">
-                    </div>
-
-                    <div style="margin-bottom:14px">
-                        <label style="display:block;font-size:.8rem;font-weight:700;color:#555;margin-bottom:5px">Nội
-                            dung</label>
-                        <textarea name="noi_dung" rows="4"
-                            placeholder="Bạn muốn tìm hiểu về sản phẩm nào? Chúng tôi có thể giúp gì cho bạn?"
-                            style="width:100%;padding:11px 14px;border:1.5px solid #e8e8e8;border-radius:10px;font-size:.9rem;outline:none;box-sizing:border-box;resize:vertical">{{ old('noi_dung') }}</textarea>
-                    </div>
-
-                    <button type="submit"
-                        style="width:100%;background:linear-gradient(135deg,#FF8C42,#f5a623);color:#fff;border:none;padding:14px;border-radius:12px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(255,140,66,.35)">
-                        <i class="fas fa-paper-plane"></i>
-                        Gửi yêu cầu tư vấn
-                    </button>
-                </form>
-            </div>
-
         </div>
-    </div>
+    </section>
 @endsection

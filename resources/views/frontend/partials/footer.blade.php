@@ -88,6 +88,8 @@
                                 class="fas fa-angle-right"></i> Phong thủy</a></li>
                     <li><a href="{{ route('frontend.tuyen-dung') }}"><i class="fas fa-angle-right"></i> Tuyển dụng</a>
                     </li>
+                    <li><a href="{{ route('frontend.lien-he.index') }}"><i class="fas fa-angle-right"></i> Liên hệ</a>
+                    </li>
                 </ul>
             </div>
 

@@ -39,6 +39,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->index(['phien_chat_id', 'created_at']);
+            $table->index(['phien_chat_id', 'id'], 'idx_tin_nhan_chat_phien_id_id');
             $table->index(['nhan_vien_id', 'da_doc']);
         });
     }

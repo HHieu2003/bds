@@ -15,6 +15,9 @@ class TinNhanNoiBo extends Model
         'nguoi_gui_id',
         'nguoi_nhan_id',
         'lich_hen_id',
+        'bat_dong_san_id',
+        'du_an_id',
+        'khach_hang_lq_id', // THÊM MỚI
         'loai_tin_nhan',
         'noi_dung',
         'tep_dinh_kem',
@@ -72,5 +75,20 @@ class TinNhanNoiBo extends Model
             fn($q) =>
             $q->where('nguoi_gui_id', $nv2)->where('nguoi_nhan_id', $nv1)
         );
+    }
+
+    public function batDongSan()
+    {
+        return $this->belongsTo(BatDongSan::class, 'bat_dong_san_id');
+    }
+
+    public function duAn()
+    {
+        return $this->belongsTo(DuAn::class, 'du_an_id');
+    }
+
+    public function khachHangLienQuan()
+    {
+        return $this->belongsTo(KhachHang::class, 'khach_hang_lq_id');
     }
 }

@@ -70,9 +70,14 @@ Route::prefix('')->name('frontend.')->group(function () {
         Route::post('/', [FrontendLienHeController::class, 'store'])->name('store');
     });
 
-    Route::post('/chat/khoi-tao', [FeChatController::class, 'khoiTao'])->name('chat.khoi-tao');
-    Route::post('/chat/gui', [FeChatController::class, 'guiTinNhan'])->name('chat.gui');
-    Route::get('/chat/lich-su/{id}', [FeChatController::class, 'lichSu'])->name('chat.lich-su');
+    Route::prefix('chat')->name('chat.')->group(function () {
+        Route::post('/khoi-tao',        [FeChatController::class, 'khoiTao'])->name('khoi-tao');
+        Route::post('/gui',             [FeChatController::class, 'guiTinNhan'])->name('gui');
+        Route::get('/lich-su/{id}',     [FeChatController::class, 'lichSu'])->name('lich-su');
+        Route::post('/chuyen-nhan-vien', [FeChatController::class, 'chuyenNhanVien'])->name('chuyen-nv');
+        Route::post('/chuyen-lai-he-thong', [FeChatController::class, 'chuyenLaiHeThong'])->name('chuyen-bot');
+        Route::get('/{id}/long-poll',   [FeChatController::class, 'longPoll'])->name('long-poll');
+    });
 });
 
 // ══════════════════════════════════════════════════════════
@@ -149,6 +154,15 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             Route::delete('/{baiViet}',         [BaiVietController::class, 'destroy'])->name('destroy');
             Route::patch('/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])->name('toggle-hien-thi');
             Route::patch('/{baiViet}/noi-bat',  [BaiVietController::class, 'toggleNoiBat'])->name('toggle-noi-bat');
+        });
+
+        Route::prefix('chat')->name('chat.')->group(function () {
+            Route::get('/',              [AdminChatController::class, 'index'])->name('index');
+            Route::get('/{id}',         [AdminChatController::class, 'show'])->name('show');
+            Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
+            Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
+            Route::post('/{id}/dong',   [AdminChatController::class, 'dongPhien'])->name('dong');
+            Route::get('/{id}/long-poll', [AdminChatController::class, 'longPoll'])->name('long-poll');
         });
 
         // ══════════════════════════════════════

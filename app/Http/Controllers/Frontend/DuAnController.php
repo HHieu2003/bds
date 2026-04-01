@@ -74,6 +74,13 @@ class DuAnController extends Controller
             return $item;
         });
 
-        return view('frontend.du-an.show', compact('duAn'));
+        // return view('frontend.du-an.show', compact('duAn'));
+        return view('frontend.du-an.show', [
+            'duAn'              => $duAn,
+            // Context cho chat widget
+            'chat_loai_ngu_canh' => 'du_an',
+            'chat_ngu_canh_id'  => $duAn->id,
+            'chat_ten_ngu_canh' => $duAn->ten_du_an,
+        ]);
     }
 }

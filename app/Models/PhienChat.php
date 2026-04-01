@@ -12,21 +12,40 @@ class PhienChat extends Model
     protected $table = 'phien_chat';
     protected $guarded = [];
 
-    // Phiên chat thuộc về 1 Khách hàng
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+    ];
+
+    public function tinNhans()
+    {
+        return $this->hasMany(TinNhanChat::class, 'phien_chat_id');
+    }
+
     public function khachHang()
     {
         return $this->belongsTo(KhachHang::class, 'khach_hang_id');
     }
 
-    // Phiên chat được tiếp nhận bởi 1 Nhân viên (Sale)
     public function nhanVien()
     {
-        return $this->belongsTo(NhanVien::class, 'nhan_vien_id');
+        return $this->belongsTo(NhanVien::class, 'nhan_vien_phu_trach_id');
     }
 
-    // 1 Phiên chat có nhiều Tin nhắn
+    public function nhanVienPhuTrach()
+    {
+        return $this->belongsTo(NhanVien::class, 'nhan_vien_phu_trach_id');
+    }
+
     public function tinNhan()
     {
         return $this->hasMany(TinNhanChat::class, 'phien_chat_id');
+    }
+
+    public function getTenHienThiAttribute(): string
+    {
+        return $this->khachHang?->ho_ten
+            ?: $this->ten_khach_vang_lai
+            ?: 'Khach vang lai';
     }
 }

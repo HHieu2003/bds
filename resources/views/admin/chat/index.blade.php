@@ -1,348 +1,523 @@
 @extends('admin.layouts.master')
-@section('title', 'Chat Tư vấn trực tuyến')
+@section('title', 'Chat Tu van truc tuyen')
 
 @section('content')
-    <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-3">
-        <div>
-            <h1 class="page-header-title mb-1"><i class="fas fa-comments text-info"></i> Tư vấn Khách hàng</h1>
-            <p class="page-header-sub mb-0">Hỗ trợ trực tuyến và Quản lý tương tác</p>
-        </div>
+    <div class="page-header-title mb-1">
+        <i class="fas fa-comments"></i>
+        <h1 class="h4 mb-0">Trung tam chat khach hang</h1>
+    </div>
+    <div class="page-header-sub mb-3">
+        <span class="dot"></span>
+        Social inbox: AI ho tro ban dau, nhan vien tiep nhan va chot giao dich.
     </div>
 
-    {{-- GIAO DIỆN CHAT 3 CỘT (Dùng Flexbox để lấp đầy chiều cao) --}}
-    <div class="card border-0 shadow-sm overflow-hidden" style="height: calc(100vh - 140px); min-height: 500px;">
-        <div class="row g-0 h-100">
+    @php
+        $firstChat = $activeChat ?? ($phienChats->first() ?? null);
+        $tongCho = $phienChats->where('trang_thai', 'dang_cho')->count();
+        $tongDangChat = $phienChats->where('trang_thai', 'dang_chat')->count();
+        $tongDaDong = $phienChats->where('trang_thai', 'da_dong')->count();
+        $tongChuaDoc = $phienChats->sum('so_chua_doc');
+    @endphp
 
-            {{-- ════ CỘT 1: DANH SÁCH PHIÊN CHAT (Bên Trái) ════ --}}
-            <div class="col-12 col-md-4 col-lg-3 border-end d-flex flex-column bg-white h-100">
-                {{-- Header + Tìm kiếm --}}
-                <div class="p-3 border-bottom bg-light bg-opacity-50">
-                    <div class="input-group input-group-sm mb-2">
-                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control border-start-0 ps-0 shadow-none"
-                            placeholder="Tìm tên, SĐT...">
-                    </div>
-                    <div class="d-flex gap-2">
-                        <span class="badge bg-primary rounded-pill cursor-pointer px-3 py-2">Tất cả</span>
-                        <span class="badge bg-light text-dark border rounded-pill cursor-pointer px-3 py-2">Chưa đọc <span
-                                class="text-danger fw-bold ms-1">2</span></span>
-                    </div>
-                </div>
-
-                {{-- Danh sách chat (Scrollable) --}}
-                <div class="chat-list flex-grow-1 overflow-auto">
-                    {{-- Ví dụ Chat Item 1 (Đang chọn) --}}
-                    <a href="javascript:void(0)"
-                        class="chat-list-item active d-flex align-items-center p-3 border-bottom text-decoration-none">
-                        <div class="position-relative me-3 flex-shrink-0">
-                            <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                style="width: 45px; height: 45px;">
-                                T
-                            </div>
-                            <span
-                                class="position-absolute bottom-0 end-0 p-1 bg-success border border-light rounded-circle"></span>
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Trần Văn B</h6>
-                                <small class="text-muted" style="font-size: 0.7rem;">10:25</small>
-                            </div>
-                            <div class="text-muted text-truncate" style="font-size: 0.8rem;">Bạn: Vâng, để em gửi thông
-                                tin...</div>
-                        </div>
-                    </a>
-
-                    {{-- Ví dụ Chat Item 2 (Có tin nhắn chưa đọc) --}}
-                    <a href="javascript:void(0)"
-                        class="chat-list-item d-flex align-items-center p-3 border-bottom text-decoration-none">
-                        <div class="position-relative me-3 flex-shrink-0">
-                            <img src="{{ asset('images/default-avatar.png') }}" class="rounded-circle object-fit-cover"
-                                style="width: 45px; height: 45px;" alt="">
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Lê Thị C</h6>
-                                <small class="text-primary fw-bold" style="font-size: 0.7rem;">Hôm qua</small>
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="text-dark fw-bold text-truncate" style="font-size: 0.8rem;">Dự án này còn căn
-                                    góc không em?</div>
-                                <span class="badge bg-danger rounded-pill" style="font-size: 0.65rem;">1</span>
-                            </div>
-                        </div>
-                    </a>
-
-                    {{-- Ví dụ Chat Item 3 (Khách vãng lai) --}}
-                    <a href="javascript:void(0)"
-                        class="chat-list-item d-flex align-items-center p-3 border-bottom text-decoration-none">
-                        <div class="position-relative me-3 flex-shrink-0">
-                            <div class="avatar bg-secondary bg-opacity-10 text-secondary rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                style="width: 45px; height: 45px;">
-                                <i class="fas fa-user-secret"></i>
-                            </div>
-                        </div>
-                        <div class="flex-grow-1 min-w-0">
-                            <div class="d-flex justify-content-between align-items-center mb-1">
-                                <h6 class="mb-0 fw-bold text-dark text-truncate" style="font-size: 0.95rem;">Khách vãng lai
-                                    #8912</h6>
-                                <small class="text-muted" style="font-size: 0.7rem;">T2</small>
-                            </div>
-                            <div class="text-muted text-truncate" style="font-size: 0.8rem;">Cho mình hỏi giá căn hộ</div>
-                        </div>
-                    </a>
-                </div>
-            </div>
-
-            {{-- ════ CỘT 2: KHUNG CHAT CHÍNH (Ở Giữa) ════ --}}
-            <div class="col-12 col-md-8 col-lg-6 d-flex flex-column h-100 position-relative">
-
-                {{-- Chat Header --}}
-                <div class="p-3 border-bottom bg-white d-flex justify-content-between align-items-center shadow-sm z-1">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                            style="width: 40px; height: 40px;">T</div>
-                        <div>
-                            <h5 class="mb-0 fw-bold text-navy" style="font-size: 1rem;">Trần Văn B</h5>
-                            <span class="text-success" style="font-size: 0.75rem;"><i class="fas fa-circle"
-                                    style="font-size: 0.5rem; vertical-align: middle;"></i> Đang hoạt động</span>
-                        </div>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-light text-primary border rounded-circle" data-bs-toggle="tooltip"
-                            title="Gọi điện"><i class="fas fa-phone-alt"></i></button>
-                        <button class="btn btn-light text-warning border rounded-circle" data-bs-toggle="tooltip"
-                            title="Gắn sao"><i class="fas fa-star"></i></button>
+    <div class="chat-admin-shell">
+        <div class="chat-admin-grid">
+            <aside class="chat-list-pane">
+                <div class="chat-list-head">
+                    <div class="fw-bold">Hop thu</div>
+                    <div class="d-flex align-items-center gap-1">
+                        <span class="count-chip count-chip-orange" title="Tin chua doc">{{ $tongChuaDoc }} moi</span>
+                        <span class="count-chip count-chip-blue">{{ $phienChats->count() }} phien</span>
                     </div>
                 </div>
 
-                {{-- Nơi chứa tin nhắn (Bong bóng chat) --}}
-                <div class="chat-messages flex-grow-1 p-4 overflow-auto bg-light"
-                    style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ced4da\' fill-opacity=\'0.15\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
-
-                    {{-- Dấu thời gian --}}
-                    <div class="text-center mb-4">
-                        <span class="badge bg-secondary bg-opacity-10 text-muted fw-normal px-3 py-1">10:15 Hôm nay</span>
+                <div class="chat-list-toolbar">
+                    <div class="chat-mini-stats">
+                        <div><span>Dang cho</span><strong>{{ $tongCho }}</strong></div>
+                        <div><span>Dang chat</span><strong>{{ $tongDangChat }}</strong></div>
+                        <div><span>Da dong</span><strong>{{ $tongDaDong }}</strong></div>
                     </div>
-
-                    {{-- Nhận (Khách hàng) --}}
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-2"
-                            style="width: 35px; height: 35px; font-size: 0.8rem;">T</div>
-                        <div>
-                            <div class="chat-bubble chat-bubble-received">
-                                Chào admin, mình đang quan tâm đến dự án Vinhomes Smart City. Bên mình còn căn 2 phòng ngủ
-                                nào view hồ không ạ?
-                            </div>
-                            <div class="chat-time text-muted mt-1" style="font-size: 0.7rem; margin-left: 5px;">10:16</div>
-                        </div>
+                    <div class="chat-search-wrap">
+                        <i class="fas fa-search"></i>
+                        <input id="adminChatSearch" type="text" class="form-control"
+                            placeholder="Tim kiem ten khach, ma phien...">
                     </div>
-
-                    {{-- Gửi (Admin/Nhân viên) --}}
-                    <div class="d-flex align-items-start flex-row-reverse mb-4">
-                        <div>
-                            <div class="chat-bubble chat-bubble-sent shadow-sm">
-                                Chào anh Trần Văn B, cảm ơn anh đã quan tâm. Hiện tại dự án bên em đang có 2 quỹ căn 2PN
-                                view hồ cực đẹp ở phân khu Tonkin ạ.
-                            </div>
-                            <div class="chat-time text-muted mt-1 text-end" style="font-size: 0.7rem; margin-right: 5px;">
-                                10:18 <i class="fas fa-check-double text-primary ms-1"></i></div>
-                        </div>
+                    <div class="chat-status-tabs" id="chatStatusTabs">
+                        <button type="button" class="active" data-filter="all">Tat ca</button>
+                        <button type="button" data-filter="dang_cho">Dang cho</button>
+                        <button type="button" data-filter="dang_chat">Dang chat</button>
+                        <button type="button" data-filter="da_dong">Da dong</button>
                     </div>
+                </div>
 
-                    {{-- Nhận (Khách gửi kèm ảnh BĐS đang xem) --}}
-                    <div class="d-flex align-items-start mb-4">
-                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-2"
-                            style="width: 35px; height: 35px; font-size: 0.8rem;">T</div>
-                        <div>
-                            <div class="chat-bubble chat-bubble-received p-2">
-                                <div class="d-flex align-items-center bg-white rounded p-2 border mb-1">
-                                    <img src="{{ asset('images/default-bds.jpg') }}"
-                                        style="width: 50px; height: 50px; object-fit: cover;" class="rounded me-2">
-                                    <div>
-                                        <div class="fw-bold" style="font-size: 0.8rem;">Căn hộ 2PN Tonkin</div>
-                                        <div class="text-danger fw-bold" style="font-size: 0.75rem;">3.2 tỷ</div>
-                                    </div>
+                <div class="chat-list-body" id="chatListBody">
+                    @forelse($phienChats as $chat)
+                        @php
+                            $isActive = $firstChat && $firstChat->id === $chat->id;
+                            $name = $chat->ten_hien_thi;
+                            $status = $chat->trang_thai;
+                            $statusLabel = match ($status) {
+                                'dang_cho' => 'Dang cho NV',
+                                'dang_bot' => 'Bot dang xu ly',
+                                'dang_chat' => 'NV dang chat',
+                                'da_dong' => 'Da dong',
+                                default => $status,
+                            };
+                        @endphp
+                        <a href="{{ route('nhanvien.chat.show', $chat->id) }}"
+                            class="chat-list-item {{ $isActive ? 'active' : '' }}" data-status="{{ $status }}"
+                            data-keyword="{{ strtolower($name . ' ' . $chat->id . ' ' . ($chat->ten_ngu_canh ?: '')) }}">
+                            <div class="chat-avatar">{{ mb_substr($name, 0, 1) }}</div>
+                            <div class="chat-list-meta">
+                                <div class="chat-list-top">
+                                    <div class="chat-list-name">{{ $name }}</div>
+                                    @if ($chat->so_chua_doc > 0)
+                                        <span class="chat-unread">{{ $chat->so_chua_doc }}</span>
+                                    @endif
                                 </div>
-                                Mình xem trên web thấy căn này, có thể gửi thông tin chi tiết cho mình qua Zalo số
-                                0901234567 được không?
+                                <div class="chat-list-sub">#{{ $chat->id }} ·
+                                    {{ $chat->ten_ngu_canh ?: 'Khong co ngu canh' }}</div>
+                                <div class="chat-list-status {{ $status }}">{{ $statusLabel }}</div>
+                                <div class="chat-list-time">{{ optional($chat->tin_nhan_cuoi_at)->diffForHumans() ?: '-' }}
+                                </div>
                             </div>
-                            <div class="chat-time text-muted mt-1" style="font-size: 0.7rem; margin-left: 5px;">10:20
+                        </a>
+                    @empty
+                        <div class="chat-list-empty">Chua co phien chat nao.</div>
+                    @endforelse
+                </div>
+            </aside>
+
+            <section class="chat-thread-pane">
+                @if ($firstChat)
+                    <div class="chat-thread-head">
+                        <div class="chat-thread-user">
+                            <div class="chat-avatar large">{{ mb_substr($firstChat->ten_hien_thi, 0, 1) }}</div>
+                            <div>
+                                <div class="chat-thread-name">{{ $firstChat->ten_hien_thi }}</div>
+                                <div class="chat-thread-sub">Ngu canh: {{ $firstChat->ten_ngu_canh ?: 'Khong co' }}</div>
+                                <div class="chat-thread-sub">Phien #{{ $firstChat->id }} ·
+                                    {{ optional($firstChat->updated_at)->diffForHumans() }}</div>
                             </div>
                         </div>
+                        <div class="chat-thread-actions">
+                            @if ($firstChat->trang_thai === 'dang_cho')
+                                <button type="button" class="btn btn-primary btn-sm"
+                                    onclick="tiepNhan({{ $firstChat->id }})">
+                                    <i class="fas fa-user-check"></i> Tiep nhan
+                                </button>
+                            @endif
+                            @if ($firstChat->trang_thai !== 'da_dong')
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                    onclick="dongPhien({{ $firstChat->id }})">
+                                    <i class="fas fa-lock"></i> Dong phien
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
-                    {{-- Gửi (Admin trả lời) --}}
-                    <div class="d-flex align-items-start flex-row-reverse mb-4">
-                        <div>
-                            <div class="chat-bubble chat-bubble-sent shadow-sm">
-                                Vâng, để em gửi thông tin mặt bằng và chính sách qua Zalo cho anh ngay nhé!
+                    <div id="adminChatBody" class="chat-thread-body">
+                        @foreach ($currentMessages ?? collect() as $msg)
+                            @php
+                                $isCustomer = $msg->nguoi_gui === 'khach_hang';
+                                $isSystem = $msg->nguoi_gui === 'he_thong';
+                                $isBot = $msg->nguoi_gui === 'bot';
+                            @endphp
+                            <div class="chat-row {{ $isCustomer ? 'from-customer' : 'from-staff' }}"
+                                data-msg-id="{{ $msg->id }}">
+                                <div
+                                    class="chat-bubble {{ $isSystem ? 'is-system' : ($isCustomer ? 'is-customer' : 'is-staff') }}">
+                                    @if ($isBot)
+                                        <div class="chat-bot-tag"><i class="fas fa-robot"></i> Bot AI</div>
+                                    @endif
+                                    <div>{{ $msg->noi_dung }}</div>
+                                    @if ($msg->tep_dinh_kem)
+                                        @if ($msg->loai_tin_nhan === 'hinh_anh')
+                                            <div class="chat-media-wrap mt-1">
+                                                <a href="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
+                                                    target="_blank" rel="noopener noreferrer">
+                                                    <img class="chat-media-image"
+                                                        src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
+                                                        alt="Anh dinh kem">
+                                                </a>
+                                            </div>
+                                        @elseif ($msg->loai_tin_nhan === 'video')
+                                            <div class="chat-media-wrap mt-1">
+                                                <video class="chat-media-video" controls preload="metadata">
+                                                    <source src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}">
+                                                </video>
+                                            </div>
+                                        @endif
+                                    @endif
+                                    <div class="chat-time {{ $isCustomer ? 'muted' : '' }}">
+                                        {{ optional($msg->created_at)->format('H:i d/m') }}</div>
+                                </div>
                             </div>
-                            <div class="chat-time text-muted mt-1 text-end" style="font-size: 0.7rem; margin-right: 5px;">
-                                10:25 <i class="fas fa-check text-muted ms-1"></i></div>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Khung nhập tin nhắn --}}
-                <div class="p-3 bg-white border-top z-1">
-                    <form id="chatForm">
-                        <div class="d-flex align-items-end gap-2">
-                            <button type="button" class="btn btn-light text-secondary rounded-circle flex-shrink-0"><i
-                                    class="fas fa-image"></i></button>
-                            <button type="button" class="btn btn-light text-secondary rounded-circle flex-shrink-0"><i
-                                    class="fas fa-paperclip"></i></button>
-                            <textarea class="form-control bg-light border-0 shadow-none" rows="1" placeholder="Nhập tin nhắn..."
-                                style="resize: none; border-radius: 20px; padding: 10px 15px;"></textarea>
-                            <button type="submit" class="btn btn-primary rounded-circle flex-shrink-0"
-                                style="width: 40px; height: 40px;"><i class="fas fa-paper-plane"></i></button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-
-            {{-- ════ CỘT 3: THÔNG TIN KHÁCH HÀNG / CRM (Bên Phải) ════ --}}
-            <div class="col-lg-3 d-none d-lg-flex flex-column border-start bg-white h-100">
-                <div class="p-3 border-bottom bg-light bg-opacity-50 text-center">
-                    <h6 class="mb-0 fw-bold text-navy">Thông tin Khách hàng</h6>
-                </div>
-
-                <div class="p-4 flex-grow-1 overflow-auto">
-                    {{-- Avatar to ở giữa --}}
-                    <div class="text-center mb-4">
-                        <div class="avatar bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold mx-auto mb-2"
-                            style="width: 80px; height: 80px; font-size: 2rem;">T</div>
-                        <h5 class="fw-bold text-dark mb-0">Trần Văn B</h5>
-                        <span class="badge bg-warning text-dark mt-1"><i class="fas fa-fire me-1"></i>Tiềm năng
-                            Nóng</span>
+                        @endforeach
                     </div>
 
-                    {{-- Box liên hệ --}}
-                    <div class="card border-0 bg-light rounded-3 mb-4 p-3 shadow-sm">
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="fas fa-phone-alt text-success me-3" style="width: 15px;"></i>
-                            <span class="fw-bold">0901 234 567</span>
+                    <div class="chat-quick-replies" id="chatQuickReplies">
+                        <button type="button"
+                            data-reply="Em da nhan thong tin, em se kiem tra ngay va phan hoi trong it phut.">Da nhan thong
+                            tin</button>
+                        <button type="button"
+                            data-reply="Anh/chi vui long cho em xin so dien thoai de ben em lien he nhanh hon.">Xin so dien
+                            thoai</button>
+                        <button type="button"
+                            data-reply="Anh/chi cho em xin them nhu cau cu the de em tim san pham phu hop nhat.">Xin them
+                            nhu cau</button>
+                        <button type="button"
+                            data-reply="Cam on anh/chi. Em da ghi nhan va se theo sat den khi hoan tat.">Cam on</button>
+                    </div>
+
+                    <div class="chat-compose-pane">
+                        <form id="adminReplyForm" onsubmit="guiTraLoi(event, {{ $firstChat->id }})"
+                            enctype="multipart/form-data">
+                            @csrf
+                            <div class="chat-compose-box">
+                                <input type="file" id="adminReplyFile" accept="image/*,video/*" style="display:none;"
+                                    {{ $firstChat->trang_thai === 'da_dong' ? 'disabled' : '' }}>
+                                <button class="btn btn-outline-secondary" type="button" id="adminAttachBtn"
+                                    onclick="chonTepTraLoi()"
+                                    {{ $firstChat->trang_thai === 'da_dong' ? 'disabled' : '' }}>
+                                    <i class="fas fa-paperclip"></i>
+                                </button>
+                                <input type="text" id="adminReplyInput" class="form-control"
+                                    placeholder="Nhap noi dung tra loi..."
+                                    {{ $firstChat->trang_thai === 'da_dong' ? 'disabled' : '' }}>
+                                <button class="btn btn-primary chat-send-btn" type="submit"
+                                    {{ $firstChat->trang_thai === 'da_dong' ? 'disabled' : '' }}>
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Gui</span>
+                                </button>
+                            </div>
+                            <div id="adminReplyFileHint" class="chat-file-hint" style="display:none;"></div>
+                        </form>
+                    </div>
+                @else
+                    <div class="chat-thread-empty">
+                        <i class="fas fa-inbox"></i>
+                        <p>Chon mot phien chat de bat dau.</p>
+                    </div>
+                @endif
+            </section>
+
+            <aside class="chat-info-pane">
+                <div class="chat-info-head">Thong tin lien quan</div>
+                @if ($firstChat)
+                    <div class="chat-info-card">
+                        <div class="chat-info-title">Lien he</div>
+                        <div class="chat-info-row">
+                            <span>Ten</span>
+                            <strong>{{ $firstChat->ten_hien_thi }}</strong>
                         </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="fas fa-envelope text-secondary me-3" style="width: 15px;"></i>
-                            <span>tranvanb@gmail.com</span>
+                        <div class="chat-info-row">
+                            <span>SDT</span>
+                            <strong>{{ $firstChat->khachHang?->so_dien_thoai ?: $firstChat->sdt_khach_vang_lai ?: '-' }}</strong>
                         </div>
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-user-tag text-info me-3" style="width: 15px;"></i>
-                            <span>Nhu cầu: <strong class="text-info">Mua Căn hộ</strong></span>
+                        <div class="chat-info-row">
+                            <span>Email</span>
+                            <strong>{{ $firstChat->khachHang?->email ?: $firstChat->email_khach_vang_lai ?: '-' }}</strong>
                         </div>
                     </div>
 
-                    {{-- Thao tác nhanh CRM --}}
-                    <h6 class="fw-bold text-muted mb-3" style="font-size: 0.8rem; text-transform: uppercase;">Thao tác
-                        nhanh CRM</h6>
-
-                    <a href="#"
-                        class="btn btn-outline-primary w-100 mb-2 text-start d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-id-card me-2"></i>Xem hồ sơ CRM</span> <i class="fas fa-chevron-right"
-                            style="font-size: 0.7rem;"></i>
-                    </a>
-
-                    <a href="#"
-                        class="btn btn-outline-danger w-100 mb-2 text-start d-flex justify-content-between align-items-center">
-                        <span><i class="fas fa-calendar-plus me-2"></i>Tạo lịch hẹn xem nhà</span> <i
-                            class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
-                    </a>
-
-                    <div class="mt-4">
-                        <label class="form-label fw-bold" style="font-size: 0.85rem;">Ghi chú nội bộ</label>
-                        <textarea class="form-control bg-light" rows="3" placeholder="Thêm ghi chú nhanh..."
-                            style="font-size: 0.85rem;">Khách quan tâm phân khu Tonkin, có khả năng chốt trong tháng này.</textarea>
-                        <button class="btn btn-sm btn-navy mt-2 w-100">Lưu ghi chú</button>
+                    <div class="chat-info-card">
+                        <div class="chat-info-title">Ngu canh va hanh vi</div>
+                        <div class="chat-info-row">
+                            <span>Loai ngu canh</span>
+                            <strong>{{ $firstChat->loai_ngu_canh ?: '-' }}</strong>
+                        </div>
+                        <div class="chat-info-row">
+                            <span>Noi dung</span>
+                            <strong>{{ $firstChat->ten_ngu_canh ?: '-' }}</strong>
+                        </div>
+                        <div class="chat-info-row top">
+                            <span>URL</span>
+                            <strong class="text-break">{{ $firstChat->url_ngu_canh ?: '-' }}</strong>
+                        </div>
                     </div>
-                </div>
-            </div>
 
+                    @if (!$firstChat->khach_hang_id)
+                        <div class="chat-warning-box">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            Khach chua xac thuc tai khoan. Lich su co the bi xoa theo han.
+                        </div>
+                    @endif
+                @else
+                    <div class="chat-info-empty">Chua co thong tin de hien thi.</div>
+                @endif
+            </aside>
         </div>
     </div>
-
-    {{-- CSS ĐỘC QUYỀN CHO MODULE CHAT --}}
-    <style>
-        /* Tinh chỉnh danh sách */
-        .chat-list-item {
-            transition: 0.2s ease;
-            cursor: pointer;
-        }
-
-        .chat-list-item:hover {
-            background-color: #f8f9fa;
-        }
-
-        .chat-list-item.active {
-            background-color: #e8f4fd;
-            border-left: 3px solid var(--bs-primary);
-        }
-
-        /* Bong bóng chat (Giống Zalo/Messenger) */
-        .chat-bubble {
-            max-width: 85%;
-            padding: 10px 15px;
-            font-size: 0.9rem;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-
-        .chat-bubble-received {
-            background-color: #ffffff;
-            color: #1a1a1a;
-            border: 1px solid #e0e0e0;
-            border-radius: 15px 15px 15px 4px;
-            /* Vuông góc dưới trái */
-        }
-
-        .chat-bubble-sent {
-            background-color: var(--bs-primary);
-            color: #ffffff;
-            border-radius: 15px 15px 4px 15px;
-            /* Vuông góc dưới phải */
-        }
-
-        /* Tùy chỉnh thanh cuộn cho đẹp */
-        .chat-list::-webkit-scrollbar,
-        .chat-messages::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .chat-list::-webkit-scrollbar-thumb,
-        .chat-messages::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 10px;
-        }
-    </style>
 @endsection
 
 @push('scripts')
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            // Khởi tạo Tooltip
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-            var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl)
+    @if ($firstChat)
+        <script>
+            let lastId = {{ (int) optional(($currentMessages ?? collect())->last())->id }};
+            const adminChatRoutes = {
+                traLoi: `{{ route('nhanvien.chat.tra-loi', ['id' => '__ID__']) }}`,
+                tiepNhan: `{{ route('nhanvien.chat.tiep-nhan', ['id' => '__ID__']) }}`,
+                dong: `{{ route('nhanvien.chat.dong', ['id' => '__ID__']) }}`,
+                longPoll: `{{ route('nhanvien.chat.long-poll', ['id' => '__ID__']) }}`,
+            };
+            const chatBody = document.getElementById('adminChatBody');
+            const adminReplyInput = document.getElementById('adminReplyInput');
+            const adminReplyFile = document.getElementById('adminReplyFile');
+            const adminReplyFileHint = document.getElementById('adminReplyFileHint');
+            const adminChatSearch = document.getElementById('adminChatSearch');
+            const chatStatusTabs = document.getElementById('chatStatusTabs');
+            const chatListBody = document.getElementById('chatListBody');
+            const chatQuickReplies = document.getElementById('chatQuickReplies');
+            const POLL_INTERVAL_MS = 1200;
+            let pollingInFlight = false;
+            let activeStatusFilter = 'all';
+
+            function isNearBottom(el, threshold = 96) {
+                if (!el) return true;
+                const distance = el.scrollHeight - el.scrollTop - el.clientHeight;
+                return distance <= threshold;
+            }
+
+            function escapeHtml(value) {
+                return String(value ?? '').replace(/[&<>'"]/g, (char) => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    "'": '&#39;',
+                    '"': '&quot;'
+                } [char]));
+            }
+
+            function buildAdminAttachmentHtml(msg) {
+                if (!msg || !msg.tep_dinh_kem) return '';
+                const fileUrl = `/storage/${String(msg.tep_dinh_kem).replace(/^\/+/, '')}`;
+
+                if (msg.loai_tin_nhan === 'hinh_anh') {
+                    return `<div class="chat-media-wrap mt-1"><a href="${fileUrl}" target="_blank" rel="noopener noreferrer"><img class="chat-media-image" src="${fileUrl}" alt="Anh dinh kem"></a></div>`;
+                }
+
+                if (msg.loai_tin_nhan === 'video') {
+                    return `<div class="chat-media-wrap mt-1"><video class="chat-media-video" controls preload="metadata"><source src="${fileUrl}"></video></div>`;
+                }
+
+                return '';
+            }
+
+            function appendAdminMessage(msg) {
+                if (!chatBody) return;
+                const shouldAutoScroll = isNearBottom(chatBody);
+                const id = Number(msg.id || 0);
+                if (id > 0 && chatBody.querySelector(`[data-msg-id="${id}"]`)) return;
+
+                const isCustomer = msg.nguoi_gui === 'khach_hang';
+                const isSystem = msg.nguoi_gui === 'he_thong';
+                const isBot = msg.nguoi_gui === 'bot';
+                const wrap = document.createElement('div');
+                if (id > 0) wrap.dataset.msgId = id;
+                wrap.className = `chat-row ${isCustomer ? 'from-customer' : 'from-staff'}`;
+
+                const bubble = document.createElement('div');
+                bubble.className =
+                    `chat-bubble ${isSystem ? 'is-system' : (isCustomer ? 'is-customer' : 'is-staff')}`;
+                const t = new Date(msg.created_at).toLocaleString('vi-VN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    day: '2-digit',
+                    month: '2-digit'
+                });
+
+                bubble.innerHTML = `${isBot ? '<div class="chat-bot-tag"><i class="fas fa-robot"></i> Bot AI</div>' : ''}
+                    <div>${escapeHtml(msg.noi_dung)}</div>
+                    ${buildAdminAttachmentHtml(msg)}
+                    <div class="chat-time ${isCustomer ? 'muted' : ''}">${t}</div>`;
+                wrap.appendChild(bubble);
+                chatBody.appendChild(wrap);
+                if (shouldAutoScroll || msg.nguoi_gui === 'nhan_vien') {
+                    chatBody.scrollTo({
+                        top: chatBody.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
+            function applyChatListFilter() {
+                if (!chatListBody) return;
+                const keyword = (adminChatSearch?.value || '').trim().toLowerCase();
+                chatListBody.querySelectorAll('.chat-list-item').forEach((item) => {
+                    const status = item.dataset.status || '';
+                    const haystack = item.dataset.keyword || '';
+                    const matchStatus = activeStatusFilter === 'all' || status === activeStatusFilter;
+                    const matchKeyword = !keyword || haystack.includes(keyword);
+                    item.style.display = matchStatus && matchKeyword ? '' : 'none';
+                });
+            }
+
+            function appendOptimisticAdminMessage(text) {
+                appendAdminMessage({
+                    id: `tmp-${Date.now()}`,
+                    nguoi_gui: 'nhan_vien',
+                    noi_dung: text,
+                    created_at: new Date().toISOString()
+                });
+            }
+
+            function pollAdmin() {
+                if (pollingInFlight) return;
+                pollingInFlight = true;
+
+                fetch(`${adminChatRoutes.longPoll.replace('__ID__', String({{ $firstChat->id }}))}?sau_id=${lastId}`, {
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success || !Array.isArray(data.tin_nhans)) return;
+                        if (data.trang_thai === 'da_dong' && adminReplyInput) {
+                            adminReplyInput.disabled = true;
+                            const submitBtn = document.querySelector('#adminReplyForm button[type="submit"]');
+                            if (submitBtn) submitBtn.disabled = true;
+                        }
+
+                        data.tin_nhans.forEach(m => {
+                            appendAdminMessage(m);
+                            lastId = Math.max(lastId, Number(m.id || 0));
+                        });
+                    })
+                    .catch(() => {})
+                    .finally(() => {
+                        pollingInFlight = false;
+                    });
+            }
+
+            window.guiTraLoi = function(e, chatId) {
+                e.preventDefault();
+                const input = document.getElementById('adminReplyInput');
+                const text = input?.value?.trim();
+                const selectedFile = adminReplyFile?.files?.[0] || null;
+                if (!text && !selectedFile) return;
+
+                const submitBtn = document.querySelector('#adminReplyForm button[type="submit"]');
+                if (submitBtn) submitBtn.disabled = true;
+                const attachBtn = document.getElementById('adminAttachBtn');
+                if (attachBtn) attachBtn.disabled = true;
+                input.disabled = true;
+
+                const payload = new FormData();
+                if (text) payload.append('noi_dung', text);
+                if (selectedFile) payload.append('tep_tin', selectedFile);
+
+                fetch(adminChatRoutes.traLoi.replace('__ID__', String(chatId)), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        },
+                        body: payload
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            if (data.tin_nhan) {
+                                appendAdminMessage(data.tin_nhan);
+                                lastId = Math.max(lastId, Number(data.tin_nhan.id || 0));
+                            }
+                            input.value = '';
+                            if (adminReplyFile) adminReplyFile.value = '';
+                            if (adminReplyFileHint) {
+                                adminReplyFileHint.style.display = 'none';
+                                adminReplyFileHint.textContent = '';
+                            }
+                        } else if (window.showAdminToast) {
+                            showAdminToast(data.message || 'Khong the gui tin nhan', 'error');
+                        }
+                    })
+                    .catch(() => {
+                        if (window.showAdminToast) showAdminToast('Loi ket noi, vui long thu lai', 'error');
+                    })
+                    .finally(() => {
+                        input.disabled = false;
+                        if (submitBtn) submitBtn.disabled = false;
+                        if (attachBtn) attachBtn.disabled = false;
+                        input.focus();
+                    });
+            }
+
+            window.tiepNhan = function(chatId) {
+                fetch(adminChatRoutes.tiepNhan.replace('__ID__', String(chatId)), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(() => location.reload());
+            }
+
+            window.dongPhien = function(chatId) {
+                fetch(adminChatRoutes.dong.replace('__ID__', String(chatId)), {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'Accept': 'application/json'
+                    }
+                }).then(() => location.reload());
+            }
+
+            window.chonTepTraLoi = function() {
+                if (adminReplyFile && !adminReplyFile.disabled) adminReplyFile.click();
+            }
+
+            adminReplyFile?.addEventListener('change', () => {
+                const file = adminReplyFile.files?.[0] || null;
+                if (!file) {
+                    if (adminReplyFileHint) adminReplyFileHint.style.display = 'none';
+                    return;
+                }
+
+                const okType = /^(image\/.+|video\/.+)$/.test(file.type || '');
+                if (!okType) {
+                    if (window.showAdminToast) showAdminToast('Chi ho tro anh hoac video', 'warning');
+                    adminReplyFile.value = '';
+                    if (adminReplyFileHint) adminReplyFileHint.style.display = 'none';
+                    return;
+                }
+
+                if (file.size > 20 * 1024 * 1024) {
+                    if (window.showAdminToast) showAdminToast('Tep vuot qua 20MB', 'warning');
+                    adminReplyFile.value = '';
+                    if (adminReplyFileHint) adminReplyFileHint.style.display = 'none';
+                    return;
+                }
+
+                if (adminReplyFileHint) {
+                    adminReplyFileHint.style.display = 'block';
+                    adminReplyFileHint.textContent = `Da chon: ${file.name}`;
+                }
             });
 
-            // Auto cuộn xuống cuối khung chat
-            const chatMessages = document.querySelector('.chat-messages');
-            if (chatMessages) {
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+            setInterval(pollAdmin, POLL_INTERVAL_MS);
+            if (chatBody) {
+                chatBody.scrollTop = chatBody.scrollHeight;
             }
 
-            // Xử lý auto-resize cho textarea nhập tin nhắn
-            const tx = document.querySelector('textarea');
-            tx.setAttribute('style', 'height:' + (tx.scrollHeight) +
-                'px; overflow-y:hidden; resize:none; border-radius:20px; padding:10px 15px;');
-            tx.addEventListener("input", OnInput, false);
+            adminChatSearch?.addEventListener('input', applyChatListFilter);
+            chatStatusTabs?.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-filter]');
+                if (!btn) return;
+                activeStatusFilter = btn.dataset.filter || 'all';
+                chatStatusTabs.querySelectorAll('button').forEach((b) => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyChatListFilter();
+            });
 
-            function OnInput() {
-                this.style.height = 'auto';
-                let newHeight = this.scrollHeight;
-                if (newHeight > 100) newHeight = 100; // Max height
-                this.style.height = newHeight + 'px';
-                if (newHeight === 100) this.style.overflowY = 'auto';
-            }
-        });
-    </script>
+            chatQuickReplies?.addEventListener('click', (e) => {
+                const btn = e.target.closest('button[data-reply]');
+                if (!btn || !adminReplyInput) return;
+                adminReplyInput.value = btn.dataset.reply || '';
+                adminReplyInput.focus();
+            });
+
+            applyChatListFilter();
+        </script>
+    @endif
 @endpush

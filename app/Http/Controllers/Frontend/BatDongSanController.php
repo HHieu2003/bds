@@ -172,6 +172,14 @@ class BatDongSanController extends Controller
             return $item;
         });
 
-        return view('frontend.bat-dong-san.show', compact('bds', 'bdsLienQuan'));
+        // return view('frontend.bat-dong-san.show', compact('bds', 'bdsLienQuan',));
+        return view('frontend.bat-dong-san.show', [
+            'bds'               => $bds,
+            'bdsLienQuan'       => $bdsLienQuan,
+            // Context cho chat widget
+            'chat_loai_ngu_canh' => 'bat_dong_san',
+            'chat_ngu_canh_id'  => $bds->id,
+            'chat_ten_ngu_canh' => $bds->tieu_de,
+        ]);
     }
 }

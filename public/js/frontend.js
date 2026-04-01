@@ -556,6 +556,307 @@ document.addEventListener("click", (e) => {
 ========================================================= */
 let feChatPolling = null;
 let feLastMessageCount = 0;
+let feLastMessageId = 0;
+let fePollingInFlight = false;
+let feChatOpened = false;
+let feLongPollController = null;
+let feAiThinkingVisible = false;
+let feAiThinkingTimer = null;
+const FE_CHAT_POLL_INTERVAL_MS = 1200;
+
+function escapeHtml(value) {
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function normalizeChatText(value) {
+    const escaped = escapeHtml(value || "");
+    return escaped.replace(/\n/g, "<br>");
+}
+
+function setAiThinking(show, mode = "bot") {
+    const el = document.getElementById("chatAiThinking");
+    if (!el) return;
+
+    if (feAiThinkingTimer) {
+        clearTimeout(feAiThinkingTimer);
+        feAiThinkingTimer = null;
+    }
+
+    const label = el.querySelector(".chat-ai-thinking-label");
+    if (label) {
+        label.textContent =
+            mode === "send" ? "Dang gui tin nhan" : "Gemini dang suy nghi";
+    }
+
+    feAiThinkingVisible = Boolean(show);
+    el.style.display = show ? "block" : "none";
+
+    if (show) {
+        feAiThinkingTimer = setTimeout(() => {
+            setAiThinking(false);
+        }, 18000);
+    }
+
+    if (show) {
+        const body = document.getElementById("chatBody");
+        if (body) body.scrollTop = body.scrollHeight;
+    }
+}
+
+function renderChatError(message) {
+    const body = document.getElementById("chatBody");
+    if (!body) return;
+    body.innerHTML = `<div class="text-center mt-4 text-danger"><i class="fas fa-exclamation-triangle mb-2"></i><p>${message}</p></div>`;
+}
+
+function normalizeSenderClass(sender) {
+    if (sender === "he_thong") return "fe-msg-system";
+    if (sender === "nhan_vien" || sender === "bot") return "fe-msg-admin";
+    return "fe-msg-customer";
+}
+
+function formatChatTime(dateLike) {
+    if (!dateLike) return "";
+    return new Date(dateLike).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+function buildChatMessageHtml(msg) {
+    const cls = normalizeSenderClass(msg.nguoi_gui);
+    const safeContent = normalizeChatText(msg.noi_dung || "");
+    let mediaHtml = "";
+    if (msg.tep_dinh_kem) {
+        const fileUrl = `/storage/${String(msg.tep_dinh_kem).replace(/^\/+/, "")}`;
+        if (msg.loai_tin_nhan === "hinh_anh") {
+            mediaHtml = `<div class="mt-1"><a href="${fileUrl}" target="_blank" rel="noopener noreferrer"><img src="${fileUrl}" alt="Hinh dinh kem" style="max-width:220px; max-height:220px; border-radius:10px; object-fit:cover;"></a></div>`;
+        } else if (msg.loai_tin_nhan === "video") {
+            mediaHtml = `<div class="mt-1"><video controls preload="metadata" style="max-width:220px; max-height:220px; border-radius:10px;"><source src="${fileUrl}"></video></div>`;
+        }
+    }
+    const time =
+        msg.nguoi_gui === "he_thong"
+            ? ""
+            : `<div class="fe-msg-time">${formatChatTime(msg.created_at)} ${
+                  msg.nguoi_gui === "khach_hang"
+                      ? '<i class="fas fa-check-double ms-1"></i>'
+                      : ""
+              }</div>`;
+    return `<div class="fe-chat-row" data-msg-id="${msg.id || ""}"><div class="fe-msg-bubble ${cls}">${safeContent}${mediaHtml}${time}</div></div>`;
+}
+
+function appendMessages(messages, scrollToBottom = true) {
+    const body = document.getElementById("chatBody");
+    if (!body || !Array.isArray(messages) || messages.length === 0) return;
+
+    const frag = document.createDocumentFragment();
+    const wrap = document.createElement("div");
+    let appended = 0;
+
+    messages.forEach((msg) => {
+        if (!msg || !msg.id) return;
+        if (Number(msg.id) <= feLastMessageId) return;
+        wrap.innerHTML = buildChatMessageHtml(msg);
+        frag.appendChild(wrap.firstChild);
+        feLastMessageId = Number(msg.id);
+        appended++;
+
+        if (msg.nguoi_gui === "bot" || msg.nguoi_gui === "nhan_vien") {
+            setAiThinking(false);
+        }
+    });
+
+    if (appended > 0) {
+        body.appendChild(frag);
+        feLastMessageCount += appended;
+        if (scrollToBottom) body.scrollTop = body.scrollHeight;
+    }
+}
+
+function appendOptimisticCustomerMessage(content) {
+    const body = document.getElementById("chatBody");
+    if (!body || !content) return;
+
+    const now = new Date();
+    const html = `<div class="fe-chat-row" data-msg-id="tmp-${now.getTime()}"><div class="fe-msg-bubble fe-msg-customer">${normalizeChatText(content)}<div class="fe-msg-time">${formatChatTime(now.toISOString())}</div></div></div>`;
+    body.insertAdjacentHTML("beforeend", html);
+    body.scrollTop = body.scrollHeight;
+}
+
+function resetPollingState() {
+    if (feLongPollController) {
+        feLongPollController.abort();
+        feLongPollController = null;
+    }
+    fePollingInFlight = false;
+}
+
+function getChatContext() {
+    const loai =
+        document.getElementById("chatContextLoai")?.value ||
+        window.APP?.chatContext?.loai ||
+        "";
+    const id =
+        document.getElementById("chatContextId")?.value ||
+        window.APP?.chatContext?.id ||
+        "";
+    const ten =
+        document.getElementById("chatContextTen")?.value ||
+        window.APP?.chatContext?.ten ||
+        "";
+
+    return {
+        loai_ngu_canh: loai || null,
+        ngu_canh_id: id ? parseInt(id, 10) : null,
+        ten_ngu_canh: ten || null,
+    };
+}
+
+function chatHistoryUrl(phienChatId) {
+    return `${window.APP.routes.chatLichSu.replace("__ID__", phienChatId)}?limit=80`;
+}
+
+function chatLongPollUrl(phienChatId, sauId) {
+    return `${window.APP.routes.chatLongPoll.replace("__ID__", phienChatId)}?sau_id=${sauId || 0}`;
+}
+
+function extractJsonPayload(rawText) {
+    if (!rawText) return null;
+
+    const startCandidates = [rawText.indexOf("{"), rawText.indexOf("[")]
+        .filter((idx) => idx >= 0)
+        .sort((a, b) => a - b);
+
+    if (startCandidates.length === 0) return null;
+
+    const start = startCandidates[0];
+    const openChar = rawText[start];
+    const closeChar = openChar === "{" ? "}" : "]";
+    let depth = 0;
+    let inString = false;
+    let escaped = false;
+
+    for (let i = start; i < rawText.length; i++) {
+        const ch = rawText[i];
+
+        if (inString) {
+            if (escaped) {
+                escaped = false;
+            } else if (ch === "\\") {
+                escaped = true;
+            } else if (ch === '"') {
+                inString = false;
+            }
+            continue;
+        }
+
+        if (ch === '"') {
+            inString = true;
+            continue;
+        }
+
+        if (ch === openChar) depth++;
+        if (ch === closeChar) depth--;
+
+        if (depth === 0) {
+            return rawText.slice(start, i + 1);
+        }
+    }
+
+    return null;
+}
+
+async function parseApiJsonResponse(res) {
+    const text = await res.text();
+    const payload = (text || "").trim();
+
+    if (!payload) {
+        return { success: false, message: "May chu khong tra du lieu." };
+    }
+
+    try {
+        return JSON.parse(payload);
+    } catch (_) {
+        const extracted = extractJsonPayload(payload);
+        if (extracted) {
+            try {
+                return JSON.parse(extracted);
+            } catch (_) {
+                // Fall through to friendly error mapping below.
+            }
+        }
+
+        const contentType = res.headers.get("content-type") || "";
+        const isHtmlLike =
+            contentType.includes("text/html") ||
+            payload.startsWith("<!DOCTYPE") ||
+            payload.startsWith("<html") ||
+            payload.startsWith("<");
+
+        if (isHtmlLike) {
+            if (res.status === 419) {
+                return {
+                    success: false,
+                    message:
+                        "Phien het han. Vui long tai lai trang va thu lai.",
+                };
+            }
+
+            return {
+                success: false,
+                message:
+                    "May chu tra ve du lieu khong dung dinh dang JSON. Vui long thu lai.",
+            };
+        }
+
+        return { success: false, message: "Phan hoi API khong hop le." };
+    }
+}
+
+function setChatInputsEnabled(enabled) {
+    const input = document.getElementById("chatInput");
+    const sendBtn = document.getElementById("chatSendBtn");
+    const attachBtn = document.getElementById("chatAttachBtn");
+    if (input) input.disabled = !enabled;
+    if (sendBtn) sendBtn.disabled = !enabled;
+    if (attachBtn) attachBtn.disabled = !enabled;
+}
+
+window.openChatFilePicker = function () {
+    const fileInput = document.getElementById("chatFileInput");
+    if (fileInput && !fileInput.disabled) {
+        fileInput.click();
+    }
+};
+
+window.sendChatSelectedFile = function () {
+    sendFrontendMessage();
+};
+
+function updateTransferButtonsByState(trangThai, dangBotXuLy) {
+    const transferWrap = document.getElementById("chatTransferWrap");
+    const toAgentBtn = transferWrap?.querySelector(
+        "button[onclick='transferToAgent()']",
+    );
+    const backToBotBtn = document.getElementById("chatBackToBotBtn");
+
+    if (!transferWrap) return;
+
+    const isClosed = trangThai === "da_dong";
+    const isBotMode = Boolean(dangBotXuLy) || trangThai === "dang_bot";
+
+    transferWrap.style.display = isClosed ? "none" : "block";
+    if (toAgentBtn)
+        toAgentBtn.style.display = isBotMode ? "inline-flex" : "none";
+    if (backToBotBtn)
+        backToBotBtn.style.display = !isBotMode ? "inline-flex" : "none";
+}
 
 window.toggleChatWindow = function () {
     const win = document.getElementById("chatWindow");
@@ -566,25 +867,61 @@ window.toggleChatWindow = function () {
     if (win.classList.contains("show")) {
         win.classList.remove("show");
         btn.classList.remove("active");
+        feChatOpened = false;
+        setAiThinking(false);
+        resetPollingState();
         clearInterval(feChatPolling);
     } else {
         win.classList.add("show");
         btn.classList.add("active");
+        feChatOpened = true;
         if (badge) badge.style.display = "none";
         initFrontendChat();
     }
 };
 
-function initFrontendChat() {
-    if (!window.APP || !window.APP.isLoggedIn) {
-        const guestEl = document.getElementById("chatKhachHangChuaDangNhap");
-        if (guestEl) guestEl.style.display = "flex";
-        return;
-    }
-    document.getElementById("chatKhachHangChuaDangNhap").style.display = "none";
-    if (feLastMessageCount === 0)
+function startPolling(phienChatId) {
+    clearInterval(feChatPolling);
+
+    const tick = () => {
+        if (!feChatOpened || fePollingInFlight) return;
+        fePollingInFlight = true;
+        feLongPollController = new AbortController();
+
+        fetch(chatLongPollUrl(phienChatId, feLastMessageId), {
+            headers: { Accept: "application/json" },
+            signal: feLongPollController.signal,
+        })
+            .then((res) => parseApiJsonResponse(res))
+            .then((data) => {
+                if (!data.success || !Array.isArray(data.tin_nhans)) return;
+                updateTransferButtonsByState(
+                    data.trang_thai,
+                    data.dang_bot_xu_ly,
+                );
+                if (!Boolean(data.dang_bot_xu_ly)) {
+                    setAiThinking(false);
+                }
+                appendMessages(data.tin_nhans, true);
+            })
+            .catch(() => {})
+            .finally(() => {
+                feLongPollController = null;
+                fePollingInFlight = false;
+            });
+    };
+
+    tick();
+    feChatPolling = setInterval(() => {
+        tick();
+    }, FE_CHAT_POLL_INTERVAL_MS);
+}
+
+function initChatSession(payload = {}) {
+    if (feLastMessageCount === 0) {
         document.getElementById("chatBody").innerHTML =
             '<div class="text-center mt-4"><div class="spinner-grow text-primary spinner-grow-sm"></div><p class="text-muted small mt-2">Đang kết nối...</p></div>';
+    }
 
     fetch(window.APP.routes.chatKhoiTao, {
         method: "POST",
@@ -593,95 +930,254 @@ function initFrontendChat() {
             "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
         },
+        body: JSON.stringify({
+            ...getChatContext(),
+            ...payload,
+        }),
     })
-        .then((res) => res.json())
-        .then((data) => {
-            if (data.success) {
-                document.getElementById("currentPhienChatId").value =
-                    data.phien_chat_id;
-                document.getElementById("chatInput").disabled = false;
-                document.getElementById("chatSendBtn").disabled = false;
-                fetchFrontendMessages();
-                clearInterval(feChatPolling);
-                feChatPolling = setInterval(fetchFrontendMessages, 3000);
+        .then(async (res) => {
+            const data = await parseApiJsonResponse(res);
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || "Không thể khởi tạo chat.");
             }
+            return data;
         })
-        .catch(() => {
-            document.getElementById("chatBody").innerHTML =
-                '<div class="text-center mt-4 text-danger"><i class="fas fa-exclamation-triangle mb-2"></i><p>Lỗi kết nối.</p></div>';
+        .then((data) => {
+            document.getElementById("chatKhachHangChuaDangNhap").style.display =
+                "none";
+            document.getElementById("currentPhienChatId").value =
+                data.phien_chat_id;
+            feLastMessageId = 0;
+            feLastMessageCount = 0;
+            setChatInputsEnabled(true);
+            setAiThinking(false);
+            updateTransferButtonsByState("dang_bot", true);
+            fetchFrontendMessages();
+            startPolling(data.phien_chat_id);
+        })
+        .catch((err) => {
+            renderChatError(err.message || "Lỗi kết nối.");
+            setChatInputsEnabled(false);
         });
 }
+
+function initFrontendChat() {
+    const guestEl = document.getElementById("chatKhachHangChuaDangNhap");
+    if (!window.APP) {
+        renderChatError("Không tải được cấu hình chat.");
+        setAiThinking(false);
+        return;
+    }
+
+    if (window.APP.isLoggedIn) {
+        if (guestEl) guestEl.style.display = "none";
+        initChatSession();
+        return;
+    }
+
+    setChatInputsEnabled(false);
+    setAiThinking(false);
+    if (guestEl) guestEl.style.display = "flex";
+    updateTransferButtonsByState("da_dong", false);
+    document.getElementById("chatBody").innerHTML =
+        '<div class="text-center text-muted small p-3">Vui lòng nhập thông tin để bắt đầu cuộc trò chuyện.</div>';
+}
+
+window.startGuestChat = function (e) {
+    if (e?.preventDefault) {
+        e.preventDefault();
+    }
+
+    initChatSession();
+};
 
 function fetchFrontendMessages() {
     const phienChatId = document.getElementById("currentPhienChatId")?.value;
     if (!phienChatId) return;
-    fetch(
-        `${window.APP.baseUrl.replace(/\/$/, "")}/chat/lich-su/${phienChatId}`,
-        { headers: { Accept: "application/json" } },
-    )
-        .then((res) => res.json())
-        .then((data) => {
-            if (data.success) renderFrontendMessages(data.tin_nhans);
-        });
-}
 
+    fetch(chatHistoryUrl(phienChatId), {
+        headers: { Accept: "application/json" },
+    })
+        .then((res) => parseApiJsonResponse(res))
+        .then((data) => {
+            if (!data.success || !Array.isArray(data.tin_nhans)) return;
+            updateTransferButtonsByState(data.trang_thai, data.dang_bot_xu_ly);
+            renderFrontendMessages(data.tin_nhans);
+        })
+        .catch(() => {}); // Bỏ qua lỗi mạng, polling sẽ tự thử lại
+}
 function renderFrontendMessages(messages) {
     const body = document.getElementById("chatBody");
-    if (messages.length === feLastMessageCount && feLastMessageCount > 0)
-        return;
-    feLastMessageCount = messages.length;
+    if (!body || !Array.isArray(messages)) return;
+
+    feLastMessageId = 0;
+    feLastMessageCount = 0;
     body.innerHTML = "";
-    messages.forEach((msg) => {
-        const t = new Date(msg.created_at).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-        let cls =
-            msg.nguoi_gui === "hethong"
-                ? "fe-msg-system"
-                : msg.nguoi_gui === "nhanvien"
-                  ? "fe-msg-admin"
-                  : "fe-msg-customer";
-        let time =
-            msg.nguoi_gui === "hethong"
-                ? ""
-                : `<div class="fe-msg-time">${t} ${msg.nguoi_gui === "khachhang" ? '<i class="fas fa-check-double ms-1"></i>' : ""}</div>`;
-        body.innerHTML += `<div class="fe-chat-row"><div class="fe-msg-bubble ${cls}">${msg.noi_dung}${time}</div></div>`;
-    });
-    body.scrollTo({ top: body.scrollHeight, behavior: "smooth" });
+    appendMessages(messages, true);
 }
 
 window.sendFrontendMessage = function (e) {
-    e.preventDefault();
-    const input = document.getElementById("chatInput");
-    const phienId = document.getElementById("currentPhienChatId").value;
-    const noiDung = input.value.trim();
-    if (!noiDung || !phienId) return;
-    input.value = "";
+    if (e?.preventDefault) {
+        e.preventDefault();
+    }
 
-    const body = document.getElementById("chatBody");
-    const t = new Date().toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-    });
-    body.innerHTML += `<div class="fe-chat-row"><div class="fe-msg-bubble fe-msg-customer" style="opacity:.7">${noiDung}<div class="fe-msg-time">${t} <i class="far fa-clock ms-1"></i></div></div></div>`;
-    body.scrollTo({ top: body.scrollHeight, behavior: "smooth" });
+    const phienChatId = document.getElementById("currentPhienChatId")?.value;
+    const noiDung = document.getElementById("chatInput")?.value?.trim();
+    const fileInput = document.getElementById("chatFileInput");
+    const selectedFile = fileInput?.files?.[0] || null;
+    const sendBtn = document.getElementById("chatSendBtn");
+
+    // ✅ Kiểm tra trước khi gửi
+    if (!phienChatId || (!noiDung && !selectedFile)) return;
+
+    if (noiDung) {
+        appendOptimisticCustomerMessage(noiDung);
+    }
+    document.getElementById("chatInput").value = "";
+    setAiThinking(true, "send");
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+    }
+
+    const formData = new FormData();
+    formData.append("phien_chat_id", String(phienChatId));
+    if (noiDung) formData.append("noi_dung", noiDung);
+    if (selectedFile) formData.append("tep_tin", selectedFile);
 
     fetch(window.APP.routes.chatGui, {
+        method: "POST",
+        headers: {
+            "X-CSRF-TOKEN": window.APP.csrfToken,
+            Accept: "application/json",
+        },
+        body: formData,
+    })
+        .then(async (res) => {
+            const data = await parseApiJsonResponse(res);
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || "Gửi tin nhắn thất bại.");
+            }
+            return data;
+        })
+        .then((data) => {
+            resetPollingState();
+            fetchFrontendMessages();
+            setTimeout(fetchFrontendMessages, 700);
+            if (data.da_chuyen_nhan_vien) {
+                showFlash(
+                    "Đã chuyển cuộc trò chuyện sang nhân viên kinh doanh.",
+                    "success",
+                );
+            }
+        })
+        .catch((err) => {
+            showFlash(err.message || "Không gửi được tin nhắn.", "danger");
+            setAiThinking(false);
+            fetchFrontendMessages();
+        })
+        .finally(() => {
+            if (fileInput) {
+                fileInput.value = "";
+            }
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+            }
+        });
+};
+
+document.getElementById("chatFileInput")?.addEventListener("change", () => {
+    const fileInput = document.getElementById("chatFileInput");
+    const file = fileInput?.files?.[0] || null;
+    if (!file) return;
+
+    const okType = /^(image\/.+|video\/.+)$/.test(file.type || "");
+    if (!okType) {
+        showFlash("Chi ho tro anh hoac video.", "warning");
+        fileInput.value = "";
+        return;
+    }
+
+    if (file.size > 20 * 1024 * 1024) {
+        showFlash("Tep vuot qua 20MB.", "warning");
+        fileInput.value = "";
+        return;
+    }
+
+    sendFrontendMessage();
+});
+
+window.transferToAgent = function () {
+    const phienChatId = document.getElementById("currentPhienChatId")?.value;
+    if (!phienChatId) {
+        showFlash(
+            "Vui lòng bắt đầu chat trước khi chuyển cho nhân viên.",
+            "warning",
+        );
+        return;
+    }
+
+    fetch(window.APP.routes.chatChuyenNV, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
             "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
         },
-        body: JSON.stringify({ phien_chat_id: phienId, noi_dung: noiDung }),
+        body: JSON.stringify({ phien_chat_id: phienChatId }),
     })
-        .then((res) => res.json())
+        .then((res) => parseApiJsonResponse(res))
         .then((data) => {
-            if (data.success) fetchFrontendMessages();
-        });
+            if (data.success) {
+                updateTransferButtonsByState("dang_cho", false);
+                showFlash(
+                    "Yêu cầu đã được chuyển cho nhân viên kinh doanh.",
+                    "success",
+                );
+                fetchFrontendMessages();
+                return;
+            }
+            showFlash(
+                data.message || "Không thể chuyển cho nhân viên.",
+                "warning",
+            );
+        })
+        .catch(() => showFlash("Không thể chuyển cho nhân viên.", "danger"));
 };
 
+window.transferBackToBot = function () {
+    const phienChatId = document.getElementById("currentPhienChatId")?.value;
+    if (!phienChatId) {
+        showFlash("Vui lòng bắt đầu chat trước.", "warning");
+        return;
+    }
+
+    fetch(window.APP.routes.chatChuyenBot, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": window.APP.csrfToken,
+            Accept: "application/json",
+        },
+        body: JSON.stringify({ phien_chat_id: phienChatId }),
+    })
+        .then((res) => parseApiJsonResponse(res))
+        .then((data) => {
+            if (!data.success) {
+                showFlash(
+                    data.message || "Không thể chuyển lại AI.",
+                    "warning",
+                );
+                return;
+            }
+
+            updateTransferButtonsByState("dang_bot", true);
+            showFlash("Đã chuyển lại cho trợ lý AI.", "success");
+            fetchFrontendMessages();
+        })
+        .catch(() => showFlash("Không thể chuyển lại AI.", "danger"));
+};
 /* =========================================================
    SO SÁNH BẤT ĐỘNG SẢN LOGIC
 ========================================================= */

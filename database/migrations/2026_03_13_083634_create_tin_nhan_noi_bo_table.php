@@ -27,6 +27,21 @@ return new class extends Migration
                 ->constrained('lich_hen')
                 ->nullOnDelete();
 
+            $table->foreignId('bat_dong_san_id')
+                ->nullable()
+                ->constrained('bat_dong_san')
+                ->nullOnDelete();
+
+            $table->foreignId('du_an_id')
+                ->nullable()
+                ->constrained('du_an')
+                ->nullOnDelete();
+
+            $table->foreignId('khach_hang_lq_id')
+                ->nullable()
+                ->constrained('khach_hang')
+                ->nullOnDelete();
+
             // van_ban | hinh_anh | dinh_kem
             $table->string('loai_tin_nhan')->default('van_ban');
             $table->text('noi_dung')->nullable();
@@ -40,6 +55,9 @@ return new class extends Migration
             $table->index(['nguoi_gui_id', 'nguoi_nhan_id', 'created_at']);
             $table->index(['nguoi_nhan_id', 'da_doc']);
             $table->index(['lich_hen_id']);
+            $table->index(['bat_dong_san_id']);
+            $table->index(['du_an_id']);
+            $table->index(['khach_hang_lq_id']);
         });
     }
 

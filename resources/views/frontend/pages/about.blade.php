@@ -423,7 +423,7 @@
             justify-content: center;
             padding: 6rem 0 5rem;
             background:
-                linear-gradient(rgba(86, 107, 122, 0.82), rgba(31, 56, 78, 0.82)),
+                linear-gradient(rgba(32, 44, 54, 0.82), rgba(26, 51, 71, 0.82)),
                 url('/images/anh-nhan-vien-cong-ty-Thanh-Cong-Land-1536x702.webp') center / cover fixed;
             overflow: hidden;
         }

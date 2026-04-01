@@ -1,7 +1,7 @@
 <section class="py-5 bg-alt-section">
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
-            <h2 class="section-title serif-font">Bất Động Sản Nổi Bật</h2>
+            <h2 class="section-title serif-font">Căn Hộ Nổi Bật</h2>
             <p class="section-subtitle">Những căn hộ, nhà đất vị trí đẹp, giá tốt nhất tuần qua</p>
         </div>
 
