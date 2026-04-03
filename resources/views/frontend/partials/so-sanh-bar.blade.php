@@ -3,7 +3,6 @@
      JS: addSoSanh(id, ten) | removeSoSanh(id)
          clearSoSanh() | openSoSanhModal()
 ══════════════════════════════════════ --}}
-
 <style>
     /* ── Floating Bar ── */
     #so-sanh-bar {
@@ -15,7 +14,7 @@
         background: var(--secondary);
         color: #fff;
         padding: .8rem 1.5rem;
-        z-index: 980;
+        z-index: 9999;
         box-shadow: 0 -4px 20px rgba(0, 0, 0, .2);
         animation: slideUpBar .3s ease;
     }

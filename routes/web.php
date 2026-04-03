@@ -36,7 +36,8 @@ Route::prefix('')->name('frontend.')->group(function () {
 
     Route::get('/bat-dong-san', [FeBatDongSanController::class, 'index'])->name('bat-dong-san.index');
     Route::get('/bat-dong-san/{slug}', [FeBatDongSanController::class, 'show'])->name('bat-dong-san.show');
-
+    Route::post('/bds/track-time', [FeBatDongSanController::class, 'trackTime'])
+        ->name('bds.track-time');
     Route::get('/du-an', [FeDuAnController::class, 'index'])->name('du-an.index');
     Route::get('/du-an/{slug}', [FeDuAnController::class, 'show'])->name('du-an.show');
 
@@ -177,10 +178,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
                 Route::prefix('nhan-vien')->name('nhan-vien.')->group(function () {
                     Route::get('/',                          [NhanVienController::class, 'index'])->name('index');
-                    Route::get('/create',                    [NhanVienController::class, 'create'])->name('create');
                     Route::post('/',                         [NhanVienController::class, 'store'])->name('store');
                     Route::get('/{nhanVien}',                [NhanVienController::class, 'show'])->name('show');
-                    Route::get('/{nhanVien}/edit',           [NhanVienController::class, 'edit'])->name('edit');
                     Route::put('/{nhanVien}',                [NhanVienController::class, 'update'])->name('update');
                     Route::delete('/{nhanVien}',             [NhanVienController::class, 'destroy'])->name('destroy');
                     Route::patch('/{nhanVien}/toggle',       [NhanVienController::class, 'toggleKichHoat'])->name('toggle');
@@ -193,7 +192,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::resource('du-an', DuAnController::class);
                 Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
                     ->name('du-an.toggle');
-                Route::resource('chu-nha', \App\Http\Controllers\Admin\ChuNhaController::class);
+                Route::resource('chu-nha', \App\Http\Controllers\Admin\ChuNhaController::class)
+                    ->except(['create', 'edit']);
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
                     ->name('bat-dong-san.destroy');
 

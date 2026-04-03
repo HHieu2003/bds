@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                   TRANG CHI TIẾT BĐS — Global Styles
-                                ═══════════════════════════════════════ */
+                                                       TRANG CHI TIẾT BĐS — Global Styles
+                                                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1128,7 +1128,7 @@
                             <div class="consultant-body">
                                 {{-- Hotline --}}
                                 <a href="tel:0912345678" class="btn-hotline">
-                                    <i class="fas fa-phone-alt"></i> 0912 345 678
+                                    <i class="fas fa-phone-alt"></i> 0336 123 130
                                 </a>
 
                                 {{-- Zalo --}}
@@ -1238,6 +1238,7 @@
 
         </div>{{-- end container --}}
     </div>{{-- end page --}}
+    @include('frontend.partials.goi-y-bds')
 
     @push('scripts')
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
@@ -1301,6 +1302,26 @@
                         btn.disabled = false;
                     });
             }
+
+            // Trong trang chi tiết BĐS (bat-dong-san/show.blade.php)
+            (function() {
+                const startTime = Date.now();
+                const bdsId = {{ $bds->id }};
+
+                // Gửi khi rời trang
+                window.addEventListener('beforeunload', function() {
+                    const seconds = Math.floor((Date.now() - startTime) / 1000);
+                    if (seconds < 3) return; // Bỏ qua nếu vào rồi thoát ngay
+
+                    navigator.sendBeacon('{{ route('frontend.bds.track-time') }}',
+                        JSON.stringify({
+                            bds_id: bdsId,
+                            seconds: seconds,
+                            _token: '{{ csrf_token() }}'
+                        })
+                    );
+                });
+            })();
         </script>
     @endpush
 

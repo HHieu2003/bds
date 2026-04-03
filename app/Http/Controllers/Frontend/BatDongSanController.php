@@ -6,13 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\BatDongSan;
 use App\Models\DuAn;
 use App\Models\KhuVuc;
+use App\Models\LichSuXemBds;
 use App\Models\YeuThich;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\GoiYService;
 
 class BatDongSanController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, GoiYService $goiYService)
     {
         // 1. Khởi tạo Query mặc định: Chỉ lấy BĐS đang hiển thị và còn hàng
         $query = BatDongSan::with(['duAn.khuVuc']) // Tối ưu N+1 query lồng nhau
@@ -114,6 +116,32 @@ class BatDongSanController extends Controller
         // 10. Phân trang (12 BĐS / 1 trang) và giữ nguyên param trên URL
         $batDongSans = $query->paginate(12)->withQueryString();
 
+        // Ghi lịch sử tìm kiếm để mô hình gợi ý có dữ liệu thật từ hành vi lọc/tìm.
+        [$giaTu, $giaDen] = $this->resolveGiaKhoang($request->muc_gia, $request->nhu_cau);
+        $boLoc = [
+            'nhu_cau' => $request->nhu_cau,
+            'khu_vuc_id' => $request->khu_vuc_id,
+            'du_an_id' => $request->du_an,
+            'so_phong_ngu' => $request->so_phong_ngu,
+            'loai_hinh' => $request->loai_hinh,
+            'gia_tu' => $giaTu,
+            'gia_den' => $giaDen,
+            'toa' => $request->toa,
+            'noi_that' => $request->noithat,
+            'noi_bat' => $request->noi_bat,
+        ];
+
+        $goiYService->ghiLichSuTimKiem(
+            Auth::guard('customer')->id(),
+            session()->getId(),
+            [
+                'tu_khoa' => $request->tu_khoa,
+                'bo_loc' => $boLoc,
+                'sap_xep_theo' => $request->sap_xep,
+                'so_ket_qua' => $batDongSans->total(),
+            ]
+        );
+
         $favoriteMap = collect();
         if (Auth::guard('customer')->check()) {
             $favoriteMap = YeuThich::where('khach_hang_id', Auth::guard('customer')->id())
@@ -133,7 +161,7 @@ class BatDongSanController extends Controller
         return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns', 'toaList'));
     }
 
-    public function show($slug)
+    public function show($slug, GoiYService $goiYService)
     {
         $bds = BatDongSan::with(['duAn.khuVuc'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
 
@@ -171,15 +199,70 @@ class BatDongSanController extends Controller
             $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
             return $item;
         });
+        $khachHangId = Auth::guard('customer')->id();
+        $sessionId   = session()->getId();
+
+        // ✅ Ghi lịch sử xem + tăng lượt xem
+        $goiYService->ghiLichSuXem($bds, $khachHangId, $sessionId);
+
+        // ✅ Lấy BĐS gợi ý (loại trừ BĐS đang xem)
+        $goiYBds = $goiYService->layGoiY($khachHangId, $sessionId, $bds->id);
 
         // return view('frontend.bat-dong-san.show', compact('bds', 'bdsLienQuan',));
         return view('frontend.bat-dong-san.show', [
             'bds'               => $bds,
             'bdsLienQuan'       => $bdsLienQuan,
+            'goiYBds'           => $goiYBds,
             // Context cho chat widget
             'chat_loai_ngu_canh' => 'bat_dong_san',
             'chat_ngu_canh_id'  => $bds->id,
             'chat_ten_ngu_canh' => $bds->tieu_de,
         ]);
+    }
+    public function trackTime(Request $request)
+    {
+        $request->validate([
+            'bds_id' => 'required|integer|exists:bat_dong_san,id',
+            'seconds' => 'required|integer|min:0|max:1800',
+        ]);
+
+        LichSuXemBds::where('bat_dong_san_id', $request->bds_id)
+            ->where(function ($q) {
+                $id = Auth::guard('customer')->id();
+                if ($id) $q->where('khach_hang_id', $id);
+                else     $q->where('session_id', session()->getId());
+            })
+            ->latest()
+            ->first()
+            ?->update(['thoi_gian_xem' => min((int)$request->seconds, 1800)]);
+
+        return response()->noContent();
+    }
+
+    /**
+     * Chuẩn hóa khoảng giá số theo input filter để lưu lịch sử tìm kiếm.
+     */
+    protected function resolveGiaKhoang(?string $mucGia, ?string $nhuCau): array
+    {
+        if (!$mucGia) return [null, null];
+
+        $nhuCau = $nhuCau ?: 'ban';
+        if ($nhuCau === 'thue') {
+            return match ($mucGia) {
+                'duoi-10' => [0, 10000000],
+                '10-20' => [10000000, 20000000],
+                '20-50' => [20000000, 50000000],
+                'tren-50' => [50000000, null],
+                default => [null, null],
+            };
+        }
+
+        return match ($mucGia) {
+            'duoi-2' => [0, 2000000000],
+            '2-5' => [2000000000, 5000000000],
+            '5-10' => [5000000000, 10000000000],
+            'tren-10' => [10000000000, null],
+            default => [null, null],
+        };
     }
 }

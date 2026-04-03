@@ -124,76 +124,70 @@ Neu chi la cau hoi thong tin thong thuong thi KHONG them [TRANSFER_TO_AGENT].";
 
     public function chat(PhienChat $phienChat, string $message): array
     {
-        try {
-            $history  = $this->buildHistory($phienChat);
-            $prompt   = $this->buildSystemPrompt($phienChat);
-            $chat = Gemini::generativeModel(model: 'gemini-2.5-flash')
-                ->withSystemInstruction(Content::parse($prompt))
-                ->withGenerationConfig($this->buildGenerationConfig())
-                ->startChat(history: $history);
-            $response = $chat->sendMessage(trim($message));
-            $text     = $response->text();
+        $maxRetries = 3;
 
-            $transfer  = $this->shouldTransferToAgent($message, $text);
-            $cleanText = trim(str_replace('[TRANSFER_TO_AGENT]', '', $text));
+        for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+            try {
+                $history  = $this->buildHistory($phienChat);
+                $prompt   = $this->buildSystemPrompt($phienChat);
 
-            return ['reply' => $cleanText, 'can_chuyen_nv' => $transfer];
-        } catch (\Exception $e) {
-            $rawMessage = (string) $e->getMessage();
-            $safeMessage = preg_replace('/AIza[0-9A-Za-z_-]{20,}/', '[REDACTED_API_KEY]', $rawMessage) ?? $rawMessage;
-            \Log::error('Gemini error: ' . $safeMessage);
+                $chat = Gemini::generativeModel(model: 'gemini-2.5-flash')
+                    ->withSystemInstruction(Content::parse($prompt))
+                    ->withGenerationConfig($this->buildGenerationConfig())
+                    ->startChat(history: $history);
 
-            $reply = 'Xin lỗi, hệ thống AI tạm thời bận. Bạn có muốn kết nối với nhân viên tư vấn không?';
+                $response  = $chat->sendMessage(trim($message));
+                $text      = $response->text();
 
-            if (str_contains(strtolower($rawMessage), 'has been suspended')) {
-                $reply = 'Xin lỗi, kênh AI đang tạm khóa từ phía nhà cung cấp. Bạn có muốn chuyển sang nhân viên tư vấn ngay không?';
-            } elseif (str_contains(strtolower($rawMessage), 'quota')) {
-                $reply = 'Xin lỗi, AI đang vuot gioi han su dung (quota). Ban thu lai sau it phut hoac chuyen sang nhan vien tu van nhe.';
-            } elseif (str_contains(strtolower($rawMessage), 'cURL error')) {
-                $reply = 'Kết nối tới AI đang không ổn định. Bạn thử lại sau ít phút hoặc chuyển sang nhân viên tư vấn nhé.';
+                // ✅ Fix: chỉ cần AI trả [TRANSFER_TO_AGENT] là đủ
+                $transfer  = str_contains($text, '[TRANSFER_TO_AGENT]');
+                $cleanText = trim(str_replace('[TRANSFER_TO_AGENT]', '', $text));
+
+                return ['reply' => $cleanText, 'can_chuyen_nv' => $transfer];
+            } catch (\Exception $e) {
+                $rawMessage  = (string) $e->getMessage();
+                $safeMessage = preg_replace('/AIza[0-9A-Za-z_-]{20,}/', '[REDACTED_API_KEY]', $rawMessage) ?? $rawMessage;
+                $lower       = strtolower($rawMessage);
+
+                \Log::error("Gemini error (attempt {$attempt}/{$maxRetries}): " . $safeMessage);
+
+                // ✅ Lỗi cURL (mất mạng tạm thời): retry sau 1 giây, không cần báo user
+                if (str_contains($lower, 'curl error') && $attempt < $maxRetries) {
+                    sleep(1);
+                    continue;
+                }
+
+                // Các lỗi không thể retry → dừng ngay
+                $reply = $this->buildErrorReply($lower);
+
+                return [
+                    'reply'         => $reply,
+                    'can_chuyen_nv' => false,
+                ];
             }
-
-            return [
-                'reply'         => $reply,
-                'can_chuyen_nv' => false,
-            ];
         }
+
+        // Hết số lần retry (chỉ xảy ra khi cURL lỗi liên tục)
+        return [
+            'reply'         => 'Kết nối tới AI đang không ổn định. Bạn thử lại sau ít phút hoặc chuyển sang nhân viên tư vấn nhé.',
+            'can_chuyen_nv' => false,
+        ];
     }
 
-    private function shouldTransferToAgent(string $userMessage, string $aiText): bool
+    private function buildErrorReply(string $lowerMessage): string
     {
-        if (!str_contains($aiText, '[TRANSFER_TO_AGENT]')) {
-            return false;
+        if (str_contains($lowerMessage, 'has been suspended')) {
+            return 'Xin lỗi, kênh AI đang tạm khóa từ phía nhà cung cấp. Bạn có muốn chuyển sang nhân viên tư vấn ngay không?';
         }
 
-        $msg = mb_strtolower(trim($userMessage));
-        if ($msg === '') {
-            return false;
+        if (str_contains($lowerMessage, 'quota')) {
+            return 'Xin lỗi, AI đang vượt giới hạn sử dụng (quota). Bạn thử lại sau ít phút hoặc chuyển sang nhân viên tư vấn nhé.';
         }
 
-        $explicitTransferKeywords = [
-            'nhan vien',
-            'tu van vien',
-            'goi toi',
-            'lien he toi',
-            'so dien thoai',
-            'dat lich',
-            'xem nha',
-            'xem can',
-            'dat coc',
-            'ky hop dong',
-            'thuong luong',
-            'phap ly',
-            'so hong',
-            'so do',
-        ];
-
-        foreach ($explicitTransferKeywords as $keyword) {
-            if (str_contains($msg, $keyword)) {
-                return true;
-            }
+        if (str_contains($lowerMessage, 'curl error')) {
+            return 'Kết nối tới AI đang không ổn định. Bạn thử lại sau ít phút hoặc chuyển sang nhân viên tư vấn nhé.';
         }
 
-        return false;
+        return 'Xin lỗi, hệ thống AI tạm thời bận. Bạn có muốn kết nối với nhân viên tư vấn không?';
     }
 }

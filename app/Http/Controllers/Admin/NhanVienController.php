@@ -56,11 +56,6 @@ class NhanVienController extends Controller
     }
 
     // CREATE / STORE
-    public function create()
-    {
-        return view('admin.nhan-vien.create');
-    }
-
     public function store(Request $request)
     {
         // Hỗ trợ cả AJAX (JSON) và form thường
@@ -105,11 +100,6 @@ class NhanVienController extends Controller
     }
 
     // EDIT / UPDATE
-    public function edit(NhanVien $nhanVien)
-    {
-        return view('admin.nhan-vien.edit', compact('nhanVien'));
-    }
-
     public function update(Request $request, NhanVien $nhanVien)
     {
         $data = $this->validateNhanVien($request, $nhanVien->id);

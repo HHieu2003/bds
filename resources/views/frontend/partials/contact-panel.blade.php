@@ -56,8 +56,7 @@
 
         <a href="https://zalo.me/0336123130" target="_blank" class="cp-channel cp-channel--zalo">
             <div class="cp-ch-icon">
-                <img src="{{ asset('images/zalo-icon.png') }}" alt="Zalo" width="22"
-                    onerror="this.outerHTML='<i class=\'fas fa-comment-dots\'></i>'">
+                <i class="fas fa-comment-dots" aria-hidden="true"></i>
             </div>
             <div class="cp-ch-info">
                 <span class="cp-ch-name">Nhắn tin Zalo</span>

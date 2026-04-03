@@ -9,15 +9,19 @@ use App\Models\DuAn;
 use App\Models\KhuVuc;
 use App\Models\YeuThich;
 use Illuminate\Support\Facades\Auth;
+use App\Services\GoiYService;
 
 class HomeController extends Controller
 {
-    public function index()
+    public function index(GoiYService $goiYService)
     {
         $bdsNoiBat = BatDongSan::with('duAn')->where('hien_thi', true)->where('noi_bat', true)->where('trang_thai', 'con_hang')->orderBy('thu_tu_hien_thi')->limit(8)->get();
         $bdsBan = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
         $bdsThue = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        $khachHangId = Auth::guard('customer')->id();
+        $sessionId   = session()->getId();
 
+        $goiYBds = $goiYService->layGoiY($khachHangId, $sessionId);
         $favoriteMap = collect();
         if (Auth::guard('customer')->check()) {
             $allBdsIds = $bdsNoiBat->pluck('id')
@@ -61,6 +65,7 @@ class HomeController extends Controller
             'duAnNoiBat',
             'baiVietMoi',
             'khuVuc',
+            'goiYBds',
             'danhSachDuAn'
         ));
     }

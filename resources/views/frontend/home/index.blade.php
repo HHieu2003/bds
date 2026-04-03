@@ -26,7 +26,7 @@
 
     {{-- 8. Logo Các Đối Tác Tin Cậy --}}
     @include('frontend.home.sections.doi-tac-tin-cay')
-
+    {{-- @include('frontend.partials.goi-y-bds') --}}
     @push('scripts')
         <script>
             window.chatContext = {

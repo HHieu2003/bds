@@ -7,9 +7,9 @@
             <h1 class="page-header-title mb-1"><i class="fas fa-user-tie text-primary"></i> Quản lý Chủ nhà</h1>
             <p class="page-header-sub mb-0">Lưu trữ bảo mật thông tin liên hệ nguồn hàng</p>
         </div>
-        <a href="{{ route('nhanvien.admin.chu-nha.create') }}" class="btn btn-primary shadow-sm">
+        <button type="button" class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalCreateChuNha">
             <i class="fas fa-plus me-1"></i> Thêm chủ nhà
-        </a>
+        </button>
     </div>
 
     @if (session('success'))
@@ -65,8 +65,13 @@
                         <tr>
                             <td class="text-center text-muted">{{ $chuNhas->firstItem() + $i }}</td>
                             <td>
-                                <a href="{{ route('nhanvien.admin.chu-nha.edit', $cn) }}"
-                                    class="fw-bold text-navy text-decoration-none d-block">{{ $cn->ho_ten }}</a>
+                                <button type="button"
+                                    class="btn btn-link p-0 fw-bold text-navy text-decoration-none d-block text-start btn-edit-chu-nha"
+                                    data-bs-toggle="modal" data-bs-target="#modalEditChuNha" data-id="{{ $cn->id }}"
+                                    data-ho-ten="{{ $cn->ho_ten }}" data-so-dien-thoai="{{ $cn->so_dien_thoai }}"
+                                    data-email="{{ $cn->email }}" data-cccd="{{ $cn->cccd }}"
+                                    data-dia-chi="{{ $cn->dia_chi }}" data-ghi-chu="{{ $cn->ghi_chu }}"
+                                    data-nhan-vien-phu-trach-id="{{ $cn->nhan_vien_phu_trach_id }}">{{ $cn->ho_ten }}</button>
                                 @if ($cn->cccd)
                                     <div class="text-muted" style="font-size: 0.75rem">CCCD: {{ $cn->cccd }}</div>
                                 @endif
@@ -93,8 +98,14 @@
                                         class="fas fa-building me-1"></i> {{ $cn->bat_dong_sans_count }} BĐS</span></td>
                             <td class="text-center">
                                 <div class="btn-actions-group justify-content-center">
-                                    <a href="{{ route('nhanvien.admin.chu-nha.edit', $cn) }}"
-                                        class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
+                                    <button type="button" class="btn-action btn-action-edit btn-edit-chu-nha"
+                                        data-bs-toggle="modal" data-bs-target="#modalEditChuNha"
+                                        data-id="{{ $cn->id }}" data-ho-ten="{{ $cn->ho_ten }}"
+                                        data-so-dien-thoai="{{ $cn->so_dien_thoai }}" data-email="{{ $cn->email }}"
+                                        data-cccd="{{ $cn->cccd }}" data-dia-chi="{{ $cn->dia_chi }}"
+                                        data-ghi-chu="{{ $cn->ghi_chu }}"
+                                        data-nhan-vien-phu-trach-id="{{ $cn->nhan_vien_phu_trach_id }}"><i
+                                            class="fas fa-pen"></i></button>
                                     <form id="frmDel_{{ $cn->id }}"
                                         action="{{ route('nhanvien.admin.chu-nha.destroy', $cn) }}" method="POST"
                                         class="d-none">@csrf @method('DELETE')</form>
@@ -123,8 +134,13 @@
                 <div class="mobile-card">
                     <div class="mobile-card-top">
                         <div style="flex: 1; min-width: 0;">
-                            <a href="{{ route('nhanvien.admin.chu-nha.edit', $cn) }}"
-                                class="fw-bold text-navy text-decoration-none d-block mb-1">{{ $cn->ho_ten }}</a>
+                            <button type="button"
+                                class="btn btn-link p-0 fw-bold text-navy text-decoration-none d-block mb-1 text-start btn-edit-chu-nha"
+                                data-bs-toggle="modal" data-bs-target="#modalEditChuNha" data-id="{{ $cn->id }}"
+                                data-ho-ten="{{ $cn->ho_ten }}" data-so-dien-thoai="{{ $cn->so_dien_thoai }}"
+                                data-email="{{ $cn->email }}" data-cccd="{{ $cn->cccd }}"
+                                data-dia-chi="{{ $cn->dia_chi }}" data-ghi-chu="{{ $cn->ghi_chu }}"
+                                data-nhan-vien-phu-trach-id="{{ $cn->nhan_vien_phu_trach_id }}">{{ $cn->ho_ten }}</button>
                             <div class="fw-bold text-success" style="font-size: 0.85rem"><i
                                     class="fas fa-phone-alt me-1"></i>{{ $cn->so_dien_thoai }}</div>
                         </div>
@@ -137,8 +153,13 @@
                     </div>
                     <div class="mobile-card-foot justify-content-end">
                         <div class="btn-actions-group">
-                            <a href="{{ route('nhanvien.admin.chu-nha.edit', $cn) }}"
-                                class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
+                            <button type="button" class="btn-action btn-action-edit btn-edit-chu-nha"
+                                data-bs-toggle="modal" data-bs-target="#modalEditChuNha" data-id="{{ $cn->id }}"
+                                data-ho-ten="{{ $cn->ho_ten }}" data-so-dien-thoai="{{ $cn->so_dien_thoai }}"
+                                data-email="{{ $cn->email }}" data-cccd="{{ $cn->cccd }}"
+                                data-dia-chi="{{ $cn->dia_chi }}" data-ghi-chu="{{ $cn->ghi_chu }}"
+                                data-nhan-vien-phu-trach-id="{{ $cn->nhan_vien_phu_trach_id }}"><i
+                                    class="fas fa-pen"></i></button>
                             <button type="button" class="btn-action btn-action-delete btn-delete-cn"
                                 data-id="{{ $cn->id }}" data-name="{{ $cn->ho_ten }}"><i
                                     class="fas fa-trash"></i></button>
@@ -153,6 +174,9 @@
                 {{ $chuNhas->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
+
+    @include('admin.chu-nha._modal-create')
+    @include('admin.chu-nha._modal-edit')
 @endsection
 
 @push('scripts')
@@ -165,5 +189,42 @@
                 });
             });
         });
+
+        const editForm = document.getElementById('editChuNhaForm');
+        const editButtons = document.querySelectorAll('.btn-edit-chu-nha');
+        const updateRouteTemplate = `{{ route('nhanvien.admin.chu-nha.update', ['chu_nha' => '__ID__']) }}`;
+
+        function fillEditModal(button) {
+            if (!button || !editForm) return;
+            const id = button.dataset.id;
+            editForm.action = updateRouteTemplate.replace('__ID__', id || '');
+            document.getElementById('edit_id').value = id || '';
+            document.getElementById('edit_ho_ten').value = button.dataset.hoTen || '';
+            document.getElementById('edit_so_dien_thoai').value = button.dataset.soDienThoai || '';
+            document.getElementById('edit_email').value = button.dataset.email || '';
+            document.getElementById('edit_cccd').value = button.dataset.cccd || '';
+            document.getElementById('edit_dia_chi').value = button.dataset.diaChi || '';
+            document.getElementById('edit_ghi_chu').value = button.dataset.ghiChu || '';
+            document.getElementById('edit_nhan_vien_phu_trach_id').value = button.dataset.nhanVienPhuTrachId || '';
+        }
+
+        editButtons.forEach((btn) => {
+            btn.addEventListener('click', function() {
+                fillEditModal(this);
+            });
+        });
+
+        @if ($errors->any() && old('_form_mode') === 'create')
+            const createModal = new bootstrap.Modal(document.getElementById('modalCreateChuNha'));
+            createModal.show();
+        @endif
+
+        @if ($errors->any() && old('_form_mode') === 'edit')
+            const editModalEl = document.getElementById('modalEditChuNha');
+            const oldBtn = document.querySelector(`.btn-edit-chu-nha[data-id="{{ old('_edit_id') }}"]`);
+            if (oldBtn) fillEditModal(oldBtn);
+            const editModal = new bootstrap.Modal(editModalEl);
+            editModal.show();
+        @endif
     </script>
 @endpush

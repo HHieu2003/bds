@@ -356,7 +356,7 @@
                                     </div>
                                     <div>
                                         <span class="dact-hotline-label">Hotline tư vấn 24/7</span>
-                                        <a href="tel:0912345678" class="dact-hotline-num">0912 345 678</a>
+                                        <a href="tel:0912345678" class="dact-hotline-num">0336 123 130 </a>
                                     </div>
                                 </div>
                             </div>

@@ -19,13 +19,11 @@ class ChuNhaController extends Controller
         }
 
         $chuNhas = $query->latest()->paginate(15)->withQueryString();
-        return view('admin.chu-nha.index', compact('chuNhas'));
-    }
+        $nhanViens = NhanVien::where('kich_hoat', true)
+            ->whereIn('vai_tro', ['admin', 'nguon_hang'])
+            ->get();
 
-    public function create()
-    {
-        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->get();
-        return view('admin.chu-nha.create', compact('nhanViens'));
+        return view('admin.chu-nha.index', compact('chuNhas', 'nhanViens'));
     }
 
     public function store(Request $request)
@@ -42,12 +40,6 @@ class ChuNhaController extends Controller
 
         ChuNha::create($data);
         return redirect()->route('nhanvien.admin.chu-nha.index')->with('success', 'Đã thêm chủ nhà mới!');
-    }
-
-    public function edit(ChuNha $chuNha)
-    {
-        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->get();
-        return view('admin.chu-nha.edit', compact('chuNha', 'nhanViens'));
     }
 
     public function update(Request $request, ChuNha $chuNha)
