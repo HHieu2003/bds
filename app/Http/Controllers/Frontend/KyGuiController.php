@@ -7,6 +7,7 @@ use App\Models\KyGui;
 use App\Mail\KyGuiSuccessMail; // Import Class Mail vừa tạo
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail; // Import Facade Mail
 use Illuminate\Support\Facades\Storage;
 
@@ -73,13 +74,22 @@ class KyGuiController extends Controller
         // 2. Xác định địa chỉ email để gửi (Lấy email từ form, nếu không có thì lấy email của tài khoản đang đăng nhập)
         $sendToEmail = $request->email ?? (Auth::guard('customer')->check() ? Auth::guard('customer')->user()->email : null);
 
-        // 3. Tiến hành gửi mail nếu có email
+        // 3. Tiến hành gửi mail nếu có email (gửi sau khi response đã trả về)
         if ($sendToEmail) {
-            // Mẹo: Dùng queue() thay vì send() nếu bạn đã cấu hình Queue để web không bị load chậm khi gửi mail
-            Mail::to($sendToEmail)->send(new KyGuiSuccessMail($kyGui));
+            dispatch(function () use ($sendToEmail, $kyGui) {
+                try {
+                    Mail::to($sendToEmail)->send(new KyGuiSuccessMail($kyGui));
+                } catch (\Throwable $e) {
+                    Log::error('Gui email ky gui that bai', [
+                        'ky_gui_id' => $kyGui->id,
+                        'email' => $sendToEmail,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            })->afterResponse();
         }
 
-        return redirect()->route('frontend.ky-gui.success')->with('success', true);
+        return redirect()->route('frontend.ky-gui.success')->with('success', 'Gửi ký gửi thành công!');
     }
 
     public function success()

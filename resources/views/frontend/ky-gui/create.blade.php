@@ -802,6 +802,25 @@
 
 @push('scripts')
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            @if ($errors->any())
+                const errorMessages = @json($errors->all());
+                errorMessages.forEach((msg, index) => {
+                    setTimeout(() => {
+                        if (typeof showFlash === 'function') {
+                            showFlash(msg, 'warning');
+                        }
+                    }, index * 220);
+                });
+            @endif
+
+            @if (session('error'))
+                if (typeof showFlash === 'function') {
+                    showFlash(@json(session('error')), 'error');
+                }
+            @endif
+        });
+
         /* ── Nhu cầu toggle ── */
         document.querySelectorAll('.kg-fe-nc-radio').forEach(r => {
             r.addEventListener('change', function() {

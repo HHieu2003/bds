@@ -12,17 +12,16 @@ use Illuminate\Support\Collection;
 class GoiYService
 {
     // ── Trọng số từng hành vi ──────────────────────────────────
-    const W_XEM_MOT_LAN    = 1;   // Xem 1 lần
-    const W_XEM_LAU        = 2;   // Xem > 60 giây (thêm bonus)
-    const W_YEU_THICH      = 5;   // Bấm yêu thích
-    const W_TIM_KIEM_LOAI  = 3;   // Tìm kiếm theo loại hình
-    const W_TIM_KIEM_KHU   = 2;   // Tìm kiếm theo khu vực
-    const W_TIM_KIEM_DU_AN = 4;   // Tìm kiếm theo dự án
-    const W_CHAT_VE_BDS    = 4;   // Từng chat hỏi về BĐS này
+    const W_XEM_MOT_LAN    = 1;
+    const W_XEM_LAU        = 2;
+    const W_YEU_THICH      = 5;
+    const W_TIM_KIEM_LOAI  = 3;
+    const W_TIM_KIEM_KHU   = 2;
+    const W_TIM_KIEM_DU_AN = 4;
+    const W_CHAT_VE_BDS    = 4;
 
     /**
-     * Xây dựng "profile điểm" sở thích của người dùng
-     * Trả về: [ 'loai_hinh' => [...điểm], 'khu_vuc' => [...điểm], 'gia' => [...] ]
+     * Xây dựng "profile điểm" sở thích của người dùng có áp dụng Hao mòn thời gian
      */
     public function xayDungProfile(?int $khachHangId, string $sessionId): array
     {
@@ -33,35 +32,36 @@ class GoiYService
         $bdsChatScore  = [];
         $giaList       = [];
 
-        // ── 1. Từ lịch sử xem BĐS ─────────────────────────────
+        $now = now();
+
+        // ── 1. Từ lịch sử xem BĐS (Áp dụng Time Decay 60 ngày) ───
         LichSuXemBds::where(function ($q) use ($khachHangId, $sessionId) {
             if ($khachHangId) $q->where('khach_hang_id', $khachHangId);
             else              $q->where('session_id', $sessionId);
         })
-            ->where('created_at', '>=', now()->subDays(60))
+            ->where('created_at', '>=', $now->copy()->subDays(60))
             ->get()
-            ->each(function ($row) use (&$loaiHinhScore, &$khuVucScore, &$duAnScore, &$nhuCauScore, &$giaList) {
+            ->each(function ($row) use (&$loaiHinhScore, &$khuVucScore, &$duAnScore, &$nhuCauScore, &$giaList, $now) {
+                // Tính hệ số hao mòn: Mới xem = 100% điểm, xem 60 ngày trước = gần 0% điểm
+                $daysAgo = max(0, $row->created_at->diffInDays($now));
+                $heSoThoiGian = 1 - ($daysAgo / 60);
+
                 $diem = self::W_XEM_MOT_LAN;
                 if ($row->thoi_gian_xem > 60) $diem += self::W_XEM_LAU;
 
-                if ($row->loai_hinh) {
-                    $loaiHinhScore[$row->loai_hinh] = ($loaiHinhScore[$row->loai_hinh] ?? 0) + $diem;
-                }
-                if ($row->khu_vuc_id) {
-                    $khuVucScore[$row->khu_vuc_id] = ($khuVucScore[$row->khu_vuc_id] ?? 0) + $diem;
-                }
-                if ($row->du_an_id) {
-                    $duAnScore[$row->du_an_id] = ($duAnScore[$row->du_an_id] ?? 0) + $diem;
-                }
-                if ($row->nhu_cau) {
-                    $nhuCauScore[$row->nhu_cau] = ($nhuCauScore[$row->nhu_cau] ?? 0) + $diem;
-                }
-                if ($row->gia_tu) {
+                $diemThucTe = $diem * $heSoThoiGian; // Áp dụng hao mòn
+
+                if ($row->loai_hinh)  $loaiHinhScore[$row->loai_hinh] = ($loaiHinhScore[$row->loai_hinh] ?? 0) + $diemThucTe;
+                if ($row->khu_vuc_id) $khuVucScore[$row->khu_vuc_id] = ($khuVucScore[$row->khu_vuc_id] ?? 0) + $diemThucTe;
+                if ($row->du_an_id)   $duAnScore[$row->du_an_id] = ($duAnScore[$row->du_an_id] ?? 0) + $diemThucTe;
+                if ($row->nhu_cau)    $nhuCauScore[$row->nhu_cau] = ($nhuCauScore[$row->nhu_cau] ?? 0) + $diemThucTe;
+
+                if ($row->gia_tu && $row->gia_tu > 0) {
                     $giaList[] = ($row->gia_tu + $row->gia_den) / 2;
                 }
             });
 
-        // ── 2. Từ danh sách yêu thích (tín hiệu mạnh nhất) ───
+        // ── 2. Từ danh sách yêu thích (Không hao mòn vì đây là chủ ý của KH) ───
         if ($khachHangId) {
             YeuThich::where('khach_hang_id', $khachHangId)
                 ->with('batDongSan.duAn')
@@ -70,95 +70,80 @@ class GoiYService
                     $bds = $yt->batDongSan;
                     if (!$bds) return;
 
-                    if ($bds->loai_hinh) {
-                        $loaiHinhScore[$bds->loai_hinh] = ($loaiHinhScore[$bds->loai_hinh] ?? 0) + self::W_YEU_THICH;
-                    }
+                    if ($bds->loai_hinh) $loaiHinhScore[$bds->loai_hinh] = ($loaiHinhScore[$bds->loai_hinh] ?? 0) + self::W_YEU_THICH;
+
                     $khuVuc = $bds->duAn?->khu_vuc_id;
-                    if ($khuVuc) {
-                        $khuVucScore[$khuVuc] = ($khuVucScore[$khuVuc] ?? 0) + self::W_YEU_THICH;
-                    }
-                    if ($bds->du_an_id) {
-                        $duAnScore[$bds->du_an_id] = ($duAnScore[$bds->du_an_id] ?? 0) + self::W_YEU_THICH;
-                    }
-                    if ($bds->nhu_cau) {
-                        $nhuCauScore[$bds->nhu_cau] = ($nhuCauScore[$bds->nhu_cau] ?? 0) + self::W_YEU_THICH;
-                    }
+                    if ($khuVuc) $khuVucScore[$khuVuc] = ($khuVucScore[$khuVuc] ?? 0) + self::W_YEU_THICH;
+
+                    if ($bds->du_an_id) $duAnScore[$bds->du_an_id] = ($duAnScore[$bds->du_an_id] ?? 0) + self::W_YEU_THICH;
+                    if ($bds->nhu_cau)  $nhuCauScore[$bds->nhu_cau] = ($nhuCauScore[$bds->nhu_cau] ?? 0) + self::W_YEU_THICH;
+
                     $gia = $bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue;
-                    if ($gia) $giaList[] = $gia;
+                    if ($gia && $gia > 0) $giaList[] = $gia;
                 });
         }
 
-        // ── 3. Từ lịch sử tìm kiếm ────────────────────────────
+        // ── 3. Từ lịch sử tìm kiếm (Áp dụng Time Decay 30 ngày) ───
         LichSuTimKiem::where(function ($q) use ($khachHangId, $sessionId) {
             if ($khachHangId) $q->where('khach_hang_id', $khachHangId);
             else              $q->where('session_id', $sessionId);
         })
-            ->where('created_at', '>=', now()->subDays(30))
+            ->where('created_at', '>=', $now->copy()->subDays(30))
             ->get()
-            ->each(function ($row) use (&$loaiHinhScore, &$khuVucScore, &$duAnScore, &$nhuCauScore, &$giaList) {
+            ->each(function ($row) use (&$loaiHinhScore, &$khuVucScore, &$duAnScore, &$nhuCauScore, &$giaList, $now) {
+                $daysAgo = max(0, $row->created_at->diffInDays($now));
+                $heSoThoiGian = 1 - ($daysAgo / 30);
+
                 $boLoc = $row->bo_loc ?? [];
 
-                if (!empty($boLoc['loai_hinh'])) {
-                    $loaiHinhScore[$boLoc['loai_hinh']] = ($loaiHinhScore[$boLoc['loai_hinh']] ?? 0) + self::W_TIM_KIEM_LOAI;
-                }
-                if (!empty($boLoc['khu_vuc_id'])) {
-                    $khuVucScore[$boLoc['khu_vuc_id']] = ($khuVucScore[$boLoc['khu_vuc_id']] ?? 0) + self::W_TIM_KIEM_KHU;
-                }
-                if (!empty($boLoc['du_an_id'])) {
-                    $duAnScore[$boLoc['du_an_id']] = ($duAnScore[$boLoc['du_an_id']] ?? 0) + self::W_TIM_KIEM_DU_AN;
-                }
-                if (!empty($boLoc['nhu_cau'])) {
-                    $nhuCauScore[$boLoc['nhu_cau']] = ($nhuCauScore[$boLoc['nhu_cau']] ?? 0) + self::W_TIM_KIEM_LOAI;
-                }
-                if (!empty($boLoc['gia_tu'])) $giaList[] = $boLoc['gia_tu'];
-                if (!empty($boLoc['gia_den'])) $giaList[] = $boLoc['gia_den'];
+                if (!empty($boLoc['loai_hinh']))  $loaiHinhScore[$boLoc['loai_hinh']] = ($loaiHinhScore[$boLoc['loai_hinh']] ?? 0) + (self::W_TIM_KIEM_LOAI * $heSoThoiGian);
+                if (!empty($boLoc['khu_vuc_id'])) $khuVucScore[$boLoc['khu_vuc_id']] = ($khuVucScore[$boLoc['khu_vuc_id']] ?? 0) + (self::W_TIM_KIEM_KHU * $heSoThoiGian);
+                if (!empty($boLoc['du_an_id']))   $duAnScore[$boLoc['du_an_id']] = ($duAnScore[$boLoc['du_an_id']] ?? 0) + (self::W_TIM_KIEM_DU_AN * $heSoThoiGian);
+                if (!empty($boLoc['nhu_cau']))    $nhuCauScore[$boLoc['nhu_cau']] = ($nhuCauScore[$boLoc['nhu_cau']] ?? 0) + (self::W_TIM_KIEM_LOAI * $heSoThoiGian);
+
+                if (!empty($boLoc['gia_tu']) && $boLoc['gia_tu'] > 0) $giaList[] = $boLoc['gia_tu'];
+                if (!empty($boLoc['gia_den']) && $boLoc['gia_den'] > 0) $giaList[] = $boLoc['gia_den'];
             });
 
-        // ── 4. Từ ngữ cảnh chat về BĐS ───────────────────────
-        $chatBdsIds = PhienChat::query()
+        // ── 4. Từ ngữ cảnh chat về BĐS (Time Decay 60 ngày) ───
+        $phienChats = PhienChat::query()
             ->where(function ($q) use ($khachHangId, $sessionId) {
                 if ($khachHangId) $q->where('khach_hang_id', $khachHangId);
                 else              $q->where('session_id', $sessionId);
             })
             ->where('loai_ngu_canh', 'bat_dong_san')
             ->whereNotNull('ngu_canh_id')
-            ->where('created_at', '>=', now()->subDays(60))
-            ->pluck('ngu_canh_id');
+            ->where('created_at', '>=', $now->copy()->subDays(60))
+            ->get();
 
-        if ($chatBdsIds->isNotEmpty()) {
-            $chatCountByBds = $chatBdsIds->countBy();
+        if ($phienChats->isNotEmpty()) {
             $chatBdsMap = BatDongSan::with('duAn')
-                ->whereIn('id', $chatCountByBds->keys()->all())
+                ->whereIn('id', $phienChats->pluck('ngu_canh_id')->unique())
                 ->get()
                 ->keyBy('id');
 
-            foreach ($chatCountByBds as $bdsId => $soLan) {
-                $bds = $chatBdsMap->get((int) $bdsId);
+            foreach ($phienChats as $chat) {
+                $bds = $chatBdsMap->get((int) $chat->ngu_canh_id);
                 if (!$bds) continue;
 
-                $diemChat = self::W_CHAT_VE_BDS * (int) $soLan;
+                $daysAgo = max(0, $chat->created_at->diffInDays($now));
+                $heSoThoiGian = 1 - ($daysAgo / 60);
+
+                $diemChat = self::W_CHAT_VE_BDS * $heSoThoiGian;
                 $bdsChatScore[$bds->id] = ($bdsChatScore[$bds->id] ?? 0) + $diemChat;
 
-                if ($bds->loai_hinh) {
-                    $loaiHinhScore[$bds->loai_hinh] = ($loaiHinhScore[$bds->loai_hinh] ?? 0) + $diemChat;
-                }
+                if ($bds->loai_hinh) $loaiHinhScore[$bds->loai_hinh] = ($loaiHinhScore[$bds->loai_hinh] ?? 0) + $diemChat;
+
                 $khuVucId = $bds->duAn?->khu_vuc_id;
-                if ($khuVucId) {
-                    $khuVucScore[$khuVucId] = ($khuVucScore[$khuVucId] ?? 0) + $diemChat;
-                }
-                if ($bds->du_an_id) {
-                    $duAnScore[$bds->du_an_id] = ($duAnScore[$bds->du_an_id] ?? 0) + $diemChat;
-                }
-                if ($bds->nhu_cau) {
-                    $nhuCauScore[$bds->nhu_cau] = ($nhuCauScore[$bds->nhu_cau] ?? 0) + $diemChat;
-                }
+                if ($khuVucId) $khuVucScore[$khuVucId] = ($khuVucScore[$khuVucId] ?? 0) + $diemChat;
+                if ($bds->du_an_id) $duAnScore[$bds->du_an_id] = ($duAnScore[$bds->du_an_id] ?? 0) + $diemChat;
+                if ($bds->nhu_cau)  $nhuCauScore[$bds->nhu_cau] = ($nhuCauScore[$bds->nhu_cau] ?? 0) + $diemChat;
 
                 $gia = $bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue;
-                if ($gia) $giaList[] = $gia;
+                if ($gia && $gia > 0) $giaList[] = $gia;
             }
         }
 
-        // ── Tổng hợp profile ───────────────────────────────────
         arsort($loaiHinhScore);
         arsort($khuVucScore);
         arsort($duAnScore);
@@ -168,27 +153,22 @@ class GoiYService
         $giaTB  = !empty($giaList) ? array_sum($giaList) / count($giaList) : null;
 
         return [
-            'loai_hinh_scores' => $loaiHinhScore,    // vd: ['chung_cu'=>12, 'nha_pho'=>3]
-            'khu_vuc_scores'   => $khuVucScore,       // vd: [5=>8, 3=>5]
-            'du_an_scores'     => $duAnScore,         // vd: [10=>9, 5=>4]
-            'nhu_cau_scores'   => $nhuCauScore,       // vd: ['ban'=>10, 'thue'=>2]
+            'loai_hinh_scores' => $loaiHinhScore,
+            'khu_vuc_scores'   => $khuVucScore,
+            'du_an_scores'     => $duAnScore,
+            'nhu_cau_scores'   => $nhuCauScore,
             'bds_chat_scores'  => $bdsChatScore,
             'gia_trung_binh'   => $giaTB,
             'loai_hinh_top'    => array_key_first($loaiHinhScore),
             'khu_vuc_top_ids'  => array_keys(array_slice($khuVucScore, 0, 3, true)),
             'du_an_top_ids'    => array_keys(array_slice($duAnScore, 0, 3, true)),
             'nhu_cau_top'      => array_key_first($nhuCauScore),
-            'tong_hanh_vi'     => array_sum($loaiHinhScore)
-                + array_sum($khuVucScore)
-                + array_sum($duAnScore)
-                + array_sum($nhuCauScore)
-                + array_sum($bdsChatScore),
+            'tong_hanh_vi'     => array_sum($loaiHinhScore) + array_sum($khuVucScore) + array_sum($duAnScore) + array_sum($nhuCauScore) + array_sum($bdsChatScore),
         ];
     }
 
     /**
-     * Tính điểm phù hợp của 1 BĐS với profile người dùng
-     * Trả về: ['diem' => float, 'ly_do' => string[]]
+     * Tính điểm phù hợp
      */
     public function tinhDiemBds(BatDongSan $bds, array $profile): array
     {
@@ -202,42 +182,34 @@ class GoiYService
         $bdsChatScores  = $profile['bds_chat_scores']  ?? [];
         $giaTB          = $profile['gia_trung_binh']   ?? null;
 
-        // ── Điểm loại hình ──────────────────────────────────────
         if ($bds->loai_hinh && isset($loaiHinhScores[$bds->loai_hinh])) {
-            $diemLH = $loaiHinhScores[$bds->loai_hinh];
-            $diem  += $diemLH * 2; // nhân hệ số
+            $diem += $loaiHinhScores[$bds->loai_hinh] * 2;
             $lyDo[] = "Phù hợp loại hình bạn quan tâm";
         }
 
-        // ── Điểm khu vực ────────────────────────────────────────
         $khuVucId = $bds->duAn?->khu_vuc_id;
         if ($khuVucId && isset($khuVucScores[$khuVucId])) {
-            $diemKV = $khuVucScores[$khuVucId];
-            $diem  += $diemKV * 1.5;
+            $diem += $khuVucScores[$khuVucId] * 1.5;
             $lyDo[] = "Nằm trong khu vực bạn tìm kiếm";
         }
 
-        // ── Điểm dự án ────────────────────────────────────────
         if ($bds->du_an_id && isset($duAnScores[$bds->du_an_id])) {
-            $diemDA = $duAnScores[$bds->du_an_id];
-            $diem  += $diemDA * 2.2;
+            $diem += $duAnScores[$bds->du_an_id] * 2.2;
             $lyDo[] = "Thuộc dự án bạn đã xem nhiều";
         }
 
-        // ── Điểm nhu cầu (mua/thuê) ─────────────────────────────
         if ($bds->nhu_cau && isset($nhuCauScores[$bds->nhu_cau])) {
             $diem += $nhuCauScores[$bds->nhu_cau];
             $lyDo[] = $bds->nhu_cau === 'ban' ? "Phù hợp nhu cầu mua" : "Phù hợp nhu cầu thuê";
         }
 
-        // ── Điểm chat trực tiếp theo BĐS cụ thể ───────────────
         if (isset($bdsChatScores[$bds->id])) {
             $diem += $bdsChatScores[$bds->id];
             $lyDo[] = "Bạn từng chat về bất động sản này";
         }
 
-        // ── Điểm khoảng giá (±30% giá TB) ──────────────────────
-        if ($giaTB) {
+        // Chống lỗi chia cho 0 an toàn tuyệt đối
+        if ($giaTB && $giaTB > 0) {
             $gia = $bds->nhu_cau === 'ban' ? (float)$bds->gia : (float)$bds->gia_thue;
             if ($gia > 0) {
                 $tyLe = abs($gia - $giaTB) / $giaTB;
@@ -251,7 +223,6 @@ class GoiYService
             }
         }
 
-        // ── Bonus: BĐS nổi bật / nhiều lượt xem ────────────────
         if ($bds->noi_bat)        $diem += 3;
         if ($bds->luot_xem > 100) $diem += 2;
 
@@ -262,13 +233,12 @@ class GoiYService
     }
 
     /**
-     * Hàm chính: lấy danh sách gợi ý + điểm + lý do
+     * Hàm chính: Lấy danh sách gợi ý và tính % tương đối
      */
     public function layGoiY(?int $khachHangId, string $sessionId, ?int $truBdsId = null, int $limit = 8): Collection
     {
         $profile = $this->xayDungProfile($khachHangId, $sessionId);
 
-        // Chưa có hành vi → gợi ý BĐS nổi bật
         if (($profile['tong_hanh_vi'] ?? 0) === 0) {
             return BatDongSan::where('hien_thi', true)
                 ->where('trang_thai', 'con_hang')
@@ -278,14 +248,9 @@ class GoiYService
                 ->orderByDesc('luot_xem')
                 ->limit($limit)
                 ->get()
-                ->map(fn($b) => $b->setAttribute('goi_y_meta', [
-                    'diem'    => 0,
-                    'ly_do'   => ['Bất động sản nổi bật'],
-                    'loai'    => 'noi_bat',
-                ]));
+                ->map(fn($b) => $b->setAttribute('goi_y_meta', ['diem' => 0, 'phan_tram' => 0, 'ly_do' => ['Bất động sản nổi bật'], 'loai' => 'noi_bat']));
         }
 
-        // Tải ứng viên phù hợp (lọc sơ bộ để tránh tính điểm toàn bộ DB)
         $ungCuVien = BatDongSan::where('hien_thi', true)
             ->where('trang_thai', 'con_hang')
             ->when($truBdsId, fn($q) => $q->where('id', '!=', $truBdsId))
@@ -293,16 +258,13 @@ class GoiYService
                 !empty($profile['loai_hinh_scores']) || !empty($profile['khu_vuc_top_ids']) || !empty($profile['du_an_top_ids']) || !empty($profile['bds_chat_scores']),
                 function ($baseQuery) use ($profile) {
                     $baseQuery->where(function ($q) use ($profile) {
-                        // Chỉ lấy BĐS thuộc top 2 loại hình, top 3 khu vực, top 3 dự án,
-                        // hoặc các BĐS đã từng chat trực tiếp.
                         $loaiHinhs = array_keys(array_slice($profile['loai_hinh_scores'] ?? [], 0, 2, true));
                         $khuVucIds = $profile['khu_vuc_top_ids'] ?? [];
                         $duAnIds = $profile['du_an_top_ids'] ?? [];
                         $chatBdsIds = array_keys(array_slice($profile['bds_chat_scores'] ?? [], 0, 5, true));
 
-                        if (!empty($loaiHinhs)) {
-                            $q->whereIn('loai_hinh', $loaiHinhs);
-                        }
+                        if (!empty($loaiHinhs)) $q->whereIn('loai_hinh', $loaiHinhs);
+
                         if (!empty($khuVucIds)) {
                             $method = !empty($loaiHinhs) ? 'orWhereHas' : 'whereHas';
                             $q->{$method}('duAn', fn($dq) => $dq->whereIn('khu_vuc_id', $khuVucIds));
@@ -319,20 +281,31 @@ class GoiYService
                 }
             )
             ->with(['duAn.khuVuc'])
-            ->limit(50) // Lấy 50 ứng viên, tính điểm rồi chọn top
+            ->limit(50)
             ->get();
 
-        // Tính điểm từng BĐS
-        $ketQua = $ungCuVien->map(function ($bds) use ($profile) {
+        // Map và lấy ra Điểm cao nhất để tính % (Dynamic Percentage)
+        $danhSachDaChamDiem = $ungCuVien->map(function ($bds) use ($profile) {
             $meta = $this->tinhDiemBds($bds, $profile);
-            $bds->setAttribute('goi_y_meta', array_merge($meta, ['loai' => 'ca_nhan_hoa']));
+            $bds->setAttribute('goi_y_meta_temp', $meta);
+            return $bds;
+        });
+
+        $diemCaoNhat = $danhSachDaChamDiem->max('goi_y_meta_temp.diem') ?: 10;
+
+        $ketQua = $danhSachDaChamDiem->map(function ($bds) use ($diemCaoNhat) {
+            $meta = $bds->goi_y_meta_temp;
+            // Tính % tương đối so với BĐS phù hợp nhất (Max 99%)
+            $phanTram = min(round(($meta['diem'] / max($diemCaoNhat, 1)) * 95) + 4, 99);
+
+            $bds->setAttribute('goi_y_meta', array_merge($meta, ['phan_tram' => $phanTram, 'loai' => 'ca_nhan_hoa']));
+            unset($bds->goi_y_meta_temp);
             return $bds;
         })
             ->sortByDesc(fn($b) => $b->goi_y_meta['diem'])
             ->values()
             ->take($limit);
 
-        // Bổ sung nếu thiếu
         if ($ketQua->count() < 4) {
             $ids = $ketQua->pluck('id')->toArray();
             if ($truBdsId) $ids[] = $truBdsId;
@@ -343,11 +316,7 @@ class GoiYService
                 ->orderByDesc('noi_bat')
                 ->limit($limit - $ketQua->count())
                 ->get()
-                ->map(fn($b) => $b->setAttribute('goi_y_meta', [
-                    'diem'  => 0,
-                    'ly_do' => ['Bất động sản nổi bật'],
-                    'loai'  => 'noi_bat',
-                ]));
+                ->map(fn($b) => $b->setAttribute('goi_y_meta', ['diem' => 0, 'phan_tram' => 0, 'ly_do' => ['Bất động sản nổi bật'], 'loai' => 'noi_bat']));
 
             $ketQua = $ketQua->merge($boSung);
         }
@@ -355,27 +324,20 @@ class GoiYService
         return $ketQua;
     }
 
-    /**
-     * Ghi lịch sử xem (gọi trong controller)
-     */
+    // ... (Giữ nguyên các hàm ghiLichSuXem và ghiLichSuTimKiem bên dưới) ...
     public function ghiLichSuXem(BatDongSan $bds, ?int $khachHangId, string $sessionId, int $thoiGianXem = 0): void
     {
         $bds->loadMissing('duAn');
-
         $daXem = LichSuXemBds::where('bat_dong_san_id', $bds->id)
             ->where(function ($q) use ($khachHangId, $sessionId) {
                 if ($khachHangId) $q->where('khach_hang_id', $khachHangId);
                 else              $q->where('session_id', $sessionId);
-            })
-            ->where('created_at', '>=', now()->subHour())
-            ->exists();
+            })->where('created_at', '>=', now()->subHour())->exists();
 
         if ($daXem) return;
 
         $bds->increment('luot_xem');
-        $duAnId   = $bds->du_an_id ?: $bds->duAn?->id;
-        $gia      = $bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue;
-        $khuVucId = $bds->duAn?->khu_vuc_id;
+        $gia = $bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue;
 
         LichSuXemBds::create([
             'bat_dong_san_id' => $bds->id,
@@ -383,54 +345,37 @@ class GoiYService
             'session_id'      => $sessionId,
             'loai_hinh'       => $bds->loai_hinh,
             'nhu_cau'         => $bds->nhu_cau,
-            'du_an_id'        => $duAnId,
-            'khu_vuc_id'      => $khuVucId,
+            'du_an_id'        => $bds->du_an_id ?: $bds->duAn?->id,
+            'khu_vuc_id'      => $bds->duAn?->khu_vuc_id,
             'gia_tu'          => $gia ? $gia * 0.9 : null,
             'gia_den'         => $gia ? $gia * 1.1 : null,
             'thoi_gian_xem'   => $thoiGianXem,
         ]);
     }
 
-    /**
-     * Ghi lịch sử tìm kiếm để phục vụ mô hình gợi ý.
-     */
     public function ghiLichSuTimKiem(?int $khachHangId, string $sessionId, array $payload): void
     {
         $tuKhoa = trim((string) ($payload['tu_khoa'] ?? ''));
         $sapXepTheo = $payload['sap_xep_theo'] ?? null;
         $soKetQua = (int) ($payload['so_ket_qua'] ?? 0);
-
         $boLocRaw = $payload['bo_loc'] ?? [];
         $boLoc = [];
+
         foreach ((array) $boLocRaw as $key => $value) {
             if ($value === null || $value === '' || $value === []) continue;
             $boLoc[$key] = $value;
         }
 
-        // Không có tín hiệu tìm kiếm thì không ghi.
-        if ($tuKhoa === '' && empty($boLoc) && empty($sapXepTheo)) {
-            return;
-        }
+        if ($tuKhoa === '' && empty($boLoc) && empty($sapXepTheo)) return;
 
         $ganNhat = LichSuTimKiem::query()
             ->where(function ($q) use ($khachHangId, $sessionId) {
                 if ($khachHangId) $q->where('khach_hang_id', $khachHangId);
                 else              $q->where('session_id', $sessionId);
-            })
-            ->where('created_at', '>=', now()->subMinutes(3))
-            ->latest('id')
-            ->first();
+            })->where('created_at', '>=', now()->subMinutes(3))->latest('id')->first();
 
-        if (
-            $ganNhat
-            && (string) $ganNhat->tu_khoa === $tuKhoa
-            && (array) ($ganNhat->bo_loc ?? []) === $boLoc
-            && (string) ($ganNhat->sap_xep_theo ?? '') === (string) ($sapXepTheo ?? '')
-        ) {
-            $ganNhat->update([
-                'so_ket_qua' => $soKetQua,
-                'thoi_diem_tim_kiem' => now(),
-            ]);
+        if ($ganNhat && (string) $ganNhat->tu_khoa === $tuKhoa && (array) ($ganNhat->bo_loc ?? []) === $boLoc && (string) ($ganNhat->sap_xep_theo ?? '') === (string) ($sapXepTheo ?? '')) {
+            $ganNhat->update(['so_ket_qua' => $soKetQua, 'thoi_diem_tim_kiem' => now()]);
             return;
         }
 

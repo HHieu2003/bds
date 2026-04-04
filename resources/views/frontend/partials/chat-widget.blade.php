@@ -1,8 +1,137 @@
 {{-- ╔══════════════════════════════════════════════╗
-     ║         CHAT WIDGET — THÀNH CÔNG LAND        ║
-     ╚══════════════════════════════════════════════╝ --}}
+     ║         CHAT WIDGET — THÀNH CÔNG LAND        ║  ╚══════════════════════════════════════════════╝ --}}
 
 {{-- Nút mở chat --}}
+
+
+<style>
+    .chat-quick-replies {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 10px 12px;
+        border-top: 1px solid #f0f0f0;
+        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+        animation: slideUp 0.3s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .chat-quick-replies button {
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 18px;
+        border: 1px solid #d0e8ff;
+        background: #fff;
+        color: #0d6efd;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+        font-weight: 500;
+        flex: 1;
+        min-width: 100px;
+    }
+
+    .chat-quick-replies button:hover {
+        background: #0d6efd;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+    }
+
+    .chat-quick-replies button:active {
+        transform: translateY(0);
+    }
+
+    /* ===== TRANSFER CARD ===== */
+    .chat-transfer-card {
+        margin: 10px 12px;
+        padding: 12px 14px;
+        background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        border: 1.5px solid #90caf9;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .chat-transfer-copy {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .chat-transfer-copy strong {
+        display: block;
+        color: #1976d2;
+        font-size: 13px;
+        margin-bottom: 2px;
+    }
+
+    .chat-transfer-copy small {
+        display: block;
+        color: #5e6268;
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .chat-transfer-card button {
+        font-size: 11px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        font-weight: 600;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .chat-transfer-card .btn-outline-theme {
+        background: #fff;
+        color: #1976d2;
+        border: 1.5px solid #1976d2;
+    }
+
+    .chat-transfer-card .btn-outline-theme:hover {
+        background: #1976d2;
+        color: #fff;
+    }
+
+    .chat-transfer-card .btn-outline-secondary {
+        background: transparent;
+        color: #6c757d;
+        border: 1.5px dashed #6c757d;
+    }
+
+    .chat-transfer-card .btn-outline-secondary:hover {
+        background: #f8f9fa;
+        border-color: #495057;
+        color: #495057;
+    }
+</style>
 <button id="chatWidgetBtn" onclick="toggleChatWindow()" title="Chat tư vấn">
     <div class="cw-btn-inner">
         <div class="cw-btn-icon"><i class="fas fa-comments"></i></div>
@@ -72,23 +201,26 @@
             </div>
         </div>
 
+        {{-- Chuyển NV — có confirm --}}
         <div id="chatTransferWrap" class="chat-transfer-wrap" style="display:none;">
             <div class="chat-transfer-card">
                 <div class="chat-transfer-copy">
-                    <strong>Cần hỗ trợ sâu hơn?</strong>
-                    <small>Chuyển hội thoại cho nhân viên kinh doanh ngay.</small>
+                    <strong><i class="fas fa-user-tie" style="color:#1976d2"></i> Cần hỗ trợ sâu hơn?</strong>
+                    <small>Chuyển hội thoại cho nhân viên kinh doanh chuyên biệt</small>
                 </div>
-                <button type="button" class="btn btn-outline-theme btn-sm" onclick="transferToAgent()">
-                    <i class="fas fa-user-tie me-1"></i> Chuyển nhân viên
+                <button type="button" class="btn btn-outline-theme" onclick="transferToAgent()">
+                    <i class="fas fa-arrow-right me-1"></i> Chuyển NV
                 </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="chatBackToBotBtn"
+                <button type="button" class="btn btn-outline-secondary" id="chatBackToBotBtn"
                     onclick="transferBackToBot()" style="display:none;">
                     <i class="fas fa-robot me-1"></i> Chuyển lại AI
                 </button>
             </div>
         </div>
-    </div>
 
+    </div>
+    {{-- ── Câu hỏi gợi ý (quick replies) ── --}}
+    <div id="chatQuickReplies" class="chat-quick-replies" style="display:none;"></div>
     <div class="chat-footer">
         <form id="chatForm" onsubmit="sendFrontendMessage(event)" enctype="multipart/form-data">
 

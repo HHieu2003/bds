@@ -64,7 +64,7 @@
                         Mua căn hộ <i class="fas fa-chevron-down nav-arrow"></i>
                     </a>
                     <div class="nav-dropdown can-ho-mega">
-                        
+
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
@@ -288,6 +288,12 @@
                                     <span class="kh-dd-icon" style="background:#fefce8;color:#ca8a04;"><i
                                             class="fas fa-file-signature"></i></span>
                                     <span>Ký gửi của tôi</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </a>
+                                <a href="{{ route('frontend.cong-cu-tai-chinh') }}" class="kh-dd-item">
+                                    <span class="kh-dd-icon" style="background:#eff6ff;color:#3b82f6;"><i
+                                            class="fas fa-calculator"></i></span>
+                                    <span>Công cụ tài chính</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </a>
                                 <div class="kh-dd-divider"></div>

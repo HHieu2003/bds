@@ -1,155 +1,99 @@
 {{-- resources/views/frontend/partials/goi-y-bds.blade.php --}}
-<style>
-    /* Section gợi ý */
-    .badge-goi-y {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 2;
-        background: linear-gradient(135deg, #01696f, #0c4e54);
-        color: #fff;
-        font-size: 11px;
-        font-weight: 600;
-        padding: 3px 8px;
-        border-radius: 20px;
-        letter-spacing: 0.3px;
-    }
-
-    .bds-card-img-wrap {
-        position: relative;
-        overflow: hidden;
-        border-radius: 10px 10px 0 0;
-        aspect-ratio: 4/3;
-    }
-
-    .bds-card-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform .35s ease;
-    }
-
-    .bds-card:hover .bds-card-img {
-        transform: scale(1.05);
-    }
-
-    .badge-nhu-cau {
-        position: absolute;
-        bottom: 8px;
-        right: 8px;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 4px;
-    }
-
-    .badge-nhu-cau.ban {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .badge-nhu-cau.thue {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .goi-y-score-badge {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 2;
-        background: rgba(1, 105, 111, 0.92);
-        color: #fff;
-        font-size: 11px;
-        font-weight: 700;
-        padding: 3px 9px;
-        border-radius: 20px;
-        backdrop-filter: blur(4px);
-    }
-
-    .goi-y-ly-do {
-        font-size: 11px;
-        color: #01696f;
-        background: #e8f5f5;
-        border-radius: 6px;
-        padding: 4px 8px;
-        font-weight: 500;
-    }
-</style>
-{{-- resources/views/frontend/partials/goi-y-bds.blade.php --}}
 @if ($goiYBds->isNotEmpty())
-    <section class="section-goi-y py-5">
+    <section class="section-goi-y py-5" style="background: var(--bg-alt);">
         <div class="container">
-            <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-end justify-content-between mb-4 border-bottom pb-3"
+                style="border-color: rgba(196, 145, 42, 0.2) !important;">
                 <div>
                     @auth('customer')
-                        <h2 class="section-title mb-1">
-                            <i class="fas fa-magic text-primary-brand me-2"></i>
+                        <h2 class="section-title mb-1" style="font-size: 1.8rem;">
+                            <i class="fas fa-gem text-primary-brand me-2"></i>
                             Dành riêng cho {{ auth('customer')->user()->ho_ten }}
                         </h2>
-                        <p class="text-muted small">Dựa trên lịch sử tìm kiếm của bạn</p>
+                        <p class="text-muted small m-0"><i class="fas fa-magic me-1"></i> Gợi ý tự động dựa trên lịch sử tìm
+                            kiếm & tương tác của bạn</p>
                     @else
-                        <h2 class="section-title mb-1">
+                        <h2 class="section-title mb-1" style="font-size: 1.8rem;">
                             <i class="fas fa-fire text-primary-brand me-2"></i>
-                            Có thể bạn quan tâm
+                            Có thể bạn sẽ thích
                         </h2>
+                        <p class="text-muted small m-0"><i class="fas fa-magic me-1"></i> Bất động sản được cá nhân hóa cho
+                            bạn</p>
                     @endauth
                 </div>
-                <a href="{{ route('frontend.bat-dong-san.index') }}" class="btn btn-outline-primary-brand btn-sm">
-                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                <a href="{{ route('frontend.bat-dong-san.index') }}"
+                    class="btn btn-outline-theme btn-sm d-none d-md-inline-flex align-items-center">
+                    Xem tất cả <i class="fas fa-arrow-right ms-2"></i>
                 </a>
             </div>
 
-            <div class="row g-3">
+            <div class="row g-4">
                 @foreach ($goiYBds as $bds)
                     @php $meta = $bds->goi_y_meta ?? []; @endphp
                     <div class="col-12 col-sm-6 col-lg-3">
-                        <div class="bds-card h-100 position-relative">
+                        <div class="bds-card hover-up h-100 position-relative rounded-3 overflow-hidden bg-white"
+                            style="border: 1px solid var(--border);">
 
-                            {{-- Badge điểm phù hợp --}}
+                            {{-- Badge điểm phù hợp (Màu Gold Gradient) --}}
                             @if (($meta['diem'] ?? 0) > 0)
-                                <div class="goi-y-score-badge">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    {{ round(min(($meta['diem'] / 30) * 100, 99)) }}% phù hợp
+                                <div class="goi-y-score-badge position-absolute"
+                                    style="top: 12px; left: 12px; z-index: 2; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 20px; box-shadow: var(--shadow-gold);">
+                                    <i class="fas fa-star me-1" style="color: #ffeba0;"></i>
+                                    Độ phù hợp: {{ $meta['phan_tram'] ?? 0 }}%
                                 </div>
                             @endif
 
-                            <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}">
-                                <div class="bds-card-img-wrap">
-                                    <img src="{{ $bds->hinh_anh_url }}" alt="{{ $bds->tieu_de }}" loading="lazy">
-                                    <span class="badge-nhu-cau {{ $bds->nhu_cau }}">
-                                        {{ $bds->nhu_cau === 'ban' ? 'Bán' : 'Cho thuê' }}
-                                    </span>
-                                </div>
+                            <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
+                                class="d-block bds-card-img-wrap position-relative"
+                                style="aspect-ratio: 4/3; overflow: hidden;">
+                                <img src="{{ $bds->hinh_anh_url }}" alt="{{ $bds->tieu_de }}"
+                                    class="w-100 h-100 object-fit-cover" style="transition: transform 0.4s ease;"
+                                    loading="lazy" onmouseover="this.style.transform='scale(1.08)'"
+                                    onmouseout="this.style.transform='scale(1)'">
+
+                                <span class="position-absolute badge-nhu-cau {{ $bds->nhu_cau }}"
+                                    style="bottom: 10px; right: 10px; font-size: 0.7rem; font-weight: 800; padding: 4px 10px; border-radius: 6px; {{ $bds->nhu_cau === 'ban' ? 'background: rgba(192, 102, 42, 0.9); color: #fff;' : 'background: rgba(27, 58, 107, 0.9); color: #fff;' }} backdrop-filter: blur(4px);">
+                                    {{ $bds->nhu_cau === 'ban' ? 'CẦN BÁN' : 'CHO THUÊ' }}
+                                </span>
                             </a>
 
                             <div class="bds-card-body p-3">
-                                <p class="text-muted small mb-1">
-                                    {{ $bds->loai_hinh }} •
-                                    {{ $bds->duAn?->khuVuc?->ten_khu_vuc ?? '' }}
+                                <p class="text-muted mb-2" style="font-size: 0.75rem; font-weight: 600;">
+                                    <i class="fas fa-map-marker-alt text-primary-brand me-1"></i>
+                                    {{ $bds->loai_hinh }} • {{ $bds->duAn?->khuVuc?->ten_khu_vuc ?? 'Đang cập nhật' }}
                                 </p>
-                                <h6 class="fw-bold mb-2">
+
+                                <h6 class="fw-bold mb-3" style="font-size: 0.95rem; line-height: 1.4;">
                                     <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
-                                        class="text-dark text-decoration-none">
-                                        {{ Str::limit($bds->tieu_de, 48) }}
+                                        class="card-title-link line-clamp-2">
+                                        {{ $bds->tieu_de }}
                                     </a>
                                 </h6>
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <span class="fw-bold text-primary-brand">{{ $bds->gia_hien_thi }}</span>
-                                    <span class="text-muted small">{{ $bds->dien_tich }}m²</span>
+
+                                <div class="d-flex justify-content-between align-items-end mb-3">
+                                    <div class="price-text m-0" style="line-height: 1;">{{ $bds->gia_hien_thi }}</div>
+                                    <div class="text-muted" style="font-size: 0.85rem; font-weight: 600;">
+                                        <i class="fas fa-vector-square opacity-75"></i> {{ $bds->dien_tich }}m²
+                                    </div>
                                 </div>
 
-                                {{-- Lý do gợi ý --}}
+                                {{-- Lý do gợi ý (Bo góc, Nền kem, Chữ màu Primary) --}}
                                 @if (!empty($meta['ly_do']))
-                                    <div class="goi-y-ly-do">
-                                        <i class="fas fa-lightbulb me-1"></i>
-                                        {{ $meta['ly_do'][0] }}
+                                    <div class="goi-y-ly-do mt-auto"
+                                        style="font-size: 0.7rem; color: var(--primary-dark); background: var(--primary-light); border-radius: 8px; padding: 6px 10px; font-weight: 600; border: 1px dashed rgba(196, 145, 42, 0.3);">
+                                        <i class="fas fa-check-circle me-1"></i> {{ $meta['ly_do'][0] }}
                                     </div>
                                 @endif
                             </div>
                         </div>
                     </div>
                 @endforeach
+            </div>
+
+            <div class="text-center mt-4 d-md-none">
+                <a href="{{ route('frontend.bat-dong-san.index') }}" class="btn btn-outline-theme btn-sm w-100">
+                    Xem tất cả Bất động sản <i class="fas fa-arrow-right ms-2"></i>
+                </a>
             </div>
         </div>
     </section>

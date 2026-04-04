@@ -74,9 +74,28 @@ class DuAnController extends Controller
             return $item;
         });
 
+        $duAnKhac = DuAn::query()
+            ->with('khuVuc')
+            ->withCount([
+                'batDongSans as so_can_ban' => function ($q) {
+                    $q->where('hien_thi', 1)->where('trang_thai', 'con_hang')->where('nhu_cau', 'ban');
+                },
+                'batDongSans as so_can_thue' => function ($q) {
+                    $q->where('hien_thi', 1)->where('trang_thai', 'con_hang')->where('nhu_cau', 'thue');
+                },
+            ])
+            ->where('hien_thi', 1)
+            ->where('id', '!=', $duAn->id)
+            ->orderByRaw('CASE WHEN khu_vuc_id = ? THEN 0 ELSE 1 END', [$duAn->khu_vuc_id])
+            ->orderBy('thu_tu_hien_thi', 'asc')
+            ->orderByDesc('id')
+            ->limit(4)
+            ->get();
+
         // return view('frontend.du-an.show', compact('duAn'));
         return view('frontend.du-an.show', [
             'duAn'              => $duAn,
+            'duAnKhac'          => $duAnKhac,
             // Context cho chat widget
             'chat_loai_ngu_canh' => 'du_an',
             'chat_ngu_canh_id'  => $duAn->id,

@@ -114,7 +114,7 @@
                             <path d="M5 12h14M12 5l7 7-7 7" />
                         </svg>
                     </a>
-                    <a href="tel:+84123456789" class="ve-cty-btn-ghost">
+                    <a href="tel:+84336123130" class="ve-cty-btn-ghost">
                         <i class="fas fa-phone-flip me-2" aria-hidden="true"></i>
                         Gọi Tư Vấn Ngay
                     </a>
@@ -128,7 +128,7 @@
             @php
                 $stats = [
                     ['num' => '5000', 'suffix' => '+', 'label' => 'Khách Hàng Hài Lòng', 'icon' => 'fa-users'],
-                    ['num' => '50', 'suffix' => '+', 'label' => 'Dự Án Quản Lý', 'icon' => 'fa-building'],
+                    ['num' => '35', 'suffix' => '+', 'label' => 'Dự Án Quản Lý', 'icon' => 'fa-building'],
                     ['num' => '100', 'suffix' => '+', 'label' => 'Nhân Sự Tâm Huyết', 'icon' => 'fa-user-tie'],
                     ['num' => '24', 'suffix' => '/7', 'label' => 'Hỗ Trợ Tận Tình', 'icon' => 'fa-headset'],
                 ];
@@ -155,8 +155,8 @@
 @push('styles')
     <style>
         /* ══════════════════════════════════════════
-                   SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
-                ══════════════════════════════════════════ */
+                               SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
+                            ══════════════════════════════════════════ */
 
         .ve-cty-section {
             position: relative;
@@ -197,8 +197,8 @@
         }
 
         /* ═══════════════════
-                   CỘT TRÁI: VISUAL
-                ═══════════════════ */
+                               CỘT TRÁI: VISUAL
+                            ═══════════════════ */
         .ve-cty-visual {
             position: relative;
         }
@@ -343,8 +343,8 @@
         }
 
         /* ══════════════════
-                   CỘT PHẢI: NỘI DUNG
-                ══════════════════ */
+                               CỘT PHẢI: NỘI DUNG
+                            ══════════════════ */
         .ve-cty-content {
             display: flex;
             flex-direction: column;
@@ -537,8 +537,8 @@
         }
 
         /* ══════════════════
-                   THANH THỐNG KÊ
-                ══════════════════ */
+                               THANH THỐNG KÊ
+                            ══════════════════ */
         .ve-cty-stats {
             display: flex;
             align-items: center;

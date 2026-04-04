@@ -6,7 +6,6 @@
     @php
         $bdsBan = $duAn->batDongSans ? $duAn->batDongSans->where('nhu_cau', 'ban')->where('hien_thi', 1) : collect();
         $bdsThue = $duAn->batDongSans ? $duAn->batDongSans->where('nhu_cau', 'thue')->where('hien_thi', 1) : collect();
-        $tongCan = $bdsBan->count() + $bdsThue->count();
         $trangThaiLabel = match ($duAn->trang_thai) {
             'sap_mo_ban' => 'Sắp mở bán',
             'dang_mo_ban' => 'Đang mở bán',
@@ -66,10 +65,6 @@
                         <span>{{ $duAn->don_vi_thi_cong }}</span>
                     </div>
                 @endif
-                <div class="dact-qs-item">
-                    <i class="fas fa-home"></i>
-                    <span>{{ $tongCan }} căn đang giao dịch</span>
-                </div>
             </div>
 
         </div>
@@ -92,7 +87,7 @@
                     {{-- Tổng quan --}}
                     <div class="dact-card mb-4" data-aos="fade-up" data-aos-duration="500">
                         <div class="dact-card-title">
-                            <span></span>Tổng Quan Dự Án
+                            <span></span>Dự Án: {{ Str::limit($duAn->ten_du_an, 30) }}
                         </div>
                         <div class="row g-4 mt-1">
                             @php
@@ -108,11 +103,6 @@
                                         'val' => $duAn->don_vi_thi_cong ?? 'Đang cập nhật',
                                     ],
                                     [
-                                        'icon' => 'fa-align-left',
-                                        'label' => 'Mô tả ngắn',
-                                        'val' => $duAn->mo_ta_ngan ?? 'Đang cập nhật',
-                                    ],
-                                    [
                                         'icon' => 'fa-calendar-check',
                                         'label' => 'Tình trạng',
                                         'val' => $trangThaiLabel,
@@ -121,11 +111,6 @@
                                         'icon' => 'fa-map-marker-alt',
                                         'label' => 'Vị trí',
                                         'val' => $duAn->dia_chi ?? 'Đang cập nhật',
-                                    ],
-                                    [
-                                        'icon' => 'fa-home',
-                                        'label' => 'Số lượng căn',
-                                        'val' => $tongCan . ' căn đang giao dịch',
                                     ],
                                 ];
                             @endphp
@@ -142,6 +127,20 @@
                                     </div>
                                 </div>
                             @endforeach
+
+                            <div class="col-12">
+                                <div class="dact-desc-box">
+                                    <div class="dact-ov-icon">
+                                        <i class="fas fa-align-left"></i>
+                                    </div>
+                                    <div>
+                                        <div class="dact-ov-label">Mô tả dự án</div>
+                                        <div class="dact-desc-text">
+                                            {{ $duAn->mo_ta_ngan ?: 'Đang cập nhật mô tả ngắn cho dự án này.' }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -314,6 +313,46 @@
                         </div>
                     </div>
 
+                    {{-- Dự án khác --}}
+                    @if (isset($duAnKhac) && $duAnKhac->count() > 0)
+                        <div class="dact-card" data-aos="fade-up" data-aos-duration="500" data-aos-delay="150">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="dact-card-title mb-0">
+                                    <span></span>Dự Án Khác Bạn Có Thể Quan Tâm
+                                </div>
+                                <a href="{{ route('frontend.du-an.index') }}" class="dact-link-more">
+                                    Xem tất cả <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+
+                            <div class="row g-3">
+                                @foreach ($duAnKhac as $da)
+                                    <div class="col-md-6">
+                                        <a href="{{ route('frontend.du-an.show', $da->slug) }}"
+                                            class="dact-da-card d-block">
+                                            <div class="dact-da-thumb">
+                                                <img src="{{ $da->hinh_anh_dai_dien ? asset('storage/' . $da->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}"
+                                                    alt="{{ $da->ten_du_an }}">
+                                            </div>
+                                            <div class="dact-da-body">
+                                                <div class="dact-da-title">{{ $da->ten_du_an }}</div>
+                                                <div class="dact-da-meta">
+                                                    <span><i class="fas fa-map-marker-alt"></i>
+                                                        {{ Str::limit($da->dia_chi, 28) }}</span>
+                                                </div>
+                                                <div class="dact-da-stats">
+                                                    <span><i class="fas fa-tag"></i> {{ $da->so_can_ban }} căn bán</span>
+                                                    <span><i class="fas fa-key"></i> {{ $da->so_can_thue }} căn
+                                                        thuê</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
                 </div>
 
                 {{-- ── CỘT PHẢI: SIDEBAR ── --}}
@@ -363,14 +402,6 @@
                         </div>
 
                         {{-- Nút xem quỹ căn --}}
-                        @if ($tongCan > 0)
-                            <a href="#quy-can" class="btn dact-btn-scroll w-100 py-3 fw-bold rounded-3">
-                                <i class="fas fa-home me-2"></i>
-                                Xem {{ $tongCan }} Căn Đang Bán / Cho Thuê
-                                <i class="fas fa-arrow-down ms-2"></i>
-                            </a>
-                        @endif
-
                         {{-- Box tiện ích dự án --}}
                         <div class="dact-amenity-card mt-4">
                             <div class="dact-card-title mb-3">
@@ -410,14 +441,19 @@
         /* ── Hero ── */
         .dact-hero {
             position: relative;
-            min-height: 72vh;
-            background:
-                linear-gradient(to top,
-                    rgba(10, 10, 18, .96) 0%,
-                    rgba(10, 10, 18, .55) 50%,
-                    rgba(0, 0, 0, .15) 100%),
-                url('{{ $duAn->hinh_anh_dai_dien ? asset('storage/' . $duAn->hinh_anh_dai_dien) : 'https://vinhomesland.vn/wp-content/uploads/2021/04/phoi-canh-vinhomes-smart-city.jpg' }}') center / cover fixed;
+            min-height: clamp(420px, 72vh, 760px);
+            background: url('{{ $duAn->hinh_anh_dai_dien ? asset('storage/' . $duAn->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}') center center / cover no-repeat;
             overflow: hidden;
+        }
+
+        .dact-hero-overlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top,
+                    rgba(10, 10, 18, .78) 0%,
+                    rgba(10, 10, 18, .38) 50%,
+                    rgba(0, 0, 0, .08) 100%);
+            pointer-events: none;
         }
 
         .dact-hero-wave {
@@ -603,9 +639,98 @@
             color: var(--text-heading);
         }
 
+        .dact-desc-box {
+            display: flex;
+            align-items: flex-start;
+            gap: .9rem;
+            padding: 1rem 1.1rem;
+            background: linear-gradient(135deg, #fff 0%, #fff8f3 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(192, 102, 42, .2);
+        }
+
+        .dact-desc-text {
+            font-size: .9rem;
+            line-height: 1.75;
+            color: var(--text-body);
+            font-weight: 500;
+        }
+
+        .dact-link-more {
+            color: var(--primary);
+            font-size: .82rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .dact-link-more:hover {
+            color: var(--primary-dark);
+        }
+
+        .dact-da-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            text-decoration: none;
+            transition: all var(--transition);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, .04);
+        }
+
+        .dact-da-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+            border-color: rgba(192, 102, 42, .35);
+        }
+
+        .dact-da-thumb {
+            height: 150px;
+            overflow: hidden;
+        }
+
+        .dact-da-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .dact-da-body {
+            padding: .85rem .9rem .95rem;
+        }
+
+        .dact-da-title {
+            font-size: .92rem;
+            font-weight: 800;
+            color: var(--text-heading);
+            margin-bottom: .45rem;
+            line-height: 1.35;
+        }
+
+        .dact-da-meta,
+        .dact-da-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .6rem;
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+
+        .dact-da-stats {
+            margin-top: .4rem;
+            padding-top: .45rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-body);
+            font-weight: 600;
+        }
+
+        .dact-da-meta i,
+        .dact-da-stats i {
+            color: var(--primary);
+        }
+
         /* ── Article content ── */
         .dact-content-body {
-            font-size: 1rem;
+            font-size: 0.9rem;
             line-height: 1.85;
             color: var(--text-body);
             text-align: justify;
@@ -626,6 +751,7 @@
         .dact-content-body h2,
         .dact-content-body h3 {
             font-weight: 800;
+            font-size: 1rem;
             color: var(--text-heading);
             margin-top: 1.8rem;
             margin-bottom: .8rem;

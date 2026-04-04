@@ -85,12 +85,11 @@ PHONG CACH TRA LOI:
 - Co dua ra goi y hanh dong tiep theo (vd: can ngan sach, khu vuc, so phong, lich xem).
 
 QUY TAC CHUYEN NHAN VIEN:
-Chi them [TRANSFER_TO_AGENT] khi KHACH THE HIEN RO rang mot trong cac nhu cau sau:
-- Muon gap nhan vien/tu van vien truc tiep
-- Muon dat lich xem nha
-- Muon thuong luong dat coc/mua ban/hop dong
-- Hoac yeu cau xu ly phap ly chuyen sau
-Neu chi la cau hoi thong tin thong thuong thi KHONG them [TRANSFER_TO_AGENT].";
+Neu khach co nhu cau sau: gap nhan vien, dat lich xem, dat coc, ky hop dong, phap ly:
+- KHONG chuyen ngay, hay hoi mot cau: Ban co muon toi ket noi ban voi nhan vien tu van khong?
+- Neu khach xac nhan dong y → them [TRANSFER_TO_AGENT] vao cuoi phan hoi
+- Neu khach chua ro hoac tu choi → tiep tuc tu van
+Chi them [TRANSFER_TO_AGENT] khi khach XAC NHAN ro rang muon gap nhan vien.";
     }
 
     private function buildGenerationConfig(): GenerationConfig
@@ -143,7 +142,7 @@ Neu chi la cau hoi thong tin thong thuong thi KHONG them [TRANSFER_TO_AGENT].";
                 $transfer  = str_contains($text, '[TRANSFER_TO_AGENT]');
                 $cleanText = trim(str_replace('[TRANSFER_TO_AGENT]', '', $text));
 
-                return ['reply' => $cleanText, 'can_chuyen_nv' => $transfer];
+                return ['reply' => $cleanText, 'can_chuyen_nv' => $transfer, 'cau_hoi_goi_y' => $this->getCauHoiGoiY($phienChat),];
             } catch (\Exception $e) {
                 $rawMessage  = (string) $e->getMessage();
                 $safeMessage = preg_replace('/AIza[0-9A-Za-z_-]{20,}/', '[REDACTED_API_KEY]', $rawMessage) ?? $rawMessage;
@@ -173,7 +172,100 @@ Neu chi la cau hoi thong tin thong thuong thi KHONG them [TRANSFER_TO_AGENT].";
             'can_chuyen_nv' => false,
         ];
     }
+    public function getCauHoiGoiY(PhienChat $phienChat): array
+    {
+        // Nếu không có câu hỏi → trả fallback
+        $cauHoi = $this->buildCauHoiFromContext($phienChat);
+        if (!empty($cauHoi)) {
+            return $cauHoi;
+        }
 
+        return $this->getDefaultQuestions();
+    }
+
+    /**
+     * Xây dựng câu hỏi gợi ý theo ngữ cảnh (BĐS / Dự án / Khu vực)
+     */
+    private function buildCauHoiFromContext(PhienChat $phienChat): array
+    {
+        if ($phienChat->loai_ngu_canh === 'bat_dong_san' && $phienChat->ngu_canh_id) {
+            $bds = \App\Models\BatDongSan::find($phienChat->ngu_canh_id);
+            if ($bds) {
+                return [
+                    "Giá {$bds->tieu_de} có thương lượng không?",
+                    "Pháp lý của căn này thế nào?",
+                    "Tôi muốn đặt lịch xem căn này",
+                    "Có căn tương tự trong khu vực không?",
+                ];
+            }
+        }
+
+        if ($phienChat->loai_ngu_canh === 'du_an' && $phienChat->ngu_canh_id) {
+            $da = \App\Models\DuAn::find($phienChat->ngu_canh_id);
+            if ($da) {
+                return [
+                    "Dự án {$da->ten_du_an} còn căn nào không?",
+                    "Tiến độ dự án đến đâu rồi?",
+                    "Chính sách thanh toán như thế nào?",
+                    "Cho tôi gặp nhân viên tư vấn dự án",
+                ];
+            }
+        }
+
+        if ($phienChat->loai_ngu_canh === 'khu_vuc' && $phienChat->ngu_canh_id) {
+            $kv = \App\Models\KhuVuc::find($phienChat->ngu_canh_id);
+            if ($kv) {
+                return [
+                    "Các BĐS nổi bật ở {$kv->ten_khu_vuc} là gì?",
+                    "Giá trung bình ở {$kv->ten_khu_vuc} hiện nay?",
+                    "Tiện ích xung quanh khu vực này?",
+                    "Xem các dự án ở {$kv->ten_khu_vuc}",
+                ];
+            }
+        }
+
+        return [];
+    }
+
+    /**
+     * Câu hỏi gợi ý mặc định (fallback khi lỗi hoặc không có context)
+     */
+    private function getDefaultQuestions(): array
+    {
+        // Lấy 2 BĐS mới nhất từ DB
+        $bdsMoi = \App\Models\BatDongSan::where('trang_thai', 'con_hang')
+            ->where('hien_thi', 1)
+            ->latest()
+            ->limit(2)
+            ->pluck('tieu_de')
+            ->toArray();
+
+        $questions = [
+            'Có những BĐS nào đang cho thuê gần đây?',
+            'Mức giá chuẩn hiện tại là bao nhiêu?',
+            'Cách thanh toán & ký hợp đồng như thế nào?',
+        ];
+
+        // Thêm BĐS mới vào cùng với câu hỏi
+        foreach ($bdsMoi as $ten) {
+            $questions[] = "Tư vấn về: {$ten}";
+        }
+
+        return array_slice($questions, 0, 4);
+    }
+
+    /**
+     * Câu hỏi fallback khi Gemini bị lỗi hoàn toàn
+     */
+    public function getFallbackQuestions(): array
+    {
+        return [
+            '❓ Các dịch vụ của chúng tôi là gì?',
+            '💰 Tôi có đủ kinh phí mua/thuê không?',
+            '📍 Nên chọn khu vực nào?',
+            '👨‍💼 Tôi muốn nói chuyện với nhân viên',
+        ];
+    }
     private function buildErrorReply(string $lowerMessage): string
     {
         if (str_contains($lowerMessage, 'has been suspended')) {

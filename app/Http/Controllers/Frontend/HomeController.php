@@ -82,4 +82,11 @@ class HomeController extends Controller
     {
         return view('frontend.pages.tuyen-dung');
     }
+    public function congCuTaiChinh()
+    {
+        // Lấy danh sách ngân hàng đang hiển thị
+        $nganHangs = \App\Models\NganHang::where('trang_thai', 1)->orderBy('lai_suat_uu_dai', 'asc')->get();
+
+        return view('frontend.pages.cong-cu-tai-chinh', compact('nganHangs'));
+    }
 }

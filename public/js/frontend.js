@@ -772,6 +772,49 @@ function extractJsonPayload(rawText) {
     return null;
 }
 
+// ── Hiển thị câu hỏi gợi ý ──
+function renderQuickReplies(questions) {
+    const wrap = document.getElementById("chatQuickReplies");
+    if (!wrap || !questions || questions.length === 0) {
+        wrap.style.display = "none";
+        return;
+    }
+    wrap.innerHTML = "";
+    wrap.style.animation = "none";
+
+    questions.forEach((q, index) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = q;
+        btn.style.animationDelay = `${index * 0.05}s`;
+        btn.onclick = (e) => {
+            e.preventDefault();
+            document.getElementById("chatInput").value = q;
+            wrap.style.display = "none";
+            sendFrontendMessage(); // gửi luôn
+        };
+        wrap.appendChild(btn);
+    });
+    wrap.style.display = "flex";
+    // Trigger animation
+    setTimeout(() => {
+        wrap.style.animation = "slideUp 0.3s ease-out";
+    }, 10);
+}
+
+// ── Sửa hàm xử lý response sau khi gửi tin nhắn ──
+// Trong hàm nhận response từ server (longPoll hoặc sau guiTinNhan),
+// tìm chỗ append tin nhắn bot và thêm:
+
+function handleBotMessage(tinNhan, botData) {
+    appendMessage(tinNhan); // hàm render tin nhắn cũ của bạn
+
+    // Hiện câu hỏi gợi ý
+    if (botData && botData.cau_hoi_goi_y) {
+        renderQuickReplies(botData.cau_hoi_goi_y);
+    }
+}
+
 async function parseApiJsonResponse(res) {
     const text = await res.text();
     const payload = (text || "").trim();
@@ -1069,6 +1112,13 @@ window.sendFrontendMessage = function (e) {
                     "Đã chuyển cuộc trò chuyện sang nhân viên kinh doanh.",
                     "success",
                 );
+            }
+
+            // Nếu có câu hỏi gợi ý (bình thường hoặc fallback) → hiển thị
+            if (data.cau_hoi_goi_y && Array.isArray(data.cau_hoi_goi_y)) {
+                setTimeout(() => {
+                    renderQuickReplies(data.cau_hoi_goi_y);
+                }, 300);
             }
         })
         .catch((err) => {

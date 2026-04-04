@@ -46,10 +46,6 @@
     {{-- ══ LOGO ══ --}}
     <div class="sidebar-logo">
         <img src="{{ asset('images/logo.png') }}" alt="TCL" onerror="this.style.display='none'">
-        <div class="sidebar-logo-text">
-            <div class="name">Thành Công Land</div>
-            <div class="sub">Admin Panel</div>
-        </div>
     </div>
 
     {{-- ══ NAV ══ --}}
@@ -190,7 +186,13 @@
                     <span class="nav-link-text">Nhân viên</span>
                 </a>
             </div>
-
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.ngan-hang') }}"
+                    href="{{ route('nhanvien.admin.ngan-hang.index') }}" data-tooltip="Quản lý Ngân hàng">
+                    <i class="fas fa-university nav-icon"></i>
+                    <span class="nav-link-text">Quản lý Lãi Suất</span>
+                </a>
+            </div>
             <div class="nav-item">
                 <a class="nav-link-item" href="#" data-tooltip="Cài đặt">
                     <i class="fas fa-cog nav-icon"></i>

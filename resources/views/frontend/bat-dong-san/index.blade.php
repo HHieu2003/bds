@@ -157,7 +157,7 @@
             font-family: inherit;
             white-space: nowrap;
             flex-shrink: 0;
-            max-width: 155px;
+            max-width: 135px;
             transition: border-color var(--transition), color var(--transition);
             appearance: none;
             background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath fill='%23aaa' d='M4 5L0 0h8z'/%3E%3C/svg%3E");
@@ -1074,7 +1074,7 @@
                     {{-- Filter pills --}}
                     <div class="bds-filter-pills">
                         <select name="khu_vuc" class="bds-qs {{ request('khu_vuc') ? 'has-value' : '' }}"
-                            onchange="this.form.submit()" id="qsKhuVuc">
+                            onchange="filterDuAnByKhuVuc(this.value, 'qs'); this.form.submit()" id="qsKhuVuc">
                             <option value="">🏘 Khu vực</option>
                             @foreach ($khuVucs ?? [] as $kv)
                                 <option value="{{ $kv->id }}" {{ request('khu_vuc') == $kv->id ? 'selected' : '' }}>
@@ -1084,7 +1084,7 @@
                         </select>
 
                         <select name="du_an" class="bds-qs {{ request('du_an') ? 'has-value' : '' }}"
-                            onchange="loadToa(this.value); this.form.submit()" id="qsDuAn">
+                            onchange="handleTopbarDuAnChange(this.value)" id="qsDuAn">
                             <option value="">🏢 Dự án</option>
                             @foreach ($duAns ?? [] as $da)
                                 <option value="{{ $da->id }}" data-khu-vuc="{{ $da->khu_vuc_id ?? '' }}"
@@ -1166,7 +1166,12 @@
                             <i class="fas fa-list"></i>
                         </button>
                     </div>
-
+                    {{-- NÚT GỢI Ý THÔNG MINH --}}
+                    <a href="{{ route('frontend.bat-dong-san.index', ['goi_y' => '1']) }}"
+                        class="bds-nhu-cau-tab {{ request('goi_y') ? 'active' : '' }}"
+                        style="{{ request('goi_y') ? 'background: linear-gradient(135deg, var(--primary-light), #fff); color: var(--primary); border-color: var(--primary);' : '' }}">
+                        <i class="fas fa-magic" style="color: var(--primary);"></i> Dành cho bạn
+                    </a>
                 </div>
 
                 {{-- Active filter chips --}}
@@ -1284,7 +1289,7 @@
                                     <div>
                                         <div class="sb-sub-label">Khu vực</div>
                                         <select name="khu_vuc" class="sb-input" id="sbKhuVuc"
-                                            onchange="filterDuAnByKhuVuc(this.value)">
+                                            onchange="filterDuAnByKhuVuc(this.value, 'sb')">
                                             <option value="">— Tất cả khu vực —</option>
                                             @foreach ($khuVucs ?? [] as $kv)
                                                 <option value="{{ $kv->id }}"
@@ -1298,7 +1303,7 @@
                                     <div>
                                         <div class="sb-sub-label">Dự án</div>
                                         <select name="du_an" class="sb-input" id="sbDuAn"
-                                            onchange="loadToaSidebar(this.value)">
+                                            onchange="handleSidebarDuAnChange(this.value)">
                                             <option value="">— Tất cả dự án —</option>
                                             @foreach ($duAns ?? [] as $da)
                                                 <option value="{{ $da->id }}"
@@ -1667,14 +1672,31 @@
         }
 
         /* ── Cascade: Khu vực → Dự án ── */
-        function filterDuAnByKhuVuc(khuVucId) {
-            const sbDuAn = document.getElementById('sbDuAn');
-            if (!sbDuAn) return;
-            sbDuAn.querySelectorAll('option:not([value=""])').forEach(opt => {
+        function filterDuAnByKhuVuc(khuVucId, source = 'sb') {
+            const duAnSelect = source === 'qs' ? document.getElementById('qsDuAn') : document.getElementById('sbDuAn');
+            if (!duAnSelect) return;
+
+            duAnSelect.querySelectorAll('option:not([value=""])').forEach(opt => {
                 opt.style.display = (!khuVucId || opt.dataset.khuVuc == khuVucId) ? '' : 'none';
             });
-            sbDuAn.value = '';
-            document.getElementById('sbToaWrap').style.display = 'none';
+
+            const selected = duAnSelect.options[duAnSelect.selectedIndex];
+            if (selected && selected.style.display === 'none') {
+                duAnSelect.value = '';
+            }
+
+            if (source === 'qs') {
+                const qsToa = document.getElementById('qsToa');
+                if (qsToa) {
+                    qsToa.value = '';
+                    qsToa.style.display = 'none';
+                }
+            } else {
+                const sbToaWrap = document.getElementById('sbToaWrap');
+                const sbToaInput = document.getElementById('sbToaInput');
+                if (sbToaWrap) sbToaWrap.style.display = 'none';
+                if (sbToaInput) sbToaInput.value = '';
+            }
         }
 
         /* ── Cascade: Dự án → Tòa ── */
@@ -1687,6 +1709,8 @@
                 input.value = '';
                 return;
             }
+
+            input.value = '';
 
             fetch(`/api/toa-by-du-an/${duAnId}`)
                 .then(r => r.json())
@@ -1720,10 +1744,64 @@
                 });
         }
 
-        function loadToa(duAnId) {
+        function loadToa(duAnId, selectedToa = '') {
             const sel = document.getElementById('qsToa');
             if (!sel) return;
-            sel.style.display = duAnId ? '' : 'none';
+            if (!duAnId) {
+                sel.innerHTML = '<option value="">🏬 Tất cả tòa</option>';
+                sel.value = '';
+                sel.style.display = 'none';
+                return;
+            }
+
+            fetch(`/api/toa-by-du-an/${duAnId}`)
+                .then(r => r.json())
+                .then(data => {
+                    sel.innerHTML = '<option value="">🏬 Tất cả tòa</option>';
+                    (data || []).forEach(toa => {
+                        const option = document.createElement('option');
+                        option.value = toa;
+                        option.textContent = `Tòa ${toa}`;
+                        sel.appendChild(option);
+                    });
+
+                    if (selectedToa) {
+                        sel.value = selectedToa;
+                    }
+                    sel.style.display = '';
+                })
+                .catch(() => {
+                    // Fallback: giữ option hiện có từ server nếu API lỗi.
+                    sel.style.display = '';
+                });
+        }
+
+        function handleTopbarDuAnChange(duAnId) {
+            const form = document.getElementById('formFilter');
+            if (!duAnId) {
+                loadToa('');
+                form?.submit();
+                return;
+            }
+
+            // Khi đã chọn dự án: load tòa rồi lọc BĐS
+            loadToa(duAnId);
+            // Tự động submit form để lọc BĐS theo dự án
+            form?.submit();
+        }
+
+        function handleSidebarDuAnChange(duAnId) {
+            const form = document.getElementById('formSidebar');
+            if (!duAnId) {
+                loadToaSidebar('');
+                form?.submit();
+                return;
+            }
+
+            // Khi đã chọn dự án: load tòa rồi lọc BĐS
+            loadToaSidebar(duAnId);
+            // Tự động submit form để lọc BĐS theo dự án
+            form?.submit();
         }
 
         function selectToa(toa) {
@@ -1791,6 +1869,19 @@
 
         /* ── Khởi tạo ── */
         document.addEventListener('DOMContentLoaded', function() {
+            const khuVucTopbar = document.getElementById('qsKhuVuc')?.value || '';
+            const khuVucSidebar = document.getElementById('sbKhuVuc')?.value || '';
+            filterDuAnByKhuVuc(khuVucTopbar, 'qs');
+            filterDuAnByKhuVuc(khuVucSidebar, 'sb');
+
+            const qsDuAnValue = document.getElementById('qsDuAn')?.value || '';
+            const qsToaValue = document.getElementById('qsToa')?.value || '';
+            if (qsDuAnValue) {
+                loadToa(qsDuAnValue, qsToaValue);
+            } else {
+                loadToa('');
+            }
+
             soSanhList.forEach(item => {
                 document.getElementById('ss-btn-' + item.id)?.classList.add('active');
             });

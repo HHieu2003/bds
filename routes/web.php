@@ -33,11 +33,14 @@ Route::prefix('')->name('frontend.')->group(function () {
     Route::get('/gioi-thieu', [HomeController::class, 'gioiThieu'])->name('gioi-thieu');
     Route::get('/noi-that', [HomeController::class, 'noiThat'])->name('noi-that');
     Route::get('/tuyen-dung', [HomeController::class, 'tuyendung'])->name('tuyen-dung');
+    Route::get('/cong-cu-tai-chinh', [HomeController::class, 'congCuTaiChinh'])->name('cong-cu-tai-chinh');
 
     Route::get('/bat-dong-san', [FeBatDongSanController::class, 'index'])->name('bat-dong-san.index');
     Route::get('/bat-dong-san/{slug}', [FeBatDongSanController::class, 'show'])->name('bat-dong-san.show');
     Route::post('/bds/track-time', [FeBatDongSanController::class, 'trackTime'])
         ->name('bds.track-time');
+    Route::get('/api/toa-by-du-an/{duAnId}', [FeBatDongSanController::class, 'toaByDuAn'])
+        ->name('api.toa-by-du-an');
     Route::get('/du-an', [FeDuAnController::class, 'index'])->name('du-an.index');
     Route::get('/du-an/{slug}', [FeDuAnController::class, 'show'])->name('du-an.show');
 
@@ -172,6 +175,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
 
             // ── Chỉ Admin ──────────────────────
+
             Route::middleware('check.role:admin')->group(function () {
                 Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])
                     ->name('nhanvien.admin.nhan-vien.edit-data');
@@ -186,7 +190,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{nhanVien}/doi-mat-khau', [NhanVienController::class, 'doiMatKhau'])->name('doi-mat-khau');
                 });
             });
-
+            Route::resource('ngan-hang', \App\Http\Controllers\Admin\NganHangController::class);
             // ── Admin + Nguồn hàng ─────────────
             Route::middleware('check.role:admin,nguon_hang')->group(function () {
                 Route::resource('du-an', DuAnController::class);

@@ -1222,17 +1222,20 @@ ol {
     background: #fff;
     border-radius: 16px;
     z-index: 1051;
-    width: 90%;
-    max-width: 440px;
+    width: min(94vw, 640px);
+    max-width: 640px;
+    max-height: 88vh;
     box-shadow: var(--shadow-gold);
     opacity: 0;
     transition:
         transform 0.3s ease,
         opacity 0.3s ease;
     border: 1px solid var(--primary-light);
+    overflow: hidden;
 }
 .kh-modal.show {
-    display: block;
+    display: flex;
+    flex-direction: column;
     transform: translate(-50%, -50%) scale(1);
     opacity: 1;
 }
@@ -1281,6 +1284,54 @@ ol {
 }
 .kh-modal-close:hover {
     color: var(--status-danger);
+}
+
+#authModal .kh-modal-body {
+    overflow-y: auto;
+    max-height: calc(88vh - 92px);
+    padding: 1.2rem 1.5rem 1.35rem !important;
+}
+
+/* Bố cục step đăng ký: gọn chiều cao, rộng vừa mắt trên desktop */
+#authStepRegister form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+    row-gap: 2px;
+}
+
+#authStepRegister .kh-field {
+    margin-bottom: 0.85rem;
+}
+
+#authStepRegister .kh-field:nth-child(1),
+#authStepRegister #btnAuthRegister {
+    grid-column: 1 / -1;
+}
+
+#authStepRegister #btnAuthRegister {
+    margin-top: 0.2rem;
+}
+
+@media (max-width: 768px) {
+    .kh-modal {
+        width: min(96vw, 540px);
+        max-height: 90vh;
+    }
+
+    #authModal .kh-modal-body {
+        max-height: calc(90vh - 88px);
+        padding: 1rem 1rem 1.1rem !important;
+    }
+
+    #authStepRegister form {
+        grid-template-columns: 1fr;
+    }
+
+    #authStepRegister .kh-field,
+    #authStepRegister .kh-field:nth-child(1) {
+        grid-column: 1;
+    }
 }
 
 .kh-field {
@@ -1800,7 +1851,7 @@ ol {
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    background: linear-gradient(0deg, var(--primary-light), var(--primary));
+    background: linear-gradient(0deg, rgba(209, 127, 71, 0.8), var(--primary));
     color: #fff;
     display: flex;
     align-items: center;

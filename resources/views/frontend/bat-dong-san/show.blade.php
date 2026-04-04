@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                       TRANG CHI TIẾT BĐS — Global Styles
-                                                    ═══════════════════════════════════════ */
+                                                                       TRANG CHI TIẾT BĐS — Global Styles
+                                                                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1092,6 +1092,9 @@
                         </button>
                     </div>
 
+                    @if ($bds->nhu_cau === 'ban')
+                        @include('frontend.partials.cong-cu-tai-chinh')
+                    @endif
                 </div>
 
                 {{-- ══ CỘT PHẢI — SIDEBAR ══ --}}

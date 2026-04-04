@@ -10,12 +10,15 @@ use App\Models\LichSuXemBds;
 use App\Models\YeuThich;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 use App\Services\GoiYService;
 
 class BatDongSanController extends Controller
 {
     public function index(Request $request, GoiYService $goiYService)
     {
+        $nhuCau = $request->input('nhu_cau', 'ban');
+
         // 1. Khởi tạo Query mặc định: Chỉ lấy BĐS đang hiển thị và còn hàng
         $query = BatDongSan::with(['duAn.khuVuc']) // Tối ưu N+1 query lồng nhau
             ->where('hien_thi', 1)
@@ -24,13 +27,11 @@ class BatDongSanController extends Controller
             ->where('trang_thai', 'con_hang');
 
         // 2. Lọc theo Nhu cầu (Bán / Thuê)
-        if ($request->filled('nhu_cau')) {
-            $query->where('nhu_cau', $request->nhu_cau);
-        }
+        $query->where('nhu_cau', $nhuCau);
 
         // 3. Lọc theo TỪ KHÓA (Tối ưu tìm kiếm đa tầng: Tiêu đề, Tòa, Mã BĐS, Tên Dự án, Địa chỉ, Tên Khu vực)
-        if ($request->filled('tu_khoa')) {
-            $tuKhoa = $request->tu_khoa;
+        if ($request->filled('timkiem')) {
+            $tuKhoa = trim((string) $request->timkiem);
             $query->where(function ($q) use ($tuKhoa) {
                 // Các trường nằm trực tiếp trên bảng bat_dong_san
                 $q->where('tieu_de', 'like', '%' . $tuKhoa . '%')
@@ -51,10 +52,10 @@ class BatDongSanController extends Controller
         }
 
         // 4. Lọc theo Khu vực
-        if ($request->filled('khu_vuc_id')) {
+        if ($request->filled('khu_vuc')) {
             $query->whereHas('duAn', function ($q) use ($request) {
                 // Truy vấn vào bảng du_an để tìm các dự án thuộc khu vực này
-                $q->where('khu_vuc_id', $request->khu_vuc_id);
+                $q->where('khu_vuc_id', $request->khu_vuc);
             });
         }
 
@@ -64,53 +65,63 @@ class BatDongSanController extends Controller
         }
 
         // 6. Lọc theo Số phòng ngủ
-        if ($request->filled('so_phong_ngu')) {
-            if ($request->so_phong_ngu === 'studio') {
+        if ($request->filled('sophongngu')) {
+            if ($request->sophongngu === 'studio') {
                 $query->where('so_phong_ngu', 0); // 0 đại diện cho Studio
-            } elseif ($request->so_phong_ngu >= 3) {
+            } elseif ((int) $request->sophongngu >= 3) {
                 $query->where('so_phong_ngu', '>=', 3);
             } else {
-                $query->where('so_phong_ngu', $request->so_phong_ngu);
+                $query->where('so_phong_ngu', (int) $request->sophongngu);
             }
         }
 
         // 7. Lọc theo Mức giá (Xử lý linh hoạt cho cả Bán và Thuê)
         if ($request->filled('muc_gia')) {
             $mucGia = $request->muc_gia;
-            $nhuCau = $request->nhu_cau ?? 'ban';
 
             if ($nhuCau == 'ban') {
                 // Logic giá BÁN
-                if ($mucGia == 'duoi-2') $query->where('gia', '<', 2000000000);
-                elseif ($mucGia == '2-5') $query->whereBetween('gia', [2000000000, 5000000000]);
-                elseif ($mucGia == '5-10') $query->whereBetween('gia', [5000000000, 10000000000]);
-                elseif ($mucGia == 'tren-10') $query->where('gia', '>', 10000000000);
+                if ($mucGia == 'duoi2ty') $query->where('gia', '<', 2000000000);
+                elseif ($mucGia == '2-5ty') $query->whereBetween('gia', [2000000000, 5000000000]);
+                elseif ($mucGia == '5-10ty') $query->whereBetween('gia', [5000000000, 10000000000]);
+                elseif ($mucGia == 'tren10ty') $query->where('gia', '>', 10000000000);
             } else {
                 // Logic giá THUÊ
-                if ($mucGia == 'duoi-10') $query->where('gia', '<', 10000000);
-                elseif ($mucGia == '10-20') $query->whereBetween('gia', [10000000, 20000000]);
-                elseif ($mucGia == '20-50') $query->whereBetween('gia', [20000000, 50000000]);
-                elseif ($mucGia == 'tren-50') $query->where('gia', '>', 50000000);
+                if ($mucGia == 'duoi10tr') $query->where('gia_thue', '<', 10000000);
+                elseif ($mucGia == '10-20tr') $query->whereBetween('gia_thue', [10000000, 20000000]);
+                elseif ($mucGia == '20-50tr') $query->whereBetween('gia_thue', [20000000, 50000000]);
+                elseif ($mucGia == 'tren50tr') $query->where('gia_thue', '>', 50000000);
             }
         }
 
         // 8. Lọc BĐS Nổi bật
-        if ($request->filled('noi_bat')) {
+        if ($request->boolean('noibat')) {
             $query->where('noi_bat', 1);
         }
 
+        // 8.1. Lọc BĐS vào ở ngay (nếu có cột)
+        if ($request->boolean('vao_o_ngay') && Schema::hasColumn('bat_dong_san', 'vao_o_ngay')) {
+            $query->where('vao_o_ngay', 1);
+        }
+
         // 9. Sắp xếp kết quả
-        if ($request->filled('sap_xep')) {
-            if ($request->sap_xep == 'gia_thap') $query->orderBy('gia', 'asc');
-            elseif ($request->sap_xep == 'gia_cao') $query->orderBy('gia', 'desc');
-            elseif ($request->sap_xep == 'moi_nhat') $query->orderBy('created_at', 'desc');
+        $sapXep = $request->input('sap_xep', 'moinhat');
+        if ($sapXep === 'giatang') {
+            $query->orderBy($nhuCau === 'thue' ? 'gia_thue' : 'gia', 'asc');
+        } elseif ($sapXep === 'giagiam') {
+            $query->orderBy($nhuCau === 'thue' ? 'gia_thue' : 'gia', 'desc');
+        } elseif ($sapXep === 'dientich') {
+            $query->orderBy('dien_tich', 'desc');
         } else {
             // Mặc định: Nổi bật lên trước, sau đó là mới nhất
             $query->orderBy('noi_bat', 'desc')->orderBy('created_at', 'desc');
         }
 
         $toaList = BatDongSan::whereNotNull('toa')
+            ->where('hien_thi', 1)
+            ->where('trang_thai', 'con_hang')
             ->when($request->du_an, fn($q) => $q->where('du_an_id', $request->du_an))
+            ->where('nhu_cau', $nhuCau)
             ->distinct()->pluck('toa')->sort()->values();
 
         // 10. Phân trang (12 BĐS / 1 trang) và giữ nguyên param trên URL
@@ -118,24 +129,26 @@ class BatDongSanController extends Controller
 
         // Ghi lịch sử tìm kiếm để mô hình gợi ý có dữ liệu thật từ hành vi lọc/tìm.
         [$giaTu, $giaDen] = $this->resolveGiaKhoang($request->muc_gia, $request->nhu_cau);
+
         $boLoc = [
-            'nhu_cau' => $request->nhu_cau,
-            'khu_vuc_id' => $request->khu_vuc_id,
+            'nhu_cau' => $nhuCau,
+            'khu_vuc_id' => $request->khu_vuc,
             'du_an_id' => $request->du_an,
-            'so_phong_ngu' => $request->so_phong_ngu,
+            'so_phong_ngu' => $request->sophongngu,
             'loai_hinh' => $request->loai_hinh,
             'gia_tu' => $giaTu,
             'gia_den' => $giaDen,
             'toa' => $request->toa,
             'noi_that' => $request->noithat,
-            'noi_bat' => $request->noi_bat,
+            'noi_bat' => $request->noibat,
+            'vao_o_ngay' => $request->vao_o_ngay,
         ];
 
         $goiYService->ghiLichSuTimKiem(
             Auth::guard('customer')->id(),
             session()->getId(),
             [
-                'tu_khoa' => $request->tu_khoa,
+                'tu_khoa' => $request->timkiem,
                 'bo_loc' => $boLoc,
                 'sap_xep_theo' => $request->sap_xep,
                 'so_ket_qua' => $batDongSans->total(),
@@ -155,7 +168,7 @@ class BatDongSanController extends Controller
         });
 
         // 11. Lấy dữ liệu cho Sidebar Filter
-        $khuVucs = KhuVuc::where('hien_thi', 1)->whereNull('khu_vuc_cha_id')->get();
+        $khuVucs = KhuVuc::where('hien_thi', 1)->orderBy('ten_khu_vuc')->get();
         $duAns = DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get();
 
         return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns', 'toaList'));
@@ -207,13 +220,13 @@ class BatDongSanController extends Controller
 
         // ✅ Lấy BĐS gợi ý (loại trừ BĐS đang xem)
         $goiYBds = $goiYService->layGoiY($khachHangId, $sessionId, $bds->id);
-
+        $nganHangs = \App\Models\NganHang::where('trang_thai', 1)->orderBy('lai_suat_uu_dai', 'asc')->get();
         // return view('frontend.bat-dong-san.show', compact('bds', 'bdsLienQuan',));
         return view('frontend.bat-dong-san.show', [
             'bds'               => $bds,
             'bdsLienQuan'       => $bdsLienQuan,
             'goiYBds'           => $goiYBds,
-            // Context cho chat widget
+            'nganHangs'         => $nganHangs,
             'chat_loai_ngu_canh' => 'bat_dong_san',
             'chat_ngu_canh_id'  => $bds->id,
             'chat_ten_ngu_canh' => $bds->tieu_de,
@@ -240,6 +253,27 @@ class BatDongSanController extends Controller
     }
 
     /**
+     * API: Lấy danh sách tòa của một dự án (dùng cho cascade filtering)
+     */
+    public function toaByDuAn(int $duAnId)
+    {
+        $nhuCau = request('nhu_cau', 'ban');
+
+        $toaList = BatDongSan::where('du_an_id', $duAnId)
+            ->where('hien_thi', 1)
+            ->where('trang_thai', 'con_hang')
+            ->where('nhu_cau', $nhuCau)
+            ->whereNotNull('toa')
+            ->where('toa', '!=', '')
+            ->distinct()
+            ->orderBy('toa')
+            ->pluck('toa')
+            ->values();
+
+        return response()->json($toaList);
+    }
+
+    /**
      * Chuẩn hóa khoảng giá số theo input filter để lưu lịch sử tìm kiếm.
      */
     protected function resolveGiaKhoang(?string $mucGia, ?string $nhuCau): array
@@ -249,19 +283,19 @@ class BatDongSanController extends Controller
         $nhuCau = $nhuCau ?: 'ban';
         if ($nhuCau === 'thue') {
             return match ($mucGia) {
-                'duoi-10' => [0, 10000000],
-                '10-20' => [10000000, 20000000],
-                '20-50' => [20000000, 50000000],
-                'tren-50' => [50000000, null],
+                'duoi10tr' => [0, 10000000],
+                '10-20tr' => [10000000, 20000000],
+                '20-50tr' => [20000000, 50000000],
+                'tren50tr' => [50000000, null],
                 default => [null, null],
             };
         }
 
         return match ($mucGia) {
-            'duoi-2' => [0, 2000000000],
-            '2-5' => [2000000000, 5000000000],
-            '5-10' => [5000000000, 10000000000],
-            'tren-10' => [10000000000, null],
+            'duoi2ty' => [0, 2000000000],
+            '2-5ty' => [2000000000, 5000000000],
+            '5-10ty' => [5000000000, 10000000000],
+            'tren10ty' => [10000000000, null],
             default => [null, null],
         };
     }

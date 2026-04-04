@@ -487,10 +487,13 @@
                         <div class="hs-label"><i class="fas fa-map-marker-alt"></i> Khu vực</div>
                         <div class="hs-input-wrap">
                             <i class="fas fa-map-marker-alt"></i>
-                            <select name="khu_vuc">
+                            <select name="khu_vuc" id="heroKhuVuc" onchange="filterHeroDuAnByKhuVuc(this.value)">
                                 <option value="">Tất cả khu vực</option>
                                 @foreach ($khuVuc ?? [] as $kv)
-                                    <option value="{{ $kv->id }}">{{ $kv->ten_khu_vuc }}</option>
+                                    <option value="{{ $kv->id }}"
+                                        {{ request('khu_vuc') == $kv->id ? 'selected' : '' }}>
+                                        {{ $kv->ten_khu_vuc }}
+                                    </option>
                                 @endforeach
                             </select>
                             <i class="fas fa-chevron-down hs-caret"></i>
@@ -502,10 +505,13 @@
                         <div class="hs-label"><i class="fas fa-building"></i> Dự án</div>
                         <div class="hs-input-wrap">
                             <i class="fas fa-city"></i>
-                            <select name="du_an">
+                            <select name="du_an" id="heroDuAn">
                                 <option value="">Tất cả dự án</option>
                                 @foreach ($danhSachDuAn ?? [] as $da)
-                                    <option value="{{ $da->id }}">{{ Str::limit($da->ten_du_an, 22) }}</option>
+                                    <option value="{{ $da->id }}" data-khu-vuc="{{ $da->khu_vuc_id ?? '' }}"
+                                        {{ request('du_an') == $da->id ? 'selected' : '' }}>
+                                        {{ Str::limit($da->ten_du_an, 22) }}
+                                    </option>
                                 @endforeach
                             </select>
                             <i class="fas fa-chevron-down hs-caret"></i>
@@ -556,7 +562,8 @@
                         class="hs-quick-chip">
                         <i class="fas fa-bed"></i> 3 PN
                     </a>
-                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}" class="hs-quick-chip">
+                    <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                        class="hs-quick-chip">
                         <i class="fas fa-key"></i> Cho thuê
                     </a>
                     <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'muc_gia' => 'duoi2ty']) }}"
@@ -605,5 +612,26 @@
             sel.innerHTML = '';
             labs.forEach((text, i) => sel.add(new Option(text, vals[i] ?? '')));
         }
+
+        function filterHeroDuAnByKhuVuc(khuVucId) {
+            const duAnSelect = document.getElementById('heroDuAn');
+            if (!duAnSelect) return;
+
+            duAnSelect.querySelectorAll('option:not([value=""])').forEach((opt) => {
+                opt.style.display = (!khuVucId || opt.dataset.khuVuc == khuVucId) ? '' : 'none';
+            });
+
+            const selected = duAnSelect.options[duAnSelect.selectedIndex];
+            if (selected && selected.style.display === 'none') {
+                duAnSelect.value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const khuVucSelect = document.getElementById('heroKhuVuc');
+            if (khuVucSelect) {
+                filterHeroDuAnByKhuVuc(khuVucSelect.value);
+            }
+        });
     </script>
 @endpush
