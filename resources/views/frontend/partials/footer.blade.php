@@ -3,6 +3,7 @@
 ============================================================ --}}
 
 {{-- ── Pre-footer: Đăng ký nhận tin ── --}}
+{{-- ── Pre-footer: Đăng ký nhận tin ── --}}
 <div class="footer-newsletter">
     <div class="container-fluid px-4">
         <div class="newsletter-inner">
@@ -13,10 +14,12 @@
                     <p>Cập nhật dự án, tin tức thị trường và ưu đãi đặc biệt mỗi tuần</p>
                 </div>
             </div>
-            <form class="newsletter-form" onsubmit="return handleNewsletter(event)" data-aos="fade-left">
+
+            {{-- Form này khi Submit sẽ gọi hàm JS bên dưới --}}
+            <form class="newsletter-form" onsubmit="return handleFooterNewsletter(event)" data-aos="fade-left">
                 <div class="newsletter-input-wrap">
                     <i class="fas fa-envelope"></i>
-                    <input type="email" placeholder="Nhập email của bạn..." required>
+                    <input type="email" id="footer_newsletter_email" placeholder="Nhập email của bạn..." required>
                     <button type="submit">
                         <span>Đăng ký</span>
                         <i class="fas fa-arrow-right"></i>
@@ -30,6 +33,26 @@
     </div>
 </div>
 
+{{-- Script xử lý riêng cho Footer --}}
+<script>
+    function handleFooterNewsletter(event) {
+        event.preventDefault(); // Ngăn trang web tải lại
+
+        // Lấy email mà khách hàng vừa gõ ở footer
+        const email = document.getElementById('footer_newsletter_email').value;
+
+        // Gọi hàm mở Modal đăng ký và truyền email sang
+        if (typeof openModalDangKy === "function") {
+            openModalDangKy(email);
+        } else {
+            console.error(
+                "Lỗi: Không tìm thấy hàm openModalDangKy. Hãy chắc chắn bạn đã include modal-dang-ky-nhan-tin trong master blade."
+                );
+        }
+
+        return false;
+    }
+</script>
 {{-- ── Footer chính ── --}}
 <footer class="site-footer">
     <div class="footer-top-border"></div>

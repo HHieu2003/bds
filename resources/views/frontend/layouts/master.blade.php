@@ -21,8 +21,9 @@
     <meta property="og:locale" content="vi_VN">
     <meta property="og:site_name" content="Thành Công Land">
 
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    <link rel="apple-touch-icon" href="{{ asset('images/apple-touch-icon.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo-icon.png') }}">
+    <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/logo-icon.png') }}">
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -59,7 +60,7 @@
     <main id="main-content">
         @yield('content')
     </main>
-
+    @include('frontend.partials.modal-dang-ky-nhan-tin')
     @include('frontend.partials.footer')
     @include('frontend.partials.contact-panel')
 

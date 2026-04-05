@@ -315,6 +315,29 @@
             border-color: var(--primary);
         }
 
+        /* Các thẻ từ khóa gợi ý */
+        .bds-suggestion-chip {
+            display: inline-flex;
+            align-items: center;
+            background: var(--bg-alt);
+            border: 1px dashed var(--border);
+            color: var(--text-muted);
+            padding: 3px 12px;
+            border-radius: 20px;
+            font-size: .72rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all var(--transition);
+        }
+
+        .bds-suggestion-chip:hover {
+            background: var(--primary-light);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+
         /* ══════════════════ LAYOUT MAIN ══════════════════ */
         .bds-main {
             display: grid;
@@ -1166,15 +1189,10 @@
                             <i class="fas fa-list"></i>
                         </button>
                     </div>
-                    {{-- NÚT GỢI Ý THÔNG MINH --}}
-                    <a href="{{ route('frontend.bat-dong-san.index', ['goi_y' => '1']) }}"
-                        class="bds-nhu-cau-tab {{ request('goi_y') ? 'active' : '' }}"
-                        style="{{ request('goi_y') ? 'background: linear-gradient(135deg, var(--primary-light), #fff); color: var(--primary); border-color: var(--primary);' : '' }}">
-                        <i class="fas fa-magic" style="color: var(--primary);"></i> Dành cho bạn
-                    </a>
                 </div>
 
                 {{-- Active filter chips --}}
+                {{-- Active filter chips & Gợi ý từ khóa --}}
                 @if (count($activeFilters) > 0)
                     <div class="bds-active-filters">
                         <span
@@ -1235,8 +1253,25 @@
                             <strong style="color:var(--secondary)">{{ $batDongSans->total() }}</strong> kết quả
                         </span>
                     </div>
-                @endif
+                @else
+                    {{-- Khối hiển thị Gợi ý từ khóa AI khi người dùng chưa lọc gì --}}
+                    <div class="bds-active-filters" style="border-top: none; padding-top: 2px;">
+                        <span
+                            style="font-size:.7rem;color:var(--text-muted);font-weight:700;white-space:nowrap;flex-shrink:0">
+                            <i class="fas fa-magic text-primary-brand" style="font-size:.65rem"></i> Gợi ý nhanh:
+                        </span>
 
+                        {{-- Duyệt mảng Từ Khóa Thông Minh từ Controller --}}
+                        @if (isset($tuKhoaGoiY) && count($tuKhoaGoiY) > 0)
+                            @foreach ($tuKhoaGoiY as $tuKhoa)
+                                <a href="{{ $tuKhoa['url'] }}" class="bds-suggestion-chip">
+                                    {{ $tuKhoa['label'] }}
+                                </a>
+                            @endforeach
+                        @endif
+
+                    </div>
+                @endif
             </form>
 
             {{-- Mobile: nút bộ lọc nâng cao --}}
@@ -1463,6 +1498,7 @@
                             </a>
 
                         </form>
+
                     </div>
                 </div>
 

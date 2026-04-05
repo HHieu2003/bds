@@ -19,8 +19,8 @@ class KhachHang extends Authenticatable
         'so_dien_thoai',
         'email',
         'password',
-         'verification_token', 
-         'token_expiry',
+        'verification_token',
+        'token_expiry',
         'nguon_khach_hang',
         'muc_do_tiem_nang',
         'nhan_vien_phu_trach_id',
@@ -38,8 +38,8 @@ class KhachHang extends Authenticatable
         'sdt_xac_thuc_at'    => 'datetime',
         'email_xac_thuc_at'  => 'datetime',
         'lien_he_cuoi_at'    => 'datetime',
-         'email_xac_thuc_at' => 'datetime',
-    'token_expiry'      => 'datetime',
+        'email_xac_thuc_at' => 'datetime',
+        'token_expiry'      => 'datetime',
     ];
 
     // ============================================================
@@ -96,7 +96,7 @@ class KhachHang extends Authenticatable
 
     public function canhBaoGia()
     {
-        return $this->hasMany(CanhBaoGia::class, 'khach_hang_id');
+        return $this->hasMany(DangKyNhanTin::class, 'khach_hang_id');
     }
 
     public function lichSuTimKiem()
@@ -121,7 +121,7 @@ class KhachHang extends Authenticatable
 
     public function luotXem()
     {
-        return $this->hasMany(LuotXemBatDongSan::class, 'khach_hang_id');
+        return $this->hasMany(LichSuXemBds::class, 'khach_hang_id');
     }
 
     public function thongBao()

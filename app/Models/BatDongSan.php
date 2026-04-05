@@ -40,6 +40,7 @@ class BatDongSan extends Model
         'thoi_gian_vao_thue',
         'hinh_thuc_thanh_toan',
         'noi_bat',
+        'gui_mail_canh_bao_gia',
         'hien_thi',
         'trang_thai',
         'luot_xem',
@@ -53,6 +54,7 @@ class BatDongSan extends Model
     protected $casts = [
         'album_anh'      => 'array',
         'noi_bat'        => 'boolean',
+        'gui_mail_canh_bao_gia' => 'boolean',
         'hien_thi'       => 'boolean',
         'dien_tich'      => 'decimal:2',
         'gia'            => 'decimal:2',
@@ -85,7 +87,7 @@ class BatDongSan extends Model
 
     public function canhBaoGias()
     {
-        return $this->hasMany(CanhBaoGia::class, 'bat_dong_san_id');
+        return $this->hasMany(DangKyNhanTin::class, 'bat_dong_san_id');
     }
 
     // ── Helpers ──

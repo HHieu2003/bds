@@ -4,6 +4,8 @@ namespace App\Providers;
 
 use App\Models\DuAn;
 use App\Models\KhuVuc;
+use App\Models\BatDongSan;
+use App\Observers\BatDongSanObserver;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -16,6 +18,9 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // ĐỐI TÁC LẬP TRÌNH: Đăng ký Observer theo dõi thay đổi giá Bất động sản
+        BatDongSan::observe(BatDongSanObserver::class);
+
         try {
             // ── Khu vực có dự án → dùng cho dropdown header ──
             $khuVucMenu = KhuVuc::withCount([

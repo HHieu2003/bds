@@ -1224,7 +1224,7 @@ ol {
     z-index: 1051;
     width: min(94vw, 640px);
     max-width: 640px;
-    max-height: 88vh;
+    max-height: 95vh;
     box-shadow: var(--shadow-gold);
     opacity: 0;
     transition:

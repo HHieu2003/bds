@@ -53,10 +53,28 @@ class BatDongSanController extends Controller
 
         // 4. Lọc theo Khu vực
         if ($request->filled('khu_vuc')) {
-            $query->whereHas('duAn', function ($q) use ($request) {
-                // Truy vấn vào bảng du_an để tìm các dự án thuộc khu vực này
-                $q->where('khu_vuc_id', $request->khu_vuc);
-            });
+            $khuVucDaChon = KhuVuc::find($request->khu_vuc);
+
+            if ($khuVucDaChon) {
+                $khuVucIds = [$khuVucDaChon->id];
+                $currentParentIds = [$khuVucDaChon->id];
+
+                // Gom tất cả khu vực con cháu để lọc bao trùm khi chọn khu vực cha.
+                while (! empty($currentParentIds)) {
+                    $childIds = KhuVuc::whereIn('khu_vuc_cha_id', $currentParentIds)->pluck('id')->all();
+
+                    if (empty($childIds)) {
+                        break;
+                    }
+
+                    $khuVucIds = array_merge($khuVucIds, $childIds);
+                    $currentParentIds = $childIds;
+                }
+
+                $query->whereHas('duAn', function ($q) use ($khuVucIds) {
+                    $q->whereIn('khu_vuc_id', array_values(array_unique($khuVucIds)));
+                });
+            }
         }
 
         // 5. Lọc theo Dự án
@@ -171,7 +189,72 @@ class BatDongSanController extends Controller
         $khuVucs = KhuVuc::where('hien_thi', 1)->orderBy('ten_khu_vuc')->get();
         $duAns = DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get();
 
-        return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns', 'toaList'));
+        // =================================================================
+        // ĐỐI TÁC LẬP TRÌNH: TẠO DANH SÁCH TỪ KHÓA GỢI Ý THÔNG MINH
+        // =================================================================
+        $profile = $goiYService->xayDungProfile(Auth::guard('customer')->id(), session()->getId());
+        $tuKhoaGoiY = [];
+        $nhuCauHienTai = $request->nhu_cau ?? 'ban';
+
+        // 1. Gợi ý theo Dự án quan tâm nhất
+        if (!empty($profile['du_an_top_ids'])) {
+            $topDuAnId = $profile['du_an_top_ids'][0];
+            $duAnGoiY = $duAns->firstWhere('id', $topDuAnId);
+            if ($duAnGoiY) {
+                $tuKhoaGoiY[] = [
+                    'label' => 'Dự án ' . $duAnGoiY->ten_du_an,
+                    'url' => route('frontend.bat-dong-san.index', ['du_an' => $topDuAnId, 'nhu_cau' => $nhuCauHienTai])
+                ];
+            }
+        }
+
+        // 2. Gợi ý theo Loại hình BĐS
+        if (!empty($profile['loai_hinh_top'])) {
+            $tuKhoaGoiY[] = [
+                'label' => 'Tìm ' . $profile['loai_hinh_top'],
+                'url' => route('frontend.bat-dong-san.index', ['timkiem' => $profile['loai_hinh_top'], 'nhu_cau' => $nhuCauHienTai])
+            ];
+        }
+
+        // 3. Gợi ý theo Khu vực
+        if (!empty($profile['khu_vuc_top_ids'])) {
+            $topKhuVucId = $profile['khu_vuc_top_ids'][0];
+            $khuVucGoiY = $khuVucs->firstWhere('id', $topKhuVucId);
+            if ($khuVucGoiY) {
+                $tuKhoaGoiY[] = [
+                    'label' => 'Khu vực ' . $khuVucGoiY->ten_khu_vuc,
+                    'url' => route('frontend.bat-dong-san.index', ['khu_vuc' => $topKhuVucId, 'nhu_cau' => $nhuCauHienTai])
+                ];
+            }
+        }
+
+        // 4. Gợi ý theo Khoảng giá trung bình
+        if (!empty($profile['gia_trung_binh'])) {
+            $giaTB = $profile['gia_trung_binh'];
+            if ($nhuCauHienTai == 'ban') {
+                if ($giaTB <= 2000000000) $tuKhoaGoiY[] = ['label' => 'Giá dưới 2 Tỷ', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'muc_gia' => 'duoi2ty'])];
+                elseif ($giaTB <= 5000000000) $tuKhoaGoiY[] = ['label' => 'Khoảng 2 - 5 Tỷ', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'muc_gia' => '2-5ty'])];
+                else $tuKhoaGoiY[] = ['label' => 'Từ 5 - 10 Tỷ', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'muc_gia' => '5-10ty'])];
+            } else {
+                if ($giaTB <= 10000000) $tuKhoaGoiY[] = ['label' => 'Thuê dưới 10 Triệu', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'muc_gia' => 'duoi10tr'])];
+                elseif ($giaTB <= 20000000) $tuKhoaGoiY[] = ['label' => 'Thuê 10 - 20 Triệu', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'muc_gia' => '10-20tr'])];
+                else $tuKhoaGoiY[] = ['label' => 'Thuê 20 - 50 Triệu', 'url' => route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'muc_gia' => '20-50tr'])];
+            }
+        }
+
+        // 5. Nếu khách hàng mới vào (chưa có lịch sử), hiển thị gợi ý Mặc định hấp dẫn
+        if (empty($tuKhoaGoiY)) {
+            $tuKhoaGoiY = [
+                ['label' => 'Căn Studio nhỏ gọn', 'url' => route('frontend.bat-dong-san.index', ['sophongngu' => 'studio', 'nhu_cau' => $nhuCauHienTai])],
+                ['label' => $nhuCauHienTai == 'ban' ? 'Giá rẻ dưới 2 Tỷ' : 'Thuê dưới 10 Triệu', 'url' => route('frontend.bat-dong-san.index', ['muc_gia' => $nhuCauHienTai == 'ban' ? 'duoi2ty' : 'duoi10tr', 'nhu_cau' => $nhuCauHienTai])],
+                ['label' => 'Căn hộ Nội thất đầy đủ', 'url' => route('frontend.bat-dong-san.index', ['noithat' => 'full', 'nhu_cau' => $nhuCauHienTai])],
+            ];
+        }
+
+        // Giới hạn lấy tối đa 4 từ khóa để giao diện không bị tràn
+        $tuKhoaGoiY = array_slice($tuKhoaGoiY, 0, 4);
+
+        return view('frontend.bat-dong-san.index', compact('batDongSans', 'khuVucs', 'duAns', 'toaList', 'tuKhoaGoiY'));
     }
 
     public function show($slug, GoiYService $goiYService)

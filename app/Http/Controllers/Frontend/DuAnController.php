@@ -20,13 +20,32 @@ class DuAnController extends Controller
         if ($request->filled('khu_vuc')) {
             $khu_vuc = $request->khu_vuc;
 
-            // Xử lý linh hoạt: Nếu truyền ID (số), hoặc truyền Slug (chuỗi như 'smart-city')
-            if (is_numeric($khu_vuc)) {
-                $query->where('khu_vuc_id', $khu_vuc);
+            // Ưu tiên resolve theo ID/slug để có thể lấy cả khu vực con cháu.
+            $khuVucDaChon = is_numeric($khu_vuc)
+                ? KhuVuc::find($khu_vuc)
+                : KhuVuc::where('slug', $khu_vuc)->first();
+
+            if ($khuVucDaChon) {
+                $khuVucIds = [$khuVucDaChon->id];
+                $currentParentIds = [$khuVucDaChon->id];
+
+                // Lấy toàn bộ cây con theo từng tầng để lọc dự án bao trùm khu vực cha.
+                while (! empty($currentParentIds)) {
+                    $childIds = KhuVuc::whereIn('khu_vuc_cha_id', $currentParentIds)->pluck('id')->all();
+
+                    if (empty($childIds)) {
+                        break;
+                    }
+
+                    $khuVucIds = array_merge($khuVucIds, $childIds);
+                    $currentParentIds = $childIds;
+                }
+
+                $query->whereIn('khu_vuc_id', array_values(array_unique($khuVucIds)));
             } else {
-                // Nếu truyền chuỗi từ các link cứng trên header
+                // Fallback cho trường hợp truyền chuỗi tên khu vực từ nguồn cũ.
                 $query->whereHas('khuVuc', function ($q) use ($khu_vuc) {
-                    $q->where('slug', $khu_vuc)->orWhere('ten_khu_vuc', 'LIKE', '%' . $khu_vuc . '%');
+                    $q->where('ten_khu_vuc', 'LIKE', '%' . $khu_vuc . '%');
                 });
             }
         }

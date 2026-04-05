@@ -82,11 +82,11 @@
                                 <i class="fas fa-fire me-1" style="color:#FF8C42"></i> Phổ biến:
                             </span>
                             <a href="{{ route('frontend.du-an.index', ['tu_khoa' => 'Vinhomes']) }}"
-                                class="hero-tag">Vinhomes</a>
+                                class="hero-tag">Imperia</a>
                             <a href="{{ route('frontend.du-an.index', ['tu_khoa' => 'Masteri']) }}"
                                 class="hero-tag">Masteri</a>
-                            <a href="{{ route('frontend.du-an.index', ['tu_khoa' => 'Sunwah Pearl']) }}"
-                                class="hero-tag">Sunwah Pearl</a>
+                            <a href="{{ route('frontend.du-an.index', ['tu_khoa' => 'Mỹ Đình Pearl']) }}"
+                                class="hero-tag">Mỹ Đình Pearl</a>
                             @foreach ($khuVucs->take(2) as $kv)
                                 <a href="{{ route('frontend.du-an.index', ['khu_vuc' => $kv->id]) }}"
                                     class="hero-tag">{{ $kv->ten_khu_vuc }}</a>

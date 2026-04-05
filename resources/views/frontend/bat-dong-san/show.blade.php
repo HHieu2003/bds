@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                       TRANG CHI TIẾT BĐS — Global Styles
-                                                                    ═══════════════════════════════════════ */
+                                                                               TRANG CHI TIẾT BĐS — Global Styles
+                                                                            ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -721,6 +721,27 @@
             color: #fff;
         }
 
+        .btn-price-alert {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #fff7ed, #fff);
+            border-color: #fdba74;
+            color: #c2410c;
+        }
+
+        .btn-price-alert i {
+            color: #f97316;
+        }
+
+        .btn-price-alert:hover {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            border-color: #ea580c;
+            color: #fff;
+        }
+
+        .btn-price-alert:hover i {
+            color: #fff;
+        }
+
         /* ── THỐNG KÊ NHANH ── */
         .quick-stats {
             display: grid;
@@ -1173,6 +1194,9 @@
                                 onclick="addSoSanh({{ $bds->id }}, '{{ addslashes($bds->tieu_de) }}')">
                                 <i class="fas fa-balance-scale"></i> So sánh
                             </button>
+                            <button class="btn-action btn-price-alert" onclick="dangKyCanhBaoGia()">
+                                <i class="fas fa-bell"></i> Nhận thông báo thay đổi giá
+                            </button>
                         </div>
 
                     </div>
@@ -1304,6 +1328,21 @@
                         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
                         btn.disabled = false;
                     });
+            }
+
+            function dangKyCanhBaoGia() {
+                if (typeof openModalDangKy !== 'function') {
+                    showFlash('Chưa thể mở form đăng ký nhận tin lúc này.', 'danger');
+                    return;
+                }
+
+                openModalDangKy('', {
+                    batDongSanId: {{ $bds->id }},
+                    batDongSanTitle: '{{ addslashes($bds->tieu_de) }}',
+                    nhuCau: '{{ $bds->nhu_cau }}',
+                    khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
+                    duAnId: {{ $bds->du_an_id ?? 'null' }},
+                });
             }
 
             // Trong trang chi tiết BĐS (bat-dong-san/show.blade.php)

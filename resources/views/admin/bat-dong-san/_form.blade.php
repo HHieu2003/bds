@@ -405,6 +405,17 @@
                                 class="toggle-sw-thumb"></span></span></label>
                 </div>
 
+                <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                    <div>
+                        <div class="fw-bold" style="font-size: 0.85rem">Gửi mail cảnh báo giá</div>
+                        <div class="text-muted" style="font-size: 0.75rem">Tắt để không gửi email giảm giá cho BĐS này
+                        </div>
+                    </div>
+                    <label class="toggle-sw"><input type="checkbox" name="gui_mail_canh_bao_gia" value="1"
+                            @checked(old('gui_mail_canh_bao_gia', $isEdit ? $batDongSan->gui_mail_canh_bao_gia ?? true : true))><span class="toggle-sw-track"><span
+                                class="toggle-sw-thumb"></span></span></label>
+                </div>
+
                 <div class="mb-3">
                     <label class="form-label">Trạng thái giao dịch</label>
                     <select name="trang_thai" class="form-select">

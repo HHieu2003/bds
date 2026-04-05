@@ -22,6 +22,7 @@ use App\Http\Controllers\Frontend\SoSanhController;
 use App\Http\Controllers\Frontend\YeuThichController;
 use App\Http\Controllers\Frontend\LienHeController as FrontendLienHeController;
 use App\Http\Controllers\Frontend\ChatController as FeChatController;
+use App\Http\Controllers\Frontend\DangKyNhanTinController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -57,7 +58,10 @@ Route::prefix('')->name('frontend.')->group(function () {
             Route::get('/cua-toi', [FrontendKyGuiController::class, 'myKyGui'])->name('cua-toi');
         });
     });
-
+    Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
+    Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
+    // Thêm dòng này để xử lý xóa:
+    Route::delete('/dang-ky-nhan-tin/{id}', [DangKyNhanTinController::class, 'destroy'])->name('dang-ky-nhan-tin.destroy');
     Route::get('/tim-kiem', [TimKiemController::class, 'index'])->name('tim-kiem.index');
 
     Route::get('/so-sanh',              [SoSanhController::class, 'index'])->name('so-sanh.index');

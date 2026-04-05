@@ -102,6 +102,7 @@ class BatDongSanController extends Controller
         // Xử lý Checkbox & Mã BĐS
         $data['hien_thi'] = $request->has('hien_thi');
         $data['noi_bat']  = $request->has('noi_bat');
+        $data['gui_mail_canh_bao_gia'] = $request->has('gui_mail_canh_bao_gia');
         $data['slug']     = Str::slug($data['tieu_de']) . '-' . time();
         $data['ma_bat_dong_san'] = 'BDS-' . strtoupper(Str::random(6));
 
@@ -146,6 +147,7 @@ class BatDongSanController extends Controller
 
         $data['hien_thi'] = $request->has('hien_thi');
         $data['noi_bat']  = $request->has('noi_bat');
+        $data['gui_mail_canh_bao_gia'] = $request->has('gui_mail_canh_bao_gia');
         $data['slug']     = Str::slug($data['tieu_de']) . '-' . $batDongSan->id;
 
         // Xử lý Ảnh Đại Diện
