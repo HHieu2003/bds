@@ -198,7 +198,25 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::resource('ngan-hang', NganHangController::class)->except(['create', 'edit']);
+
+                // Lịch hẹn dùng chung cho Admin/Sale/Nguồn hàng.
+                // Quyền thao tác chi tiết tiếp tục được kiểm soát trong controller.
+                Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
+                    Route::get('/',                    [LichHenController::class, 'index'])->name('index');
+                    Route::get('/create',              [LichHenController::class, 'create'])->name('create');
+                    Route::post('/',                   [LichHenController::class, 'store'])->name('store');
+                    Route::get('/api-events',          [LichHenController::class, 'apiEvents'])->name('api-events');
+                    Route::get('/{lichHen}',           [LichHenController::class, 'show'])->name('show');
+                    Route::patch('/{lichHen}/tiep-nhan', [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
+                    Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
+                    Route::patch('/{lichHen}/huy',     [LichHenController::class, 'huy'])->name('huy');
+                    Route::patch('/{lichHen}/bao-lai-gio', [LichHenController::class, 'baoLaiGio'])->name('bao-lai-gio');
+                    Route::patch('/{lichHen}/sale-doi-gio', [LichHenController::class, 'saleDoiGio'])->name('sale-doi-gio');
+                    Route::patch('/{lichHen}/xac-nhan', [LichHenController::class, 'xacNhan'])->name('xac-nhan');
+                    Route::patch('/{lichHen}/tu-choi', [LichHenController::class, 'tuChoi'])->name('tu-choi');
+                });
             });
+
             // ── Admin + Nguồn hàng ─────────────
             Route::middleware('check.role:admin,nguon_hang')->group(function () {
                 Route::resource('du-an', DuAnController::class);
@@ -237,13 +255,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::resource('ky-gui', AdminKyGuiController::class);
                 });
 
-                // Lịch hẹn — Nguồn hàng: xem + xác nhận/từ chối
-                Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
-                    Route::get('/',          [LichHenController::class, 'index'])->name('index');
-                    Route::get('/{lichHen}', [LichHenController::class, 'show'])->name('show');
-                    Route::patch('/{lichHen}/xac-nhan', [LichHenController::class, 'xacNhan'])->name('xac-nhan');
-                    Route::patch('/{lichHen}/tu-choi',  [LichHenController::class, 'tuChoi'])->name('tu-choi');
-                });
+
+
                 Route::patch('/bat-dong-san/{batDongSan}/toggle', [BatDongSanController::class, 'toggle']);
                 Route::patch('/bat-dong-san/{batDongSan}/trang-thai', [BatDongSanController::class, 'updateTrangThai']);
                 Route::delete('/bat-dong-san/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh']);
@@ -275,17 +288,6 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{khachHang}/muc-do',       [KhachHangController::class, 'doiMucDo'])->name('muc-do');
                     Route::patch('/{khachHang}/ghi-chu',      [KhachHangController::class, 'capNhatGhiChu'])->name('ghi-chu');
                     Route::patch('/{khachHang}/lien-he-cuoi', [KhachHangController::class, 'capNhatLienHe'])->name('lien-he-cuoi');
-                });
-
-                // Lịch hẹn — Sale: CRUD + tiếp nhận + hoàn thành + hủy
-                Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
-                    Route::get('/',          [LichHenController::class, 'index'])->name('index');
-                    Route::get('/create',    [LichHenController::class, 'create'])->name('create');
-                    Route::post('/',         [LichHenController::class, 'store'])->name('store');
-                    Route::get('/{lichHen}', [LichHenController::class, 'show'])->name('show');
-                    Route::patch('/{lichHen}/tiep-nhan',  [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
-                    Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
-                    Route::patch('/{lichHen}/huy',        [LichHenController::class, 'huy'])->name('huy');
                 });
 
                 Route::prefix('lien-he')->name('lien-he.')->group(function () {

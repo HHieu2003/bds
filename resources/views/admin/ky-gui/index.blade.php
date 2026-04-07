@@ -190,7 +190,7 @@
                                         </span>
                                     </div>
                                     @if ($kg->email)
-                                        <div>{{ $kg->email }}</div>
+                                        <div><i class="fas fa-envelope text-secondary me-1"></i>{{ $kg->email }}</div>
                                     @endif
                                 </div>
                             </td>
@@ -352,69 +352,108 @@
         @endif
     </div>
 
-    {{-- MODAL CHI TIẾT KÝ GỬI --}}
+    {{-- MODAL CHI TIẾT KÝ GỬI (ĐÃ LÀM ĐẸP) --}}
     <div class="modal fade" id="modalKyGuiChiTiet" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-light border-bottom-0 pb-3">
+                <div class="modal-header bg-light border-bottom">
                     <h5 class="modal-title fw-bold text-navy"><i class="fas fa-file-alt text-primary me-2"></i>Chi tiết
-                        yêu cầu ký gửi</h5>
+                        Yêu cầu Ký gửi</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body pt-0">
-                    <div class="row g-3" style="font-size: 0.9rem;">
-                        <div class="col-6"><span class="text-muted">Chủ nhà:</span>
-                            <div class="fw-bold" id="kgd_ho_ten"></div>
+                <div class="modal-body p-4">
+
+                    {{-- Khối thông tin khách hàng --}}
+                    <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user-circle me-2"></i>Thông tin Khách hàng /
+                        Chủ nhà</h6>
+                    <div class="row g-3 mb-4 bg-light p-3 rounded border">
+                        <div class="col-md-5">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Họ và tên</span>
+                            <strong id="kgd_ho_ten" class="text-dark fs-6"></strong>
                         </div>
-                        <div class="col-6"><span class="text-muted">SĐT:</span>
-                            <div class="fw-bold" id="kgd_sdt"></div>
+                        <div class="col-md-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Số điện thoại</span>
+                            <strong id="kgd_sdt" class="text-danger fs-6"></strong>
                         </div>
-                        <div class="col-6"><span class="text-muted">Email:</span>
-                            <div id="kgd_email"></div>
-                        </div>
-                        <div class="col-6"><span class="text-muted">Nhân sự phụ trách:</span>
-                            <div id="kgd_nv"></div>
-                        </div>
-                        <div class="col-6"><span class="text-muted">Loại hình:</span>
-                            <div id="kgd_loai_hinh"></div>
-                        </div>
-                        <div class="col-6"><span class="text-muted">Nhu cầu:</span>
-                            <div id="kgd_nhu_cau"></div>
-                        </div>
-                        <div class="col-12"><span class="text-muted">Địa chỉ:</span>
-                            <div id="kgd_dia_chi"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Diện tích:</span>
-                            <div id="kgd_dien_tich"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Phòng ngủ:</span>
-                            <div id="kgd_phong_ngu"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Phòng tắm:</span>
-                            <div id="kgd_phong_tam"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Hướng nhà:</span>
-                            <div id="kgd_huong"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Nội thất:</span>
-                            <div id="kgd_noi_that"></div>
-                        </div>
-                        <div class="col-4"><span class="text-muted">Pháp lý:</span>
-                            <div id="kgd_phap_ly"></div>
-                        </div>
-                        <div class="col-6"><span class="text-muted">Giá mong muốn:</span>
-                            <div class="fw-bold text-primary" id="kgd_gia"></div>
-                        </div>
-                        <div class="col-6"><span class="text-muted">Trạng thái:</span>
-                            <div id="kgd_trang_thai"></div>
-                        </div>
-                        <div class="col-12"><span class="text-muted">Ngày tạo:</span>
-                            <div id="kgd_created"></div>
-                        </div>
-                        <div class="col-12"><span class="text-muted">Ghi chú:</span>
-                            <div class="border rounded p-2 bg-light" id="kgd_ghi_chu"></div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Email</span>
+                            <strong id="kgd_email" class="text-dark"></strong>
                         </div>
                     </div>
+
+                    {{-- Khối thông tin Bất động sản --}}
+                    <h6 class="fw-bold text-success mb-3"><i class="fas fa-home me-2"></i>Chi tiết Bất động sản</h6>
+                    <div class="row g-3 mb-4 p-3 rounded border border-success-subtle">
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Nhu cầu ký gửi</span>
+                            <strong id="kgd_nhu_cau" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Loại hình</span>
+                            <strong id="kgd_loai_hinh" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Mức giá mong muốn</span>
+                            <strong id="kgd_gia" class="text-danger fs-5"></strong>
+                        </div>
+
+                        <div class="col-12 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Địa chỉ thực tế</span>
+                            <strong id="kgd_dia_chi" class="text-dark"></strong>
+                        </div>
+
+                        <div class="col-md-3 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Diện tích</span>
+                            <strong id="kgd_dien_tich" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Hướng nhà</span>
+                            <strong id="kgd_huong" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Phòng ngủ</span>
+                            <strong id="kgd_phong_ngu" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-3 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Phòng tắm (WC)</span>
+                            <strong id="kgd_phong_tam" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Pháp lý</span>
+                            <strong id="kgd_phap_ly" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Nội thất</span>
+                            <strong id="kgd_noi_that" class="text-dark"></strong>
+                        </div>
+                    </div>
+
+                    {{-- Khối thông tin Trạng thái --}}
+                    <h6 class="fw-bold text-secondary mb-3"><i class="fas fa-info-circle me-2"></i>Trạng thái & Quản lý
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Trạng thái hiện tại</span>
+                            <div id="kgd_trang_thai" class="fw-bold text-info"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Ngày tiếp nhận</span>
+                            <strong id="kgd_created" class="text-dark"></strong>
+                        </div>
+                        <div class="col-md-4">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Nhân sự phụ trách</span>
+                            <strong id="kgd_nv" class="text-primary"></strong>
+                        </div>
+                        <div class="col-12">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Ghi chú từ khách hàng</span>
+                            <div id="kgd_ghi_chu" class="p-3 bg-light border rounded text-dark"
+                                style="min-height: 60px;"></div>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng cửa sổ</button>
                 </div>
             </div>
         </div>
@@ -493,9 +532,9 @@
                         document.execCommand('copy');
                         temp.remove();
                     }
-                    showCopyNotice('Da sao chep: ' + phone);
+                    showCopyNotice('Đã sao chép: ' + phone);
                 } catch (e) {
-                    showCopyNotice('Khong the sao chep so dien thoai');
+                    showCopyNotice('Không thể sao chép số điện thoại');
                 }
             };
 
@@ -511,11 +550,11 @@
                 setText('kgd_ho_ten', dataset.kgHoTen);
                 setText('kgd_sdt', dataset.kgSdt);
                 setText('kgd_email', dataset.kgEmail);
-                setText('kgd_nv', dataset.kgNv);
+                setText('kgd_nv', dataset.kgNv, 'Chưa chỉ định');
                 setText('kgd_loai_hinh', dataset.kgLoaiHinh);
                 setText('kgd_nhu_cau', dataset.kgNhuCau);
-                setText('kgd_dia_chi', dataset.kgDiaChi);
-                setText('kgd_dien_tich', dataset.kgDienTich ? dataset.kgDienTich + ' m2' : '—');
+                setText('kgd_dia_chi', dataset.kgDiaChi, 'Chưa cập nhật');
+                setText('kgd_dien_tich', dataset.kgDienTich ? dataset.kgDienTich + ' m²' : '—');
                 setText('kgd_phong_ngu', dataset.kgPhongNgu);
                 setText('kgd_phong_tam', dataset.kgPhongTam);
                 setText('kgd_huong', dataset.kgHuong);
@@ -524,7 +563,7 @@
                 setText('kgd_gia', dataset.kgGia);
                 setText('kgd_trang_thai', dataset.kgTrangThai);
                 setText('kgd_created', dataset.kgCreated);
-                setText('kgd_ghi_chu', dataset.kgGhiChu);
+                setText('kgd_ghi_chu', dataset.kgGhiChu, 'Không có ghi chú');
 
                 kgModal.show();
             };
