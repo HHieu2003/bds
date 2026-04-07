@@ -39,9 +39,17 @@
         {{-- Wave bottom --}}
         <div class="vct-hero-wave">
             <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path
-                    d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,123.63,200.27,112.55Z">
-                </path>
+                <defs>
+                    <linearGradient id="vctWaveMain" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stop-color="#f6efe7" />
+                        <stop offset="55%" stop-color="#f8f3ec" />
+                        <stop offset="100%" stop-color="#f3ece3" />
+                    </linearGradient>
+                </defs>
+                <path class="vct-wave-back"
+                    d="M0,72L40,66.7C80,61,160,51,240,53.3C320,56,400,72,480,74.7C560,77,640,67,720,61.3C800,56,880,56,960,61.3C1040,67,1120,77,1160,82.7L1200,88V120H1160C1120,120,1040,120,960,120C880,120,800,120,720,120C640,120,560,120,480,120C400,120,320,120,240,120C160,120,80,120,40,120H0Z" />
+                <path class="vct-wave-front"
+                    d="M0,92L34.3,96C68.6,100,137,108,206,105.3C274.3,103,343,89,411,82.7C480,76,549,76,617,80C685.7,84,754,92,823,90.7C891.4,89,960,79,1029,78.7C1097.1,79,1166,89,1200,94.7L1200,120L0,120Z" />
             </svg>
         </div>
     </section>
@@ -417,11 +425,11 @@
         /* ── Hero ── */
         .vct-hero {
             position: relative;
-            min-height: 70vh;
+            min-height: 40vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 6rem 0 5rem;
+            padding: 2rem 0 5rem;
             background:
                 linear-gradient(rgba(32, 44, 54, 0.82), rgba(26, 51, 71, 0.82)),
                 url('/images/anh-nhan-vien-cong-ty-Thanh-Cong-Land-1536x702.webp') center / cover fixed;
@@ -447,9 +455,17 @@
 
         .vct-hero-wave svg {
             width: 100%;
-            height: 55px;
-            fill: var(--bg-alt);
+            height: 78px;
             display: block;
+        }
+
+        .vct-wave-back {
+            fill: #ffffff;
+            opacity: .55;
+        }
+
+        .vct-wave-front {
+            fill: url(#vctWaveMain);
         }
 
         .vct-hero-badge {
@@ -1044,6 +1060,10 @@
         }
 
         @media (max-width: 767px) {
+            .vct-hero-wave svg {
+                height: 58px;
+            }
+
             .vct-hero-stats {
                 gap: .8rem;
                 padding: .8rem 1.2rem;

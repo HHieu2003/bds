@@ -7,9 +7,9 @@
         {{-- ── HERO ── --}}
         <div class="kg-fe-hero">
             <div class="kg-fe-hero-inner" data-aos="fade-up" data-aos-duration="600">
-                <div class="kg-fe-hero-icon-wrap">
+                {{-- <div class="kg-fe-hero-icon-wrap">
                     <i class="fas fa-file-signature"></i>
-                </div>
+                </div> --}}
                 <h1>Ký gửi Bất động sản</h1>
                 <p>Điền thông tin bên dưới — đội ngũ chuyên viên sẽ liên hệ trong vòng <strong>2 giờ</strong></p>
                 <div class="kg-fe-hero-badges">
@@ -78,13 +78,13 @@
                     </div>
                 </div>
 
-                {{-- ═══ BƯỚC 2: LOẠI HÌNH & NHU CẦU ═══ --}}
-                <div class="kg-fe-step" data-aos="fade-up" data-aos-duration="500" data-aos-delay="100">
+                {{-- ═══ BƯỚC 2: THÔNG TIN BẤT ĐỘNG SẢN ═══ --}}
+                <div class="kg-fe-step" data-aos="fade-up" data-aos-duration="500" data-aos-delay="150">
                     <div class="kg-fe-step-head">
                         <span class="kg-fe-step-num">2</span>
                         <div>
-                            <div class="kg-fe-step-ttl">Loại hình & Nhu cầu</div>
-                            <div class="kg-fe-step-sub">Bạn muốn bán hay cho thuê?</div>
+                            <div class="kg-fe-step-ttl">Thông tin bất động sản</div>
+                            <div class="kg-fe-step-sub">Thông tin càng chi tiết, tư vấn càng chính xác</div>
                         </div>
                     </div>
                     <div class="kg-fe-step-body">
@@ -110,7 +110,7 @@
                         </div>
 
                         {{-- Nhu cầu --}}
-                        <div class="kg-fe-fg">
+                        <div class="kg-fe-fg" style="margin-bottom:20px">
                             <label class="kg-fe-lbl req">Nhu cầu</label>
                             <div class="kg-fe-nc-wrap">
                                 <label class="kg-fe-nc-item {{ old('nhu_cau', 'ban') === 'ban' ? 'active-ban' : '' }}"
@@ -128,24 +128,29 @@
                             </div>
                         </div>
 
-                    </div>
-                </div>
-
-                {{-- ═══ BƯỚC 3: THÔNG TIN BẤT ĐỘNG SẢN ═══ --}}
-                <div class="kg-fe-step" data-aos="fade-up" data-aos-duration="500" data-aos-delay="150">
-                    <div class="kg-fe-step-head">
-                        <span class="kg-fe-step-num">3</span>
-                        <div>
-                            <div class="kg-fe-step-ttl">Thông tin bất động sản</div>
-                            <div class="kg-fe-step-sub">Thông tin càng chi tiết, tư vấn càng chính xác</div>
-                        </div>
-                    </div>
-                    <div class="kg-fe-step-body">
-
                         <div class="kg-fe-fg">
                             <label class="kg-fe-lbl">Địa chỉ</label>
                             <input type="text" name="dia_chi" class="kg-fe-fi" value="{{ old('dia_chi') }}"
                                 placeholder="Số nhà, đường, phường/xã, quận/huyện...">
+                        </div>
+
+                        <div class="kg-fe-row3">
+                            <div class="kg-fe-fg">
+                                <label class="kg-fe-lbl">Dự án</label>
+                                <input type="text" name="du_an" class="kg-fe-fi @error('du_an') err @enderror"
+                                    value="{{ old('du_an') }}" placeholder="VD: Mỹ đình Pearl">
+                                @error('du_an')
+                                    <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="kg-fe-fg">
+                                <label class="kg-fe-lbl">Mã căn</label>
+                                <input type="text" name="ma_can" class="kg-fe-fi @error('ma_can') err @enderror"
+                                    value="{{ old('ma_can') }}" placeholder="VD: S2.03-1212">
+                                @error('ma_can')
+                                    <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="kg-fe-row3">
@@ -248,10 +253,10 @@
                     </div>
                 </div>
 
-                {{-- ═══ BƯỚC 4: HÌNH ẢNH & GHI CHÚ ═══ --}}
+                {{-- ═══ BƯỚC 3: HÌNH ẢNH & GHI CHÚ ═══ --}}
                 <div class="kg-fe-step" data-aos="fade-up" data-aos-duration="500" data-aos-delay="200">
                     <div class="kg-fe-step-head">
-                        <span class="kg-fe-step-num">4</span>
+                        <span class="kg-fe-step-num">3</span>
                         <div>
                             <div class="kg-fe-step-ttl">Hình ảnh & Ghi chú</div>
                             <div class="kg-fe-step-sub">Hình ảnh thực tế giúp tăng khả năng được chọn</div>
@@ -310,7 +315,7 @@
         /* ── Hero ── */
         .kg-fe-hero {
             background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
-            padding: 60px 20px 55px;
+            padding: 30px 20px 55px;
             text-align: center;
             color: #fff;
             position: relative;

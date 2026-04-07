@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                               TRANG CHI TIẾT BĐS — Global Styles
-                                                                            ═══════════════════════════════════════ */
+                                                                                   TRANG CHI TIẾT BĐS — Global Styles
+                                                                                ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1151,12 +1151,12 @@
 
                             <div class="consultant-body">
                                 {{-- Hotline --}}
-                                <a href="tel:0912345678" class="btn-hotline">
+                                <a href="tel:0336 123 130" class="btn-hotline">
                                     <i class="fas fa-phone-alt"></i> 0336 123 130
                                 </a>
 
                                 {{-- Zalo --}}
-                                <a href="https://zalo.me/0912345678" target="_blank" class="btn-zalo">
+                                <a href="https://zalo.me/0336 123 130" target="_blank" class="btn-zalo">
                                     <i class="fas fa-comment-dots"></i> Chat Zalo ngay
                                 </a>
 

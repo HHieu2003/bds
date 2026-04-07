@@ -82,6 +82,7 @@ return new class extends Migration
             // TRANG THAI & HIEN THI
             // =============================================
             $table->boolean('noi_bat')->default(false);
+            $table->boolean('gui_mail_canh_bao_gia')->default(true);
             $table->boolean('hien_thi')->default(true);
             // con_hang | dat_coc | da_ban | dang_thue | da_thue | tam_an
             $table->string('trang_thai')->default('con_hang');

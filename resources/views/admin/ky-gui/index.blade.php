@@ -80,7 +80,7 @@
             <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-3">
                     <input type="text" name="tim_kiem" class="filter-ctrl filter-ctrl-search w-100"
-                        value="{{ request('tim_kiem') }}" placeholder="🔍 Tìm tên, SĐT chủ nhà...">
+                        value="{{ request('tim_kiem') }}" placeholder="🔍 Tìm tên, SĐT, dự án, mã căn...">
                 </div>
                 <div class="col-6 col-md-2">
                     <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
@@ -191,6 +191,17 @@
                                     <i
                                         class="fas fa-map-marker-alt text-danger me-1"></i>{{ $kg->dia_chi ?: 'Chưa cập nhật' }}
                                 </div>
+                                @if ($kg->du_an || $kg->ma_can)
+                                    <div class="text-muted mb-1" style="font-size: 0.76rem">
+                                        @if ($kg->du_an)
+                                            <span><i class="fas fa-city me-1"></i>{{ $kg->du_an }}</span>
+                                        @endif
+                                        @if ($kg->ma_can)
+                                            <span class="ms-2"><i
+                                                    class="fas fa-hashtag me-1"></i>{{ $kg->ma_can }}</span>
+                                        @endif
+                                    </div>
+                                @endif
                                 <div class="text-muted" style="font-size: 0.8rem">
                                     <i class="fas fa-vector-square me-1"></i>{{ (float) $kg->dien_tich }}m²
                                     @if ($kg->so_phong_ngu)
@@ -270,6 +281,14 @@
                     <div class="mobile-card-meta flex-column align-items-start gap-1">
                         <div><i class="fas fa-map-marker-alt text-danger w-15px text-center"></i>
                             {{ Str::limit($kg->dia_chi, 30) ?: 'Chưa cập nhật' }}</div>
+                        @if ($kg->du_an || $kg->ma_can)
+                            <div><i class="fas fa-city text-secondary w-15px text-center"></i>
+                                {{ $kg->du_an ?: 'Chưa rõ dự án' }}
+                                @if ($kg->ma_can)
+                                    <span class="ms-1">| {{ $kg->ma_can }}</span>
+                                @endif
+                            </div>
+                        @endif
                         <div><i class="fas fa-tag text-primary w-15px text-center"></i> <strong
                                 class="text-primary">{{ $kg->gia_hien_thi }}</strong> - {{ (float) $kg->dien_tich }}m²
                         </div>

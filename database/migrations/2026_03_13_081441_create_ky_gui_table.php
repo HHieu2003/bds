@@ -35,6 +35,8 @@ return new class extends Migration
             $table->string('loai_hinh');
             // ban | thue
             $table->string('nhu_cau')->default('ban');
+            $table->string('du_an', 150)->nullable();
+            $table->string('ma_can', 50)->nullable();
 
             // =============================================
             // THONG TIN BDS KY GUI

@@ -491,9 +491,9 @@ ol {
 .nav-dropdown a {
     display: flex;
     align-items: center;
-    padding: 0.6rem 0.85rem;
+    padding: 0.5rem 0.85rem;
     color: var(--text-body);
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     font-weight: 500;
     border-radius: 8px;
     transition: all 0.15s;
@@ -568,7 +568,7 @@ ol {
     overflow: hidden;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    min-width: 550px;
+    min-width: 580px;
 }
 .can-ho-mega-inner {
     display: grid;
@@ -791,11 +791,11 @@ ol {
     align-items: center;
     gap: 0.8rem;
     width: 100%;
-    padding: 0.6rem 1rem;
+    padding: 0.4rem 1rem;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: var(--text-body);
     transition: all 0.15s;

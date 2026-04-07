@@ -74,6 +74,26 @@
                 </div>
 
                 <div class="row g-3 mb-3">
+                    <div class="col-md-8">
+                        <label class="form-label">Dự án</label>
+                        <input type="text" name="du_an" class="form-control @error('du_an') is-invalid @enderror"
+                            value="{{ old('du_an', $isEdit ? $kyGui->du_an : '') }}"
+                            placeholder="VD: Vinhomes Smart City">
+                        @error('du_an')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Mã căn</label>
+                        <input type="text" name="ma_can" class="form-control @error('ma_can') is-invalid @enderror"
+                            value="{{ old('ma_can', $isEdit ? $kyGui->ma_can : '') }}" placeholder="VD: S2.03-1212">
+                        @error('ma_can')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
                     <div class="col-md-4">
                         <label class="form-label">Diện tích (m²) <span class="text-danger">*</span></label>
                         <input type="number" name="dien_tich"

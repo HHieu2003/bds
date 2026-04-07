@@ -20,6 +20,8 @@ class KyGui extends Model
         'email',
         'loai_hinh',
         'nhu_cau',
+        'du_an',
+        'ma_can',
         'dia_chi',
         'dien_tich',
         'huong_nha',
@@ -70,15 +72,14 @@ class KyGui extends Model
 
     const PHAP_LY = [
         'so_hong'     => 'Sổ hồng',
-        'so_do'       => 'Sổ đỏ',
         'hop_dong'    => 'Hợp đồng mua bán',
         'chua_co'     => 'Chưa có sổ',
     ];
 
     const HINH_THUC_THANH_TOAN = [
-        'tien_mat'      => 'Tiền mặt',
-        'chuyen_khoan'  => 'Chuyển khoản',
+        'thuong_luong'       => 'Thương lượng',
         '3_coc_1'       => '3 tháng cọc 1 tháng',
+        '6_coc_1'       => '6 tháng cọc 1 tháng',
         'theo_quy'      => 'Thanh toán theo quý',
         'theo_nam'      => 'Thanh toán theo năm',
     ];

@@ -315,7 +315,7 @@
 
                     {{-- Dự án khác --}}
                     @if (isset($duAnKhac) && $duAnKhac->count() > 0)
-                        <div class="dact-card" data-aos="fade-up" data-aos-duration="500" data-aos-delay="150">
+                        <div class="dact-card mt-3" data-aos="fade-up" data-aos-duration="500" data-aos-delay="150">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                                 <div class="dact-card-title mb-0">
                                     <span></span>Dự Án Khác Bạn Có Thể Quan Tâm

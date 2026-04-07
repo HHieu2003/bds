@@ -17,6 +17,7 @@ return new class extends Migration
 
             // 2. Tiêu chí đăng ký (Tất cả đều cho phép null để khách tùy chọn)
             $table->string('nhu_cau', 50)->nullable(); // VD: 'ban' (Mua) hoặc 'thue' (Thuê)
+            $table->foreignId('khu_vuc_id')->nullable()->constrained('khu_vuc')->cascadeOnDelete();
             $table->foreignId('du_an_id')->nullable()->constrained('du_an')->cascadeOnDelete();
             $table->foreignId('bat_dong_san_id')->nullable()->constrained('bat_dong_san')->cascadeOnDelete();
             $table->string('so_phong_ngu', 50)->nullable(); // VD: 'studio', '1', '2', '3'

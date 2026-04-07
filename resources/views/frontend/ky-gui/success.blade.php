@@ -9,7 +9,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem 1rem;
+            padding: 1rem 1rem;
             background: linear-gradient(135deg, #fff5ef 0%, #fff 50%, #eff6ff 100%);
             position: relative;
             overflow: hidden;
@@ -44,7 +44,7 @@
             background: #fff;
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, .10), 0 4px 20px rgba(255, 140, 66, .08);
-            padding: 3rem 2.5rem;
+            padding: 2rem 2.5rem;
             max-width: 520px;
             width: 100%;
             text-align: center;

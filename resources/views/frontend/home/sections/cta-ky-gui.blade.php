@@ -1,4 +1,4 @@
-<section class="py-5 position-relative"
+<section class="py-3 position-relative"
     style="background: linear-gradient(135deg, var(--secondary), var(--primary-dark)); color: white;">
     <div class="container text-center py-5" data-aos="zoom-in">
         <h2 class="display-6 fw-bold serif-font mb-3 text-light">Bạn Có Bất Động Sản Cần Bán Hoặc Cho Thuê?</h2>

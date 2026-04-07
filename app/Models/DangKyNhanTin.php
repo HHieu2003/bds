@@ -50,4 +50,49 @@ class DangKyNhanTin extends Model
     {
         return $this->belongsTo(BatDongSan::class, 'bat_dong_san_id');
     }
+
+    public function scopeDangHoatDong($query)
+    {
+        return $query->where('trang_thai', true);
+    }
+
+    public function getNhuCauLabelAttribute(): string
+    {
+        return match ($this->nhu_cau) {
+            'ban' => 'Mua',
+            'thue' => 'Thuê',
+            default => 'Bất kỳ',
+        };
+    }
+
+    public function getKhoangGiaLabelAttribute(): string
+    {
+        $tu = $this->muc_gia_tu;
+        $den = $this->muc_gia_den;
+
+        if (is_null($tu) && is_null($den)) {
+            return 'Không giới hạn';
+        }
+
+        if (!is_null($tu) && is_null($den)) {
+            return 'Từ ' . number_format((float) $tu, 0, ',', '.') . ' đ';
+        }
+
+        if (is_null($tu) && !is_null($den)) {
+            return 'Đến ' . number_format((float) $den, 0, ',', '.') . ' đ';
+        }
+
+        return number_format((float) $tu, 0, ',', '.') . ' đ - ' . number_format((float) $den, 0, ',', '.') . ' đ';
+    }
+
+    public function getSoPhongNguLabelAttribute(): string
+    {
+        return match ((string) $this->so_phong_ngu) {
+            'studio' => 'Studio',
+            '1' => '1 phòng ngủ',
+            '2' => '2 phòng ngủ',
+            '3' => '3+ phòng ngủ',
+            default => 'Bất kỳ',
+        };
+    }
 }

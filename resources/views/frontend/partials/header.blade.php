@@ -256,13 +256,6 @@
                             <i class="fas fa-chevron-down kh-chevron" id="khChevron"></i>
                         </div>
                         <div class="kh-dropdown" id="khDropdown">
-                            <div class="kh-dd-header">
-                                <div class="kh-dd-avatar">{{ strtoupper(mb_substr($kh->ho_ten ?? 'K', 0, 1)) }}</div>
-                                <div>
-                                    <div class="kh-dd-name">{{ $kh->ho_ten ?? 'Khách hàng' }}</div>
-                                    <div class="kh-dd-sdt">{{ $kh->so_dien_thoai ?? ($kh->email ?? '') }}</div>
-                                </div>
-                            </div>
                             <div class="kh-dd-body">
                                 <button class="kh-dd-item" onclick="openModalHoSo('thong-tin')">
                                     <span class="kh-dd-icon"
@@ -296,6 +289,12 @@
                                     <span>Công cụ tài chính</span>
                                     <i class="fas fa-chevron-right kh-dd-arr"></i>
                                 </a>
+                                <button type="button" class="kh-dd-item" onclick="openModalQuanLyDangKyNhanTin()">
+                                    <span class="kh-dd-icon" style="background:#fff7ed;color:#ea580c;"><i
+                                            class="fas fa-bell"></i></span>
+                                    <span>Đăng ký nhận tin</span>
+                                    <i class="fas fa-chevron-right kh-dd-arr"></i>
+                                </button>
                                 <div class="kh-dd-divider"></div>
                                 <form action="{{ route('khach-hang.logout') }}" method="POST">
                                     @csrf

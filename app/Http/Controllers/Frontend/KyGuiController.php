@@ -26,6 +26,8 @@ class KyGuiController extends Controller
             'email'          => 'nullable|email|max:100',
             'loai_hinh'      => 'required|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
             'nhu_cau'        => 'required|in:ban,thue',
+            'du_an'          => 'nullable|string|max:150',
+            'ma_can'         => 'nullable|string|max:50',
             'dia_chi'        => 'nullable|string|max:255',
             'dien_tich'      => 'required|numeric|min:1|max:99999',
             'huong_nha'      => 'nullable|string',
@@ -55,6 +57,8 @@ class KyGuiController extends Controller
             'email'                => $request->email,
             'loai_hinh'            => $request->loai_hinh,
             'nhu_cau'              => $request->nhu_cau,
+            'du_an'                => $request->du_an,
+            'ma_can'               => $request->ma_can,
             'dia_chi'              => $request->dia_chi,
             'dien_tich'            => $request->dien_tich,
             'huong_nha'            => $request->huong_nha,
@@ -104,5 +108,22 @@ class KyGuiController extends Controller
             ->paginate(10);
 
         return view('frontend.ky-gui.my-list', compact('kyGuis'));
+    }
+
+    public function huy(KyGui $kyGui)
+    {
+        $customerId = Auth::guard('customer')->id();
+
+        if ((int) $kyGui->khach_hang_id !== (int) $customerId) {
+            abort(403);
+        }
+
+        if (in_array($kyGui->trang_thai, ['da_duyet'], true)) {
+            return back()->with('error', 'Yêu cầu đã được duyệt, bạn không thể hủy trực tiếp. Vui lòng liên hệ chuyên viên hỗ trợ.');
+        }
+
+        $kyGui->delete();
+
+        return back()->with('success', 'Đã hủy yêu cầu ký gửi thành công.');
     }
 }

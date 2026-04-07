@@ -3,24 +3,24 @@
 
     @if ($bds->gia > 0)
         <div class="fin-tabs">
-            <button class="fin-tab-btn active" data-target="tab-vay">
-                <i class="fas fa-university me-1"></i> Vay Ngân Hàng
-            </button>
-            <button class="fin-tab-btn" data-target="tab-thue">
+            <button class="fin-tab-btn active" data-target="tab-thue">
                 <i class="fas fa-file-invoice-dollar me-1"></i> Thuế & Phí Phải Nộp
+            </button>
+            <button class="fin-tab-btn" data-target="tab-vay">
+                <i class="fas fa-university me-1"></i> Vay Ngân Hàng
             </button>
         </div>
 
-        <div id="tab-vay" class="fin-tab-content active">
+        <div id="tab-vay" class="fin-tab-content" style="display: none;">
             <div class="row g-4">
-                <div class="col-md-7">
+                <div class="col-md-6">
                     <div class="fin-form-group">
                         <label>Giá trị Bất động sản (VNĐ)</label>
                         <input type="text" class="fin-input fw-bold text-dark" id="fin_gia_tri"
                             value="{{ number_format($bds->gia, 0, ',', '.') }}" inputmode="numeric"
                             placeholder="Nhập giá trị BĐS">
                     </div>
-
+                    s
                     <div class="fin-form-group">
                         <label class="d-flex justify-content-between">
                             <span>Mức vay ưu đãi: <strong id="fin_ty_le_text"
@@ -31,8 +31,8 @@
                             class="fin-slider">
                     </div>
 
-                    <div class="row g-3">
-                        <div class="col-sm-6">
+                    <div class="col g-3">
+                        <div class="row-sm-6">
                             <label class="fin-label">Ngân hàng</label>
                             <select id="fin_ngan_hang" class="fin-input">
                                 @if (isset($nganHangs) && $nganHangs->count() > 0)
@@ -48,17 +48,22 @@
                         </div>
                         <div class="col-sm-6">
                             <label class="fin-label">Thời hạn</label>
-                            <select id="fin_thoi_han" class="fin-input">
-                                @for ($i = 5; $i <= 30; $i += 5)
-                                    <option value="{{ $i }}" {{ $i == 20 ? 'selected' : '' }}>
-                                        {{ $i }} năm ({{ $i * 12 }} tháng)</option>
-                                @endfor
-                            </select>
+                            <input id="fin_thoi_han" class="fin-input" list="fin_thoi_han_goi_y" type="number"
+                                min="1" step="1" value="20" placeholder="Nhập số năm (VD: 15)">
+                            <datalist id="fin_thoi_han_goi_y">
+                                <option value="1">1 năm</option>
+                                <option value="2">2 năm</option>
+                                <option value="5">5 năm</option>
+                                <option value="10">10 năm</option>
+                                <option value="20">20 năm</option>
+                            </datalist>
+                            <small class="text-muted" style="font-size:.72rem;">Gợi ý: 1, 2, 5, 10, 20 năm hoặc nhập
+                                tay</small>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-md-5">
+                <div class="col-md-6">
                     <div class="fin-result-box">
                         <div class="fin-result-title">Gốc + Lãi tháng đầu tiên</div>
                         <div class="fin-result-total" id="fin_tong_tra">0</div>
@@ -73,13 +78,34 @@
                                 <strong id="fin_tien_lai">0</strong>
                             </div>
                         </div>
-                        <p class="fin-note">* Tính theo dư nợ giảm dần</p>
+
+                        <div class="fin-summary mt-3">
+                            <div class="fin-summary-title">Tổng quan toàn kỳ vay</div>
+                            <div class="fin-summary-row">
+                                <span>Tổng gốc vay</span>
+                                <strong id="fin_tong_goc_vay">0</strong>
+                            </div>
+                            <div class="fin-summary-row">
+                                <span>Tổng lãi toàn kỳ</span>
+                                <strong id="fin_tong_lai_toan_ky">0</strong>
+                            </div>
+                            <div class="fin-summary-row">
+                                <span>Tổng tiền phải trả</span>
+                                <strong id="fin_tong_tat_ca">0</strong>
+                            </div>
+                            <div class="fin-summary-row">
+                                <span>Tỷ lệ lãi/tổng vay</span>
+                                <strong id="fin_ty_le_lai_tong_vay">0%</strong>
+                            </div>
+                        </div>
+
+                        <p class="fin-note">* Ước tính theo phương thức trả góp đều (lãi tính trên dư nợ giảm dần)</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="tab-thue" class="fin-tab-content" style="display: none;">
+        <div id="tab-thue" class="fin-tab-content active">
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="tax-box">
@@ -295,6 +321,38 @@
             margin-bottom: 0;
         }
 
+        .fin-summary {
+            text-align: left;
+            background: #fffbf8;
+            border: 1px solid #fee2cf;
+            border-radius: 10px;
+            padding: .85rem .95rem;
+        }
+
+        .fin-summary-title {
+            font-size: .78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #9a3412;
+            margin-bottom: .5rem;
+            letter-spacing: .4px;
+        }
+
+        .fin-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            font-size: .8rem;
+            color: #475569;
+            padding: .18rem 0;
+        }
+
+        .fin-summary-row strong {
+            color: #0f172a;
+            font-weight: 800;
+        }
+
         /* KẾT QUẢ THUẾ */
         .tax-box {
             background: #f8fafc;
@@ -397,23 +455,51 @@
                     document.getElementById('fin_tong_tra').innerText = fm(0);
                     document.getElementById('fin_tien_goc').innerText = fm(0);
                     document.getElementById('fin_tien_lai').innerText = fm(0);
+                    document.getElementById('fin_tong_goc_vay').innerText = fm(0);
+                    document.getElementById('fin_tong_lai_toan_ky').innerText = fm(0);
+                    document.getElementById('fin_tong_tat_ca').innerText = fm(0);
+                    document.getElementById('fin_ty_le_lai_tong_vay').innerText = '0%';
                     return;
                 }
 
                 let tyLe = parseFloat(slider.value) / 100;
                 let tienVay = giaTriBds * tyLe;
                 let laiNam = parseFloat(selNganHang.value);
-                let soThang = parseInt(selThoiHan.value) * 12;
+                let soNam = parseInt(selThoiHan.value, 10);
+                if (!soNam || soNam < 1) {
+                    soNam = 20;
+                    selThoiHan.value = 20;
+                }
+                let soThang = soNam * 12;
 
-                let gocThang = tienVay / soThang;
-                let laiThang = tienVay * (laiNam / 100 / 12);
+                const laiThangSuat = laiNam / 100 / 12;
+                let tongTraThang;
+                if (laiThangSuat === 0) {
+                    tongTraThang = tienVay / soThang;
+                } else {
+                    const heSo = Math.pow(1 + laiThangSuat, soThang);
+                    tongTraThang = tienVay * laiThangSuat * heSo / (heSo - 1);
+                }
+
+                const laiThangDau = tienVay * laiThangSuat;
+                const gocThangDau = tongTraThang - laiThangDau;
+                const tongTatCa = tongTraThang * soThang;
+                const tongLaiToanKy = Math.max(tongTatCa - tienVay, 0);
+                const tyLeLaiTrenVay = tienVay > 0 ? (tongLaiToanKy / tienVay) * 100 : 0;
 
                 txtTyLe.innerText = slider.value + '%';
                 txtVay.innerText = fm(tienVay);
 
-                document.getElementById('fin_tong_tra').innerText = fm(gocThang + laiThang);
-                document.getElementById('fin_tien_goc').innerText = fm(gocThang);
-                document.getElementById('fin_tien_lai').innerText = fm(laiThang);
+                document.getElementById('fin_tong_tra').innerText = fm(tongTraThang);
+                document.getElementById('fin_tien_goc').innerText = fm(gocThangDau);
+                document.getElementById('fin_tien_lai').innerText = fm(laiThangDau);
+                document.getElementById('fin_tong_goc_vay').innerText = fm(tienVay);
+                document.getElementById('fin_tong_lai_toan_ky').innerText = fm(tongLaiToanKy);
+                document.getElementById('fin_tong_tat_ca').innerText = fm(tongTatCa);
+                document.getElementById('fin_ty_le_lai_tong_vay').innerText =
+                    new Intl.NumberFormat('vi-VN', {
+                        maximumFractionDigits: 1
+                    }).format(tyLeLaiTrenVay) + '%';
             }
 
             // Logic Thuế
@@ -441,9 +527,17 @@
             slider.addEventListener('input', calcVay);
             selNganHang.addEventListener('change', calcVay);
             selThoiHan.addEventListener('change', calcVay);
+            selThoiHan.addEventListener('input', calcVay);
             giaTriInput.addEventListener('input', function() {
                 calcVay();
                 calcThue();
+            });
+            selThoiHan.addEventListener('blur', function() {
+                let soNam = parseFloat(this.value);
+                if (!soNam || soNam < 1) {
+                    this.value = 20;
+                }
+                calcVay();
             });
             giaTriInput.addEventListener('blur', function() {
                 formatMoneyInput(giaTriInput);

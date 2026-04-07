@@ -56,6 +56,7 @@ Route::prefix('')->name('frontend.')->group(function () {
         Route::get('/thanh-cong', [FrontendKyGuiController::class, 'success'])->name('success');
         Route::middleware('auth:customer')->group(function () {
             Route::get('/cua-toi', [FrontendKyGuiController::class, 'myKyGui'])->name('cua-toi');
+            Route::delete('/{kyGui}/huy', [FrontendKyGuiController::class, 'huy'])->name('huy');
         });
     });
     Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');

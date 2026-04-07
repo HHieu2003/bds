@@ -4,17 +4,6 @@
 
 @section('content')
 
-    {{-- HEADER BANNER --}}
-    <section class="bv-hero d-flex align-items-center justify-content-center">
-        <div class="container text-center text-white position-relative z-1" data-aos="fade-up">
-            <h1 class="display-4 fw-bold mb-3">Góc Nhìn Thị Trường</h1>
-            <p class="fs-5 opacity-75 mx-auto mb-0" style="max-width: 600px;">
-                Cập nhật liên tục những tin tức nóng hổi, phân tích chuyên sâu
-                và cẩm nang hữu ích về bất động sản.
-            </p>
-        </div>
-    </section>
-
     {{-- MAIN CONTENT --}}
     <section class="py-5 bg-alt-section">
         <div class="container">

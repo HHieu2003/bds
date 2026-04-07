@@ -74,6 +74,7 @@
     @include('frontend.partials.auth-modal')
     @include('frontend.partials.so-sanh-bar')
     @include('frontend.partials.modal-khach-hang')
+    @include('frontend.partials.modal-quan-ly-dang-ky-nhan-tin')
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -118,7 +119,8 @@
 
                 soSanhThem: '{{ url('/so-sanh/them') }}',
                 soSanhXoa: '{{ url('/so-sanh/xoa') }}',
-                soSanhModal: '{{ route('frontend.so-sanh.modal', [], false) }}'
+                soSanhModal: '{{ route('frontend.so-sanh.modal', [], false) }}',
+                dangKyNhanTinDestroy: '{{ route('frontend.dang-ky-nhan-tin.destroy', ['id' => '__ID__'], false) }}'
             }
         };
     </script>

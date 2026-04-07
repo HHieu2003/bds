@@ -2,11 +2,11 @@
 @section('title', 'Ký gửi của tôi - Thành Công Land')
 
 @section('content')
-    <section class="py-5" style="background-color: var(--bg-main); min-height: 70vh;">
+    <section class="py-5 kgm-page">
         <div class="container" style="max-width: 900px;">
 
             {{-- ── HEADER ── --}}
-            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3" data-aos="fade-up">
+            <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 gap-3 kgm-head" data-aos="fade-up">
                 <div>
                     <h1 class="section-title mb-1 d-flex align-items-center gap-2">
                         <i class="fas fa-file-signature text-primary-brand"></i> Ký gửi của tôi
@@ -15,7 +15,7 @@
                         Tổng cộng <strong class="text-primary-brand">{{ $kyGuis->total() ?? 0 }}</strong> yêu cầu đã gửi
                     </p>
                 </div>
-                <a href="{{ route('frontend.ky-gui.create') }}" class="btn-primary-brand rounded-pill px-4 py-2">
+                <a href="{{ route('frontend.ky-gui.create') }}" class="btn-primary-brand rounded-pill px-4 py-2 kgm-btn-new">
                     <i class="fas fa-plus me-1"></i> Ký gửi mới
                 </a>
             </div>
@@ -43,14 +43,14 @@
                         ];
                     @endphp
 
-                    <div class="card border-0 rounded-4 shadow-sm mb-4 hover-up overflow-hidden" data-aos="fade-up"
+                    <div class="card border-0 rounded-4 shadow-sm mb-4 hover-up overflow-hidden kgm-card" data-aos="fade-up"
                         data-aos-delay="{{ $loop->iteration * 50 }}">
                         <div class="card-body p-4 p-md-4">
                             <div class="row align-items-start g-3">
 
                                 {{-- Cột Trái: Thông tin chính --}}
                                 <div class="col-md-8">
-                                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap kgm-badges">
                                         <span class="badge fw-bold px-3 py-2"
                                             style="background-color: var(--bg-alt); color: {{ $lhInfo['color'] }}; border: 1px solid currentColor;">
                                             <i class="{{ $lhInfo['icon'] }} me-1"></i> {{ $lhInfo['label'] }}
@@ -67,13 +67,26 @@
                                     </div>
 
                                     @if ($kg->dia_chi)
-                                        <p class="mb-3 fw-semibold" style="color: var(--text-heading); font-size: 0.95rem;">
+                                        <p class="mb-3 fw-semibold kgm-address"
+                                            style="color: var(--text-heading); font-size: 0.95rem;">
                                             <i class="fas fa-map-marker-alt text-primary-brand me-1"></i>
                                             {{ $kg->dia_chi }}
                                         </p>
                                     @endif
 
-                                    <div class="d-flex flex-wrap gap-4 text-muted small fw-semibold">
+                                    @if ($kg->du_an || $kg->ma_can)
+                                        <div class="d-flex flex-wrap gap-3 mb-3 text-muted small fw-semibold">
+                                            @if ($kg->du_an)
+                                                <span><i class="fas fa-city icon-muted me-1"></i>{{ $kg->du_an }}</span>
+                                            @endif
+                                            @if ($kg->ma_can)
+                                                <span><i class="fas fa-hashtag icon-muted me-1"></i>Mã căn:
+                                                    {{ $kg->ma_can }}</span>
+                                            @endif
+                                        </div>
+                                    @endif
+
+                                    <div class="d-flex flex-wrap gap-4 text-muted small fw-semibold kgm-meta">
                                         <span><i class="fas fa-ruler-combined icon-muted me-1"></i> {{ $kg->dien_tich }}
                                             m²</span>
                                         @if ($kg->so_phong_ngu)
@@ -87,11 +100,24 @@
 
                                 {{-- Cột Phải: Giá & Trạng thái --}}
                                 <div class="col-md-4 text-md-end border-md-start border-0 ps-md-4">
-                                    <div class="price-text mb-2" style="font-size: 1.4rem;">{{ $kg->gia_hien_thi }}</div>
+                                    <div class="price-text mb-2 kgm-price" style="font-size: 1.4rem;">
+                                        {{ $kg->gia_hien_thi }}</div>
                                     <span class="badge rounded-pill px-3 py-2 fw-bold"
                                         style="background-color: {{ $ttInfo['bg'] }}; color: {{ $ttInfo['color'] }}; font-size: 0.8rem;">
                                         <i class="{{ $ttInfo['icon'] }} me-1"></i> {{ $ttInfo['label'] }}
                                     </span>
+
+                                    @if (in_array($kg->trang_thai, ['cho_duyet', 'dang_tham_dinh']))
+                                        <form action="{{ route('frontend.ky-gui.huy', $kg) }}" method="POST"
+                                            class="mt-3" id="kgCancelForm{{ $kg->id }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm rounded-pill px-3 kgm-btn-cancel"
+                                                onclick="openKyGuiCancelModal('kgCancelForm{{ $kg->id }}', 'KG-{{ str_pad($kg->id, 5, '0', STR_PAD_LEFT) }}')">
+                                                <i class="fas fa-times me-1"></i> Hủy ký gửi
+                                            </button>
+                                        </form>
+                                    @endif
 
                                     @if ($kg->thoi_diem_xu_ly)
                                         <div class="text-muted small mt-2 fw-medium">
@@ -158,6 +184,131 @@
                 </div>
             @endif
 
+            <div class="modal fade" id="kgCancelConfirmModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 rounded-4 kgm-confirm-modal">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-triangle-exclamation text-danger me-2"></i>Xác
+                                nhận hủy ký gửi</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        </div>
+                        <div class="modal-body pt-2">
+                            <p class="mb-2">Bạn chắc chắn muốn hủy yêu cầu <strong id="kgCancelCode">KG-00000</strong>?
+                            </p>
+                            <p class="text-muted small mb-0">Hành động này sẽ ẩn yêu cầu khỏi danh sách của bạn. Bạn vẫn có
+                                thể tạo ký gửi mới bất cứ lúc nào.</p>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-light rounded-pill px-3" data-bs-dismiss="modal">Giữ
+                                lại</button>
+                            <button type="button" class="btn btn-danger rounded-pill px-3" id="kgConfirmCancelBtn">
+                                <i class="fas fa-trash-alt me-1"></i> Xác nhận hủy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </section>
 @endsection
+
+@push('styles')
+    <style>
+        .kgm-page {
+            background:
+                radial-gradient(circle at 100% 0, rgba(255, 140, 66, .06), transparent 30%),
+                radial-gradient(circle at 0 100%, rgba(27, 58, 107, .06), transparent 28%),
+                var(--bg-main);
+            min-height: 70vh;
+        }
+
+        .kgm-head {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1rem 1.2rem;
+            box-shadow: 0 2px 14px rgba(15, 23, 42, .05);
+        }
+
+        .kgm-btn-new {
+            box-shadow: 0 8px 20px rgba(255, 140, 66, .2);
+        }
+
+        .kgm-card {
+            border: 1px solid #eef2f7;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .kgm-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(15, 23, 42, .08) !important;
+        }
+
+        .kgm-address {
+            border-left: 3px solid rgba(255, 140, 66, .35);
+            padding-left: .55rem;
+        }
+
+        .kgm-meta {
+            border-top: 1px dashed #e2e8f0;
+            padding-top: .6rem;
+        }
+
+        .kgm-price {
+            color: #d9480f;
+            font-weight: 800;
+        }
+
+        .kgm-btn-cancel {
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            background: #fff5f5;
+            font-weight: 700;
+        }
+
+        .kgm-btn-cancel:hover {
+            background: #fee2e2;
+            border-color: #fca5a5;
+            color: #991b1b;
+        }
+
+        .kgm-confirm-modal {
+            box-shadow: 0 30px 70px rgba(2, 8, 23, .22);
+        }
+    </style>
+@endpush
+
+@push('scripts')
+    <script>
+        let currentKyGuiCancelFormId = null;
+
+        function openKyGuiCancelModal(formId, code) {
+            currentKyGuiCancelFormId = formId;
+            const codeEl = document.getElementById('kgCancelCode');
+            if (codeEl) {
+                codeEl.textContent = code;
+            }
+
+            const modalEl = document.getElementById('kgCancelConfirmModal');
+            if (!modalEl || typeof bootstrap === 'undefined') return;
+
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const confirmBtn = document.getElementById('kgConfirmCancelBtn');
+            if (!confirmBtn) return;
+
+            confirmBtn.addEventListener('click', function() {
+                if (!currentKyGuiCancelFormId) return;
+
+                const form = document.getElementById(currentKyGuiCancelFormId);
+                if (!form) return;
+
+                form.submit();
+            });
+        });
+    </script>
+@endpush

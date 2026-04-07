@@ -85,6 +85,18 @@
                                                 </td>
                                             </tr>
                                             <tr>
+                                                <td style="padding:3px 0;color:#7a7a7a;">Du an</td>
+                                                <td style="padding:3px 0;font-weight:700;color:#222222;">
+                                                    {{ $kyGui->du_an ?? 'Khong co' }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:3px 0;color:#7a7a7a;">Ma can</td>
+                                                <td style="padding:3px 0;font-weight:700;color:#222222;">
+                                                    {{ $kyGui->ma_can ?? 'Khong co' }}
+                                                </td>
+                                            </tr>
+                                            <tr>
                                                 <td style="padding:3px 0;color:#7a7a7a;">Dien tich</td>
                                                 <td style="padding:3px 0;font-weight:700;color:#222222;">
                                                     {{ $kyGui->dien_tich }} m2

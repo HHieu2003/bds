@@ -47,7 +47,7 @@
         } else {
             console.error(
                 "Lỗi: Không tìm thấy hàm openModalDangKy. Hãy chắc chắn bạn đã include modal-dang-ky-nhan-tin trong master blade."
-                );
+            );
         }
 
         return false;
@@ -107,8 +107,6 @@
                             trường</a></li>
                     <li><a href="{{ route('frontend.tin-tuc.index', ['loai' => 'kien_thuc']) }}"><i
                                 class="fas fa-angle-right"></i> Kiến thức nhà đất</a></li>
-                    <li><a href="{{ route('frontend.tin-tuc.index', ['loai' => 'phong_thuy']) }}"><i
-                                class="fas fa-angle-right"></i> Phong thủy</a></li>
                     <li><a href="{{ route('frontend.tuyen-dung') }}"><i class="fas fa-angle-right"></i> Tuyển dụng</a>
                     </li>
                     <li><a href="{{ route('frontend.lien-he.index') }}"><i class="fas fa-angle-right"></i> Liên hệ</a>
@@ -164,7 +162,7 @@
                         <div class="contact-icon"><i class="fas fa-clock"></i></div>
                         <div class="contact-body">
                             <span class="contact-label">Giờ làm việc</span>
-                            <span>Thứ 2 – Thứ 7: 8:00 – 17:30<br>Chủ nhật: 8:00 – 12:00</span>
+                            <span>Thứ 2 – Thứ 7: 8:00 – 17:30
                         </div>
                     </li>
                 </ul>

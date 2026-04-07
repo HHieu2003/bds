@@ -7,7 +7,7 @@
     <div class="ve-cty-bg-accent" aria-hidden="true"></div>
     <div class="ve-cty-bg-grid" aria-hidden="true"></div>
 
-    <div class="container py-5">
+    <div class="container">
         <div class="ve-cty-wrapper">
 
             {{-- ── CỘT TRÁI: VISUAL BLOCK ── --}}
@@ -155,8 +155,8 @@
 @push('styles')
     <style>
         /* ══════════════════════════════════════════
-                               SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
-                            ══════════════════════════════════════════ */
+                                   SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
+                                ══════════════════════════════════════════ */
 
         .ve-cty-section {
             position: relative;
@@ -197,8 +197,8 @@
         }
 
         /* ═══════════════════
-                               CỘT TRÁI: VISUAL
-                            ═══════════════════ */
+                                   CỘT TRÁI: VISUAL
+                                ═══════════════════ */
         .ve-cty-visual {
             position: relative;
         }
@@ -343,8 +343,8 @@
         }
 
         /* ══════════════════
-                               CỘT PHẢI: NỘI DUNG
-                            ══════════════════ */
+                                   CỘT PHẢI: NỘI DUNG
+                                ══════════════════ */
         .ve-cty-content {
             display: flex;
             flex-direction: column;
@@ -537,8 +537,8 @@
         }
 
         /* ══════════════════
-                               THANH THỐNG KÊ
-                            ══════════════════ */
+                                   THANH THỐNG KÊ
+                                ══════════════════ */
         .ve-cty-stats {
             display: flex;
             align-items: center;

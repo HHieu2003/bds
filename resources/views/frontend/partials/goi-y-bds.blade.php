@@ -7,8 +7,7 @@
                 <div>
                     @auth('customer')
                         <h2 class="section-title mb-1" style="font-size: 1.8rem;">
-                            <i class="fas fa-gem text-primary-brand me-2"></i>
-                            Dành riêng cho {{ auth('customer')->user()->ho_ten }}
+                            Phù hợp với bạn
                         </h2>
                         <p class="text-muted small m-0"><i class="fas fa-magic me-1"></i> Gợi ý tự động dựa trên lịch sử tìm
                             kiếm & tương tác của bạn</p>

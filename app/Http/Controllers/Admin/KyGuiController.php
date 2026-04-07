@@ -17,7 +17,11 @@ class KyGuiController extends Controller
 
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
-            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)->orWhere('so_dien_thoai', 'like', $kw)->orWhere('dia_chi', 'like', $kw));
+            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)
+                ->orWhere('so_dien_thoai', 'like', $kw)
+                ->orWhere('dia_chi', 'like', $kw)
+                ->orWhere('du_an', 'like', $kw)
+                ->orWhere('ma_can', 'like', $kw));
         }
 
         if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
@@ -134,6 +138,8 @@ class KyGuiController extends Controller
             'email'                  => 'nullable|email|max:100',
             'loai_hinh'              => 'required|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
             'nhu_cau'                => 'required|in:ban,thue',
+            'du_an'                  => 'nullable|string|max:150',
+            'ma_can'                 => 'nullable|string|max:50',
             'dia_chi'                => 'nullable|string|max:255',
             'dien_tich'              => 'required|numeric|min:1',
             'huong_nha'              => 'nullable|string',
