@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\BatDongSan;
 use App\Models\ChuNha;
 use App\Models\DuAn;
+use App\Models\KhuVuc;
 use App\Models\NhanVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -51,8 +52,17 @@ class BatDongSanController extends Controller
 
         // Lọc theo dropdown
         if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
-        if ($request->filled('loai_hinh')) $query->where('loai_hinh', $request->loai_hinh);
-        if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
+
+        $loaiHinh = $request->input('loai_hinh', 'can_ho');
+        if (!empty($loaiHinh)) {
+            $query->where('loai_hinh', $loaiHinh);
+        }
+
+        $trangThai = $request->input('trang_thai', 'con_hang');
+        if (!empty($trangThai)) {
+            $query->where('trang_thai', $trangThai);
+        }
+
         if ($request->filled('du_an_id')) $query->where('du_an_id', $request->du_an_id);
         if ($request->filled('khu_vuc_id')) {
             $query->whereHas('duAn', function ($q) use ($request) {
@@ -83,9 +93,19 @@ class BatDongSanController extends Controller
             'da_ban'    => BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
         ];
 
-        $duAns = DuAn::orderBy('ten_du_an')->get();
+        $duAns = DuAn::query()
+            ->when($request->filled('khu_vuc_id'), function ($q) use ($request) {
+                $q->where('khu_vuc_id', $request->khu_vuc_id);
+            })
+            ->orderBy('ten_du_an')
+            ->get();
 
-        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns'));
+        $khuVucs = KhuVuc::query()
+            ->where('hien_thi', true)
+            ->orderBy('ten_khu_vuc')
+            ->get();
+
+        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns', 'khuVucs'));
     }
 
     // ── FORM TẠO MỚI ──

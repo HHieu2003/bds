@@ -75,54 +75,88 @@
     </div>
 
     {{-- ══ BỘ LỌC ══ --}}
-    <div class="filter-box mb-4">
+    <div class="filter-box mb-4 bds-filter-panel">
         <form method="GET" id="filterForm">
-            <div class="row g-2 align-items-center">
-                <div class="col-12 col-md-3"><input type="text" name="tukhoa"
-                        class="filter-ctrl filter-ctrl-search w-100" value="{{ request('tukhoa') }}"
-                        placeholder="🔍 Tìm tiêu đề, mã BĐS..."></div>
-                <div class="col-6 col-md-2"><select name="nhu_cau" class="filter-ctrl w-100 filter-auto-submit">
+            <div class="row g-2 align-items-center mb-2">
+                <div class="col-12 col-lg-4">
+                    <input type="text" name="tukhoa" class="filter-ctrl filter-ctrl-search w-100"
+                        value="{{ request('tukhoa') }}" placeholder="Tìm nhanh theo tiêu đề hoặc mã BĐS...">
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="nhu_cau" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Nhu cầu</option>
-                        <option value="ban" @selected(request('nhu_cau') == 'ban')>🏷 Bán</option>
-                        <option value="thue" @selected(request('nhu_cau') == 'thue')>🔑 Cho thuê</option>
-                    </select></div>
-                <div class="col-6 col-md-2"><select name="loai_hinh" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="ban" @selected(request('nhu_cau') == 'ban')>Bán</option>
+                        <option value="thue" @selected(request('nhu_cau') == 'thue')>Cho thuê</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="loai_hinh" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Loại hình</option>
                         @foreach (['can_ho' => 'Căn hộ', 'nha_pho' => 'Nhà phố', 'biet_thu' => 'Biệt thự', 'dat_nen' => 'Đất nền', 'shophouse' => 'Shophouse'] as $v => $l)
-                            <option value="{{ $v }}" @selected(request('loai_hinh') == $v)>{{ $l }}</option>
+                            <option value="{{ $v }}" @selected(request('loai_hinh', 'can_ho') == $v)>{{ $l }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2"><select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Trạng thái</option>
-                        @foreach (['con_hang' => '✅ Còn hàng', 'dat_coc' => '🤝 Đặt cọc', 'da_ban' => '❌ Đã bán', 'dang_thue' => '🔑 Đang thuê', 'da_thue' => '📦 Đã thuê', 'tam_an' => '⏸ Tạm ẩn'] as $v => $l)
-                            <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $l }}</option>
+                        @foreach (['con_hang' => 'Còn hàng', 'dat_coc' => 'Đặt cọc', 'da_ban' => 'Đã bán', 'dang_thue' => 'Đang thuê', 'da_thue' => 'Đã thuê', 'tam_an' => 'Tạm ẩn'] as $v => $l)
+                            <option value="{{ $v }}" @selected(request('trang_thai', 'con_hang') == $v)>{{ $l }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3"><select name="du_an_id" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">Tất cả dự án</option>
-                        @foreach ($duAns as $da)
-                            <option value="{{ $da->id }}" @selected(request('du_an_id') == $da->id)>
-                                {{ Str::limit($da->ten_du_an, 30) }}</option>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
+                        <option value="gia_tang" @selected(request('sapxep') == 'gia_tang')>Giá tăng dần</option>
+                        <option value="gia_giam" @selected(request('sapxep') == 'gia_giam')>Giá giảm dần</option>
+                        <option value="luot_xem" @selected(request('sapxep') == 'luot_xem')>Lượt xem nhiều</option>
+                    </select>
+                </div>
+                <div class="col-6 col-md-3 col-lg-2">
+                    <select name="khu_vuc_id" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Tất cả khu vực</option>
+                        @foreach ($khuVucs as $kv)
+                            <option value="{{ $kv->id }}" @selected((string) request('khu_vuc_id') === (string) $kv->id)>
+                                {{ $kv->ten_khu_vuc }}
+                            </option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2"><select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>📅 Mới nhất</option>
-                        <option value="gia_tang" @selected(request('sapxep') == 'gia_tang')>💰 Giá tăng dần</option>
-                        <option value="gia_giam" @selected(request('sapxep') == 'gia_giam')>💰 Giá giảm dần</option>
-                        <option value="luot_xem" @selected(request('sapxep') == 'luot_xem')>👁 Lượt xem nhiều</option>
-                    </select></div>
-                <div class="col-12 col-md-auto ms-auto d-flex gap-2">
-                    <button type="submit" class="btn btn-navy"><i class="fas fa-search"></i> Lọc</button>
+                <div class="col-6 col-md-3 d-flex gap-2 justify-content-end">
+                    <button type="submit" class="btn btn-navy"><i class="fas fa-search me-1"></i> Lọc nhanh</button>
                     @if (request()->hasAny(['tukhoa', 'nhu_cau', 'loai_hinh', 'trang_thai', 'du_an_id', 'khu_vuc_id', 'sapxep']))
                         <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="btn btn-danger"><i
-                                class="fas fa-times"></i></a>
+                                class="fas fa-rotate-left me-1"></i> Xóa lọc</a>
                     @endif
                 </div>
             </div>
         </form>
+
+        @php
+            $projectQueryBase = request()->except(['du_an_id', 'page']);
+        @endphp
+        <div class="project-tabs-wrap mt-3">
+            <div class="project-tabs-title">
+                Chuyển nhanh theo dự án
+                @if (request('khu_vuc_id'))
+                    <span class="text-muted fw-normal">- đã lọc theo khu vực</span>
+                @endif
+            </div>
+            <div class="project-tabs-scroller">
+                <a href="{{ route('nhanvien.admin.bat-dong-san.index', $projectQueryBase) }}"
+                    class="project-tab {{ !request()->filled('du_an_id') ? 'active' : '' }}">
+                    Tất cả dự án
+                </a>
+                @foreach ($duAns as $da)
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge($projectQueryBase, ['du_an_id' => $da->id])) }}"
+                        class="project-tab {{ (string) request('du_an_id') === (string) $da->id ? 'active' : '' }}"
+                        title="{{ $da->ten_du_an }}">
+                        {{ Str::limit($da->ten_du_an, 28) }}
+                    </a>
+                @endforeach
+            </div>
+        </div>
     </div>
 
     {{-- ══ BẢNG DỮ LIỆU & MOBILE CARD ══ --}}
@@ -629,4 +663,53 @@
             });
         });
     </script>
+@endpush
+
+@push('styles')
+    <style>
+        .bds-filter-panel {
+            border: 1px solid rgba(15, 23, 42, 0.08);
+        }
+
+        .project-tabs-title {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #475569;
+            margin-bottom: 0.5rem;
+        }
+
+        .project-tabs-scroller {
+            display: flex;
+            gap: 0.45rem;
+            overflow-x: auto;
+            padding-bottom: 0.15rem;
+        }
+
+        .project-tab {
+            flex: 0 0 auto;
+            text-decoration: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #334155;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 0.38rem 0.75rem;
+            transition: all 0.18s ease;
+            white-space: nowrap;
+        }
+
+        .project-tab:hover {
+            color: #0f172a;
+            background: #eef2ff;
+            border-color: #c7d2fe;
+        }
+
+        .project-tab.active {
+            color: #fff;
+            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            border-color: #1d4ed8;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+        }
+    </style>
 @endpush

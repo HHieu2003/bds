@@ -209,6 +209,20 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
                     ->name('bat-dong-san.destroy');
 
+
+                // Route Ký Gửi
+                // Màn hình Form Chuyển đổi (Duyệt Ký gửi)
+                Route::get('ky-gui/{kyGui}/duyet', [\App\Http\Controllers\Admin\KyGuiController::class, 'duyetForm'])->name('ky-gui.duyet');
+
+                // Action Lưu Form Chuyển đổi
+                Route::post('ky-gui/{kyGui}/duyet', [\App\Http\Controllers\Admin\KyGuiController::class, 'duyetSubmit']);
+
+                // Route resource gốc của Ký Gửi
+                Route::resource('ky-gui', \App\Http\Controllers\Admin\KyGuiController::class);
+
+                // Bổ sung route xử lý AJAX cập nhật trạng thái nếu chưa có
+                Route::patch('ky-gui/{kyGui}/xu-ly', [\App\Http\Controllers\Admin\KyGuiController::class, 'xuLy'])->name('ky-gui.xu-ly');
+
                 Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
                     Route::get('/',               [AdminKyGuiController::class, 'index'])->name('index');
                     Route::get('/create',         [AdminKyGuiController::class, 'create'])->name('create');

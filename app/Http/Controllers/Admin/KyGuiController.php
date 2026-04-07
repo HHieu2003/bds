@@ -5,9 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\KyGui;
 use App\Models\NhanVien;
+use App\Models\ChuNha;
+use App\Models\BatDongSan;
+use App\Models\DuAn;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class KyGuiController extends Controller
 {
@@ -17,21 +21,21 @@ class KyGuiController extends Controller
 
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
-            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)
-                ->orWhere('so_dien_thoai', 'like', $kw)
-                ->orWhere('dia_chi', 'like', $kw)
-                ->orWhere('du_an', 'like', $kw)
-                ->orWhere('ma_can', 'like', $kw));
+            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)->orWhere('so_dien_thoai', 'like', $kw)->orWhere('dia_chi', 'like', $kw));
         }
 
         if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
-        if ($request->filled('loai_hinh')) $query->where('loai_hinh', $request->loai_hinh);
         if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
         if ($request->filled('nhan_vien_id')) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
-        if ($request->filled('tu_ngay')) $query->whereDate('created_at', '>=', $request->tu_ngay);
-        if ($request->filled('den_ngay')) $query->whereDate('created_at', '<=', $request->den_ngay);
 
-        $kyGuis = $query->latest()->paginate(15)->withQueryString();
+        $sapXep = $request->get('sapxep', 'moi_nhat');
+        if ($sapXep === 'cu_nhat') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
+
+        $kyGuis = $query->paginate(15)->withQueryString();
 
         $thongKe = [
             'tong'           => KyGui::count(),
@@ -92,6 +96,7 @@ class KyGuiController extends Controller
     {
         return view('admin.ky-gui.edit', compact('kyGui'));
     }
+
     public function update(Request $request, KyGui $kyGui)
     {
         $data = $this->validateData($request);
@@ -118,7 +123,6 @@ class KyGuiController extends Controller
 
     public function destroy(KyGui $kyGui)
     {
-        // Kiểm tra an toàn trước khi lặp để tránh lỗi P1006
         $hinhAnh = $kyGui->hinh_anh_tham_khao;
         if (is_array($hinhAnh) && count($hinhAnh) > 0) {
             foreach ($hinhAnh as $path) {
@@ -138,8 +142,6 @@ class KyGuiController extends Controller
             'email'                  => 'nullable|email|max:100',
             'loai_hinh'              => 'required|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
             'nhu_cau'                => 'required|in:ban,thue',
-            'du_an'                  => 'nullable|string|max:150',
-            'ma_can'                 => 'nullable|string|max:50',
             'dia_chi'                => 'nullable|string|max:255',
             'dien_tich'              => 'required|numeric|min:1',
             'huong_nha'              => 'nullable|string',
@@ -166,5 +168,88 @@ class KyGuiController extends Controller
             }
         }
         return $paths;
+    }
+
+    // ========================================================
+    // FORM XÁC NHẬN VÀ CHUYỂN ĐỔI KÝ GỬI -> BĐS
+    // ========================================================
+
+    public function duyetForm(KyGui $kyGui)
+    {
+        if (in_array($kyGui->trang_thai, ['da_duyet', 'tu_choi'])) {
+            return redirect()->route('nhanvien.admin.ky-gui.index')->with('error', 'Yêu cầu ký gửi này đã được xử lý!');
+        }
+
+        $duAns = DuAn::orderBy('ten_du_an')->get();
+        return view('admin.ky-gui.convert', compact('kyGui', 'duAns'));
+    }
+
+    public function duyetSubmit(Request $request, KyGui $kyGui)
+    {
+        $request->validate([
+            'ho_ten_chu_nha' => 'required|string|max:100',
+            'so_dien_thoai'  => 'required|string|max:15',
+            'tieu_de'        => 'required|string|max:255',
+            'nhu_cau'        => 'required|in:ban,thue',
+            'loai_hinh'      => 'required|string',
+            'dien_tich'      => 'required|numeric',
+        ]);
+
+        $nhanVienHienTai = Auth::guard('nhanvien')->id();
+
+        // 1. TẠO HOẶC LẤY CHỦ NHÀ
+        $chuNha = ChuNha::firstOrCreate(
+            ['so_dien_thoai' => $request->so_dien_thoai],
+            [
+                'ho_ten'             => $request->ho_ten_chu_nha,
+                'email'              => $request->email,
+                'ghi_chu'            => 'Khách hàng từ hệ thống Ký gửi',
+                'trang_thai_hop_tac' => 'dang_hop_tac'
+            ]
+        );
+
+        // 2. TẠO BẤT ĐỘNG SẢN
+        $bdsData = [
+            'chu_nha_id'             => $chuNha->id,
+            'nhan_vien_phu_trach_id' => $nhanVienHienTai,
+            'du_an_id'               => $request->du_an_id,
+
+            'tieu_de'         => $request->tieu_de,
+            'slug'            => Str::slug($request->tieu_de) . '-' . time(),
+            'ma_bat_dong_san' => 'KG-' . strtoupper(Str::random(6)),
+
+            'loai_hinh'    => $request->loai_hinh,
+            'nhu_cau'      => $request->nhu_cau,
+            'dien_tich'    => $request->dien_tich,
+            'gia'          => $request->nhu_cau == 'ban' ? $request->gia : null,
+            'gia_thue'     => $request->nhu_cau == 'thue' ? $request->gia_thue : null,
+            'mo_ta'        => $request->mo_ta,
+            'huong_nha'    => $request->huong_nha,
+            'so_phong_ngu' => $request->so_phong_ngu,
+            'so_phong_tam' => $request->so_phong_tam,
+            'noi_that'     => $request->noi_that,
+            'phap_ly'      => $request->phap_ly,
+
+            'trang_thai'     => 'con_hang',
+            'hien_thi'       => 1,
+            'thoi_diem_dang' => now(),
+        ];
+
+        if ($kyGui->hinh_anh_tham_khao && is_array($kyGui->hinh_anh_tham_khao) && count($kyGui->hinh_anh_tham_khao) > 0) {
+            $bdsData['hinh_anh'] = $kyGui->hinh_anh_tham_khao[0];
+            $bdsData['album_anh'] = json_encode($kyGui->hinh_anh_tham_khao); // Lưu dạng json theo cấu trúc DB của bạn
+        }
+
+        BatDongSan::create($bdsData);
+
+        // 3. CẬP NHẬT TRẠNG THÁI KÝ GỬI
+        $kyGui->update([
+            'trang_thai' => 'da_duyet',
+            'nhan_vien_phu_trach_id' => $nhanVienHienTai,
+            'thoi_diem_xu_ly' => now()
+        ]);
+
+        return redirect()->route('nhanvien.admin.bat-dong-san.index')
+            ->with('success', '🎉 Tuyệt vời! Đã duyệt thành công, Chủ nhà và BĐS đã được tự động thêm vào Kho!');
     }
 }
