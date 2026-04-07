@@ -123,6 +123,16 @@
                     <span class="nav-link-text">Quản lý Dự án</span>
                 </a>
             </div>
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.khu-vuc') }}"
+                    href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">
+                    <i class="fas fa-map-marked-alt nav-icon"></i>
+                    <span class="nav-link-text">Danh mục Khu vực</span>
+                    @if ($soKhuVuc > 0)
+                        <span class="nav-badge nav-badge-gray">{{ $soKhuVuc }}</span>
+                    @endif
+                </a>
+            </div>
 
             <div class="nav-item">
                 <a class="nav-link-item {{ $active('nhanvien.admin.ngan-hang') }}"
@@ -177,16 +187,7 @@
                 </a>
             </div>
 
-            <div class="nav-item">
-                <a class="nav-link-item {{ $active('nhanvien.admin.khu-vuc') }}"
-                    href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">
-                    <i class="fas fa-map-marked-alt nav-icon"></i>
-                    <span class="nav-link-text">Danh mục Khu vực</span>
-                    @if ($soKhuVuc > 0)
-                        <span class="nav-badge nav-badge-gray">{{ $soKhuVuc }}</span>
-                    @endif
-                </a>
-            </div>
+
 
             <div class="nav-item">
                 <a class="nav-link-item" href="#" data-tooltip="Cài đặt chung">

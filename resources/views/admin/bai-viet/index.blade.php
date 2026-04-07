@@ -233,10 +233,13 @@
 
                             {{-- Trạng thái --}}
                             <td>
-                                <span class="badge-status {{ $badgeClass }}">
+                                <button type="button" class="badge-status {{ $badgeClass }}"
+                                    data-status-toggle-url="{{ route('nhanvien.admin.bai-viet.toggle-hien-thi', $bv) }}"
+                                    data-current="{{ $bv->hien_thi ? '1' : '0' }}" onclick="toggleBaiVietStatus(this)"
+                                    style="border:none;cursor:pointer">
                                     <i class="fas {{ $badgeIcon }}" style="font-size:.6rem"></i>
                                     {{ $badgeText }}
-                                </span>
+                                </button>
                             </td>
 
                             {{-- Nổi bật toggle --}}
@@ -356,7 +359,10 @@
                                 </div>
                             </div>
                         </div>
-                        <span class="badge-status {{ $badgeClass }} flex-shrink-0">{{ $badgeText }}</span>
+                        <button type="button" class="badge-status {{ $badgeClass }} flex-shrink-0"
+                            data-status-toggle-url="{{ route('nhanvien.admin.bai-viet.toggle-hien-thi', $bv) }}"
+                            data-current="{{ $bv->hien_thi ? '1' : '0' }}" onclick="toggleBaiVietStatus(this)"
+                            style="border:none;cursor:pointer">{{ $badgeText }}</button>
                     </div>
 
                     <div class="mobile-card-meta">
@@ -434,6 +440,53 @@
         document.addEventListener('DOMContentLoaded', function() {
             initSelectAll('selectAll', 'row-cb');
         });
+
+        function renderBaiVietStatusBadge(el, isHienThi) {
+            el.dataset.current = isHienThi ? '1' : '0';
+
+            el.classList.remove('badge-active', 'badge-inactive', 'badge-pending');
+            el.classList.add(isHienThi ? 'badge-active' : 'badge-inactive');
+
+            const icon = isHienThi ? 'fa-check-circle' : 'fa-eye-slash';
+            const text = isHienThi ? 'Hiển thị' : 'Đã ẩn';
+
+            el.innerHTML = `<i class="fas ${icon}" style="font-size:.6rem"></i> ${text}`;
+        }
+
+        function toggleBaiVietStatus(el) {
+            const url = el.dataset.statusToggleUrl;
+            if (!url) return;
+
+            el.disabled = true;
+
+            fetch(url, {
+                    method: 'PATCH',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.ok) {
+                        showAdminToast('Không thể cập nhật trạng thái!', 'error');
+                        return;
+                    }
+
+                    const isHienThi = !!data.hien_thi;
+
+                    // Cập nhật tất cả badge cùng bài trong trang (desktop + mobile)
+                    const selector = `[data-status-toggle-url="${url}"]`;
+                    document.querySelectorAll(selector).forEach((badge) => renderBaiVietStatusBadge(badge,
+                        isHienThi));
+
+                    showAdminToast(isHienThi ? 'Đã chuyển sang Hiển thị' : 'Đã chuyển sang Ẩn', 'success');
+                })
+                .catch(() => showAdminToast('Lỗi kết nối!', 'error'))
+                .finally(() => {
+                    el.disabled = false;
+                });
+        }
 
         function bulkPublish() {
             const ids = getSelectedIds('row-cb');
