@@ -29,9 +29,9 @@
     @endif
 
     {{-- ══ THỐNG KÊ (Dùng Bootstrap Grid + stat-card từ admin.css) ══ --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-xl-2">
-            <div class="stat-card p-3">
+    <div class="row g-3 mb-4 align-items-stretch">
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="stat-card p-3 h-100">
                 <div class="stat-icon navy bg-opacity-10"><i class="fas fa-map"></i></div>
                 <div>
                     <div class="stat-num fs-4">{{ number_format($thongKe['tong']) }}</div>
@@ -39,8 +39,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-2">
-            <div class="stat-card p-3">
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="stat-card p-3 h-100">
                 <div class="stat-icon red bg-opacity-10"><i class="fas fa-city"></i></div>
                 <div>
                     <div class="stat-num fs-4">{{ number_format($thongKe['tinh_thanh']) }}</div>
@@ -48,8 +48,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-3">
-            <div class="stat-card p-3">
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="stat-card p-3 h-100">
                 <div class="stat-icon blue bg-opacity-10"><i class="fas fa-map-marked-alt"></i></div>
                 <div>
                     <div class="stat-num fs-4">{{ number_format($thongKe['quan_huyen']) }}</div>
@@ -57,17 +57,8 @@
                 </div>
             </div>
         </div>
-        <div class="col-6 col-md-4 col-xl-3">
-            <div class="stat-card p-3">
-                <div class="stat-icon green bg-opacity-10"><i class="fas fa-map-pin"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['phuong_xa']) }}</div>
-                    <div class="stat-label">Phường / Xã</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-8 col-xl-2">
-            <div class="stat-card p-3">
+        <div class="col-6 col-md-6 col-xl-3">
+            <div class="stat-card p-3 h-100">
                 <div class="stat-icon orange bg-opacity-10"><i class="fas fa-eye"></i></div>
                 <div>
                     <div class="stat-num fs-4">{{ number_format($thongKe['hien_thi']) }}</div>
@@ -161,7 +152,7 @@
                         <th>Khu vực</th>
                         <th>Cấp bậc</th>
                         <th>Khu vực cha</th>
-                        <th class="text-center">Khu vực con</th>
+                        <th class="text-center">Tổng BĐS</th>
                         <th class="text-center">Dự án</th>
                         <th class="text-center">Thứ tự</th>
                         <th class="text-center">Hiển thị</th>
@@ -222,15 +213,17 @@
                                 @endif
                             </td>
                             <td class="text-center">
-                                @if ($kv->con_count > 0)
-                                    <a href="{{ route('nhanvien.admin.khu-vuc.index', ['cha_id' => $kv->id]) }}"
-                                        class="badge bg-primary bg-opacity-10 text-primary text-decoration-none p-2">{{ $kv->con_count }}</a>
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
+                                <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['khu_vuc_id' => $kv->id]) }}"
+                                    class="badge bg-primary bg-opacity-10 text-primary text-decoration-none p-2">
+                                    {{ number_format($kv->bat_dong_san_count ?? 0) }}
+                                </a>
                             </td>
-                            <td class="text-center"><span
-                                    class="fw-bold text-warning">{{ $kv->du_an_count ?? '0' }}</span></td>
+                            <td class="text-center">
+                                <a href="{{ route('nhanvien.admin.du-an.index', ['khu_vuc_id' => $kv->id]) }}"
+                                    class="fw-bold text-warning text-decoration-none">
+                                    {{ number_format($kv->du_an_count ?? 0) }}
+                                </a>
+                            </td>
                             <td class="text-center"><span
                                     class="badge bg-light text-dark border">{{ $kv->thu_tu_hien_thi }}</span></td>
                             <td class="text-center">
@@ -243,18 +236,9 @@
                             </td>
                             <td class="text-center">
                                 <div class="btn-actions-group justify-content-center">
-                                    <a href="{{ route('nhanvien.admin.khu-vuc.show', $kv) }}"
-                                        class="btn-action btn-action-view" data-bs-toggle="tooltip" title="Xem"><i
-                                            class="fas fa-eye"></i></a>
                                     <a href="{{ route('nhanvien.admin.khu-vuc.edit', $kv) }}"
                                         class="btn-action btn-action-edit" data-bs-toggle="tooltip" title="Sửa"><i
                                             class="fas fa-pen"></i></a>
-
-                                    @if ($kv->cap_khu_vuc !== 'phuong_xa')
-                                        <a href="{{ route('nhanvien.admin.khu-vuc.create', ['cap' => $kv->cap_khu_vuc === 'tinh_thanh' ? 'quan_huyen' : 'phuong_xa', 'cha_id' => $kv->id]) }}"
-                                            class="btn-action btn-action-warn" data-bs-toggle="tooltip"
-                                            title="Thêm cấp con"><i class="fas fa-plus"></i></a>
-                                    @endif
 
                                     <form id="frmDel_{{ $kv->id }}"
                                         action="{{ route('nhanvien.admin.khu-vuc.destroy', $kv) }}" method="POST"
@@ -310,12 +294,16 @@
                         <div><i class="fas fa-sitemap"></i> Cha: <span
                                 class="fw-semibold text-secondary">{{ $kv->cha ? $kv->cha->ten_khu_vuc : '—' }}</span>
                         </div>
-                        @if ($kv->con_count > 0)
-                            <div><i class="fas fa-layer-group"></i> Con: <span
-                                    class="fw-bold text-primary">{{ $kv->con_count }}</span></div>
-                        @endif
-                        <div><i class="fas fa-building"></i> Dự án: <span
-                                class="fw-bold text-warning">{{ $kv->du_an_count ?? 0 }}</span></div>
+                        <div>
+                            <i class="fas fa-home"></i> BĐS:
+                            <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['khu_vuc_id' => $kv->id]) }}"
+                                class="fw-bold text-primary text-decoration-none">{{ number_format($kv->bat_dong_san_count ?? 0) }}</a>
+                        </div>
+                        <div>
+                            <i class="fas fa-building"></i> Dự án:
+                            <a href="{{ route('nhanvien.admin.du-an.index', ['khu_vuc_id' => $kv->id]) }}"
+                                class="fw-bold text-warning text-decoration-none">{{ number_format($kv->du_an_count ?? 0) }}</a>
+                        </div>
                     </div>
                     <div class="mobile-card-foot">
                         <label class="toggle-sw">
@@ -324,15 +312,8 @@
                             <span class="toggle-sw-track"><span class="toggle-sw-thumb"></span></span>
                         </label>
                         <div class="btn-actions-group">
-                            <a href="{{ route('nhanvien.admin.khu-vuc.show', $kv) }}"
-                                class="btn-action btn-action-view"><i class="fas fa-eye"></i></a>
                             <a href="{{ route('nhanvien.admin.khu-vuc.edit', $kv) }}"
                                 class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
-
-                            @if ($kv->cap_khu_vuc !== 'phuong_xa')
-                                <a href="{{ route('nhanvien.admin.khu-vuc.create', ['cap' => $kv->cap_khu_vuc === 'tinh_thanh' ? 'quan_huyen' : 'phuong_xa', 'cha_id' => $kv->id]) }}"
-                                    class="btn-action btn-action-warn"><i class="fas fa-plus"></i></a>
-                            @endif
                             <button type="button" class="btn-action btn-action-delete btn-delete-kv"
                                 data-id="{{ $kv->id }}" data-name="{{ $kv->ten_khu_vuc }}"
                                 data-con="{{ $kv->con_count }}"><i class="fas fa-trash"></i></button>

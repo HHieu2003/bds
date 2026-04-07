@@ -54,6 +54,11 @@ class BatDongSanController extends Controller
         if ($request->filled('loai_hinh')) $query->where('loai_hinh', $request->loai_hinh);
         if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
         if ($request->filled('du_an_id')) $query->where('du_an_id', $request->du_an_id);
+        if ($request->filled('khu_vuc_id')) {
+            $query->whereHas('duAn', function ($q) use ($request) {
+                $q->where('khu_vuc_id', $request->khu_vuc_id);
+            });
+        }
 
         // Sắp xếp
         $sort = $request->sapxep ?? 'moi_nhat';

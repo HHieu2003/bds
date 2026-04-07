@@ -128,9 +128,6 @@
                     href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">
                     <i class="fas fa-map-marked-alt nav-icon"></i>
                     <span class="nav-link-text">Danh mục Khu vực</span>
-                    @if ($soKhuVuc > 0)
-                        <span class="nav-badge nav-badge-gray">{{ $soKhuVuc }}</span>
-                    @endif
                 </a>
             </div>
 

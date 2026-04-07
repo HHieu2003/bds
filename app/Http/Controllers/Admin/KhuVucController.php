@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BatDongSan;
 use App\Models\KhuVuc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -15,7 +16,15 @@ class KhuVucController extends Controller
     public function index(Request $request)
     {
         $query = KhuVuc::with(['cha', 'cha.cha'])
-            ->withCount(['con', 'duAn']);
+            ->withCount(['con', 'duAn'])
+            ->addSelect([
+                'bat_dong_san_count' => BatDongSan::query()
+                    ->selectRaw('COUNT(*)')
+                    ->join('du_an', 'du_an.id', '=', 'bat_dong_san.du_an_id')
+                    ->whereNull('du_an.deleted_at')
+                    ->whereNull('bat_dong_san.deleted_at')
+                    ->whereColumn('du_an.khu_vuc_id', 'khu_vuc.id'),
+            ]);
 
         // Tìm kiếm
         if ($request->filled('tim_kiem')) {
@@ -58,7 +67,6 @@ class KhuVucController extends Controller
             'tong'        => KhuVuc::count(),
             'tinh_thanh'  => KhuVuc::where('cap_khu_vuc', 'tinh_thanh')->count(),
             'quan_huyen'  => KhuVuc::where('cap_khu_vuc', 'quan_huyen')->count(),
-            'phuong_xa'   => KhuVuc::where('cap_khu_vuc', 'phuong_xa')->count(),
             'hien_thi'    => KhuVuc::where('hien_thi', true)->count(),
         ];
 

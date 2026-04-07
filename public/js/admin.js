@@ -21,6 +21,11 @@
             sb.classList.toggle("collapsed", collapsed);
             tb && tb.classList.toggle("sidebar-collapsed", collapsed);
             mw && mw.classList.toggle("sidebar-collapsed", collapsed);
+        } else {
+            // Mobile: always show full menu labels, ignore desktop collapsed state.
+            sb.classList.remove("collapsed");
+            tb && tb.classList.remove("sidebar-collapsed");
+            mw && mw.classList.remove("sidebar-collapsed");
         }
     }
     applyState();

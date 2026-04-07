@@ -116,7 +116,7 @@
                     </select></div>
                 <div class="col-12 col-md-auto ms-auto d-flex gap-2">
                     <button type="submit" class="btn btn-navy"><i class="fas fa-search"></i> Lọc</button>
-                    @if (request()->hasAny(['tukhoa', 'nhu_cau', 'loai_hinh', 'trang_thai', 'du_an_id', 'sapxep']))
+                    @if (request()->hasAny(['tukhoa', 'nhu_cau', 'loai_hinh', 'trang_thai', 'du_an_id', 'khu_vuc_id', 'sapxep']))
                         <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="btn btn-danger"><i
                                 class="fas fa-times"></i></a>
                     @endif
