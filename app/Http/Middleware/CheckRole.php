@@ -11,6 +11,7 @@ class CheckRole
 {
     public function handle(Request $request, Closure $next, string ...$roles): Response
     {
+        /** @var \App\Models\NhanVien|null $nhanVien */
         $nhanVien = Auth::guard('nhanvien')->user();
 
         // Chưa đăng nhập
@@ -31,10 +32,12 @@ class CheckRole
             return $next($request);
         }
 
-        // Kiểm tra vai trò
-        if (!Auth::guard('nhanvien')->check()) {
-            return redirect()->route('nhanvien.login'); // ← redirect về login
+        // Kiểm tra vai trò thực tế (hỗ trợ alias: nguon -> nguon_hang)
+        if (! $nhanVien->hasRole($roles)) {
+            return redirect()->route('nhanvien.dashboard')
+                ->with('error', 'Bạn không có quyền truy cập chức năng này.');
         }
+
         return $next($request);
     }
 }

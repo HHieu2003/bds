@@ -1,398 +1,297 @@
 @extends('admin.layouts.master')
-@section('title', 'Quản lý Ngân hàng')
+@section('title', 'Cấu hình Lãi suất Ngân hàng')
 
 @section('content')
-    <div class="card border-0 shadow-sm">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <h3 class="card-title mb-0">Danh sách Ngân hàng hỗ trợ vay</h3>
-            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#modalCreateNganHang">
-                <i class="fas fa-plus"></i> Thêm mới
-            </button>
+    <div class="page-header d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <h1 class="page-header-title d-flex align-items-center">
+                <i class="fas fa-university text-primary me-2"></i> Chính sách vay Ngân hàng
+                <span class="badge bg-primary text-white ms-3" style="font-size: 0.8rem;">Tổng: {{ $tongNganHang }}</span>
+            </h1>
+            <div class="page-header-sub mt-1">Quản lý tham số tính toán khoản vay cho Khách hàng</div>
         </div>
-
-        <div class="card-body table-responsive p-0">
-            <table class="table table-hover text-nowrap mb-0">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Logo</th>
-                        <th>Tên Ngân Hàng</th>
-                        <th>Lãi suất ưu đãi</th>
-                        <th>Tỷ lệ vay tối đa</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($nganHangs as $nh)
-                        <tr>
-                            <td>{{ $nh->id }}</td>
-                            <td>
-                                <img src="{{ $nh->logo_url }}" alt="Logo"
-                                    style="width: 50px; height: 50px; object-fit: contain;">
-                            </td>
-                            <td><strong>{{ $nh->ten_ngan_hang }}</strong></td>
-                            <td><span class="badge bg-success">{{ $nh->lai_suat_uu_dai }}% / năm</span></td>
-                            <td>Tối đa {{ $nh->ty_le_vay_toi_da }}%</td>
-                            <td>
-                                @if ($nh->trang_thai)
-                                    <span class="badge bg-primary">Hiển thị</span>
-                                @else
-                                    <span class="badge bg-secondary">Đang ẩn</span>
-                                @endif
-                            </td>
-                            <td>
-                                <button type="button" class="btn btn-warning btn-sm btn-edit-ngan-hang"
-                                    data-bs-toggle="modal" data-bs-target="#modalEditNganHang" data-id="{{ $nh->id }}"
-                                    data-ten-ngan-hang="{{ $nh->ten_ngan_hang }}"
-                                    data-lai-suat-uu-dai="{{ $nh->lai_suat_uu_dai }}"
-                                    data-thoi-gian-uu-dai="{{ $nh->thoi_gian_uu_dai }}"
-                                    data-lai-suat-tha-noi="{{ $nh->lai_suat_tha_noi }}"
-                                    data-ty-le-vay-toi-da="{{ $nh->ty_le_vay_toi_da }}"
-                                    data-thoi-gian-vay-toi-da="{{ $nh->thoi_gian_vay_toi_da }}"
-                                    data-trang-thai="{{ $nh->trang_thai ? 1 : 0 }}" data-logo-url="{{ $nh->logo_url }}"
-                                    title="Sửa">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-
-                                <form id="frmDel_{{ $nh->id }}"
-                                    action="{{ route('nhanvien.admin.ngan-hang.destroy', $nh->id) }}" method="POST"
-                                    class="d-none">
-                                    @csrf
-                                    @method('DELETE')
-                                </form>
-                                <button type="button" class="btn btn-danger btn-sm btn-delete-ngan-hang"
-                                    data-id="{{ $nh->id }}" data-name="{{ $nh->ten_ngan_hang }}" title="Xóa">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center py-4">Chưa có dữ liệu ngân hàng nào.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        <div class="card-footer clearfix">
-            {{ $nganHangs->links() }}
-        </div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createNganHangModal">
+            <i class="fas fa-plus me-1"></i> Thêm Ngân Hàng
+        </button>
     </div>
 
-    <div class="modal fade" id="modalCreateNganHang" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form class="modal-content" method="POST" action="{{ route('nhanvien.admin.ngan-hang.store') }}"
-                enctype="multipart/form-data">
-                @csrf
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-plus-circle text-primary me-2"></i>Thêm ngân hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="_form_mode" value="create">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Tên ngân hàng <span class="text-danger">*</span></label>
-                            <input type="text" name="ten_ngan_hang"
-                                class="form-control @error('ten_ngan_hang') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('ten_ngan_hang') : '' }}">
-                            @error('ten_ngan_hang')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-check-circle me-1"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm" role="alert">
+            <i class="fas fa-exclamation-circle me-1"></i> Vui lòng kiểm tra lại thông tin nhập vào!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    @endif
 
-                        <div class="col-md-6">
-                            <label class="form-label">Logo</label>
-                            <input type="file" name="logo" accept="image/*"
-                                class="form-control @error('logo') is-invalid @enderror">
-                            @error('logo')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3">
+            <form action="{{ route('nhanvien.admin.ngan-hang.index') }}" method="GET" class="row g-3 align-items-center">
 
-                        <div class="col-md-6">
-                            <label class="form-label">Lãi suất ưu đãi (%) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" max="100" name="lai_suat_uu_dai"
-                                class="form-control @error('lai_suat_uu_dai') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('lai_suat_uu_dai') : '' }}">
-                            @error('lai_suat_uu_dai')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Thời gian ưu đãi (tháng) <span class="text-danger">*</span></label>
-                            <input type="number" min="0" name="thoi_gian_uu_dai"
-                                class="form-control @error('thoi_gian_uu_dai') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('thoi_gian_uu_dai') : '' }}">
-                            @error('thoi_gian_uu_dai')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Lãi suất thả nổi (%)</label>
-                            <input type="number" step="0.01" min="0" max="100" name="lai_suat_tha_noi"
-                                class="form-control @error('lai_suat_tha_noi') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('lai_suat_tha_noi') : '' }}">
-                            @error('lai_suat_tha_noi')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tỷ lệ vay tối đa (%) <span class="text-danger">*</span></label>
-                            <input type="number" min="1" max="100" name="ty_le_vay_toi_da"
-                                class="form-control @error('ty_le_vay_toi_da') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('ty_le_vay_toi_da') : '' }}">
-                            @error('ty_le_vay_toi_da')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Thời gian vay tối đa (năm) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" min="1" max="50" name="thoi_gian_vay_toi_da"
-                                class="form-control @error('thoi_gian_vay_toi_da') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'create' ? old('thoi_gian_vay_toi_da') : '' }}">
-                            @error('thoi_gian_vay_toi_da')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                            <select name="trang_thai" class="form-select @error('trang_thai') is-invalid @enderror">
-                                <option value="1" @selected(old('_form_mode') === 'create' ? old('trang_thai', '1') == '1' : true)>Hiển thị</option>
-                                <option value="0" @selected(old('_form_mode') === 'create' && old('trang_thai') == '0')>Đang ẩn</option>
-                            </select>
-                            @error('trang_thai')
-                                @if (old('_form_mode') === 'create')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
+                <div class="col-12 col-md-5">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted"><i class="fas fa-search"></i></span>
+                        <input type="text" name="keyword" class="form-control border-start-0 ps-0"
+                            placeholder="Nhập tên ngân hàng cần tìm..." value="{{ request('keyword') }}">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Thêm ngân
-                        hàng</button>
+
+                <div class="col-12 col-md-4">
+                    <select name="trang_thai" class="form-select">
+                        <option value="">-- Tất cả trạng thái --</option>
+                        <option value="1" {{ request('trang_thai') === '1' ? 'selected' : '' }}>Đang áp dụng</option>
+                        <option value="0" {{ request('trang_thai') === '0' ? 'selected' : '' }}>Tạm ngưng</option>
+                    </select>
                 </div>
+
+                <div class="col-12 col-md-3 d-flex gap-2">
+                    <button type="submit" class="btn btn-primary flex-grow-1"><i class="fas fa-filter me-1"></i> Lọc dữ
+                        liệu</button>
+                    @if (request()->anyFilled(['keyword', 'trang_thai']))
+                        <a href="{{ route('nhanvien.admin.ngan-hang.index') }}" class="btn btn-light border"
+                            title="Xóa bộ lọc">
+                            <i class="fas fa-undo"></i>
+                        </a>
+                    @endif
+                </div>
+
             </form>
         </div>
     </div>
 
-    <div class="modal fade" id="modalEditNganHang" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <form id="editNganHangForm" class="modal-content" method="POST" action="#"
-                enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-                <div class="modal-header">
-                    <h5 class="modal-title"><i class="fas fa-edit text-primary me-2"></i>Sửa ngân hàng</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="hidden" name="_form_mode" value="edit">
-                    <input type="hidden" name="_edit_id" id="edit_id" value="{{ old('_edit_id') }}">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Logo hiện tại</label>
-                            <div class="border rounded d-flex align-items-center justify-content-center p-2"
-                                style="height: 88px;">
-                                <img id="edit_logo_preview" src="{{ asset('images/default-bank.png') }}" alt="Logo"
-                                    style="max-width: 100%; max-height: 72px; object-fit: contain;">
+    @if (request()->anyFilled(['keyword', 'trang_thai']))
+        <div class="mb-3 text-muted"><i class="fas fa-info-circle me-1"></i> Tìm thấy <strong>{{ $tongTimKiem }}</strong>
+            kết quả phù hợp.</div>
+    @endif
+
+    <div class="row g-4">
+        @forelse($nganHangs as $nganHang)
+            <div class="col-12 col-md-6 col-xl-4">
+                <div class="card h-100 border-0 shadow-sm transition-hover">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3 pb-3 border-bottom">
+                            <div class="bg-light rounded p-2 d-flex align-items-center justify-content-center"
+                                style="width: 70px; height: 50px;">
+                                @if ($nganHang->logo)
+                                    <img src="{{ asset('storage/' . $nganHang->logo) }}" alt="Logo"
+                                        style="max-height: 100%; max-width: 100%;">
+                                @else
+                                    <i class="fas fa-building text-secondary fs-4"></i>
+                                @endif
+                            </div>
+                            <div class="ms-3 flex-grow-1 min-width-0">
+                                <h5 class="mb-1 fw-bold text-dark text-truncate">{{ $nganHang->ten_ngan_hang }}</h5>
+                                <span class="badge {{ $nganHang->trang_thai ? 'bg-success' : 'bg-secondary' }}">
+                                    {{ $nganHang->trang_thai ? 'Đang áp dụng' : 'Tạm ngưng' }}
+                                </span>
                             </div>
                         </div>
 
-                        <div class="col-md-8">
-                            <label class="form-label">Logo mới</label>
-                            <input type="file" name="logo" accept="image/*"
-                                class="form-control @error('logo') is-invalid @enderror">
-                            <div class="form-text">Để trống nếu không đổi logo.</div>
-                            @error('logo')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback d-block">{{ $message }}</div>
-                                @endif
-                            @enderror
+                        <div class="row g-3 mb-3">
+                            <div class="col-6">
+                                <div class="text-muted" style="font-size: 0.75rem;">Lãi suất ưu đãi</div>
+                                <div class="fw-bold text-danger fs-5">{{ number_format($nganHang->lai_suat_uu_dai, 2) }}%
+                                </div>
+                                <div class="text-muted" style="font-size: 0.7rem;">Cố định
+                                    {{ $nganHang->thoi_gian_uu_dai }} tháng</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted" style="font-size: 0.75rem;">Lãi thả nổi (dự kiến)</div>
+                                <div class="fw-bold text-dark fs-5">
+                                    {{ $nganHang->lai_suat_tha_noi ? number_format($nganHang->lai_suat_tha_noi, 2) . '%' : 'Thỏa thuận' }}
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="col-md-6">
-                            <label class="form-label">Tên ngân hàng <span class="text-danger">*</span></label>
-                            <input type="text" id="edit_ten_ngan_hang" name="ten_ngan_hang"
-                                class="form-control @error('ten_ngan_hang') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('ten_ngan_hang') : '' }}">
-                            @error('ten_ngan_hang')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Lãi suất ưu đãi (%) <span class="text-danger">*</span></label>
-                            <input type="number" step="0.01" min="0" max="100"
-                                id="edit_lai_suat_uu_dai" name="lai_suat_uu_dai"
-                                class="form-control @error('lai_suat_uu_dai') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('lai_suat_uu_dai') : '' }}">
-                            @error('lai_suat_uu_dai')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Thời gian ưu đãi (tháng) <span class="text-danger">*</span></label>
-                            <input type="number" min="0" id="edit_thoi_gian_uu_dai" name="thoi_gian_uu_dai"
-                                class="form-control @error('thoi_gian_uu_dai') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('thoi_gian_uu_dai') : '' }}">
-                            @error('thoi_gian_uu_dai')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Lãi suất thả nổi (%)</label>
-                            <input type="number" step="0.01" min="0" max="100"
-                                id="edit_lai_suat_tha_noi" name="lai_suat_tha_noi"
-                                class="form-control @error('lai_suat_tha_noi') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('lai_suat_tha_noi') : '' }}">
-                            @error('lai_suat_tha_noi')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tỷ lệ vay tối đa (%) <span class="text-danger">*</span></label>
-                            <input type="number" min="1" max="100" id="edit_ty_le_vay_toi_da"
-                                name="ty_le_vay_toi_da"
-                                class="form-control @error('ty_le_vay_toi_da') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('ty_le_vay_toi_da') : '' }}">
-                            @error('ty_le_vay_toi_da')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Thời gian vay tối đa (năm) <span
-                                    class="text-danger">*</span></label>
-                            <input type="number" min="1" max="50" id="edit_thoi_gian_vay_toi_da"
-                                name="thoi_gian_vay_toi_da"
-                                class="form-control @error('thoi_gian_vay_toi_da') is-invalid @enderror"
-                                value="{{ old('_form_mode') === 'edit' ? old('thoi_gian_vay_toi_da') : '' }}">
-                            @error('thoi_gian_vay_toi_da')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Trạng thái <span class="text-danger">*</span></label>
-                            <select id="edit_trang_thai" name="trang_thai"
-                                class="form-select @error('trang_thai') is-invalid @enderror">
-                                <option value="1" @selected(old('_form_mode') === 'edit' ? old('trang_thai', '1') == '1' : false)>Hiển thị</option>
-                                <option value="0" @selected(old('_form_mode') === 'edit' && old('trang_thai') == '0')>Đang ẩn</option>
-                            </select>
-                            @error('trang_thai')
-                                @if (old('_form_mode') === 'edit')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @endif
-                            @enderror
+                        <div class="bg-light p-2 rounded" style="font-size: 0.8rem;">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span class="text-muted"><i class="fas fa-hand-holding-usd me-1"></i>Tỷ lệ vay tối
+                                    đa:</span>
+                                <span class="fw-bold">{{ $nganHang->ty_le_vay_toi_da }}%</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted"><i class="fas fa-calendar-alt me-1"></i>Thời gian tối đa:</span>
+                                <span class="fw-bold">{{ $nganHang->thoi_gian_vay_toi_da }} năm</span>
+                            </div>
                         </div>
                     </div>
+
+                    <div class="card-footer bg-white border-top-0 pt-0 d-flex gap-2">
+                        <button type="button" class="btn btn-sm btn-outline-primary flex-grow-1" data-bs-toggle="modal"
+                            data-bs-target="#editNganHangModal{{ $nganHang->id }}">
+                            <i class="fas fa-edit"></i> Sửa đổi
+                        </button>
+                        <form action="{{ route('nhanvien.admin.ngan-hang.destroy', $nganHang->id) }}" method="POST"
+                            class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ngân hàng này?');">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-outline-danger px-3"><i
+                                    class="fas fa-trash-alt"></i></button>
+                        </form>
+                    </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i>Lưu thay đổi</button>
+            </div>
+
+            <div class="modal fade" id="editNganHangModal{{ $nganHang->id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title fw-bold"><i class="fas fa-edit text-primary me-2"></i>Sửa:
+                                {{ $nganHang->ten_ngan_hang }}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form action="{{ route('nhanvien.admin.ngan-hang.update', $nganHang->id) }}" method="POST"
+                            enctype="multipart/form-data">
+                            @csrf @method('PUT')
+                            <div class="modal-body row g-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Tên ngân hàng <span class="text-danger">*</span></label>
+                                    <input type="text" name="ten_ngan_hang" class="form-control"
+                                        value="{{ $nganHang->ten_ngan_hang }}" required>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Logo ngân hàng</label>
+                                    <input type="file" name="logo" class="form-control" accept="image/*">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Lãi ưu đãi <span class="text-muted"
+                                            style="font-size:0.8rem;">(%/năm)</span> <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" step="0.01" name="lai_suat_uu_dai" class="form-control"
+                                        value="{{ $nganHang->lai_suat_uu_dai }}" required>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Thời gian ưu đãi <span class="text-muted"
+                                            style="font-size:0.8rem;">(Tháng)</span> <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" name="thoi_gian_uu_dai" class="form-control"
+                                        value="{{ $nganHang->thoi_gian_uu_dai }}" required>
+                                </div>
+                                <div class="col-12 col-md-12">
+                                    <label class="form-label">Lãi thả nổi <span class="text-muted"
+                                            style="font-size:0.8rem;">(%/năm)</span></label>
+                                    <input type="number" step="0.01" name="lai_suat_tha_noi" class="form-control"
+                                        value="{{ $nganHang->lai_suat_tha_noi }}">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Tỷ lệ vay tối đa <span class="text-muted"
+                                            style="font-size:0.8rem;">(%)</span></label>
+                                    <input type="number" name="ty_le_vay_toi_da" class="form-control"
+                                        value="{{ $nganHang->ty_le_vay_toi_da }}">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label">Thời gian vay tối đa <span class="text-muted"
+                                            style="font-size:0.8rem;">(Năm)</span></label>
+                                    <input type="number" name="thoi_gian_vay_toi_da" class="form-control"
+                                        value="{{ $nganHang->thoi_gian_vay_toi_da }}">
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch mt-2">
+                                        <input class="form-check-input" type="checkbox" name="trang_thai" value="1"
+                                            {{ $nganHang->trang_thai ? 'checked' : '' }}>
+                                        <label class="form-check-label">Kích hoạt hiển thị</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                                <button type="submit" class="btn btn-primary"><i class="fas fa-save me-1"></i> Lưu thay
+                                    đổi</button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
-            </form>
+            </div>
+        @empty
+            <div class="col-12">
+                <div class="text-center py-5 bg-white rounded shadow-sm">
+                    <i class="fas fa-university text-muted opacity-25 mb-3" style="font-size: 4rem;"></i>
+                    <h5 class="text-muted">Chưa có dữ liệu Ngân Hàng</h5>
+                    <p class="text-muted small">Vui lòng thêm ngân hàng để hỗ trợ tính toán khoản vay.</p>
+                </div>
+            </div>
+        @endforelse
+    </div>
+
+    <div class="modal fade" id="createNganHangModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-plus-circle text-success me-2"></i>Thêm Ngân hàng
+                        liên kết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('nhanvien.admin.ngan-hang.store') }}" method="POST"
+                    enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Tên ngân hàng <span class="text-danger">*</span></label>
+                            <input type="text" name="ten_ngan_hang" class="form-control"
+                                placeholder="VD: Vietcombank" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Logo ngân hàng</label>
+                            <input type="file" name="logo" class="form-control" accept="image/*">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Lãi ưu đãi <span class="text-muted"
+                                    style="font-size:0.8rem;">(%/năm)</span> <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="lai_suat_uu_dai" class="form-control"
+                                placeholder="VD: 6.50" required>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Thời gian ưu đãi <span class="text-muted"
+                                    style="font-size:0.8rem;">(Tháng)</span> <span class="text-danger">*</span></label>
+                            <input type="number" name="thoi_gian_uu_dai" class="form-control" value="12" required>
+                        </div>
+                        <div class="col-12 col-md-12">
+                            <label class="form-label">Lãi thả nổi <span class="text-muted"
+                                    style="font-size:0.8rem;">(%/năm)</span></label>
+                            <input type="number" step="0.01" name="lai_suat_tha_noi" class="form-control"
+                                placeholder="VD: 10.50">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Tỷ lệ vay tối đa <span class="text-muted"
+                                    style="font-size:0.8rem;">(%)</span></label>
+                            <input type="number" name="ty_le_vay_toi_da" class="form-control" value="70">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label">Thời gian vay tối đa <span class="text-muted"
+                                    style="font-size:0.8rem;">(Năm)</span></label>
+                            <input type="number" name="thoi_gian_vay_toi_da" class="form-control" value="25">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" name="trang_thai" value="1"
+                                    checked>
+                                <label class="form-check-label">Kích hoạt hiển thị ngay</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check me-1"></i> Thêm
+                            mới</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 @endsection
 
-@push('scripts')
-    <script>
-        document.querySelectorAll('.btn-delete-ngan-hang').forEach((btn) => {
-            btn.addEventListener('click', function() {
-                const id = this.dataset.id;
-                const name = this.dataset.name || 'ngân hàng';
-                confirmDelete('ngân hàng ' + name, function() {
-                    document.getElementById('frmDel_' + id).submit();
-                });
-            });
-        });
-
-        const editForm = document.getElementById('editNganHangForm');
-        const updateRouteTemplate = `{{ route('nhanvien.admin.ngan-hang.update', ['ngan_hang' => '__ID__']) }}`;
-        const editButtons = document.querySelectorAll('.btn-edit-ngan-hang');
-
-        function fillEditModal(button) {
-            if (!button || !editForm) return;
-            const id = button.dataset.id;
-            editForm.action = updateRouteTemplate.replace('__ID__', id || '');
-
-            document.getElementById('edit_id').value = id || '';
-            document.getElementById('edit_ten_ngan_hang').value = button.dataset.tenNganHang || '';
-            document.getElementById('edit_lai_suat_uu_dai').value = button.dataset.laiSuatUuDai || '';
-            document.getElementById('edit_thoi_gian_uu_dai').value = button.dataset.thoiGianUuDai || '';
-            document.getElementById('edit_lai_suat_tha_noi').value = button.dataset.laiSuatThaNoi || '';
-            document.getElementById('edit_ty_le_vay_toi_da').value = button.dataset.tyLeVayToiDa || '';
-            document.getElementById('edit_thoi_gian_vay_toi_da').value = button.dataset.thoiGianVayToiDa || '';
-            document.getElementById('edit_trang_thai').value = button.dataset.trangThai || '1';
-            document.getElementById('edit_logo_preview').src = button.dataset.logoUrl ||
-                '{{ asset('images/default-bank.png') }}';
+@push('styles')
+    <style>
+        .transition-hover {
+            transition: all 0.3s ease;
         }
 
-        editButtons.forEach((btn) => {
-            btn.addEventListener('click', function() {
-                fillEditModal(this);
-            });
-        });
-
-        @if ($errors->any() && old('_form_mode') === 'create')
-            new bootstrap.Modal(document.getElementById('modalCreateNganHang')).show();
-        @endif
-
-        @if ($errors->any() && old('_form_mode') === 'edit')
-            const oldBtn = document.querySelector(`.btn-edit-ngan-hang[data-id="{{ old('_edit_id') }}"]`);
-            if (oldBtn) fillEditModal(oldBtn);
-
-            const editModal = new bootstrap.Modal(document.getElementById('modalEditNganHang'));
-            editModal.show();
-
-            document.getElementById('edit_ten_ngan_hang').value = `{{ old('ten_ngan_hang', '') }}`;
-            document.getElementById('edit_lai_suat_uu_dai').value = `{{ old('lai_suat_uu_dai', '') }}`;
-            document.getElementById('edit_thoi_gian_uu_dai').value = `{{ old('thoi_gian_uu_dai', '') }}`;
-            document.getElementById('edit_lai_suat_tha_noi').value = `{{ old('lai_suat_tha_noi', '') }}`;
-            document.getElementById('edit_ty_le_vay_toi_da').value = `{{ old('ty_le_vay_toi_da', '') }}`;
-            document.getElementById('edit_thoi_gian_vay_toi_da').value = `{{ old('thoi_gian_vay_toi_da', '') }}`;
-            document.getElementById('edit_trang_thai').value = `{{ old('trang_thai', '1') }}`;
-        @endif
-    </script>
+        .transition-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+    </style>
 @endpush

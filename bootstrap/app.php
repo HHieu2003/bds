@@ -30,10 +30,10 @@ return Application::configure(basePath: dirname(__DIR__))
             return route('khach-hang.login');
         });
 
-        // Các middleware alias (giữ nguyên nếu bạn đang có)
         $middleware->alias([
             'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'check.role' => \App\Http\Middleware\CheckRole::class,
+            'checkrole' => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

@@ -23,6 +23,7 @@ use App\Http\Controllers\Frontend\YeuThichController;
 use App\Http\Controllers\Frontend\LienHeController as FrontendLienHeController;
 use App\Http\Controllers\Frontend\ChatController as FeChatController;
 use App\Http\Controllers\Frontend\DangKyNhanTinController;
+use App\Http\Controllers\Admin\NganHangController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -184,7 +185,6 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             Route::middleware('check.role:admin')->group(function () {
                 Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])
                     ->name('nhanvien.admin.nhan-vien.edit-data');
-
                 Route::prefix('nhan-vien')->name('nhan-vien.')->group(function () {
                     Route::get('/',                          [NhanVienController::class, 'index'])->name('index');
                     Route::post('/',                         [NhanVienController::class, 'store'])->name('store');
@@ -195,7 +195,10 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{nhanVien}/doi-mat-khau', [NhanVienController::class, 'doiMatKhau'])->name('doi-mat-khau');
                 });
             });
-            Route::resource('ngan-hang', \App\Http\Controllers\Admin\NganHangController::class);
+
+            Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
+                Route::resource('ngan-hang', NganHangController::class)->except(['create', 'edit']);
+            });
             // ── Admin + Nguồn hàng ─────────────
             Route::middleware('check.role:admin,nguon_hang')->group(function () {
                 Route::resource('du-an', DuAnController::class);

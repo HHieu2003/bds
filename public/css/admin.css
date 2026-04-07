@@ -2813,3 +2813,89 @@ mark {
         min-width: 44px;
     }
 }
+/* =========================================================
+   OVERRIDE: SIDEBAR GIAO DIỆN SÁNG (LIGHT THEME)
+========================================================= */
+#sidebar {
+    background: var(--surface); /* Đổi nền thành màu trắng */
+    border-right: 1px solid var(--border);
+    box-shadow: none;
+}
+
+/* Header & Logo */
+.sidebar-logo {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+.sidebar-logo img {
+    filter: none; /* Bỏ hiệu ứng làm trắng logo, giữ màu gốc */
+}
+.sidebar-logo-text .name {
+    color: var(--navy);
+}
+.sidebar-logo-text .sub {
+    color: var(--text-muted);
+}
+
+/* Menu Items */
+.nav-group-label {
+    color: var(--text-muted);
+}
+#sidebar.collapsed .nav-group-label {
+    background: var(--border);
+}
+
+.nav-link-item {
+    color: var(--text-sub);
+}
+.nav-link-item:hover {
+    background: var(--bg);
+    color: var(--navy);
+}
+.nav-link-item.active {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: #fff;
+    box-shadow: 0 4px 14px var(--primary-glow);
+}
+
+/* Scrollbar cho nền sáng */
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+/* Footer & User Info */
+.sidebar-footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+}
+.sidebar-collapse-btn {
+    background: var(--bg);
+    border-color: var(--border);
+    color: var(--text-sub);
+}
+.sidebar-collapse-btn:hover {
+    background: var(--bg-alt);
+    color: var(--navy);
+}
+.sidebar-user:hover {
+    background: var(--bg);
+}
+.sidebar-user-name {
+    color: var(--navy);
+}
+.sidebar-user-role {
+    color: var(--text-sub);
+}
+.sidebar-avatar {
+    border-color: var(--border);
+}
+
+/* Tooltip khi thu gọn sidebar (collapsed) */
+#sidebar.collapsed .nav-link-item::after {
+    background: var(--surface);
+    color: var(--navy);
+    border: 1px solid var(--border);
+}
+#sidebar.collapsed .nav-link-item::before {
+    border-right-color: var(--border);
+}
