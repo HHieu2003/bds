@@ -165,11 +165,10 @@
                         <th class="text-center" style="width: 40px">#</th>
                         <th>Bất động sản</th>
                         <th style="width: 14%">Chủ nhà</th>
-                        <th style="width: 11%">Loại / Nhu cầu</th>
-                        <th style="width: 12%">Giá</th>
+                        <th style="width: 13%">Giá</th>
                         <th style="width: 9%">Diện tích</th>
-                        <th style="width: 11%">Trạng thái</th>
-                        <th class="text-center" style="width: 70px">Hiển thị</th>
+                        <th style="width: 13%">Trạng thái</th>
+                        <th class="text-center" style="width: 92px">Hiển thị</th>
                         <th class="text-center" style="width: 90px">Thao tác</th>
                     </tr>
                 </thead>
@@ -209,6 +208,14 @@
                                                     title="{{ $bds->duAn->ten_du_an }}"><i
                                                         class="fas fa-city me-1"></i>{{ $bds->duAn->ten_du_an }}</span>
                                             @endif
+                                            <span class="badge bg-light text-dark border" style="font-size: 0.66rem;">
+                                                {{ $loaiMap[$bds->loai_hinh] ?? $bds->loai_hinh }}
+                                            </span>
+                                            <span
+                                                class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-warning text-dark' : 'bg-info text-dark' }}"
+                                                style="font-size: 0.66rem;">
+                                                {{ $bds->nhu_cau == 'ban' ? 'Bán' : 'Thuê' }}
+                                            </span>
                                             @if ($bds->nhanVienPhuTrach)
                                                 <span class="text-muted ms-1"><i
                                                         class="fas fa-user-tie me-1"></i>{{ $bds->nhanVienPhuTrach->ho_ten }}</span>
@@ -238,15 +245,7 @@
                                 @endif
                             </td>
 
-                            {{-- Cột 3: Loại / Nhu cầu --}}
-                            <td>
-                                <span class="badge bg-light text-dark border mb-1 d-inline-block text-truncate"
-                                    style="max-width:100%; text-align: left;">{{ $loaiMap[$bds->loai_hinh] ?? $bds->loai_hinh }}</span><br>
-                                <span
-                                    class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-warning text-dark' : 'bg-info text-dark' }}">{{ $bds->nhu_cau == 'ban' ? '🏷 Bán' : '🔑 Thuê' }}</span>
-                            </td>
-
-                            {{-- Cột 4: Giá --}}
+                            {{-- Cột 3: Giá --}}
                             <td>
                                 @if ($bds->nhu_cau == 'ban' && $bds->gia)
                                     <div class="fw-bold text-danger">{{ number_format($bds->gia / 1e9, 2) }} tỷ</div>
@@ -258,7 +257,7 @@
                                 @endif
                             </td>
 
-                            {{-- Cột 5: Diện tích --}}
+                            {{-- Cột 4: Diện tích --}}
                             <td>
                                 <div class="fw-bold text-dark">{{ (float) $bds->dien_tich }} m²</div>
                                 @if ($bds->so_phong_ngu !== null)
@@ -268,10 +267,11 @@
                                 @endif
                             </td>
 
-                            {{-- Cột 6: Trạng thái --}}
+                            {{-- Cột 5: Trạng thái --}}
                             <td>
                                 <div class="dropdown">
-                                    <span class="badge cursor-pointer dropdown-toggle" data-bs-toggle="dropdown"
+                                    <span class="badge cursor-pointer dropdown-toggle js-status-badge"
+                                        data-status-id="{{ $bds->id }}" data-bs-toggle="dropdown"
                                         style="background: {{ $tt['bg'] }}; color: {{ $tt['color'] }}; font-size: 0.75rem; white-space: normal; text-align: left;">{{ $tt['label'] }}</span>
                                     <ul class="dropdown-menu shadow-sm" style="font-size: 0.85rem">
                                         @foreach ($ttMap as $val => $item)
@@ -284,17 +284,21 @@
                                 </div>
                             </td>
 
-                            {{-- Cột 7: Hiển thị --}}
+                            {{-- Cột 6: Hiển thị --}}
                             <td class="text-center">
-                                <label class="toggle-sw"><input type="checkbox"
+                                <label class="toggle-sw"><input type="checkbox" data-display-id="{{ $bds->id }}"
                                         data-toggle-url="/nhan-vien/admin/bat-dong-san/{{ $bds->id }}/toggle"
                                         {{ $bds->hien_thi ? 'checked' : '' }}><span class="toggle-sw-track"><span
                                             class="toggle-sw-thumb"></span></span></label>
-                                <div class="text-muted mt-1" style="font-size: 0.7rem" title="Lượt xem"><i
+                                <div class="mt-1" style="font-size: 0.68rem">
+                                    <span class="js-display-label {{ $bds->hien_thi ? 'text-success' : 'text-muted' }}"
+                                        data-display-id="{{ $bds->id }}">{{ $bds->hien_thi ? 'Đang hiện' : 'Đang ẩn' }}</span>
+                                </div>
+                                <div class="text-muted" style="font-size: 0.68rem" title="Lượt xem"><i
                                         class="fas fa-eye"></i> {{ number_format($bds->luot_xem) }}</div>
                             </td>
 
-                            {{-- Cột 8: Thao tác --}}
+                            {{-- Cột 7: Thao tác --}}
                             <td class="text-center">
                                 <div class="btn-actions-group justify-content-center">
                                     <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
@@ -310,7 +314,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9">
+                            <td colspan="8">
                                 <div class="empty-state"><i class="fas fa-building text-muted mb-3"></i>
                                     <p class="text-muted mb-2">Không tìm thấy bất động sản nào</p>
                                 </div>
@@ -485,10 +489,46 @@
                 });
             });
 
+            const statusMap = {
+                con_hang: {
+                    label: 'Còn hàng',
+                    color: '#27ae60',
+                    bg: '#e8f8f0'
+                },
+                dat_coc: {
+                    label: 'Đặt cọc',
+                    color: '#e67e22',
+                    bg: '#fff3e0'
+                },
+                da_ban: {
+                    label: 'Đã bán',
+                    color: '#e74c3c',
+                    bg: '#ffeaea'
+                },
+                dang_thue: {
+                    label: 'Đang thuê',
+                    color: '#2d6a9f',
+                    bg: '#e8f4fd'
+                },
+                da_thue: {
+                    label: 'Đã thuê',
+                    color: '#8e44ad',
+                    bg: '#f5eeff'
+                },
+                tam_an: {
+                    label: 'Tạm ẩn',
+                    color: '#6c757d',
+                    bg: '#f8f9fa'
+                }
+            };
+
             // Đổi trạng thái AJAX
             document.querySelectorAll('.tt-update-btn').forEach(item => {
                 item.addEventListener('click', function(e) {
                     e.preventDefault();
+                    const bdsId = this.dataset.id;
+                    const newStatus = this.dataset.val;
+
                     fetch(`/nhan-vien/admin/bat-dong-san/${this.dataset.id}/trang-thai`, {
                         method: 'PATCH',
                         headers: {
@@ -497,12 +537,63 @@
                             'Accept': 'application/json'
                         },
                         body: JSON.stringify({
-                            trang_thai: this.dataset.val
+                            trang_thai: newStatus
                         })
                     }).then(r => r.json()).then(data => {
-                        if (data.ok) window.location.reload();
-                        else showAdminToast('Lỗi cập nhật', 'error');
+                        if (data.ok) {
+                            const badge = document.querySelector(
+                                `.js-status-badge[data-status-id="${bdsId}"]`);
+                            const statusInfo = statusMap[newStatus];
+                            if (badge && statusInfo) {
+                                badge.textContent = statusInfo.label;
+                                badge.style.background = statusInfo.bg;
+                                badge.style.color = statusInfo.color;
+                            }
+                            showAdminToast('Đã cập nhật trạng thái', 'success');
+                        } else showAdminToast('Lỗi cập nhật', 'error');
                     }).catch(() => showAdminToast('Lỗi kết nối', 'error'));
+                });
+            });
+
+            // Toggle hiển thị AJAX
+            document.querySelectorAll('input[type="checkbox"][data-toggle-url]').forEach(cb => {
+                cb.addEventListener('change', function() {
+                    const checkbox = this;
+                    const oldState = !checkbox.checked;
+                    checkbox.disabled = true;
+
+                    fetch(checkbox.dataset.toggleUrl, {
+                        method: 'PATCH',
+                        headers: {
+                            'X-CSRF-TOKEN': CSRF,
+                            'Accept': 'application/json'
+                        }
+                    }).then(r => r.json()).then(data => {
+                        const ok = data.ok === true || typeof data.hien_thi !== 'undefined';
+                        if (!ok) {
+                            checkbox.checked = oldState;
+                            showAdminToast('Không thể cập nhật hiển thị', 'error');
+                            return;
+                        }
+
+                        const isVisible = typeof data.hien_thi === 'boolean' ? data
+                            .hien_thi : checkbox.checked;
+                        checkbox.checked = isVisible;
+                        const label = document.querySelector(
+                            `.js-display-label[data-display-id="${checkbox.dataset.displayId}"]`
+                        );
+                        if (label) {
+                            label.textContent = isVisible ? 'Đang hiện' : 'Đang ẩn';
+                            label.classList.toggle('text-success', isVisible);
+                            label.classList.toggle('text-muted', !isVisible);
+                        }
+                        showAdminToast('Đã cập nhật hiển thị', 'success');
+                    }).catch(() => {
+                        checkbox.checked = oldState;
+                        showAdminToast('Lỗi kết nối', 'error');
+                    }).finally(() => {
+                        checkbox.disabled = false;
+                    });
                 });
             });
 

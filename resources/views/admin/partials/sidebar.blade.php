@@ -27,6 +27,8 @@
 
     $chatCount = \App\Models\PhienChat::where('trang_thai', 'dang_cho')->count();
     $soKhuVuc = $nhanVien->isAdmin() ? \App\Models\KhuVuc::count() : 0;
+    $bdsFilter = request('nhu_cau');
+    $isBdsMenuOpen = str_starts_with($routeName, 'nhanvien.admin.bat-dong-san');
 
     // Helper active
     $active = fn(string|array $pattern) => (is_array($pattern)
@@ -108,12 +110,23 @@
         <div class="nav-group-label">Kho Bất Động Sản</div>
 
         @if ($nhanVien->hasRole(['admin', 'sale', 'nguon_hang']))
-            <div class="nav-item">
+            <div class="nav-item nav-item-has-submenu {{ $isBdsMenuOpen ? 'is-open' : '' }}">
                 <a class="nav-link-item {{ $active('nhanvien.admin.bat-dong-san') }}"
                     href="{{ route('nhanvien.admin.bat-dong-san.index') }}" data-tooltip="Kho BĐS">
                     <i class="fas fa-building nav-icon"></i>
                     <span class="nav-link-text">Danh sách BĐS</span>
                 </a>
+
+                <div class="nav-submenu">
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
+                        class="nav-submenu-link {{ $isBdsMenuOpen && $bdsFilter === 'ban' ? 'active' : '' }}">
+                        <i class="fas fa-tag"></i> BĐS Bán
+                    </a>
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                        class="nav-submenu-link {{ $isBdsMenuOpen && $bdsFilter === 'thue' ? 'active' : '' }}">
+                        <i class="fas fa-key"></i> BĐS Thuê
+                    </a>
+                </div>
             </div>
 
             <div class="nav-item">

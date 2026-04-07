@@ -221,12 +221,24 @@ class BatDongSanController extends Controller
         return response()->json(['ok' => true, 'hien_thi' => $batDongSan->hien_thi]);
     }
 
+    // Alias cho route nhóm sale (giữ tương thích tên method cũ)
+    public function toggleHienThi(BatDongSan $batDongSan)
+    {
+        return $this->toggle($batDongSan);
+    }
+
     // Đổi trạng thái trực tiếp ở ngoài bảng Index
     public function updateTrangThai(Request $request, BatDongSan $batDongSan)
     {
         $request->validate(['trang_thai' => 'required|string']);
         $batDongSan->update(['trang_thai' => $request->trang_thai]);
         return response()->json(['ok' => true]);
+    }
+
+    // Alias cho route nhóm sale (giữ tương thích tên method cũ)
+    public function doiTrangThai(Request $request, BatDongSan $batDongSan)
+    {
+        return $this->updateTrangThai($request, $batDongSan);
     }
 
     // Xóa từng ảnh riêng lẻ bằng nút X (AJAX)

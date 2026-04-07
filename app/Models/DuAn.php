@@ -22,8 +22,6 @@ class DuAn extends Model
         'mo_ta_ngan',
         'noi_dung_chi_tiet',
         'hinh_anh_dai_dien',
-        'album_anh',
-        'video_url',
         'map_url',
         'noi_bat',
         'hien_thi',
@@ -38,7 +36,6 @@ class DuAn extends Model
     protected $casts = [
         'hien_thi'    => 'boolean',
         'noi_bat'     => 'boolean',
-        'album_anh'   => 'array',
         'thoi_diem_dang' => 'datetime',
     ];
 

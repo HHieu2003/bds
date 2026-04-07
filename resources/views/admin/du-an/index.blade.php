@@ -124,7 +124,7 @@
                         <th>Tên dự án / Địa chỉ</th>
                         <th>Khu vực</th>
                         <th>Chủ đầu tư</th>
-                        <th class="text-center">Số lượng</th>
+                        <th class="text-center">Nguồn hàng BĐS</th>
                         <th class="text-center">Thứ tự</th>
                         <th class="text-center">Hiển thị</th>
                         <th class="text-center" style="width: 120px">Thao tác</th>
@@ -142,7 +142,8 @@
                                 @else
                                     <div
                                         class="table-thumb d-flex align-items-center justify-content-center bg-light text-muted">
-                                        <i class="fas fa-image"></i></div>
+                                        <i class="fas fa-image"></i>
+                                    </div>
                                 @endif
                             </td>
                             <td>
@@ -159,12 +160,12 @@
                             </td>
                             <td class="text-center">
                                 <div class="d-flex flex-column gap-1 align-items-center">
-                                    <span
-                                        class="badge {{ $da->so_can_ban > 0 ? 'bg-warning text-dark' : 'bg-light text-muted border' }}"
-                                        title="Căn bán">Bán: {{ $da->so_can_ban }}</span>
-                                    <span
-                                        class="badge {{ $da->so_can_thue > 0 ? 'bg-info text-dark' : 'bg-light text-muted border' }}"
-                                        title="Căn thuê">Thuê: {{ $da->so_can_thue }}</span>
+                                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['du_an_id' => $da->id, 'nhu_cau' => 'ban', 'trang_thai' => 'con_hang']) }}"
+                                        class="badge {{ $da->so_can_ban > 0 ? 'bg-warning text-dark' : 'bg-light text-muted border' }} text-decoration-none"
+                                        title="Xem danh sách BĐS bán của dự án">Bán: {{ $da->so_can_ban }}</a>
+                                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['du_an_id' => $da->id, 'nhu_cau' => 'thue', 'trang_thai' => 'con_hang']) }}"
+                                        class="badge {{ $da->so_can_thue > 0 ? 'bg-info text-dark' : 'bg-light text-muted border' }} text-decoration-none"
+                                        title="Xem danh sách BĐS thuê của dự án">Thuê: {{ $da->so_can_thue }}</a>
                                 </div>
                             </td>
                             <td class="text-center"><span
@@ -218,7 +219,8 @@
                         @else
                             <div
                                 class="table-thumb d-flex align-items-center justify-content-center bg-light text-muted me-2">
-                                <i class="fas fa-image"></i></div>
+                                <i class="fas fa-image"></i>
+                            </div>
                         @endif
                         <div style="flex: 1; min-width: 0;">
                             <a href="{{ route('nhanvien.admin.du-an.edit', $da) }}"
@@ -229,10 +231,14 @@
                     </div>
                     <div class="mobile-card-meta">
                         <div><i class="fas fa-building"></i> {{ $da->chu_dau_tu ?: '—' }}</div>
-                        <div><i class="fas fa-tag"></i> Bán: <span
-                                class="fw-bold text-warning">{{ $da->so_can_ban }}</span></div>
-                        <div><i class="fas fa-key"></i> Thuê: <span
-                                class="fw-bold text-info">{{ $da->so_can_thue }}</span></div>
+                        <div><i class="fas fa-tag"></i> Bán:
+                            <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['du_an_id' => $da->id, 'nhu_cau' => 'ban', 'trang_thai' => 'con_hang']) }}"
+                                class="fw-bold text-warning text-decoration-none">{{ $da->so_can_ban }}</a>
+                        </div>
+                        <div><i class="fas fa-key"></i> Thuê:
+                            <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['du_an_id' => $da->id, 'nhu_cau' => 'thue', 'trang_thai' => 'con_hang']) }}"
+                                class="fw-bold text-info text-decoration-none">{{ $da->so_can_thue }}</a>
+                        </div>
                     </div>
                     <div class="mobile-card-foot">
                         <label class="toggle-sw">

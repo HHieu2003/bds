@@ -29,9 +29,6 @@ return new class extends Migration
             $table->longText('noi_dung_chi_tiet')->nullable();
 
             $table->string('hinh_anh_dai_dien')->nullable();
-            $table->json('album_anh')->nullable();
-            $table->string('video_url')->nullable();
-
             $table->text('map_url')->nullable();
 
             $table->boolean('noi_bat')->default(false);

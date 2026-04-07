@@ -1,10 +1,11 @@
-<div class="row g-4">
+<div class="row g-4 du-an-form-shell">
     {{-- ════ CỘT TRÁI (Nội dung chính) ════ --}}
     <div class="col-12 col-lg-8">
 
         {{-- THÔNG TIN CƠ BẢN --}}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3"><i class="fas fa-info-circle text-primary me-2"></i>Thông tin cơ bản
+        <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-info-circle text-primary me-2"></i>Thông tin
+                cơ bản
             </div>
             <div class="card-body">
                 <div class="mb-3">
@@ -57,26 +58,22 @@
                 </div>
 
                 <div class="row g-3 mb-0">
-                    <div class="col-md-6">
-                        <label class="form-label">Video URL <span class="text-muted fw-normal">(YouTube,
-                                Vimeo)</span></label>
-                        <input type="url" name="video_url" class="form-control"
-                            value="{{ old('video_url', $duAn->video_url ?? '') }}"
-                            placeholder="https://youtube.com/...">
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-12">
                         <label class="form-label">Google Maps URL</label>
                         <input type="text" name="map_url" class="form-control"
                             value="{{ old('map_url', $duAn->map_url ?? '') }}"
                             placeholder="Dán link hoặc iframe bản đồ">
+                        <div class="form-text">Dùng link Google Maps hoặc đoạn iframe nhúng để hiển thị vị trí dự án.
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         {{-- MÔ TẢ & NỘI DUNG --}}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3"><i class="fas fa-align-left text-success me-2"></i>Mô tả chi tiết
+        <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-align-left text-success me-2"></i>Mô tả chi
+                tiết
             </div>
             <div class="card-body">
                 <div class="mb-3">
@@ -93,9 +90,9 @@
         </div>
 
         {{-- SEO --}}
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3"><i class="fas fa-search text-warning me-2"></i>Tối ưu SEO <span
-                    class="text-muted fw-normal">(Không bắt buộc)</span></div>
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-search text-warning me-2"></i>Tối ưu SEO
+                <span class="text-muted fw-normal">(Không bắt buộc)</span></div>
             <div class="card-body">
                 <div class="mb-3">
                     <label class="form-label">SEO Title</label>
@@ -120,19 +117,21 @@
     {{-- ════ CỘT PHẢI (Cài đặt & Hình ảnh) ════ --}}
     <div class="col-12 col-lg-4">
 
-        <div class="card border-0 shadow-sm mb-4">
+        <div class="card border-0 shadow-sm mb-4 position-sticky" style="top: 84px; z-index: 2;">
             <div class="card-body p-3">
                 <button type="submit" class="btn btn-primary w-100 mb-2 py-2">
                     <i class="fas fa-save me-1"></i> {{ $duAn ? 'Cập nhật dự án' : 'Lưu dự án mới' }}
                 </button>
                 <a href="{{ route('nhanvien.admin.du-an.index') }}" class="btn btn-light border w-100 py-2">Hủy
                     bỏ</a>
+                <div class="form-text text-center mt-2">Kiểm tra nhanh khu vực, trạng thái và ảnh trước khi lưu.</div>
             </div>
         </div>
 
         {{-- CÀI ĐẶT --}}
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3"><i class="fas fa-cog text-secondary me-2"></i>Cài đặt hiển thị
+        <div class="card border-0 shadow-sm mb-4 overflow-hidden">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-cog text-secondary me-2"></i>Cài đặt hiển
+                thị
             </div>
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -176,8 +175,9 @@
         </div>
 
         {{-- ẢNH ĐẠI DIỆN --}}
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3"><i class="fas fa-image text-info me-2"></i>Ảnh đại diện</div>
+        <div class="card border-0 shadow-sm overflow-hidden">
+            <div class="card-header bg-white py-3 fw-bold"><i class="fas fa-image text-info me-2"></i>Ảnh đại diện
+            </div>
             <div class="card-body text-center">
                 @if (!empty($duAn->hinh_anh_dai_dien))
                     <div id="currentImageWrapper" class="mb-3">
@@ -216,6 +216,37 @@
 
     </div>
 </div>
+
+@push('styles')
+    <style>
+        .du-an-form-shell .card {
+            border: 1px solid rgba(15, 23, 42, 0.06) !important;
+            border-radius: 14px;
+        }
+
+        .du-an-form-shell .card-header {
+            border-bottom: 1px solid rgba(15, 23, 42, 0.07);
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%) !important;
+        }
+
+        .du-an-form-shell .form-control,
+        .du-an-form-shell .form-select {
+            border-radius: 10px;
+        }
+
+        .du-an-form-shell .form-control:focus,
+        .du-an-form-shell .form-select:focus {
+            border-color: rgba(37, 99, 235, 0.45);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12);
+        }
+
+        @media (max-width: 991.98px) {
+            .du-an-form-shell .position-sticky {
+                position: static !important;
+            }
+        }
+    </style>
+@endpush
 
 @push('scripts')
     <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
