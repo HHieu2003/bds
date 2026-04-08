@@ -24,6 +24,7 @@ use App\Http\Controllers\Frontend\LienHeController as FrontendLienHeController;
 use App\Http\Controllers\Frontend\ChatController as FeChatController;
 use App\Http\Controllers\Frontend\DangKyNhanTinController;
 use App\Http\Controllers\Admin\NganHangController;
+use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -89,7 +90,15 @@ Route::prefix('')->name('frontend.')->group(function () {
         Route::get('/{id}/long-poll',   [FeChatController::class, 'longPoll'])->name('long-poll');
     });
 });
+Route::middleware(['auth:nhanvien', 'checkrole:admin,sale'])->prefix('admin')->name('nhanvien.admin.')->group(function () {
 
+    // Quản lý Khách Hàng
+    Route::resource('khach-hang', \App\Http\Controllers\Admin\KhachHangController::class);
+
+    // Thêm Nhật ký chăm sóc khách hàng
+    Route::post('khach-hang/{khachHang}/nhat-ky', [\App\Http\Controllers\Admin\KhachHangController::class, 'storeNhatKy'])->name('khach-hang.nhat-ky');
+});
+Route::post('/dat-lich-xem-nha', [FeLichHenController::class, 'datLich'])->name('frontend.dat-lich');
 // ══════════════════════════════════════════════════════════
 // KHÁCH HÀNG — Authentication
 // ══════════════════════════════════════════════════════════
@@ -109,7 +118,11 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::get('dat-lai-mat-khau', [KhachHangAuthController::class, 'showReset'])->name('reset');
         Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->name('reset.post');
     });
+    // Xem danh sách lịch hẹn
+    Route::get('lich-hen', [\App\Http\Controllers\Frontend\LichHenController::class, 'lichHen'])->name('lich-hen');
 
+    // Khách hàng chủ động hủy lịch
+    Route::post('lich-hen/{id}/huy', [\App\Http\Controllers\Frontend\LichHenController::class, 'huyLichHen'])->name('lich-hen.huy');
     Route::middleware('auth:customer')->group(function () {
         Route::post('dang-xuat', [KhachHangAuthController::class, 'logout'])->name('logout');
         Route::get('ho-so', [KhachHangAuthController::class, 'profile'])->name('profile');

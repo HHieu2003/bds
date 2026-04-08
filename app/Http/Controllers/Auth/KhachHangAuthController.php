@@ -323,7 +323,14 @@ class KhachHangAuthController extends Controller
     }
     public function lichHenCuaToi()
     {
-        return view('frontend.auth.lich_hen_cua_toi');
+        $khachHang = Auth::guard('customer')->user();
+
+        $lichHens = \App\Models\LichHen::with(['batDongSan', 'nhanVienSale'])
+            ->where('khach_hang_id', $khachHang->id)
+            ->orderBy('thoi_gian_hen', 'desc')
+            ->paginate(10);
+
+        return view('frontend.tai-khoan.lich-hen', compact('khachHang', 'lichHens'));
     }
 
     public function updateProfile(Request $request)

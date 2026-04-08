@@ -149,4 +149,9 @@ class KhachHang extends Authenticatable
     {
         return $query->where('muc_do_tiem_nang', 'lanh');
     }
+
+    public function lichHens()
+    {
+        return $this->hasMany(LichHen::class, 'khach_hang_id');
+    }
 }

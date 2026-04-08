@@ -30,7 +30,12 @@ class LichHenController extends Controller
         if ($nhanVien->isSale()) {
             $queryList->where(function ($q) use ($nhanVien) {
                 $q->where('nhan_vien_sale_id', $nhanVien->id)
-                    ->orWhere('trang_thai', 'moi_dat');
+                    ->orWhere('trang_thai', 'moi_dat')
+                    ->orWhere(function ($qWeb) {
+                        $qWeb->where('nguon_dat_lich', 'website')
+                            ->whereNull('nhan_vien_sale_id')
+                            ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh']);
+                    });
             });
         } elseif ($nhanVien->isNguonHang()) {
             $queryList->where('nhan_vien_nguon_hang_id', $nhanVien->id);
@@ -75,6 +80,17 @@ class LichHenController extends Controller
             return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats'));
         }
 
+        // Admin có thể vào cả 2 giao diện: Calendar/List và To-do của Nguồn hàng.
+        if ($nhanVien->isAdmin() && $request->get('giao_dien') === 'nguon_hang') {
+            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang'])
+                ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
+                ->orderBy('thoi_gian_hen', 'asc')
+                ->get();
+
+            $adminMode = true;
+            return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats', 'adminMode'));
+        }
+
         // Data riêng cho Modal/Tab Calendar của Sale & Admin
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
         return view('admin.lich-hen.index', compact('stats', 'dsNguonHang', 'nhanVien', 'lichHensList'));
@@ -88,10 +104,18 @@ class LichHenController extends Controller
         $query = LichHen::with(['khachHang', 'batDongSan']);
 
         if ($nhanVien->isSale()) {
-            // Sale chỉ thấy lịch của mình VÀ các lịch 'moi_dat' (chưa ai nhận từ khách)
+            // Sale thấy:
+            // 1) Lịch của chính mình
+            // 2) Lịch mới khách đặt (moi_dat)
+            // 3) Lịch từ website chưa có sale phụ trách để tránh sót kèo khách
             $query->where(function ($q) use ($nhanVien) {
                 $q->where('nhan_vien_sale_id', $nhanVien->id)
-                    ->orWhere('trang_thai', 'moi_dat');
+                    ->orWhere('trang_thai', 'moi_dat')
+                    ->orWhere(function ($qWeb) {
+                        $qWeb->where('nguon_dat_lich', 'website')
+                            ->whereNull('nhan_vien_sale_id')
+                            ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh']);
+                    });
             });
         }
 
@@ -109,9 +133,18 @@ class LichHenController extends Controller
 
         foreach ($lichHens as $lh) {
             $tenBds = $lh->batDongSan ? $lh->batDongSan->tieu_de : 'Nhà lẻ / Chưa xác định';
+            $noteSale = mb_strtolower((string) $lh->ghi_chu_sale);
+            $noteNguon = mb_strtolower((string) $lh->ghi_chu_nguon_hang);
+            $isDoiGio = str_contains((string) $lh->ghi_chu_sale, '[DOI_GIO]')
+                || str_contains((string) $lh->ghi_chu_nguon_hang, '[DOI_GIO]')
+                || str_contains($noteSale, 'doi gio')
+                || str_contains($noteSale, 'dời')
+                || str_contains($noteNguon, 'doi gio')
+                || str_contains($noteNguon, 'dời');
+
             $events[] = [
                 'id' => $lh->id,
-                'title' => date('H:i', strtotime($lh->thoi_gian_hen)) . ' - ' . $lh->ten_khach_hang,
+                'title' => ($isDoiGio ? '[DOI GIO] ' : '') . date('H:i', strtotime($lh->thoi_gian_hen)) . ' - ' . $lh->ten_khach_hang,
                 'start' => $lh->thoi_gian_hen,
                 'backgroundColor' => $colorMap[$lh->trang_thai] ?? '#000',
                 'borderColor' => $colorMap[$lh->trang_thai] ?? '#000',
@@ -123,6 +156,7 @@ class LichHenController extends Controller
                     'dia_diem'   => $lh->dia_diem_hen,
                     'sale_id'    => $lh->nhan_vien_sale_id,
                     'ghi_chu'    => $lh->ghi_chu_sale,
+                    'is_doi_gio' => $isDoiGio,
                     'ly_do_huy'  => $lh->trang_thai == 'tu_choi' ? $lh->ly_do_tu_choi : ($lh->trang_thai == 'hoan_thanh' ? $lh->ghi_chu_sale : null),
                 ]
             ];
@@ -273,9 +307,13 @@ class LichHenController extends Controller
             'ghi_chu_nguon_hang' => 'required|string|max:1000',
         ]);
 
+        $oldTime = optional($lichHen->thoi_gian_hen)->format('H:i d/m/Y');
+        $newTime = date('H:i d/m/Y', strtotime($request->thoi_gian_hen));
+        $doiGioNote = '[DOI_GIO][NGUON] ' . $oldTime . ' -> ' . $newTime . ' | ' . trim($request->ghi_chu_nguon_hang);
+
         $lichHen->update([
             'thoi_gian_hen' => $request->thoi_gian_hen,
-            'ghi_chu_nguon_hang' => $request->ghi_chu_nguon_hang,
+            'ghi_chu_nguon_hang' => $doiGioNote,
             'trang_thai' => 'cho_xac_nhan' // Vẫn giữ trạng thái chờ để Sale nắm được
         ]);
 
@@ -297,9 +335,13 @@ class LichHenController extends Controller
             'ghi_chu_sale'  => 'required|string|max:1000',
         ]);
 
+        $oldTime = optional($lichHen->thoi_gian_hen)->format('H:i d/m/Y');
+        $newTime = date('H:i d/m/Y', strtotime($request->thoi_gian_hen));
+        $doiGioNote = '[DOI_GIO][SALE] ' . $oldTime . ' -> ' . $newTime . ' | ' . trim($request->ghi_chu_sale);
+
         $lichHen->update([
             'thoi_gian_hen' => $request->thoi_gian_hen,
-            'ghi_chu_sale'  => $request->ghi_chu_sale,
+            'ghi_chu_sale'  => $doiGioNote,
             'trang_thai'    => 'cho_xac_nhan',
         ]);
 

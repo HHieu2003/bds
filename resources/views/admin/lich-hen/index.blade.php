@@ -50,14 +50,36 @@
 @endpush
 
 @section('content')
+    @php
+        $isDoiGio = static function ($lh) {
+            $noteSale = mb_strtolower((string) $lh->ghi_chu_sale);
+            $noteNguon = mb_strtolower((string) $lh->ghi_chu_nguon_hang);
+
+            return str_contains((string) $lh->ghi_chu_sale, '[DOI_GIO]') ||
+                str_contains((string) $lh->ghi_chu_nguon_hang, '[DOI_GIO]') ||
+                str_contains($noteSale, 'doi gio') ||
+                str_contains($noteSale, 'dời') ||
+                str_contains($noteNguon, 'doi gio') ||
+                str_contains($noteNguon, 'dời');
+        };
+    @endphp
+
     <div class="mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
         <div>
             <h1 class="page-header-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Lịch Hẹn Khách Hàng</h1>
             <p class="text-muted mb-0">Quản lý và điều phối lịch xem nhà với bộ phận Nguồn hàng.</p>
         </div>
-        <a href="{{ route('nhanvien.admin.lich-hen.create') }}" class="btn btn-primary shadow-sm">
-            <i class="fas fa-plus me-1"></i> Đặt lịch mới
-        </a>
+        <div class="d-flex gap-2">
+            @if ($nhanVien->isAdmin())
+                <a href="{{ route('nhanvien.admin.lich-hen.index', ['giao_dien' => 'nguon_hang']) }}"
+                    class="btn btn-outline-success shadow-sm">
+                    <i class="fas fa-clipboard-list me-1"></i> Chế độ Nguồn hàng
+                </a>
+            @endif
+            <a href="{{ route('nhanvien.admin.lich-hen.create') }}" class="btn btn-primary shadow-sm">
+                <i class="fas fa-plus me-1"></i> Đặt lịch mới
+            </a>
+        </div>
     </div>
 
     @include('frontend.partials.flash-messages')
@@ -175,6 +197,10 @@
                                             {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
                                         <div class="small text-muted">
                                             {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
+                                        @if ($isDoiGio($lh))
+                                            <span class="badge bg-warning text-dark mt-1"><i
+                                                    class="fas fa-clock me-1"></i>Đã đổi giờ</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
@@ -207,6 +233,7 @@
                                             data-sdt_khach="{{ $lh->sdt_khach_hang }}"
                                             data-bds="{{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}"
                                             data-sale_id="{{ $lh->nhan_vien_sale_id }}"
+                                            data-is_doi_gio="{{ $isDoiGio($lh) ? '1' : '0' }}"
                                             data-ly_do_huy="{{ in_array($lh->trang_thai, ['tu_choi', 'hoan_thanh', 'huy']) ? $lh->ly_do_tu_choi ?? $lh->ghi_chu_sale : null }}">
                                             Xử lý
                                         </button>
@@ -267,6 +294,11 @@
                             <span class="text-muted small">Trạng thái:</span>
                             <div id="m_status" class="fw-bold text-primary"></div>
                         </div>
+                    </div>
+
+                    <div id="m_doi_gio_badge" class="mb-3" style="display:none;">
+                        <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i>Lịch này đã đổi
+                            giờ</span>
                     </div>
 
                     <div id="div_ghi_chu" class="alert alert-warning border-warning" style="display:none;"></div>
@@ -399,6 +431,12 @@
                 setDisplay('div_ghi_chu', 'none');
                 setDisplay('frmHuy', 'none');
                 setDisplay('frmDoiGioSale', 'none');
+                setDisplay('m_doi_gio_badge', 'none');
+
+                var isDoiGio = String(props.is_doi_gio || '') === '1' || props.is_doi_gio === true;
+                if (isDoiGio) {
+                    setDisplay('m_doi_gio_badge', 'block');
+                }
 
                 if (props.ly_do_huy) {
                     var ghiChuEl = byId('div_ghi_chu');
@@ -420,7 +458,7 @@
 
                 var trangThaiKetThuc = ['hoan_thanh', 'huy', 'tu_choi'];
                 if (!trangThaiKetThuc.includes(props.trang_thai) && String(props.sale_id) === String(
-                    currentUserId)) {
+                        currentUserId)) {
                     setDisplay('action_huy', 'block');
                     const frmHuy = byId('frmHuy');
                     const frmDoiGioSale = byId('frmDoiGioSale');
@@ -501,6 +539,7 @@
                         sdt_khach: this.dataset.sdt_khach,
                         bds: this.dataset.bds,
                         sale_id: this.dataset.sale_id,
+                        is_doi_gio: this.dataset.is_doi_gio,
                         ly_do_huy: this.dataset.ly_do_huy
                     };
                     openLichHenModal(id, props, start);

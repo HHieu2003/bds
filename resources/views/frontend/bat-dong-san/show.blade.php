@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                   TRANG CHI TIẾT BĐS — Global Styles
-                                                                                ═══════════════════════════════════════ */
+               TRANG CHI TIẾT BĐS — Global Styles
+            ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -103,7 +103,6 @@
             font-size: 1.6rem;
         }
 
-        /* Overlay "+N ảnh" */
         .gal-more-overlay {
             position: absolute;
             right: 10px;
@@ -133,7 +132,6 @@
             opacity: .92;
         }
 
-        /* Badge nhu cầu trên gallery */
         .bds-nhu-cau-badge {
             position: absolute;
             top: 16px;
@@ -157,7 +155,6 @@
             background: linear-gradient(135deg, #27ae60, #219a52);
         }
 
-        /* Mobile gallery */
         @media(max-width:768px) {
             .bds-gallery {
                 grid-template-columns: 1fr 1fr;
@@ -321,7 +318,6 @@
             color: #0F172A;
         }
 
-        /* Row thông tin thêm */
         .info-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -415,7 +411,6 @@
             margin-bottom: 1rem;
         }
 
-        /* Đọc thêm */
         .mo-ta-preview {
             max-height: 200px;
             overflow: hidden;
@@ -464,7 +459,6 @@
             top: 90px;
         }
 
-        /* Card chuyên viên */
         .consultant-card {
             background: #fff;
             border-radius: 20px;
@@ -588,6 +582,33 @@
         .btn-zalo:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(0, 104, 255, .4);
+            color: #fff;
+        }
+
+        /* NÚT ĐẶT LỊCH MỚI */
+        .btn-dat-lich {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .6rem;
+            width: 100%;
+            padding: .85rem;
+            margin-bottom: 1rem;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: .95rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, .3);
+            transition: all .2s;
+            text-transform: uppercase;
+            text-decoration: none;
+        }
+
+        .btn-dat-lich:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, .4);
             color: #fff;
         }
 
@@ -967,7 +988,7 @@
                         <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
                     </a>
 
-                    {{-- Ảnh phụ 4 — overlay "+N" nếu còn nhiều --}}
+                    {{-- Ảnh phụ 4 — overlay "+N" --}}
                     <a href="{{ $anh4 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-4">
                         <img src="{{ $anh4 }}" alt="Ảnh 4" loading="lazy">
                         @if ($extraCount > 0)
@@ -1160,6 +1181,12 @@
                                     <i class="fas fa-comment-dots"></i> Chat Zalo ngay
                                 </a>
 
+                                {{-- Nút Đặt Lịch Xem Nhà (MỚI) --}}
+                                <button type="button" class="btn-dat-lich" data-bs-toggle="modal"
+                                    data-bs-target="#modalDatLich">
+                                    <i class="fas fa-calendar-check"></i> Đặt lịch xem nhà
+                                </button>
+
                                 {{-- Form gọi lại --}}
                                 <div class="callback-form-title">
                                     <i class="fas fa-phone-volume"></i> Yêu cầu tư vấn
@@ -1265,7 +1292,69 @@
 
         </div>{{-- end container --}}
     </div>{{-- end page --}}
+
     @include('frontend.partials.goi-y-bds')
+
+    <div class="modal fade" id="modalDatLich" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header border-0"
+                    style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-home me-2"></i> Đặt lịch xem Bất động sản</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+
+                <form id="frmDatLich" action="{{ route('frontend.dat-lich') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="bat_dong_san_id" value="{{ $bds->id }}">
+
+                    <div class="modal-body p-4">
+                        <div class="alert alert-light border border-success-subtle small mb-4 text-dark">
+                            Quý khách đang đặt lịch xem: <strong class="text-success">{{ $bds->tieu_de }}</strong>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="font-size: 0.9rem;">Họ và tên <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" name="ten_khach_hang" class="form-input-custom"
+                                placeholder="Nhập tên của bạn" required>
+                        </div>
+
+                        <div class="row mb-3 g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Số điện thoại <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" name="sdt_khach_hang" class="form-input-custom"
+                                    placeholder="09xx..." required>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label fw-bold" style="font-size: 0.9rem;">Thời gian xem <span
+                                        class="text-danger">*</span></label>
+                                <input type="datetime-local" name="thoi_gian_hen" class="form-input-custom"
+                                    min="{{ now()->format('Y-m-d\TH:i') }}" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-0">
+                            <label class="form-label fw-bold" style="font-size: 0.9rem;">Lời nhắn (Không bắt buộc)</label>
+                            <textarea name="ghi_chu" class="form-input-custom" rows="3"
+                                placeholder="Ví dụ: Tôi chỉ xem được ngoài giờ hành chính..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer bg-light border-0">
+                        <button type="button" class="btn btn-light border fw-bold" data-bs-dismiss="modal"
+                            style="border-radius: 10px;">Hủy</button>
+                        <button type="submit" class="btn btn-success fw-bold" id="btnSubmitDatLich"
+                            style="border-radius: 10px; background: #10b981; border: none; padding: 0.5rem 1.5rem;">
+                            <i class="fas fa-paper-plane me-1"></i> GỬI YÊU CẦU
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     @push('scripts')
         <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
@@ -1330,6 +1419,53 @@
                     });
             }
 
+            /* XỬ LÝ AJAX FORM ĐẶT LỊCH XEM NHÀ (MỚI) */
+            document.getElementById('frmDatLich').addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                let form = this;
+                let btn = document.getElementById('btnSubmitDatLich');
+                let originalText = btn.innerHTML;
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+                btn.disabled = true;
+
+                let formData = new FormData(form);
+
+                fetch(form.action, {
+                        method: 'POST',
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json',
+                        },
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            // Ẩn modal
+                            var myModalEl = document.getElementById('modalDatLich');
+                            var modal = bootstrap.Modal.getInstance(myModalEl);
+                            modal.hide();
+
+                            // Hiển thị thông báo bằng showFlash có sẵn
+                            showFlash(data.message, 'success');
+
+                            form.reset();
+                        } else {
+                            showFlash('Có lỗi xảy ra, vui lòng kiểm tra lại.', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        showFlash('Vui lòng kiểm tra lại ngày giờ hẹn (Phải lớn hơn thời gian hiện tại).',
+                            'warning');
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            });
+
             function dangKyCanhBaoGia() {
                 if (typeof openModalDangKy !== 'function') {
                     showFlash('Chưa thể mở form đăng ký nhận tin lúc này.', 'danger');
@@ -1345,15 +1481,14 @@
                 });
             }
 
-            // Trong trang chi tiết BĐS (bat-dong-san/show.blade.php)
+            // Ghi nhận thời gian xem (Tracking)
             (function() {
                 const startTime = Date.now();
                 const bdsId = {{ $bds->id }};
 
-                // Gửi khi rời trang
                 window.addEventListener('beforeunload', function() {
                     const seconds = Math.floor((Date.now() - startTime) / 1000);
-                    if (seconds < 3) return; // Bỏ qua nếu vào rồi thoát ngay
+                    if (seconds < 3) return;
 
                     navigator.sendBeacon('{{ route('frontend.bds.track-time') }}',
                         JSON.stringify({

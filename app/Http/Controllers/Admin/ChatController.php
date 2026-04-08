@@ -15,6 +15,17 @@ class ChatController extends Controller
     // ── DANH SÁCH PHIÊN CHAT ────────────────────────────────
     public function index()
     {
+        if (request()->boolean('check_unread')) {
+            $tongChuaDoc = TinNhanChat::where('nguoi_gui', 'khach_hang')
+                ->where('da_doc', 0)
+                ->count();
+
+            return response()->json([
+                'success' => true,
+                'tong_chua_doc' => $tongChuaDoc,
+            ]);
+        }
+
         $phienChats = $this->danhSach();
         $activeChat = $phienChats->first();
         $currentMessages = collect();
@@ -105,6 +116,11 @@ class ChatController extends Controller
                 'nhan_vien_phu_trach_id' => Auth::guard('nhanvien')->id(),
                 'dang_bot_xu_ly' => false,
             ]);
+        } elseif ((int) $phienChat->nhan_vien_phu_trach_id !== (int) Auth::guard('nhanvien')->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Phien chat dang do nhan vien khac phu trach.',
+            ], 403);
         }
 
         $tepDinhKem = null;
@@ -218,7 +234,7 @@ class ChatController extends Controller
     // ── HELPER ──────────────────────────────────────────────
     private function danhSach()
     {
-        return PhienChat::with(['khachHang', 'nhanVienPhuTrach'])
+        return PhienChat::with(['khachHang', 'nhanVienPhuTrach', 'tinNhanCuoi'])
             ->withCount(['tinNhan as so_chua_doc' => fn($q) => $q->where('nguoi_gui', 'khach_hang')->where('da_doc', 0)])
             ->orderByRaw("FIELD(trang_thai, 'dang_cho', 'dang_bot', 'dang_chat', 'da_dong')")
             ->orderBy('tin_nhan_cuoi_at', 'desc')

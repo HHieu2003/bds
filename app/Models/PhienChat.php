@@ -42,6 +42,11 @@ class PhienChat extends Model
         return $this->hasMany(TinNhanChat::class, 'phien_chat_id');
     }
 
+    public function tinNhanCuoi()
+    {
+        return $this->hasOne(TinNhanChat::class, 'phien_chat_id')->latestOfMany();
+    }
+
     public function getTenHienThiAttribute(): string
     {
         return $this->khachHang?->ho_ten
