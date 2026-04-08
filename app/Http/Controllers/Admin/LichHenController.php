@@ -18,30 +18,73 @@ class LichHenController extends Controller
      */
     public function index(Request $request)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         $stats = $this->_stats($nhanVien);
 
-        // 1. NẾU LÀ NGUỒN HÀNG -> TRẢ VỀ GIAO DIỆN TO-DO LIST (Dạng Card)
-        if ($nhanVien->isNguonHang()) {
-            $lichHens = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale'])
-                ->where('nhan_vien_nguon_hang_id', $nhanVien->id)
-                ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan']) // Chỉ quan tâm các lịch đang cần xử lý
-                ->orderBy('thoi_gian_hen', 'asc')
-                ->get();
-            return view('admin.lich-hen.nguon_hang', compact('lichHens', 'stats'));
+        // ========================================================
+        // 1. XÂY DỰNG DATA CHO TAB "DANH SÁCH TOÀN BỘ" (CHUNG CHO MỌI ROLE)
+        // ========================================================
+        $queryList = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang']);
+
+        // Phân quyền nhìn thấy trên Danh sách
+        if ($nhanVien->isSale()) {
+            $queryList->where(function ($q) use ($nhanVien) {
+                $q->where('nhan_vien_sale_id', $nhanVien->id)
+                    ->orWhere('trang_thai', 'moi_dat');
+            });
+        } elseif ($nhanVien->isNguonHang()) {
+            $queryList->where('nhan_vien_nguon_hang_id', $nhanVien->id);
+        }
+        // Nếu là Admin thì queryList lấy tất cả
+
+        // Bộ lọc tìm kiếm cho Tab Danh sách
+        if ($request->filled('tim_kiem')) {
+            $kw = '%' . $request->tim_kiem . '%';
+            $queryList->where(function ($q) use ($kw) {
+                $q->where('ten_khach_hang', 'like', $kw)
+                    ->orWhere('sdt_khach_hang', 'like', $kw)
+                    ->orWhereHas('batDongSan', function ($qBds) use ($kw) {
+                        $qBds->where('tieu_de', 'like', $kw)->orWhere('ma_can', 'like', $kw);
+                    });
+            });
+        }
+        if ($request->filled('trang_thai')) {
+            $queryList->where('trang_thai', $request->trang_thai);
+        }
+        if ($request->filled('tu_ngay')) {
+            $queryList->whereDate('thoi_gian_hen', '>=', $request->tu_ngay);
+        }
+        if ($request->filled('den_ngay')) {
+            $queryList->whereDate('thoi_gian_hen', '<=', $request->den_ngay);
         }
 
-        // 2. NẾU LÀ SALE / ADMIN -> TRẢ VỀ GIAO DIỆN CALENDAR
-        $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
-        return view('admin.lich-hen.index', compact('stats', 'dsNguonHang', 'nhanVien'));
-    }
+        // Lấy dữ liệu phân trang
+        $lichHensList = $queryList->orderBy('thoi_gian_hen', 'desc')->paginate(15)->withQueryString();
 
+        // ========================================================
+        // 2. TRẢ VỀ VIEW TƯƠNG ỨNG VỚI ROLE (KÈM DỮ LIỆU LIST VÀ TAB)
+        // ========================================================
+        if ($nhanVien->isNguonHang()) {
+            // Data riêng cho Tab "Cần xử lý" của Nguồn hàng
+            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale'])
+                ->where('nhan_vien_nguon_hang_id', $nhanVien->id)
+                ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
+                ->orderBy('thoi_gian_hen', 'asc')
+                ->get();
+
+            return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats'));
+        }
+
+        // Data riêng cho Modal/Tab Calendar của Sale & Admin
+        $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
+        return view('admin.lich-hen.index', compact('stats', 'dsNguonHang', 'nhanVien', 'lichHensList'));
+    }
     /**
      * API TRẢ VỀ DỮ LIỆU CHO FULLCALENDAR (Dành cho Sale/Admin)
      */
     public function apiEvents(Request $request)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         $query = LichHen::with(['khachHang', 'batDongSan']);
 
         if ($nhanVien->isSale()) {
@@ -92,7 +135,7 @@ class LichHenController extends Controller
      */
     public function create(Request $request)
     {
-        $nhanVien    = Auth::guard('nhanvien')->user();
+        $nhanVien    = $this->currentNhanVien();
         $dsBds       = BatDongSan::where('hien_thi', 1)->select('id', 'ma_bat_dong_san', 'tieu_de')->get();
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
         $dsKhachHang = KhachHang::select('id', 'ho_ten', 'so_dien_thoai', 'email')->get();
@@ -114,7 +157,7 @@ class LichHenController extends Controller
      */
     public function store(Request $request)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         $request->validate([
             'bat_dong_san_id'         => 'required|exists:bat_dong_san,id',
@@ -156,7 +199,7 @@ class LichHenController extends Controller
      */
     public function show(LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         $lichHen->load(['khachHang', 'batDongSan.khuVuc', 'nhanVienSale', 'nhanVienNguonHang']);
         return view('admin.lich-hen.show', compact('lichHen', 'nhanVien'));
     }
@@ -170,7 +213,7 @@ class LichHenController extends Controller
      */
     public function tiepNhan(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'sale']), 403);
 
         if ($lichHen->trang_thai !== 'moi_dat') {
@@ -198,7 +241,7 @@ class LichHenController extends Controller
      */
     public function xacNhan(LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'nguon_hang']), 403, 'Chỉ Nguồn hàng mới có quyền xác nhận lịch này.');
         abort_unless(in_array($lichHen->trang_thai, ['cho_xac_nhan']), 422, 'Lỗi trạng thái.');
 
@@ -221,7 +264,7 @@ class LichHenController extends Controller
      */
     public function baoLaiGio(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'nguon_hang']), 403);
         abort_unless(in_array($lichHen->trang_thai, ['cho_xac_nhan', 'da_xac_nhan']), 422);
 
@@ -245,7 +288,7 @@ class LichHenController extends Controller
      */
     public function saleDoiGio(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'sale']), 403);
         abort_unless(in_array($lichHen->trang_thai, ['cho_xac_nhan', 'da_xac_nhan']), 422);
 
@@ -274,7 +317,7 @@ class LichHenController extends Controller
      */
     public function tuChoi(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'nguon_hang']), 403);
         abort_unless(in_array($lichHen->trang_thai, ['cho_xac_nhan']), 422);
 
@@ -295,7 +338,7 @@ class LichHenController extends Controller
      */
     public function hoanThanh(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'sale']), 403);
         abort_unless($lichHen->trang_thai === 'da_xac_nhan', 422);
 
@@ -313,7 +356,7 @@ class LichHenController extends Controller
      */
     public function huy(Request $request, LichHen $lichHen)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole(['admin', 'sale', 'nguon_hang']), 403);
         abort_unless(in_array($lichHen->trang_thai, ['moi_dat', 'cho_xac_nhan', 'da_xac_nhan']), 422);
 
@@ -338,6 +381,17 @@ class LichHenController extends Controller
     // ============================================================
     // PRIVATE HELPERS
     // ============================================================
+
+    /**
+     * Lấy đúng user nhân viên đang đăng nhập (guard nhanvien) với kiểu dữ liệu rõ ràng.
+     */
+    private function currentNhanVien(): NhanVien
+    {
+        $user = Auth::guard('nhanvien')->user();
+        abort_unless($user instanceof NhanVien, 401);
+
+        return $user;
+    }
 
     private function _thongBaoNguonHang(LichHen $lichHen, string $tieuDe, string $noiDung): void
     {
