@@ -134,16 +134,6 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::get('lich-hen-cua-toi', [KhachHangAuthController::class, 'lichHenCuaToi'])->name('lich-hen-cua-toi');
     });
 });
-Route::middleware(['auth:nhanvien', 'checkrole:admin,sale'])->prefix('admin')->name('nhanvien.admin.')->group(function () {
-
-    Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
-
-    // API Cập nhật trạng thái khi Kéo thả thẻ Kanban
-    Route::patch('lien-he/{lienHe}/cap-nhat-trang-thai', [\App\Http\Controllers\Admin\LienHeController::class, 'updateStatus'])->name('lien-he.update-status');
-
-    // Nút "Chuyển thành Khách Hàng chính thức"
-    Route::post('lien-he/{lienHe}/chuyen-khach-hang', [\App\Http\Controllers\Admin\LienHeController::class, 'convertToKhachHang'])->name('lien-he.convert');
-});
 // ══════════════════════════════════════════════════════════
 // NHÂN VIÊN — Authentication + Admin Panel
 // ══════════════════════════════════════════════════════════
@@ -298,7 +288,13 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{batDongSan}/trang-thai', [BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
                     Route::delete('/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');
                 });
+Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
 
+    // Route cập nhật nhanh trạng thái
+    Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [\App\Http\Controllers\Admin\LienHeController::class, 'capNhatNhanh'])->name('lien-he.cap-nhat-nhanh');
+
+    // MỚI: Route chuyển đổi Lead thành Khách hàng
+    Route::post('lien-he/{lienHe}/chuyen-khach', [\App\Http\Controllers\Admin\LienHeController::class, 'chuyenKhachHang'])->name('lien-he.chuyen-khach');
                 Route::prefix('khach-hang')->name('khach-hang.')->group(function () {
                     Route::get('/',                           [KhachHangController::class, 'index'])->name('index');
                     Route::get('/create',                     [KhachHangController::class, 'create'])->name('create');

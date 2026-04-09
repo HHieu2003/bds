@@ -128,6 +128,33 @@
         .potential-badge.tone-secondary {
             border-color: #d0d5dd;
         }
+
+        /* Modal chỉnh sửa hồ sơ */
+        .kh-edit-modal .modal-dialog {
+            max-width: 780px;
+        }
+
+        .kh-edit-modal .modal-content {
+            max-height: calc(100vh - 2.5rem);
+        }
+
+        .kh-edit-modal .modal-body {
+            max-height: calc(100vh - 190px);
+            overflow-y: auto;
+            padding: 1rem 1.25rem;
+        }
+
+        .kh-edit-modal .form-label {
+            font-size: .78rem;
+            margin-bottom: .35rem;
+        }
+
+        @media (max-width: 575.98px) {
+            .kh-edit-modal .modal-body {
+                max-height: calc(100vh - 170px);
+                padding: .9rem 1rem;
+            }
+        }
     </style>
 @endpush
 
@@ -555,8 +582,8 @@
     </div>
 
     {{-- Modal chỉnh sửa hồ sơ --}}
-    <div class="modal fade" id="modalEditKhachHang" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+    <div class="modal fade kh-edit-modal" id="modalEditKhachHang" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
                 <form action="{{ route('nhanvien.admin.khach-hang.update', $khachHang) }}" method="POST">
                     @csrf
@@ -570,47 +597,61 @@
                     </div>
 
                     <div class="modal-body">
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold mb-1">Họ tên *</label>
-                            <input type="text" name="ho_ten" class="form-control form-control-sm"
-                                value="{{ $khachHang->ho_ten }}" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold mb-1">SĐT *</label>
-                            <input type="text" name="so_dien_thoai" class="form-control form-control-sm"
-                                value="{{ $khachHang->so_dien_thoai }}" required>
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold mb-1">Email</label>
-                            <input type="email" name="email" class="form-control form-control-sm"
-                                value="{{ $khachHang->email }}">
-                        </div>
-                        <div class="mb-2">
-                            <label class="form-label small fw-semibold mb-1">Tiềm năng</label>
-                            <select name="muc_do_tiem_nang" class="form-select form-select-sm">
-                                @foreach ($mucDoTiemNang as $key => $item)
-                                    <option value="{{ $key }}"
-                                        {{ $khachHang->muc_do_tiem_nang === $key ? 'selected' : '' }}>
-                                        {{ $item['label'] }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        @if (!$nhanVien->isSale())
-                            <div class="mb-2">
-                                <label class="form-label small fw-semibold mb-1">Giao Sale</label>
-                                <select name="nhan_vien_phu_trach_id" class="form-select form-select-sm">
-                                    <option value="">– Chưa gán –</option>
-                                    @foreach ($dsSale as $sale)
-                                        <option value="{{ $sale->id }}"
-                                            {{ $khachHang->nhan_vien_phu_trach_id === $sale->id ? 'selected' : '' }}>
-                                            {{ $sale->ho_ten }}
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Họ tên *</label>
+                                <input type="text" name="ho_ten" class="form-control form-control-sm"
+                                    value="{{ $khachHang->ho_ten }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">SĐT *</label>
+                                <input type="text" name="so_dien_thoai" class="form-control form-control-sm"
+                                    value="{{ $khachHang->so_dien_thoai }}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Email</label>
+                                <input type="email" name="email" class="form-control form-control-sm"
+                                    value="{{ $khachHang->email }}">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Tiềm năng</label>
+                                <select name="muc_do_tiem_nang" class="form-select form-select-sm">
+                                    @foreach ($mucDoTiemNang as $key => $item)
+                                        <option value="{{ $key }}"
+                                            {{ $khachHang->muc_do_tiem_nang === $key ? 'selected' : '' }}>
+                                            {{ $item['label'] }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
-                        @endif
+
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Mật khẩu mới</label>
+                                <input type="password" name="password" class="form-control form-control-sm"
+                                    minlength="6" placeholder="Để trống nếu không đổi mật khẩu">
+                                <small class="text-muted">Chỉ nhập khi cần đổi mật khẩu đăng nhập.</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Nhập lại mật khẩu mới</label>
+                                <input type="password" name="password_confirmation" class="form-control form-control-sm"
+                                    minlength="6" placeholder="Nhập lại mật khẩu mới">
+                            </div>
+
+                            @if (!$nhanVien->isSale())
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">Giao Sale</label>
+                                    <select name="nhan_vien_phu_trach_id" class="form-select form-select-sm">
+                                        <option value="">– Chưa gán –</option>
+                                        @foreach ($dsSale as $sale)
+                                            <option value="{{ $sale->id }}"
+                                                {{ $khachHang->nhan_vien_phu_trach_id === $sale->id ? 'selected' : '' }}>
+                                                {{ $sale->ho_ten }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            @endif
+                        </div>
 
                         @if ($nhanVien->hasRole('admin'))
                             <hr class="my-3">

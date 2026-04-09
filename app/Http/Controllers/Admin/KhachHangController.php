@@ -8,6 +8,7 @@ use App\Models\NhanVien;
 use App\Models\LichHen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class KhachHangController extends Controller
 {
@@ -58,7 +59,7 @@ class KhachHangController extends Controller
         $dsSale = NhanVien::where('vai_tro', 'sale')->where('kich_hoat', 1)->get();
         $mucDoTiemNang = $this->getMucDoTiemNang();
 
-        // THỐNG KÊ 
+        // THỐNG KÊ
         $stats = [
             'tong' => (clone $query)->count(),
             'nong' => (clone $query)->where('muc_do_tiem_nang', 'nong')->count(),
@@ -76,6 +77,7 @@ class KhachHangController extends Controller
             'ho_ten'                 => 'required|string|max:100',
             'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai',
             'email'                  => 'nullable|email|max:100',
+            'password'               => 'required|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'nullable|in:lanh,am,nong',
             'nguon_khach_hang'       => 'nullable|string',
             'ghi_chu_noi_bo'         => 'nullable|string',
@@ -85,6 +87,7 @@ class KhachHangController extends Controller
         $data['nhan_vien_phu_trach_id'] = $nhanVien->isSale() ? $nhanVien->id : ($request->nhan_vien_phu_trach_id ?? null);
         $data['muc_do_tiem_nang'] = $request->muc_do_tiem_nang ?? 'am';
         $data['nguon_khach_hang'] = $request->nguon_khach_hang ?? 'sale';
+        $data['password'] = Hash::make($data['password']);
 
         KhachHang::create($data);
 
@@ -122,9 +125,16 @@ class KhachHangController extends Controller
             'ho_ten'                 => 'required|string|max:100',
             'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai,' . $khachHang->id,
             'email'                  => 'nullable|email|max:100',
+            'password'               => 'nullable|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'required|in:lanh,am,nong',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id'
         ]);
+
+        if (empty($data['password'])) {
+            unset($data['password']);
+        } else {
+            $data['password'] = Hash::make($data['password']);
+        }
 
         if ($nhanVien->isSale()) unset($data['nhan_vien_phu_trach_id']);
 

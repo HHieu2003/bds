@@ -90,6 +90,48 @@
         .potential-badge.tone-secondary {
             border-color: #d0d5dd;
         }
+
+        /* Modal thêm khách hàng */
+        .kh-modal-header {
+            border-bottom: 0;
+        }
+
+        .kh-modal-section {
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 14px;
+            background: #fff;
+            height: 100%;
+        }
+
+        .kh-modal-section-title {
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .35px;
+            color: #0d6efd;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .kh-modal .input-group-text {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            color: #6c757d;
+        }
+
+        .kh-modal .form-control,
+        .kh-modal .form-select {
+            border-color: #dee2e6;
+        }
+
+        .kh-modal .form-control:focus,
+        .kh-modal .form-select:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 .2rem rgba(13, 110, 253, .15);
+        }
     </style>
 @endpush
 
@@ -385,10 +427,10 @@
     </div>
 
     {{-- MODAL THÊM KH --}}
-    <div class="modal fade" id="modalThemKH" tabindex="-1">
+    <div class="modal fade kh-modal" id="modalThemKH" tabindex="-1">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content border-0 shadow">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header kh-modal-header text-white">
                     <h5 class="modal-title fw-bold fs-6">
                         <i class="fas fa-user-plus me-2"></i>Thêm Khách Hàng Mới
                     </h5>
@@ -398,58 +440,102 @@
                     @csrf
                     <div class="modal-body p-4">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Họ tên <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="ho_ten" class="form-control" placeholder="Nguyễn Văn A"
-                                    required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Số điện thoại <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" name="so_dien_thoai" class="form-control"
-                                    placeholder="0901 234 567" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Email</label>
-                                <input type="email" name="email" class="form-control"
-                                    placeholder="email@example.com">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Nguồn khách hàng</label>
-                                <select name="nguon_khach_hang" class="form-select">
-                                    <option value="sale">Sale tự tạo</option>
-                                    <option value="facebook">Facebook</option>
-                                    <option value="zalo">Zalo</option>
-                                    <option value="website">Website</option>
-                                    <option value="gioi_thieu">Giới thiệu</option>
-                                    <option value="khac">Khác</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label small fw-semibold">Mức độ tiềm năng</label>
-                                <select name="muc_do_tiem_nang" class="form-select">
-                                    @foreach ($mucDoTiemNang as $key => $tt)
-                                        <option value="{{ $key }}" {{ $key === 'am' ? 'selected' : '' }}>
-                                            {{ $tt['label'] }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            @if (!$nhanVien->isSale())
-                                <div class="col-md-6">
-                                    <label class="form-label small fw-semibold">Giao cho Sale</label>
-                                    <select name="nhan_vien_phu_trach_id" class="form-select">
-                                        <option value="">– Chưa gán –</option>
-                                        @foreach ($dsSale as $sale)
-                                            <option value="{{ $sale->id }}">{{ $sale->ho_ten }}</option>
-                                        @endforeach
-                                    </select>
+                            <div class="col-lg-6">
+                                <div class="kh-modal-section">
+                                    <div class="kh-modal-section-title">
+                                        <i class="fas fa-id-badge"></i>Thông tin liên hệ
+                                    </div>
+
+                                    <label class="form-label small fw-semibold">Họ tên <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" name="ho_ten" class="form-control" placeholder="Nguyễn Văn A" required>
+                                    </div>
+
+                                    <label class="form-label small fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="text" name="so_dien_thoai" class="form-control" placeholder="0901 234 567" required>
+                                    </div>
+
+                                    <label class="form-label small fw-semibold">Email</label>
+                                    <div class="input-group input-group-sm mb-0">
+                                        <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                        <input type="email" name="email" class="form-control" placeholder="email@example.com">
+                                    </div>
                                 </div>
-                            @endif
-                            <div class="col-12">
-                                <label class="form-label small fw-semibold">Ghi chú nội bộ</label>
-                                <textarea name="ghi_chu_noi_bo" class="form-control" rows="3"
-                                    placeholder="Nhu cầu, ngân sách, khu vực quan tâm..."></textarea>
+                            </div>
+
+                            <div class="col-lg-6">
+                                <div class="kh-modal-section">
+                                    <div class="kh-modal-section-title">
+                                        <i class="fas fa-shield-alt"></i>Tài khoản truy cập
+                                    </div>
+
+                                    <label class="form-label small fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm mb-2">
+                                        <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                        <input type="password" name="password" class="form-control" minlength="6" placeholder="Nhập mật khẩu đăng nhập" required>
+                                    </div>
+
+                                    <label class="form-label small fw-semibold">Nhập lại mật khẩu <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm mb-0">
+                                        <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
+                                        <input type="password" name="password_confirmation" class="form-control" minlength="6" placeholder="Nhập lại mật khẩu" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-7">
+                                <div class="kh-modal-section">
+                                    <div class="kh-modal-section-title">
+                                        <i class="fas fa-chart-line"></i>Thông tin CRM
+                                    </div>
+
+                                    <div class="row g-2">
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Nguồn khách hàng</label>
+                                            <select name="nguon_khach_hang" class="form-select form-select-sm">
+                                                <option value="sale">Sale tự tạo</option>
+                                                <option value="facebook">Facebook</option>
+                                                <option value="zalo">Zalo</option>
+                                                <option value="website">Website</option>
+                                                <option value="gioi_thieu">Giới thiệu</option>
+                                                <option value="khac">Khác</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small fw-semibold">Mức độ tiềm năng</label>
+                                            <select name="muc_do_tiem_nang" class="form-select form-select-sm">
+                                                @foreach ($mucDoTiemNang as $key => $tt)
+                                                    <option value="{{ $key }}" {{ $key === 'am' ? 'selected' : '' }}>
+                                                        {{ $tt['label'] }}</option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        @if (!$nhanVien->isSale())
+                                            <div class="col-12">
+                                                <label class="form-label small fw-semibold">Giao cho Sale</label>
+                                                <select name="nhan_vien_phu_trach_id" class="form-select form-select-sm">
+                                                    <option value="">– Chưa gán –</option>
+                                                    @foreach ($dsSale as $sale)
+                                                        <option value="{{ $sale->id }}">{{ $sale->ho_ten }}</option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-lg-5">
+                                <div class="kh-modal-section">
+                                    <div class="kh-modal-section-title">
+                                        <i class="fas fa-sticky-note"></i>Ghi chú nội bộ
+                                    </div>
+                                    <textarea name="ghi_chu_noi_bo" class="form-control form-control-sm" rows="7"
+                                        placeholder="Nhu cầu, ngân sách, khu vực quan tâm..."></textarea>
+                                </div>
                             </div>
                         </div>
                     </div>
