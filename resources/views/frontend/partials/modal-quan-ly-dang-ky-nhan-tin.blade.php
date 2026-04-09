@@ -330,10 +330,13 @@
                 const endpoint = window.APP.routes.dangKyNhanTinDestroy.replace('__ID__', String(id));
                 const response = await fetch(endpoint, {
                     method: 'DELETE',
-                    headers: {
+                    headers: window.getCsrfHeaders ? window.getCsrfHeaders({
+                        'Accept': 'application/json'
+                    }) : {
                         'X-CSRF-TOKEN': window.APP.csrfToken,
                         'Accept': 'application/json'
-                    }
+                    },
+                    credentials: 'same-origin'
                 });
 
                 const data = await response.json();

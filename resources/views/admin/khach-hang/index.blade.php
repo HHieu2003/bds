@@ -265,7 +265,8 @@
                                             {{ $initial ?: '?' }}
                                         </div>
                                         <div class="overflow-hidden">
-                                            <a href="{{ route('nhanvien.admin.khach-hang.show', $kh) }}"
+                                            <a href="#"
+                                                onclick="openKhachHangProfileModal('{{ route('nhanvien.admin.khach-hang.show', $kh) }}', '{{ addslashes($kh->ho_ten) }}'); return false;"
                                                 class="fw-semibold text-dark text-decoration-none d-block text-truncate"
                                                 style="max-width:195px;">{{ $kh->ho_ten }}</a>
                                             <div class="d-flex flex-wrap gap-2 mt-1">
@@ -282,6 +283,11 @@
                                                             style="font-size:.7rem;"></i>{{ Str::limit($kh->email, 20) }}
                                                     </span>
                                                 @endif
+                                                <span
+                                                    class="badge {{ $kh->email_xac_thuc_at ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }}"
+                                                    style="font-size:.65rem;">
+                                                    {{ $kh->email_xac_thuc_at ? 'Đã xác thực' : 'Chưa xác thực' }}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -342,7 +348,8 @@
 
                                 {{-- Thao tác --}}
                                 <td class="text-center">
-                                    <a href="{{ route('nhanvien.admin.khach-hang.show', $kh) }}"
+                                    <a href="#"
+                                        onclick="openKhachHangProfileModal('{{ route('nhanvien.admin.khach-hang.show', $kh) }}', '{{ addslashes($kh->ho_ten) }}'); return false;"
                                         class="btn btn-sm btn-primary">
                                         <i class="fas fa-id-card me-1"></i>Hồ sơ
                                     </a>
@@ -456,4 +463,141 @@
             </div>
         </div>
     </div>
+
+    {{-- MODAL XEM HỒ SƠ KH --}}
+    <div class="modal fade" id="modalKhachHangProfile" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 1200px;">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light">
+                    <h5 class="modal-title fw-bold" id="modalKhachHangProfileTitle">
+                        <i class="fas fa-id-card text-primary me-2"></i>Hồ sơ khách hàng
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0" style="height:75vh;overflow:auto;">
+                    <div id="modalKhachHangProfileStyleHost"></div>
+                    <div id="modalKhachHangProfileContent" class="p-3">
+                        <div class="d-flex align-items-center justify-content-center py-5 text-muted">
+                            <i class="fas fa-circle-notch fa-spin me-2"></i>Đang tải hồ sơ...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- MODAL CHỈNH SỬA HỒ SƠ KH (bridge cho embedded profile) --}}
+    <div class="modal fade" id="modalKhachHangEditBridge" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow" id="modalKhachHangEditBridgeContent"></div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+    <script>
+        let khEmbeddedEditModalHtml = '';
+        let isSwitchingFromProfileToEdit = false;
+
+        function openKhachHangEditBridgeModal() {
+            const profileEl = document.getElementById('modalKhachHangProfile');
+            const editEl = document.getElementById('modalKhachHangEditBridge');
+            const editContent = document.getElementById('modalKhachHangEditBridgeContent');
+
+            if (!profileEl || !editEl || !editContent || !khEmbeddedEditModalHtml) {
+                return;
+            }
+
+            editContent.innerHTML = khEmbeddedEditModalHtml;
+            isSwitchingFromProfileToEdit = true;
+            bootstrap.Modal.getOrCreateInstance(profileEl).hide();
+
+            setTimeout(() => {
+                bootstrap.Modal.getOrCreateInstance(editEl).show();
+            }, 180);
+        }
+
+        document.getElementById('modalKhachHangEditBridge')?.addEventListener('hidden.bs.modal', function() {
+            const profileEl = document.getElementById('modalKhachHangProfile');
+            if (profileEl) {
+                bootstrap.Modal.getOrCreateInstance(profileEl).show();
+            }
+        });
+
+        async function openKhachHangProfileModal(url, name) {
+            const title = document.getElementById('modalKhachHangProfileTitle');
+            const modalEl = document.getElementById('modalKhachHangProfile');
+            const contentEl = document.getElementById('modalKhachHangProfileContent');
+            const styleHost = document.getElementById('modalKhachHangProfileStyleHost');
+
+            if (!title || !modalEl || !contentEl || !styleHost) {
+                window.location.href = url;
+                return;
+            }
+
+            title.innerHTML = '<i class="fas fa-id-card text-primary me-2"></i>Hồ sơ: ' + (name || 'Khách hàng');
+            bootstrap.Modal.getOrCreateInstance(modalEl).show();
+
+            contentEl.innerHTML =
+                '<div class="d-flex align-items-center justify-content-center py-5 text-muted"><i class="fas fa-circle-notch fa-spin me-2"></i>Đang tải hồ sơ...</div>';
+
+            try {
+                const res = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html'
+                    },
+                    credentials: 'same-origin'
+                });
+
+                if (!res.ok) {
+                    throw new Error('Không thể tải hồ sơ khách hàng.');
+                }
+
+                const html = await res.text();
+                const doc = new DOMParser().parseFromString(html, 'text/html');
+                const mainContent = doc.querySelector('#main-wrapper .main-content');
+                const editModalContent = doc.querySelector('#modalEditKhachHang .modal-content');
+                khEmbeddedEditModalHtml = editModalContent ? editModalContent.innerHTML : '';
+
+                const styleBlocks = Array.from(doc.querySelectorAll('head style'));
+                styleHost.innerHTML = styleBlocks.map((s, idx) =>
+                    `<style data-embed-style="${idx}">${s.textContent || ''}</style>`).join('');
+
+                contentEl.innerHTML = mainContent ? mainContent.innerHTML :
+                    '<div class="alert alert-warning m-3">Không tìm thấy nội dung hồ sơ để hiển thị.</div>';
+
+                const embeddedModal = contentEl.querySelector('#modalEditKhachHang');
+                if (embeddedModal) embeddedModal.remove();
+
+                contentEl.querySelectorAll('[data-bs-target="#modalEditKhachHang"]').forEach((btn) => {
+                    btn.removeAttribute('data-bs-toggle');
+                    btn.removeAttribute('data-bs-target');
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        openKhachHangEditBridgeModal();
+                    });
+                });
+            } catch (error) {
+                contentEl.innerHTML =
+                    '<div class="alert alert-danger m-3">Tải hồ sơ thất bại. Vui lòng thử lại.</div>';
+            }
+        }
+
+        document.getElementById('modalKhachHangProfile')?.addEventListener('hidden.bs.modal', function() {
+            if (isSwitchingFromProfileToEdit) {
+                isSwitchingFromProfileToEdit = false;
+                return;
+            }
+
+            const contentEl = document.getElementById('modalKhachHangProfileContent');
+            const styleHost = document.getElementById('modalKhachHangProfileStyleHost');
+            if (contentEl) {
+                contentEl.innerHTML =
+                    '<div class="d-flex align-items-center justify-content-center py-5 text-muted"><i class="fas fa-circle-notch fa-spin me-2"></i>Đang tải hồ sơ...</div>';
+            }
+            if (styleHost) styleHost.innerHTML = '';
+            khEmbeddedEditModalHtml = '';
+        });
+    </script>
+@endpush

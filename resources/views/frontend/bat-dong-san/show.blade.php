@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-               TRANG CHI TIẾT BĐS — Global Styles
-            ═══════════════════════════════════════ */
+                   TRANG CHI TIẾT BĐS — Global Styles
+                ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1395,10 +1395,15 @@
 
                 fetch('{{ route('frontend.lien-he.store') }}', {
                         method: 'POST',
-                        headers: {
+                        headers: (window.getCsrfHeaders ? window.getCsrfHeaders({
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
+                            'Accept': 'application/json'
+                        }) : {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }),
+                        credentials: 'same-origin',
                         body: JSON.stringify({
                             ho_ten: 'Khách hàng',
                             so_dien_thoai: sdt,

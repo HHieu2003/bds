@@ -128,6 +128,13 @@ class KhachHangController extends Controller
 
         if ($nhanVien->isSale()) unset($data['nhan_vien_phu_trach_id']);
 
+        if ($nhanVien->hasRole('admin') && $request->has('email_verified')) {
+            $isVerified = $request->boolean('email_verified');
+            $data['email_xac_thuc_at'] = $isVerified
+                ? ($khachHang->email_xac_thuc_at ?? now())
+                : null;
+        }
+
         $khachHang->update($data);
 
         return back()->with('success', 'Cập nhật hồ sơ Khách hàng thành công!');

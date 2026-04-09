@@ -154,6 +154,7 @@
             'warning' => 'tone-warning',
             default => 'tone-secondary',
         };
+        $emailVerified = !is_null($khachHang->email_xac_thuc_at);
     @endphp
 
     <div class="container-fluid py-3 px-4">
@@ -261,70 +262,36 @@
                                     {{ $khachHang->lien_he_cuoi_at ? \Carbon\Carbon::parse($khachHang->lien_he_cuoi_at)->diffForHumans() : '–' }}
                                 </div>
                             </div>
+                            <div class="col-6">
+                                <div class="text-muted"
+                                    style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;">Email xác thực
+                                </div>
+                                <div>
+                                    <span
+                                        class="badge {{ $emailVerified ? 'bg-success-subtle text-success border border-success-subtle' : 'bg-warning-subtle text-warning border border-warning-subtle' }}">
+                                        <i
+                                            class="fas {{ $emailVerified ? 'fa-check-circle' : 'fa-exclamation-circle' }} me-1"></i>
+                                        {{ $emailVerified ? 'Đã xác thực' : 'Chưa xác thực' }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="text-muted"
+                                    style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;">Thời điểm xác thực
+                                </div>
+                                <div>{{ $emailVerified ? $khachHang->email_xac_thuc_at->format('d/m/Y H:i') : '–' }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                {{-- Chỉnh sửa hồ sơ (accordion) --}}
-                <div class="accordion border-0 shadow-sm" id="accordionEdit">
-                    <div class="accordion-item border-0">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed fw-semibold py-2 bg-white"
-                                style="font-size:.82rem;color:#6c757d;" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseEdit">
-                                <i class="fas fa-edit text-warning me-2"></i>Chỉnh sửa hồ sơ
-                            </button>
-                        </h2>
-                        <div id="collapseEdit" class="accordion-collapse collapse" data-bs-parent="#accordionEdit">
-                            <div class="accordion-body pt-2">
-                                <form action="{{ route('nhanvien.admin.khach-hang.update', $khachHang) }}" method="POST">
-                                    @csrf @method('PUT')
-                                    <div class="mb-2">
-                                        <label class="form-label small fw-semibold mb-1">Họ tên *</label>
-                                        <input type="text" name="ho_ten" class="form-control form-control-sm"
-                                            value="{{ $khachHang->ho_ten }}" required>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small fw-semibold mb-1">SĐT *</label>
-                                        <input type="text" name="so_dien_thoai" class="form-control form-control-sm"
-                                            value="{{ $khachHang->so_dien_thoai }}" required>
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small fw-semibold mb-1">Email</label>
-                                        <input type="email" name="email" class="form-control form-control-sm"
-                                            value="{{ $khachHang->email }}">
-                                    </div>
-                                    <div class="mb-2">
-                                        <label class="form-label small fw-semibold mb-1">Tiềm năng</label>
-                                        <select name="muc_do_tiem_nang" class="form-select form-select-sm">
-                                            @foreach ($mucDoTiemNang as $key => $item)
-                                                <option value="{{ $key }}"
-                                                    {{ $khachHang->muc_do_tiem_nang === $key ? 'selected' : '' }}>
-                                                    {{ $item['label'] }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </div>
-                                    @if (!$nhanVien->isSale())
-                                        <div class="mb-3">
-                                            <label class="form-label small fw-semibold mb-1">Giao Sale</label>
-                                            <select name="nhan_vien_phu_trach_id" class="form-select form-select-sm">
-                                                <option value="">– Chưa gán –</option>
-                                                @foreach ($dsSale as $sale)
-                                                    <option value="{{ $sale->id }}"
-                                                        {{ $khachHang->nhan_vien_phu_trach_id === $sale->id ? 'selected' : '' }}>
-                                                        {{ $sale->ho_ten }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </div>
-                                    @endif
-                                    <button type="submit" class="btn btn-warning btn-sm w-100 fw-bold">
-                                        <i class="fas fa-save me-1"></i>Lưu thay đổi
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
+                {{-- Nút mở modal chỉnh sửa hồ sơ --}}
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-3">
+                        <button type="button" class="btn btn-warning w-100 fw-semibold" data-bs-toggle="modal"
+                            data-bs-target="#modalEditKhachHang">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa hồ sơ
+                        </button>
                     </div>
                 </div>
 
@@ -336,8 +303,7 @@
                 {{-- Tab nav --}}
                 <ul class="nav kh-nav-tabs mb-0" id="khTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-nhatky"
-                            type="button">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-nhatky" type="button">
                             <i class="fas fa-clipboard-list me-1"></i>Nhật Ký Chăm Sóc
                         </button>
                     </li>
@@ -586,5 +552,89 @@
                 </div>{{-- end tab-content --}}
             </div>{{-- end col phải --}}
         </div>{{-- end row --}}
+    </div>
+
+    {{-- Modal chỉnh sửa hồ sơ --}}
+    <div class="modal fade" id="modalEditKhachHang" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form action="{{ route('nhanvien.admin.khach-hang.update', $khachHang) }}" method="POST">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">
+                            <i class="fas fa-user-edit text-warning me-2"></i>Chỉnh sửa hồ sơ khách hàng
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">Họ tên *</label>
+                            <input type="text" name="ho_ten" class="form-control form-control-sm"
+                                value="{{ $khachHang->ho_ten }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">SĐT *</label>
+                            <input type="text" name="so_dien_thoai" class="form-control form-control-sm"
+                                value="{{ $khachHang->so_dien_thoai }}" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">Email</label>
+                            <input type="email" name="email" class="form-control form-control-sm"
+                                value="{{ $khachHang->email }}">
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">Tiềm năng</label>
+                            <select name="muc_do_tiem_nang" class="form-select form-select-sm">
+                                @foreach ($mucDoTiemNang as $key => $item)
+                                    <option value="{{ $key }}"
+                                        {{ $khachHang->muc_do_tiem_nang === $key ? 'selected' : '' }}>
+                                        {{ $item['label'] }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        @if (!$nhanVien->isSale())
+                            <div class="mb-2">
+                                <label class="form-label small fw-semibold mb-1">Giao Sale</label>
+                                <select name="nhan_vien_phu_trach_id" class="form-select form-select-sm">
+                                    <option value="">– Chưa gán –</option>
+                                    @foreach ($dsSale as $sale)
+                                        <option value="{{ $sale->id }}"
+                                            {{ $khachHang->nhan_vien_phu_trach_id === $sale->id ? 'selected' : '' }}>
+                                            {{ $sale->ho_ten }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        @if ($nhanVien->hasRole('admin'))
+                            <hr class="my-3">
+                            <div class="form-check form-switch">
+                                <input type="hidden" name="email_verified" value="0">
+                                <input class="form-check-input" type="checkbox" role="switch" id="emailVerifiedSwitch"
+                                    name="email_verified" value="1" {{ $emailVerified ? 'checked' : '' }}>
+                                <label class="form-check-label" for="emailVerifiedSwitch">
+                                    Đánh dấu tài khoản đã xác thực email
+                                </label>
+                            </div>
+                            <small class="text-muted d-block mt-1">Chỉ Admin mới có quyền thay đổi trạng thái xác
+                                thực.</small>
+                        @endif
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-warning fw-semibold">
+                            <i class="fas fa-save me-1"></i>Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 @endsection

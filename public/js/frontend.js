@@ -91,6 +91,35 @@ let _otpEmail = "",
     _resetEmail = "",
     _otpTimer = null;
 
+function readCookie(name) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const match = document.cookie.match(
+        new RegExp("(?:^|; )" + escaped + "=([^;]*)"),
+    );
+    return match ? decodeURIComponent(match[1]) : "";
+}
+
+function getCsrfToken() {
+    const meta = document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content");
+    if (meta) return meta;
+    return window.APP?.csrfToken || "";
+}
+
+function getCsrfHeaders(extraHeaders = {}) {
+    const token = getCsrfToken();
+    const xsrf = readCookie("XSRF-TOKEN");
+    return {
+        ...extraHeaders,
+        ...(token ? { "X-CSRF-TOKEN": token } : {}),
+        ...(xsrf ? { "X-XSRF-TOKEN": xsrf } : {}),
+    };
+}
+
+window.getCsrfToken = getCsrfToken;
+window.getCsrfHeaders = getCsrfHeaders;
+
 const AUTH_STEPS = {
     login: {
         title: "Đăng nhập",
@@ -201,11 +230,11 @@ async function authPost(url, data, btn, origHtml) {
     try {
         const res = await fetch(url, {
             method: "POST",
-            headers: {
+            headers: getCsrfHeaders({
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": window.APP.csrfToken,
                 Accept: "application/json",
-            },
+            }),
+            credentials: "same-origin",
             body: JSON.stringify(data),
         });
         return await res.json();
@@ -351,10 +380,10 @@ document
         document.getElementById("otpCountdownWrap").style.display = "inline";
         await fetch(window.APP.routes.sendOtp, {
             method: "POST",
-            headers: {
+            headers: getCsrfHeaders({
                 "Content-Type": "application/json",
-                "X-CSRF-TOKEN": window.APP.csrfToken,
-            },
+            }),
+            credentials: "same-origin",
             body: JSON.stringify({ email: _otpEmail }),
         });
         startOtpCountdown();
@@ -968,11 +997,11 @@ function initChatSession(payload = {}) {
 
     fetch(window.APP.routes.chatKhoiTao, {
         method: "POST",
-        headers: {
+        headers: getCsrfHeaders({
             "Content-Type": "application/json",
-            "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: JSON.stringify({
             ...getChatContext(),
             ...payload,
@@ -1090,10 +1119,10 @@ window.sendFrontendMessage = function (e) {
 
     fetch(window.APP.routes.chatGui, {
         method: "POST",
-        headers: {
-            "X-CSRF-TOKEN": window.APP.csrfToken,
+        headers: getCsrfHeaders({
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: formData,
     })
         .then(async (res) => {
@@ -1170,11 +1199,11 @@ window.transferToAgent = function () {
 
     fetch(window.APP.routes.chatChuyenNV, {
         method: "POST",
-        headers: {
+        headers: getCsrfHeaders({
             "Content-Type": "application/json",
-            "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: JSON.stringify({ phien_chat_id: phienChatId }),
     })
         .then((res) => parseApiJsonResponse(res))
@@ -1205,11 +1234,11 @@ window.transferBackToBot = function () {
 
     fetch(window.APP.routes.chatChuyenBot, {
         method: "POST",
-        headers: {
+        headers: getCsrfHeaders({
             "Content-Type": "application/json",
-            "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: JSON.stringify({ phien_chat_id: phienChatId }),
     })
         .then((res) => parseApiJsonResponse(res))
@@ -1414,11 +1443,11 @@ function postKhachHang(url, data, btn, orig, onSuccess) {
 
     fetch(url, {
         method: "POST",
-        headers: {
+        headers: getCsrfHeaders({
             "Content-Type": "application/json",
-            "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: JSON.stringify(data),
     })
         .then((r) => r.json())
@@ -1550,11 +1579,11 @@ function toggleYeuThich(btn, batDongSanId) {
 
     fetch(window.APP.routes.yeuThichToggle, {
         method: "POST",
-        headers: {
+        headers: getCsrfHeaders({
             "Content-Type": "application/json",
-            "X-CSRF-TOKEN": window.APP.csrfToken,
             Accept: "application/json",
-        },
+        }),
+        credentials: "same-origin",
         body: JSON.stringify({ bat_dong_san_id: batDongSanId }),
     })
         .then((r) => r.json())
