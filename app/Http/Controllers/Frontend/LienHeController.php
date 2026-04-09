@@ -4,56 +4,49 @@ namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
 use App\Models\YeuCauLienHe;
-use App\Models\BatDongSan;
+use App\Models\ThongBao;
+use App\Models\NhanVien;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class LienHeController extends Controller
 {
-    // Trang liên hệ chung
-    public function index()
-    {
-        return view('frontend.lien-he.index');
-    }
-
-    // Gửi form liên hệ chung hoặc từ trang BDS
     public function store(Request $request)
     {
         $request->validate([
-            'ho_ten'       => 'required|string|max:100',
-            'so_dien_thoai' => 'required|string|max:15',
-            'email'        => 'nullable|email|max:100',
-            'noi_dung'     => 'nullable|string|max:2000',
-            'bat_dong_san_id' => 'nullable|exists:bat_dong_san,id',
-        ], [
-            'ho_ten.required'       => 'Vui lòng nhập họ tên.',
-            'so_dien_thoai.required' => 'Vui lòng nhập số điện thoại.',
-            'email.email'           => 'Email không hợp lệ.',
+            'so_dien_thoai' => 'required|string|max:20',
+            'ho_ten'        => 'nullable|string|max:100',
+            'noi_dung'      => 'nullable|string|max:1000',
         ]);
 
-        $khachHangId = Auth::guard('customer')->id();
-
-        YeuCauLienHe::create([
-            'khach_hang_id'    => $khachHangId,
-            'bat_dong_san_id'  => $request->bat_dong_san_id,
-            'ho_ten'           => $request->ho_ten,
-            'so_dien_thoai'    => $request->so_dien_thoai,
-            'email'            => $request->email,
-            'noi_dung'         => $request->noi_dung,
-            'nguon_lien_he'    => $request->bat_dong_san_id ? 'form_bds' : 'website',
-            'muc_do_quan_tam'  => $request->muc_do_quan_tam ?? 'chua_ro',
-            'trang_thai'       => 'moi',
-            'thoi_diem_lien_he' => now(),
+        // Tạo Lead mới
+        $lienHe = YeuCauLienHe::create([
+            'ho_ten'          => $request->ho_ten ?? 'Khách hàng',
+            'so_dien_thoai'   => $request->so_dien_thoai,
+            'email'           => $request->email,
+            'noi_dung'        => $request->noi_dung ?? 'Khách hàng để lại SĐT cần tư vấn.',
+            'bat_dong_san_id' => $request->bat_dong_san_id, // Lấy ID BĐS nếu đang ở trang chi tiết BĐS
+            'du_an_id'        => $request->du_an_id,        // Lấy ID Dự án nếu ở trang dự án
+            'url_ngu_canh'    => url()->previous(),         // Lưu lại URL khách vừa đứng để Sale biết
+            'trang_thai'      => 'moi',                     // Trạng thái thẻ Kanban ban đầu
         ]);
 
-        // Nếu là AJAX (từ form popup BDS)
-        if ($request->ajax() || $request->wantsJson()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'Gửi yêu cầu thành công! Chúng tôi sẽ liên hệ bạn sớm nhất.',
+        // Bắn thông báo cho bộ phận Sale/Admin
+        $sales = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', 1)->get();
+        foreach ($sales as $nv) {
+            ThongBao::create([
+                'loai'              => 'lead_moi',
+                'doi_tuong_nhan'    => 'nhan_vien',
+                'doi_tuong_nhan_id' => $nv->id,
+                'tieu_de'           => '🔔 YÊU CẦU TƯ VẤN MỚI',
+                'noi_dung'          => "Khách hàng {$lienHe->so_dien_thoai} vừa gửi yêu cầu tư vấn. Hãy kiểm tra ngay!",
+                'lien_ket'          => route('nhanvien.admin.lien-he.index'),
             ]);
         }
 
-        return redirect()->back()->with('lien_he_success', true);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json(['success' => true, 'message' => 'Yêu cầu của bạn đã được gửi. Chúng tôi sẽ gọi lại ngay!']);
+        }
+
+        return back()->with('success', 'Yêu cầu của bạn đã được gửi thành công!');
     }
 }

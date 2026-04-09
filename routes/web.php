@@ -61,9 +61,11 @@ Route::prefix('')->name('frontend.')->group(function () {
             Route::delete('/{kyGui}/huy', [FrontendKyGuiController::class, 'huy'])->name('huy');
         });
     });
+
+    Route::post('/lien-he', [FrontendLienHeController::class, 'store'])->name('frontend.lien-he.store');
     Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
     Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
-    // Thêm dòng này để xử lý xóa:
+
     Route::delete('/dang-ky-nhan-tin/{id}', [DangKyNhanTinController::class, 'destroy'])->name('dang-ky-nhan-tin.destroy');
     Route::get('/tim-kiem', [TimKiemController::class, 'index'])->name('tim-kiem.index');
 
@@ -80,7 +82,6 @@ Route::prefix('')->name('frontend.')->group(function () {
         Route::get('/',  [FrontendLienHeController::class, 'index'])->name('index');
         Route::post('/', [FrontendLienHeController::class, 'store'])->name('store');
     });
-
     Route::prefix('chat')->name('chat.')->group(function () {
         Route::post('/khoi-tao',        [FeChatController::class, 'khoiTao'])->name('khoi-tao');
         Route::post('/gui',             [FeChatController::class, 'guiTinNhan'])->name('gui');
@@ -133,7 +134,16 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::get('lich-hen-cua-toi', [KhachHangAuthController::class, 'lichHenCuaToi'])->name('lich-hen-cua-toi');
     });
 });
+Route::middleware(['auth:nhanvien', 'checkrole:admin,sale'])->prefix('admin')->name('nhanvien.admin.')->group(function () {
 
+    Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
+
+    // API Cập nhật trạng thái khi Kéo thả thẻ Kanban
+    Route::patch('lien-he/{lienHe}/cap-nhat-trang-thai', [\App\Http\Controllers\Admin\LienHeController::class, 'updateStatus'])->name('lien-he.update-status');
+
+    // Nút "Chuyển thành Khách Hàng chính thức"
+    Route::post('lien-he/{lienHe}/chuyen-khach-hang', [\App\Http\Controllers\Admin\LienHeController::class, 'convertToKhachHang'])->name('lien-he.convert');
+});
 // ══════════════════════════════════════════════════════════
 // NHÂN VIÊN — Authentication + Admin Panel
 // ══════════════════════════════════════════════════════════

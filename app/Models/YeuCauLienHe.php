@@ -88,4 +88,16 @@ class YeuCauLienHe extends Model
     {
         return 'LH-' . str_pad($this->id, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Yêu cầu này liên quan đến Dự án nào?
+     */
+    public function duAn()
+    {
+        return $this->belongsTo(DuAn::class, 'du_an_id');
+    }
+
+    /**
+     * Nhân viên (Sale) nào đang nhận xử lý Yêu cầu này?
+     */
 }
