@@ -236,23 +236,6 @@
                         </span>
                     </div>
                     <div class="card-body py-3">
-                        <div class="row g-2 text-center">
-                            <div class="col-4">
-                                <div class="fw-bold text-primary fs-5">{{ $lichHens->count() }}</div>
-                                <div class="text-muted" style="font-size:.7rem;">Lịch hẹn</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="fw-bold text-danger fs-5">{{ $khachHang->danhSachYeuThich->count() }}</div>
-                                <div class="text-muted" style="font-size:.7rem;">Yêu thích</div>
-                            </div>
-                            <div class="col-4">
-                                <div class="fw-bold text-success fs-5">
-                                    {{ $khachHang->created_at->diffInDays(now()) }}
-                                </div>
-                                <div class="text-muted" style="font-size:.7rem;">Ngày theo dõi</div>
-                            </div>
-                        </div>
-                        <hr class="my-2">
                         <div class="row g-2" style="font-size:.83rem;">
                             <div class="col-6">
                                 <div class="text-muted"

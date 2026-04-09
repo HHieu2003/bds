@@ -4,8 +4,8 @@
 @push('styles')
     <style>
         /* ═══════════════════════════════════════════════════
-       Override padding layout cha cho trang chat
-    ═══════════════════════════════════════════════════ */
+           Override padding layout cha cho trang chat
+        ═══════════════════════════════════════════════════ */
         .main-content-wrapper,
         .page-content,
         #main-content {
@@ -788,10 +788,10 @@
 @section('content')
     @php
         $firstChat = $activeChat ?? ($phienChats->first() ?? null);
-        $tongCho = $phienChats->where('trangthai', 'dangcho')->count();
-        $tongDangChat = $phienChats->where('trangthai', 'dangchat')->count();
-        $tongDaDong = $phienChats->where('trangthai', 'dadong')->count();
-        $tongChuaDoc = $phienChats->sum('sochuadoc');
+        $tongCho = $phienChats->where('trang_thai', 'dang_cho')->count();
+        $tongDangChat = $phienChats->where('trang_thai', 'dang_chat')->count();
+        $tongDaDong = $phienChats->where('trang_thai', 'da_dong')->count();
+        $tongChuaDoc = $phienChats->sum('so_chua_doc');
     @endphp
 
     <div class="zl-shell" id="zlShell">
@@ -822,51 +822,51 @@
 
             <div class="zl-filter-tabs" id="chatStatusTabs">
                 <button type="button" class="active" data-filter="all">Tất cả</button>
-                <button type="button" data-filter="dangcho">Chờ <span class="badge text-bg-warning ms-1"
+                <button type="button" data-filter="dang_cho">Chờ <span class="badge text-bg-warning ms-1"
                         style="font-size:.62rem;">{{ $tongCho }}</span></button>
-                <button type="button" data-filter="dangchat">Đang chat</button>
-                <button type="button" data-filter="dangbot">Bot</button>
-                <button type="button" data-filter="dadong">Đã đóng</button>
+                <button type="button" data-filter="dang_chat">Đang chat</button>
+                <button type="button" data-filter="dang_bot">Bot</button>
+                <button type="button" data-filter="da_dong">Đã đóng</button>
             </div>
 
             <div class="zl-list" id="chatListBody">
                 @forelse($phienChats as $chat)
                     @php
                         $isActive = $firstChat && $firstChat->id === $chat->id;
-                        $name = $chat->tenhienthi;
-                        $status = $chat->trangthai;
-                        $hasUnread = $chat->sochuadoc > 0;
+                        $name = $chat->ten_hien_thi;
+                        $status = $chat->trang_thai;
+                        $hasUnread = $chat->so_chua_doc > 0;
                         $avClass = match ($status) {
-                            'dangbot' => 'av-bot',
-                            'dadong' => 'av-done',
-                            'dangcho' => 'av-queue',
+                            'dang_bot' => 'av-bot',
+                            'da_dong' => 'av-done',
+                            'dang_cho' => 'av-queue',
                             default => '',
                         };
                         $pillClass = match ($status) {
-                            'dangcho' => 'sp-queue',
-                            'dangbot' => 'sp-bot',
-                            'dangchat' => 'sp-chat',
-                            'dadong' => 'sp-done',
+                            'dang_cho' => 'sp-queue',
+                            'dang_bot' => 'sp-bot',
+                            'dang_chat' => 'sp-chat',
+                            'da_dong' => 'sp-done',
                             default => 'sp-done',
                         };
                         $pillText = match ($status) {
-                            'dangcho' => 'Chờ NV',
-                            'dangbot' => 'Bot AI',
-                            'dangchat' => 'Đang chat',
-                            'dadong' => 'Đã đóng',
+                            'dang_cho' => 'Chờ NV',
+                            'dang_bot' => 'Bot AI',
+                            'dang_chat' => 'Đang chat',
+                            'da_dong' => 'Đã đóng',
                             default => $status,
                         };
                     @endphp
                     <a href="{{ route('nhanvien.chat.show', $chat->id) }}"
                         class="zl-session {{ $isActive ? 'active' : '' }} {{ $hasUnread ? 'unread' : '' }}"
                         data-status="{{ $status }}"
-                        data-keyword="{{ strtolower($name . ' ' . $chat->id . ' ' . ($chat->tenngucanh ?? '')) }}">
+                        data-keyword="{{ strtolower($name . ' ' . $chat->id . ' ' . ($chat->ten_ngu_canh ?? '')) }}">
 
                         <div class="zl-av {{ $avClass }}">
                             {{ mb_strtoupper(mb_substr($name, 0, 1)) }}
-                            @if ($status === 'dangchat')
+                            @if ($status === 'dang_chat')
                                 <span class="zl-av-status"></span>
-                            @elseif($status === 'dadong')
+                            @elseif($status === 'da_dong')
                                 <span class="zl-av-status offline"></span>
                             @endif
                         </div>
@@ -875,14 +875,14 @@
                             <div class="zl-session-top">
                                 <span class="zl-session-name">{{ $name }}</span>
                                 <span
-                                    class="zl-session-time">{{ optional($chat->tinnhancuoiat)->diffForHumans(null, true, true) ?? '' }}</span>
+                                    class="zl-session-time">{{ optional($chat->tin_nhan_cuoi_at)->diffForHumans(null, true, true) ?? '' }}</span>
                             </div>
                             <div class="zl-session-bottom">
                                 <span class="zl-session-preview">
-                                    {{ Str::limit(optional($chat->tinNhanCuoi)->noidung ?? ($chat->tenngucanh ?? '#' . $chat->id), 30) }}
+                                    {{ Str::limit(optional($chat->tinNhanCuoi)->noi_dung ?? ($chat->ten_ngu_canh ?? '#' . $chat->id), 30) }}
                                 </span>
                                 @if ($hasUnread)
-                                    <span class="zl-unread-badge">{{ $chat->sochuadoc }}</span>
+                                    <span class="zl-unread-badge">{{ $chat->so_chua_doc }}</span>
                                 @else
                                     <span class="zl-status-pill {{ $pillClass }}">{{ $pillText }}</span>
                                 @endif
@@ -903,12 +903,12 @@
         <section class="zl-middle">
             @if ($firstChat)
                 @php
-                    $status = $firstChat->trangthai;
-                    $isDone = $status === 'dadong';
+                    $status = $firstChat->trang_thai;
+                    $isDone = $status === 'da_dong';
                     $avClass = match ($status) {
-                        'dangbot' => 'av-bot',
-                        'dadong' => 'av-done',
-                        'dangcho' => 'av-queue',
+                        'dang_bot' => 'av-bot',
+                        'da_dong' => 'av-done',
+                        'dang_cho' => 'av-queue',
                         default => '',
                     };
                 @endphp
@@ -916,20 +916,20 @@
                 <div class="zl-thread-head">
                     <button class="zl-back-btn" id="zlBackBtn"><i class="fas fa-arrow-left"></i></button>
                     <div class="zl-av {{ $avClass }}" style="width:38px;height:38px;font-size:.9rem;">
-                        {{ mb_strtoupper(mb_substr($firstChat->tenhienthi, 0, 1)) }}
+                        {{ mb_strtoupper(mb_substr($firstChat->ten_hien_thi, 0, 1)) }}
                     </div>
                     <div class="zl-thread-user">
-                        <div class="zl-thread-name">{{ $firstChat->tenhienthi }}</div>
+                        <div class="zl-thread-name">{{ $firstChat->ten_hien_thi }}</div>
                         <div class="zl-thread-sub">
-                            {{ $firstChat->tenngucanh ?? 'Không có ngữ cảnh' }} &nbsp;·&nbsp;
+                            {{ $firstChat->ten_ngu_canh ?? 'Không có ngữ cảnh' }} &nbsp;·&nbsp;
                             <span
-                                class="zl-status-pill {{ match ($status) {'dangcho' => 'sp-queue','dangbot' => 'sp-bot','dangchat' => 'sp-chat','dadong' => 'sp-done',default => 'sp-done'} }}">
-                                {{ match ($status) {'dangcho' => 'Chờ NV','dangbot' => 'Bot AI','dangchat' => 'Đang chat','dadong' => 'Đã đóng',default => $status} }}
+                                class="zl-status-pill {{ match ($status) {'dang_cho' => 'sp-queue','dang_bot' => 'sp-bot','dang_chat' => 'sp-chat','da_dong' => 'sp-done',default => 'sp-done'} }}">
+                                {{ match ($status) {'dang_cho' => 'Chờ NV','dang_bot' => 'Bot AI','dang_chat' => 'Đang chat','da_dong' => 'Đã đóng',default => $status} }}
                             </span>
                         </div>
                     </div>
                     <div class="zl-thread-actions">
-                        @if ($status === 'dangcho')
+                        @if ($status === 'dang_cho')
                             <button class="btn btn-primary btn-sm" onclick="tiepNhan({{ $firstChat->id }})">
                                 <i class="fas fa-user-check me-1"></i>Tiếp nhận
                             </button>
@@ -946,33 +946,34 @@
                     <div class="zl-date-sep">{{ optional($firstChat->created_at)->format('d/m/Y') }}</div>
                     @foreach ($currentMessages ?? collect() as $msg)
                         @php
-                            $isCustomer = $msg->nguoigui === 'khachhang';
-                            $isSystem = $msg->nguoigui === 'hethong';
-                            $isBot = $msg->nguoigui === 'bot';
+                            $isCustomer = $msg->nguoi_gui === 'khach_hang';
+                            $isSystem = $msg->nguoi_gui === 'he_thong';
+                            $isBot = $msg->nguoi_gui === 'bot';
                         @endphp
                         <div class="zl-row {{ $isSystem ? 'from-system' : ($isCustomer ? 'from-customer' : 'from-staff') }}"
                             data-msg-id="{{ $msg->id }}">
                             @if (!$isSystem && $isCustomer)
                                 <div class="zl-av flex-shrink-0"
                                     style="width:30px;height:30px;font-size:.72rem;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;align-self:flex-end;">
-                                    {{ mb_strtoupper(mb_substr($firstChat->tenhienthi, 0, 1)) }}
+                                    {{ mb_strtoupper(mb_substr($firstChat->ten_hien_thi, 0, 1)) }}
                                 </div>
                             @endif
                             <div>
                                 @if ($isBot)
                                     <div class="zl-bot-tag"><i class="fas fa-robot"></i> Bot AI</div>
                                 @endif
-                                <div class="zl-bubble">{{ $msg->noidung }}</div>
-                                @if ($msg->tepdinhkem)
+                                <div class="zl-bubble">{{ $msg->noi_dung }}</div>
+                                @if ($msg->tep_dinh_kem)
                                     <div class="zl-media">
-                                        @if ($msg->loaitinnhan === 'hinhanh')
-                                            <a href="{{ asset('storage/' . ltrim($msg->tepdinhkem, '/')) }}" target="_blank">
-                                                <img src="{{ asset('storage/' . ltrim($msg->tepdinhkem, '/')) }}"
+                                        @if ($msg->loai_tin_nhan === 'hinh_anh')
+                                            <a href="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
+                                                target="_blank">
+                                                <img src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
                                                     alt="Ảnh">
                                             </a>
-                                        @elseif($msg->loaitinnhan === 'video')
+                                        @elseif($msg->loai_tin_nhan === 'video')
                                             <video controls preload="metadata">
-                                                <source src="{{ asset('storage/' . ltrim($msg->tepdinhkem, '/')) }}">
+                                                <source src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}">
                                             </video>
                                         @endif
                                     </div>
@@ -1040,7 +1041,7 @@
             @if ($firstChat)
                 <div class="zl-info-section">
                     <div class="zl-info-label">Khách hàng</div>
-                    <div class="zl-info-val fw-bold">{{ $firstChat->tenhienthi }}</div>
+                    <div class="zl-info-val fw-bold">{{ $firstChat->ten_hien_thi }}</div>
                 </div>
                 <div class="zl-info-section">
                     <div class="zl-info-label">Số điện thoại</div>
@@ -1049,26 +1050,27 @@
                             <a
                                 href="tel:{{ $firstChat->khachHang->so_dien_thoai }}">{{ $firstChat->khachHang->so_dien_thoai }}</a>
                         @else
-                            {{ $firstChat->sdt_khach_vanglai ?? '–' }}
+                            {{ $firstChat->sdt_khach_vang_lai ?? '–' }}
                         @endif
                     </div>
                 </div>
                 <div class="zl-info-section">
                     <div class="zl-info-label">Email</div>
-                    <div class="zl-info-val">{{ $firstChat->khachHang?->email ?? ($firstChat->email_khach_vanglai ?? '–') }}
+                    <div class="zl-info-val">
+                        {{ $firstChat->khachHang?->email ?? ($firstChat->email_khach_vang_lai ?? '–') }}
                     </div>
                 </div>
                 <div class="zl-info-section">
                     <div class="zl-info-label">Ngữ cảnh</div>
-                    <div class="zl-info-val">{{ $firstChat->tenngucanh ?? '–' }}</div>
+                    <div class="zl-info-val">{{ $firstChat->ten_ngu_canh ?? '–' }}</div>
                 </div>
-                @if ($firstChat->urlngucanh)
+                @if ($firstChat->url_ngu_canh)
                     <div class="zl-info-section">
                         <div class="zl-info-label">URL trang</div>
                         <div class="zl-info-val">
-                            <a href="{{ $firstChat->urlngucanh }}" target="_blank" rel="noopener"
+                            <a href="{{ $firstChat->url_ngu_canh }}" target="_blank" rel="noopener"
                                 style="font-size:.77rem;word-break:break-all;">
-                                {{ Str::limit($firstChat->urlngucanh, 40) }}
+                                {{ Str::limit($firstChat->url_ngu_canh, 40) }}
                             </a>
                         </div>
                     </div>
@@ -1126,11 +1128,11 @@
             const nearBot = el => !el || (el.scrollHeight - el.scrollTop - el.clientHeight) < 96;
 
             function buildMedia(m) {
-                if (!m?.tepdinhkem) return '';
-                const u = '/storage/' + String(m.tepdinhkem).replace(/^\//, '');
-                return m.loaitinnhan === 'hinhanh' ?
+                if (!m?.tep_dinh_kem) return '';
+                const u = '/storage/' + String(m.tep_dinh_kem).replace(/^\//, '');
+                return m.loai_tin_nhan === 'hinh_anh' ?
                     `<div class="zl-media"><a href="${u}" target="_blank"><img src="${u}" alt="Ảnh"></a></div>` :
-                    m.loaitinnhan === 'video' ?
+                    m.loai_tin_nhan === 'video' ?
                     `<div class="zl-media"><video controls preload="metadata"><source src="${u}"></video></div>` :
                     '';
             }
@@ -1140,18 +1142,18 @@
                 const id = Number(m.id ?? 0);
                 if (id > 0 && chatBody.querySelector(`[data-msg-id="${id}"]`)) return;
                 const scroll = nearBot(chatBody);
-                const isCust = m.nguoigui === 'khachhang',
-                    isSys = m.nguoigui === 'hethong',
-                    isBot = m.nguoigui === 'bot';
+                const isCust = m.nguoi_gui === 'khach_hang',
+                    isSys = m.nguoi_gui === 'he_thong',
+                    isBot = m.nguoi_gui === 'bot';
                 // Remove optimistic
                 chatBody.querySelectorAll('[data-msg-id^="tmp"]').forEach(el => {
-                    if (el.querySelector('.zl-bubble')?.textContent?.trim() === String(m.noidung ?? '').trim()) el
+                    if (el.querySelector('.zl-bubble')?.textContent?.trim() === String(m.noi_dung ?? '').trim()) el
                         .remove();
                 });
                 const row = document.createElement('div');
                 if (id > 0) row.dataset.msgId = id;
                 row.className = `zl-row ${isSys?'from-system':isCust?'from-customer':'from-staff'}`;
-                const t = new Date(m.createdat || m.created_at || Date.now()).toLocaleString('vi-VN', {
+                const t = new Date(m.created_at || Date.now()).toLocaleString('vi-VN', {
                     hour: '2-digit',
                     minute: '2-digit',
                     day: '2-digit',
@@ -1161,12 +1163,12 @@
     ${!isSys&&isCust?`<div class="zl-av flex-shrink-0" style="width:30px;height:30px;font-size:.72rem;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;align-self:flex-end;">K</div>`:''}
     <div>
       ${isBot?'<div class="zl-bot-tag"><i class="fas fa-robot"></i> Bot AI</div>':''}
-      <div class="zl-bubble">${esc(m.noidung)}</div>
+            <div class="zl-bubble">${esc(m.noi_dung)}</div>
       ${buildMedia(m)}
       <div class="zl-msg-time ${isCust?'':'text-end'}">${t}</div>
     </div>`;
                 chatBody.appendChild(row);
-                if (scroll || m.nguoigui === 'nhanvien') chatBody.scrollTo({
+                if (scroll || m.nguoi_gui === 'nhan_vien') chatBody.scrollTo({
                     top: chatBody.scrollHeight,
                     behavior: 'smooth'
                 });
@@ -1175,19 +1177,19 @@
             function poll() {
                 if (polling) return;
                 polling = true;
-                fetch(fn('longPoll', CHAT_ID) + '?sauid=' + lastId, {
+                fetch(fn('longPoll', CHAT_ID) + '?sau_id=' + lastId, {
                         headers: {
                             Accept: 'application/json'
                         }
                     })
                     .then(r => r.json()).then(d => {
-                        if (!d.success || !Array.isArray(d.tinnhans)) return;
-                        if (d.trangthai === 'dadong') {
+                        if (!d.success || !Array.isArray(d.tin_nhans)) return;
+                        if (d.trang_thai === 'da_dong') {
                             inp && (inp.disabled = true);
                             document.querySelector('#adminReplyForm button[type=submit]') && (document.querySelector(
                                 '#adminReplyForm button[type=submit]').disabled = true);
                         }
-                        d.tinnhans.forEach(m => {
+                        d.tin_nhans.forEach(m => {
                             appendMsg(m);
                             lastId = Math.max(lastId, Number(m.id ?? 0));
                         });
@@ -1217,8 +1219,8 @@
                     });
                 }
                 const fd = new FormData();
-                if (text) fd.append('noidung', text);
-                if (file) fd.append('teptin', file);
+                if (text) fd.append('noi_dung', text);
+                if (file) fd.append('tep_tin', file);
                 fetch(fn('traLoi', id), {
                         method: 'POST',
                         headers: {
@@ -1229,9 +1231,9 @@
                     })
                     .then(r => r.json()).then(d => {
                         if (d.success) {
-                            if (d.tinnhan) {
-                                appendMsg(d.tinnhan);
-                                lastId = Math.max(lastId, Number(d.tinnhan.id ?? 0));
+                            if (d.tin_nhan) {
+                                appendMsg(d.tin_nhan);
+                                lastId = Math.max(lastId, Number(d.tin_nhan.id ?? 0));
                             }
                             inp && (inp.value = '');
                             fileInput && (fileInput.value = '');
