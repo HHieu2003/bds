@@ -12,6 +12,15 @@ use Illuminate\Support\Facades\Hash;
 
 class KhachHangController extends Controller
 {
+    private function currentNhanVien(): NhanVien
+    {
+        $nhanVien = Auth::guard('nhanvien')->user();
+
+        abort_unless($nhanVien instanceof NhanVien, 401, 'Phiên đăng nhập nhân viên không hợp lệ.');
+
+        return $nhanVien;
+    }
+
     /**
      * MỨC ĐỘ TIỀM NĂNG (Theo CSDL của bạn: lanh, am, nong)
      */
@@ -26,7 +35,7 @@ class KhachHangController extends Controller
 
     public function index(Request $request)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         $query = KhachHang::with('nhanVienPhuTrach')->withCount('lichHens');
 
@@ -71,7 +80,7 @@ class KhachHangController extends Controller
 
     public function store(Request $request)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         $data = $request->validate([
             'ho_ten'                 => 'required|string|max:100',
@@ -96,7 +105,7 @@ class KhachHangController extends Controller
 
     public function show(KhachHang $khachHang)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         if ($nhanVien->isSale() && $khachHang->nhan_vien_phu_trach_id !== $nhanVien->id) {
             abort(403, 'Bạn không có quyền truy cập hồ sơ khách hàng của nhân sự khác.');
@@ -115,7 +124,7 @@ class KhachHangController extends Controller
 
     public function update(Request $request, KhachHang $khachHang)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         if ($nhanVien->isSale() && $khachHang->nhan_vien_phu_trach_id !== $nhanVien->id) {
             abort(403, 'Bạn không có quyền sửa khách hàng này.');
@@ -152,7 +161,7 @@ class KhachHangController extends Controller
 
     public function storeNhatKy(Request $request, KhachHang $khachHang)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
 
         $request->validate([
             'noi_dung_cham_soc' => 'required|string|max:2000',
@@ -176,7 +185,7 @@ class KhachHangController extends Controller
 
     public function destroy(KhachHang $khachHang)
     {
-        $nhanVien = Auth::guard('nhanvien')->user();
+        $nhanVien = $this->currentNhanVien();
         abort_unless($nhanVien->hasRole('admin'), 403, 'Chỉ Admin mới có quyền xóa dữ liệu.');
 
         if ($khachHang->lichHens()->count() > 0) {

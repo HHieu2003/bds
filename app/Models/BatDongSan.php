@@ -64,6 +64,31 @@ class BatDongSan extends Model
         'thoi_diem_dang' => 'datetime',
     ];
 
+    public function getAlbumAnhAttribute($value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        if (is_string($decoded) && trim($decoded) !== '') {
+            $decodedNested = json_decode($decoded, true);
+            if (is_array($decodedNested)) {
+                return $decodedNested;
+            }
+        }
+
+        return [];
+    }
+
     // ── Relationships ──
     public function duAn()
     {

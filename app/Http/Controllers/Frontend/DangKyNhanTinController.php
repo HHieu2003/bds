@@ -13,6 +13,11 @@ class DangKyNhanTinController extends Controller
 {
     public function store(Request $request)
     {
+        $normalizedSoPhongNgu = $this->normalizeSoPhongNgu($request->input('so_phong_ngu'));
+        if ($normalizedSoPhongNgu !== null) {
+            $request->merge(['so_phong_ngu' => $normalizedSoPhongNgu]);
+        }
+
         $validator = Validator::make($request->all(), [
             'email' => 'required|email|max:255',
             'nhu_cau' => 'nullable|in:ban,thue',
@@ -119,5 +124,38 @@ class DangKyNhanTinController extends Controller
             'success' => true,
             'message' => 'Đã hủy đăng ký nhận thông báo thành công!'
         ]);
+    }
+
+    private function normalizeSoPhongNgu(mixed $value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $raw = strtolower(trim((string) $value));
+
+        if (in_array($raw, ['studio', '1', '2', '3'], true)) {
+            return $raw;
+        }
+
+        if (is_numeric($raw)) {
+            $num = (int) $raw;
+
+            if ($num <= 0) {
+                return 'studio';
+            }
+
+            if ($num === 1) {
+                return '1';
+            }
+
+            if ($num === 2) {
+                return '2';
+            }
+
+            return '3';
+        }
+
+        return null;
     }
 }

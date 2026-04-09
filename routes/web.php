@@ -25,6 +25,8 @@ use App\Http\Controllers\Frontend\ChatController as FeChatController;
 use App\Http\Controllers\Frontend\DangKyNhanTinController;
 use App\Http\Controllers\Admin\NganHangController;
 use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
+use App\Http\Controllers\Admin\ChuNhaController;
+use App\Http\Controllers\Admin\KhuVucController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -62,8 +64,6 @@ Route::prefix('')->name('frontend.')->group(function () {
         });
     });
 
-    Route::post('/lien-he', [FrontendLienHeController::class, 'store'])->name('frontend.lien-he.store');
-    Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
     Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
 
     Route::delete('/dang-ky-nhan-tin/{id}', [DangKyNhanTinController::class, 'destroy'])->name('dang-ky-nhan-tin.destroy');
@@ -91,14 +91,7 @@ Route::prefix('')->name('frontend.')->group(function () {
         Route::get('/{id}/long-poll',   [FeChatController::class, 'longPoll'])->name('long-poll');
     });
 });
-Route::middleware(['auth:nhanvien', 'checkrole:admin,sale'])->prefix('admin')->name('nhanvien.admin.')->group(function () {
 
-    // Quản lý Khách Hàng
-    Route::resource('khach-hang', \App\Http\Controllers\Admin\KhachHangController::class);
-
-    // Thêm Nhật ký chăm sóc khách hàng
-    Route::post('khach-hang/{khachHang}/nhat-ky', [\App\Http\Controllers\Admin\KhachHangController::class, 'storeNhatKy'])->name('khach-hang.nhat-ky');
-});
 Route::post('/dat-lich-xem-nha', [FeLichHenController::class, 'datLich'])->name('frontend.dat-lich');
 // ══════════════════════════════════════════════════════════
 // KHÁCH HÀNG — Authentication
@@ -120,10 +113,10 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->name('reset.post');
     });
     // Xem danh sách lịch hẹn
-    Route::get('lich-hen', [\App\Http\Controllers\Frontend\LichHenController::class, 'lichHen'])->name('lich-hen');
+    Route::get('lich-hen', [FeLichHenController::class, 'lichHen'])->name('lich-hen');
 
     // Khách hàng chủ động hủy lịch
-    Route::post('lich-hen/{id}/huy', [\App\Http\Controllers\Frontend\LichHenController::class, 'huyLichHen'])->name('lich-hen.huy');
+    Route::post('lich-hen/{id}/huy', [FeLichHenController::class, 'huyLichHen'])->name('lich-hen.huy');
     Route::middleware('auth:customer')->group(function () {
         Route::post('dang-xuat', [KhachHangAuthController::class, 'logout'])->name('logout');
         Route::get('ho-so', [KhachHangAuthController::class, 'profile'])->name('profile');
@@ -235,7 +228,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::resource('du-an', DuAnController::class);
                 Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
                     ->name('du-an.toggle');
-                Route::resource('chu-nha', \App\Http\Controllers\Admin\ChuNhaController::class)
+                Route::resource('chu-nha', ChuNhaController::class)
                     ->except(['create', 'edit']);
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
                     ->name('bat-dong-san.destroy');
@@ -243,30 +236,17 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
                 // Route Ký Gửi
                 // Màn hình Form Chuyển đổi (Duyệt Ký gửi)
-                Route::get('ky-gui/{kyGui}/duyet', [\App\Http\Controllers\Admin\KyGuiController::class, 'duyetForm'])->name('ky-gui.duyet');
+                Route::get('ky-gui/{kyGui}/duyet', [AdminKyGuiController::class, 'duyetForm'])->name('ky-gui.duyet');
 
                 // Action Lưu Form Chuyển đổi
-                Route::post('ky-gui/{kyGui}/duyet', [\App\Http\Controllers\Admin\KyGuiController::class, 'duyetSubmit']);
+                Route::post('ky-gui/{kyGui}/duyet', [AdminKyGuiController::class, 'duyetSubmit']);
 
                 // Route resource gốc của Ký Gửi
-                Route::resource('ky-gui', \App\Http\Controllers\Admin\KyGuiController::class);
+                Route::resource('ky-gui', AdminKyGuiController::class);
 
                 // Bổ sung route xử lý AJAX cập nhật trạng thái nếu chưa có
-                Route::patch('ky-gui/{kyGui}/xu-ly', [\App\Http\Controllers\Admin\KyGuiController::class, 'xuLy'])->name('ky-gui.xu-ly');
-
-                Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
-                    Route::get('/',               [AdminKyGuiController::class, 'index'])->name('index');
-                    Route::get('/create',         [AdminKyGuiController::class, 'create'])->name('create');
-                    Route::post('/',              [AdminKyGuiController::class, 'store'])->name('store');
-                    Route::get('/{kyGui}',        [AdminKyGuiController::class, 'show'])->name('show');
-                    Route::get('/{kyGui}/edit',   [AdminKyGuiController::class, 'edit'])->name('edit');
-                    Route::put('/{kyGui}',        [AdminKyGuiController::class, 'update'])->name('update');
-                    Route::delete('/{kyGui}',     [AdminKyGuiController::class, 'destroy'])->name('destroy');
-                    Route::post('/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])->name('xu-ly');
-                    Route::patch('/ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])->name('ky-gui.xu-ly');
-
-                    Route::resource('ky-gui', AdminKyGuiController::class);
-                });
+                Route::match(['post', 'patch'], 'ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])
+                    ->name('ky-gui.xu-ly');
 
 
 
@@ -275,9 +255,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::delete('/bat-dong-san/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh']);
             });
 
-            // ── Admin + Sale ───────────────────
-            Route::middleware('check.role:admin,sale')->group(function () {
-
+            // ── Admin + Sale + Nguồn hàng (BĐS) ───────
+            Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::prefix('bat-dong-san')->name('bat-dong-san.')->group(function () {
                     Route::get('/',                        [BatDongSanController::class, 'index'])->name('index');
                     Route::get('/create',                  [BatDongSanController::class, 'create'])->name('create');
@@ -288,13 +267,22 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{batDongSan}/trang-thai', [BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
                     Route::delete('/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');
                 });
-Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
+            });
 
-    // Route cập nhật nhanh trạng thái
-    Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [\App\Http\Controllers\Admin\LienHeController::class, 'capNhatNhanh'])->name('lien-he.cap-nhat-nhanh');
+            // ── Admin + Sale ───────────────────
+            Route::middleware('check.role:admin,sale')->group(function () {
+                Route::resource('lien-he', AdminLienHeController::class);
 
-    // MỚI: Route chuyển đổi Lead thành Khách hàng
-    Route::post('lien-he/{lienHe}/chuyen-khach', [\App\Http\Controllers\Admin\LienHeController::class, 'chuyenKhachHang'])->name('lien-he.chuyen-khach');
+                // Route cập nhật nhanh trạng thái
+                Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])
+                    ->name('lien-he.cap-nhat-nhanh');
+
+                // Route chuyển đổi Lead thành Khách hàng + alias tương thích route cũ
+                Route::post('lien-he/{lienHe}/chuyen-khach', [AdminLienHeController::class, 'chuyenKhachHang'])
+                    ->name('lien-he.chuyen-khach');
+                Route::post('lien-he/{lienHe}/chuyen-khach-hang', [AdminLienHeController::class, 'chuyenKhachHang'])
+                    ->name('lien-he.convert');
+
                 Route::prefix('khach-hang')->name('khach-hang.')->group(function () {
                     Route::get('/',                           [KhachHangController::class, 'index'])->name('index');
                     Route::get('/create',                     [KhachHangController::class, 'create'])->name('create');
@@ -308,14 +296,6 @@ Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
                     Route::patch('/{khachHang}/ghi-chu',      [KhachHangController::class, 'capNhatGhiChu'])->name('ghi-chu');
                     Route::patch('/{khachHang}/lien-he-cuoi', [KhachHangController::class, 'capNhatLienHe'])->name('lien-he-cuoi');
                 });
-
-                Route::prefix('lien-he')->name('lien-he.')->group(function () {
-                    Route::get('/',               [AdminLienHeController::class, 'index'])->name('index');
-                    Route::get('/{lienHe}',       [AdminLienHeController::class, 'show'])->name('show');
-                    Route::put('/{lienHe}',       [AdminLienHeController::class, 'update'])->name('update');
-                    Route::delete('/{lienHe}',    [AdminLienHeController::class, 'destroy'])->name('destroy');
-                    Route::post('/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])->name('cap-nhat-nhanh');
-                });
             });
 
             // ── Tất cả nhân viên ──────────────
@@ -328,15 +308,15 @@ Route::resource('lien-he', \App\Http\Controllers\Admin\LienHeController::class);
                 ->name('bai-viet.bulk-action');
 
             Route::prefix('khu-vuc')->name('khu-vuc.')->group(function () {
-                Route::get('/',                   [\App\Http\Controllers\Admin\KhuVucController::class, 'index'])->name('index');
-                Route::get('/create',             [\App\Http\Controllers\Admin\KhuVucController::class, 'create'])->name('create');
-                Route::post('/',                  [\App\Http\Controllers\Admin\KhuVucController::class, 'store'])->name('store');
-                Route::get('/ajax/danh-sach-con', [\App\Http\Controllers\Admin\KhuVucController::class, 'getDanhSachCon'])->name('ajax.con');
-                Route::get('/{khuVuc}',           [\App\Http\Controllers\Admin\KhuVucController::class, 'show'])->name('show');
-                Route::get('/{khuVuc}/edit',      [\App\Http\Controllers\Admin\KhuVucController::class, 'edit'])->name('edit');
-                Route::put('/{khuVuc}',           [\App\Http\Controllers\Admin\KhuVucController::class, 'update'])->name('update');
-                Route::delete('/{khuVuc}',        [\App\Http\Controllers\Admin\KhuVucController::class, 'destroy'])->name('destroy');
-                Route::patch('/{khuVuc}/toggle',  [\App\Http\Controllers\Admin\KhuVucController::class, 'toggleHienThi'])->name('toggle');
+                Route::get('/',                   [KhuVucController::class, 'index'])->name('index');
+                Route::get('/create',             [KhuVucController::class, 'create'])->name('create');
+                Route::post('/',                  [KhuVucController::class, 'store'])->name('store');
+                Route::get('/ajax/danh-sach-con', [KhuVucController::class, 'getDanhSachCon'])->name('ajax.con');
+                Route::get('/{khuVuc}',           [KhuVucController::class, 'show'])->name('show');
+                Route::get('/{khuVuc}/edit',      [KhuVucController::class, 'edit'])->name('edit');
+                Route::put('/{khuVuc}',           [KhuVucController::class, 'update'])->name('update');
+                Route::delete('/{khuVuc}',        [KhuVucController::class, 'destroy'])->name('destroy');
+                Route::patch('/{khuVuc}/toggle',  [KhuVucController::class, 'toggleHienThi'])->name('toggle');
             });
 
             Route::prefix('chat')->name('chat.')->group(function () {

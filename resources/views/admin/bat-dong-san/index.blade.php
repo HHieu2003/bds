@@ -8,7 +8,13 @@
             <h1 class="page-header-title mb-1"><i class="fas fa-building text-primary"></i> Bất động sản</h1>
             <p class="page-header-sub mb-0">Quản lý toàn bộ danh sách bất động sản</p>
         </div>
-        <a href="{{ route('nhanvien.admin.bat-dong-san.create') }}" class="btn btn-primary shadow-sm">
+        @php
+            $createPrefill = array_filter([
+                'du_an_id' => request('du_an_id'),
+                'nhu_cau' => request('nhu_cau'),
+            ], fn($v) => filled($v));
+        @endphp
+        <a href="{{ route('nhanvien.admin.bat-dong-san.create', $createPrefill) }}" class="btn btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Thêm BĐS mới
         </a>
     </div>
@@ -176,6 +182,8 @@
             'dat_nen' => 'Đất nền',
             'shophouse' => 'Shophouse',
         ];
+        $nhanVienDangNhap = auth('nhanvien')->user();
+        $isSaleView = ($nhanVienDangNhap?->vai_tro ?? null) === 'sale';
     @endphp
 
     <div class="card border-0 shadow-sm">
@@ -198,7 +206,9 @@
                     <tr>
                         <th class="text-center" style="width: 40px">#</th>
                         <th>Bất động sản</th>
-                        <th style="width: 14%">Chủ nhà</th>
+                        @unless ($isSaleView)
+                            <th style="width: 14%">Chủ nhà</th>
+                        @endunless
                         <th style="width: 13%">Giá</th>
                         <th style="width: 9%">Diện tích</th>
                         <th style="width: 13%">Trạng thái</th>
@@ -259,25 +269,27 @@
                                 </div>
                             </td>
 
-                            {{-- Cột 2: Chủ nhà (Cột MỚI) --}}
-                            <td>
-                                @if ($bds->chuNha)
-                                    <a href="javascript:void(0)"
-                                        class="text-decoration-none fw-bold text-dark d-block text-truncate btn-view-chunha"
-                                        style="font-size: 0.85rem;" data-hoten="{{ $bds->chuNha->ho_ten }}"
-                                        data-sdt="{{ $bds->chuNha->so_dien_thoai }}"
-                                        data-email="{{ $bds->chuNha->email }}" data-cccd="{{ $bds->chuNha->cccd }}"
-                                        data-diachi="{{ $bds->chuNha->dia_chi }}"
-                                        data-ghichu="{{ $bds->chuNha->ghi_chu }}">
-                                        <i class="fas fa-user-tie text-secondary me-1"></i>{{ $bds->chuNha->ho_ten }}
-                                    </a>
-                                    <div class="text-muted" style="font-size: 0.75rem;"><i
-                                            class="fas fa-phone-alt text-success me-1"></i>{{ $bds->chuNha->so_dien_thoai }}
-                                    </div>
-                                @else
-                                    <span class="text-muted fst-italic" style="font-size: 0.75rem;">— Chưa gán —</span>
-                                @endif
-                            </td>
+                            {{-- Cột 2: Chủ nhà (ẩn với sale) --}}
+                            @unless ($isSaleView)
+                                <td>
+                                    @if ($bds->chuNha)
+                                        <a href="javascript:void(0)"
+                                            class="text-decoration-none fw-bold text-dark d-block text-truncate btn-view-chunha"
+                                            style="font-size: 0.85rem;" data-hoten="{{ $bds->chuNha->ho_ten }}"
+                                            data-sdt="{{ $bds->chuNha->so_dien_thoai }}"
+                                            data-email="{{ $bds->chuNha->email }}" data-cccd="{{ $bds->chuNha->cccd }}"
+                                            data-diachi="{{ $bds->chuNha->dia_chi }}"
+                                            data-ghichu="{{ $bds->chuNha->ghi_chu }}">
+                                            <i class="fas fa-user-tie text-secondary me-1"></i>{{ $bds->chuNha->ho_ten }}
+                                        </a>
+                                        <div class="text-muted" style="font-size: 0.75rem;"><i
+                                                class="fas fa-phone-alt text-success me-1"></i>{{ $bds->chuNha->so_dien_thoai }}
+                                        </div>
+                                    @else
+                                        <span class="text-muted fst-italic" style="font-size: 0.75rem;">— Chưa gán —</span>
+                                    @endif
+                                </td>
+                            @endunless
 
                             {{-- Cột 3: Giá --}}
                             <td>
@@ -348,7 +360,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8">
+                            <td colspan="{{ $isSaleView ? 7 : 8 }}">
                                 <div class="empty-state"><i class="fas fa-building text-muted mb-3"></i>
                                     <p class="text-muted mb-2">Không tìm thấy bất động sản nào</p>
                                 </div>
@@ -385,8 +397,8 @@
                         </div>
                     </div>
 
-                    {{-- Dòng Chủ nhà trên Mobile --}}
-                    @if ($bds->chuNha)
+                    {{-- Dòng Chủ nhà trên Mobile (ẩn với sale) --}}
+                    @if (!$isSaleView && $bds->chuNha)
                         <div class="px-3 pb-2 pt-0">
                             <a href="javascript:void(0)"
                                 class="badge bg-secondary bg-opacity-10 text-dark border text-decoration-none py-2 px-2 d-inline-block btn-view-chunha"

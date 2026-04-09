@@ -129,6 +129,7 @@
         const nhuCauInput = document.getElementById('dk_nhu_cau');
         const khuVucInput = document.getElementById('dk_khu_vuc_id');
         const duAnInput = document.getElementById('dk_du_an_id');
+    const soPhongNguInput = document.getElementById('dk_so_phong_ngu');
 
         if (email) emailInput.value = email;
 
@@ -144,6 +145,30 @@
 
         if (options.duAnId && duAnInput) {
             duAnInput.value = String(options.duAnId);
+        }
+
+        const normalizeSoPhongNgu = (value) => {
+            if (value === null || value === undefined || value === '') return '';
+
+            const raw = String(value).trim().toLowerCase();
+            if (raw === 'studio' || raw === '0') return 'studio';
+            if (raw === '1') return '1';
+            if (raw === '2') return '2';
+
+            const n = Number(raw);
+            if (!Number.isNaN(n)) {
+                if (n <= 0) return 'studio';
+                if (n === 1) return '1';
+                if (n === 2) return '2';
+                if (n >= 3) return '3';
+            }
+
+            return '';
+        };
+
+        const soPhongNguOption = options.soPhongNgu ?? options.so_phong_ngu ?? '';
+        if (soPhongNguInput) {
+            soPhongNguInput.value = normalizeSoPhongNgu(soPhongNguOption);
         }
 
         if (options.batDongSanId) {

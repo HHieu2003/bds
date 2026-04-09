@@ -9,6 +9,7 @@ use App\Models\DuAn;
 use App\Models\KhuVuc;
 use App\Models\NhanVien;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -109,14 +110,29 @@ class BatDongSanController extends Controller
     }
 
     // ── FORM TẠO MỚI ──
-    public function create()
+    public function create(Request $request)
     {
         $duAns = DuAn::orderBy('ten_du_an')->get();
         $nhanViens = NhanVien::where('kich_hoat', true)->get();
         $chuNhas = ChuNha::orderBy('ho_ten')->get();
         $constants = $this->getConstants();
+        $defaultNhanVienPhuTrachId = Auth::guard('nhanvien')->id();
+        $prefillNhuCau = in_array($request->query('nhu_cau'), ['ban', 'thue'], true)
+            ? $request->query('nhu_cau')
+            : null;
+        $prefillDuAnId = $request->filled('du_an_id') && $duAns->contains('id', (int) $request->query('du_an_id'))
+            ? (int) $request->query('du_an_id')
+            : null;
 
-        return view('admin.bat-dong-san.create', compact('duAns', 'nhanViens', 'chuNhas', 'constants'));
+        return view('admin.bat-dong-san.create', compact(
+            'duAns',
+            'nhanViens',
+            'chuNhas',
+            'constants',
+            'defaultNhanVienPhuTrachId',
+            'prefillNhuCau',
+            'prefillDuAnId'
+        ));
     }
 
     // ── LƯU DỮ LIỆU TẠO MỚI ──
@@ -128,6 +144,7 @@ class BatDongSanController extends Controller
         $data['hien_thi'] = $request->has('hien_thi');
         $data['noi_bat']  = $request->has('noi_bat');
         $data['gui_mail_canh_bao_gia'] = $request->has('gui_mail_canh_bao_gia');
+        $data['nhan_vien_phu_trach_id'] = Auth::guard('nhanvien')->id();
         $data['slug']     = Str::slug($data['tieu_de']) . '-' . time();
         $data['ma_bat_dong_san'] = 'BDS-' . strtoupper(Str::random(6));
 
@@ -184,7 +201,7 @@ class BatDongSanController extends Controller
         }
 
         // --- XỬ LÝ ALBUM ẢNH (Fix lỗi P1006 Intelephense) ---
-        $albumCu = is_array($batDongSan->album_anh) ? $batDongSan->album_anh : [];
+    $albumCu = $this->normalizeAlbumAnh($batDongSan->album_anh);
         $xoaAnh = $request->input('xoa_hinh_anh', []);
 
         // 1. Xóa ảnh cũ nếu người dùng đánh dấu X trên form
@@ -220,8 +237,8 @@ class BatDongSanController extends Controller
         }
 
         // Xóa toàn bộ album
-        $album = $batDongSan->album_anh;
-        if (is_array($album)) {
+        $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
+        if (!empty($album)) {
             foreach ($album as $path) {
                 Storage::disk('public')->delete($path);
             }
@@ -265,7 +282,7 @@ class BatDongSanController extends Controller
     public function xoaAnh(Request $request, BatDongSan $batDongSan)
     {
         $path = $request->path;
-        $album = is_array($batDongSan->album_anh) ? $batDongSan->album_anh : [];
+        $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
 
         if (in_array($path, $album)) {
             Storage::disk('public')->delete($path);
@@ -275,6 +292,32 @@ class BatDongSanController extends Controller
         }
 
         return response()->json(['ok' => false], 400);
+    }
+
+    private function normalizeAlbumAnh(mixed $value): array
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        if (!is_string($value) || trim($value) === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+
+        if (is_array($decoded)) {
+            return $decoded;
+        }
+
+        if (is_string($decoded) && trim($decoded) !== '') {
+            $decodedNested = json_decode($decoded, true);
+            if (is_array($decodedNested)) {
+                return $decodedNested;
+            }
+        }
+
+        return [];
     }
 
     // ── HÀM KIỂM TRA DỮ LIỆU ĐẦU VÀO (VALIDATION) ──

@@ -1,13 +1,33 @@
 @php
     $isEdit = isset($batDongSan) && $batDongSan !== null;
-    $oldLoaiHinh = old('loai_hinh', $isEdit ? $batDongSan->loai_hinh : '');
-    $oldNhuCau = old('nhu_cau', $isEdit ? $batDongSan->nhu_cau : '');
+    $prefillNhuCau = $prefillNhuCau ?? null;
+    $prefillDuAnId = $prefillDuAnId ?? null;
+    $oldLoaiHinh = old('loai_hinh', $isEdit ? $batDongSan->loai_hinh : 'can_ho');
+    $oldNhuCau = old('nhu_cau', $isEdit ? $batDongSan->nhu_cau : ($prefillNhuCau ?? ''));
     $oldTrangThai = old('trang_thai', $isEdit ? $batDongSan->trang_thai : 'con_hang');
+    $defaultNhanVienPhuTrachId = $defaultNhanVienPhuTrachId ?? '';
     $huongs = ['Đông', 'Tây', 'Nam', 'Bắc', 'Đông Nam', 'Đông Bắc', 'Tây Nam', 'Tây Bắc'];
     $ngayDang = old(
         'thoi_diem_dang',
         $isEdit && $batDongSan->thoi_diem_dang ? $batDongSan->thoi_diem_dang->format('Y-m-d') : date('Y-m-d'),
     );
+
+    $albumAnhHienTai = [];
+    if ($isEdit) {
+        $rawAlbum = $batDongSan->album_anh ?? [];
+
+        if (is_array($rawAlbum)) {
+            $albumAnhHienTai = $rawAlbum;
+        } elseif (is_string($rawAlbum) && $rawAlbum !== '') {
+            $decoded = json_decode($rawAlbum, true);
+            if (is_array($decoded)) {
+                $albumAnhHienTai = $decoded;
+            } elseif (is_string($decoded) && $decoded !== '') {
+                $decodedNested = json_decode($decoded, true);
+                $albumAnhHienTai = is_array($decodedNested) ? $decodedNested : [];
+            }
+        }
+    }
 @endphp
 
 <div class="row g-4">
@@ -66,7 +86,7 @@
                         <select name="du_an_id" class="form-select">
                             <option value="">-- Không thuộc dự án --</option>
                             @foreach ($duAns as $da)
-                                <option value="{{ $da->id }}" @selected(old('du_an_id', $isEdit ? $batDongSan->du_an_id : '') == $da->id)>{{ $da->ten_du_an }}
+                                <option value="{{ $da->id }}" @selected(old('du_an_id', $isEdit ? $batDongSan->du_an_id : ($prefillDuAnId ?? '')) == $da->id)>{{ $da->ten_du_an }}
                                 </option>
                             @endforeach
                         </select>
@@ -88,10 +108,11 @@
                         <select name="nhan_vien_phu_trach_id" class="form-select">
                             <option value="">-- Chưa phân công --</option>
                             @foreach ($nhanViens as $nv)
-                                <option value="{{ $nv->id }}" @selected(old('nhan_vien_phu_trach_id', $isEdit ? $batDongSan->nhan_vien_phu_trach_id : '') == $nv->id)>{{ $nv->ho_ten }}
+                                <option value="{{ $nv->id }}" @selected(old('nhan_vien_phu_trach_id', $isEdit ? $batDongSan->nhan_vien_phu_trach_id : $defaultNhanVienPhuTrachId) == $nv->id)>{{ $nv->ho_ten }}
                                 </option>
                             @endforeach
                         </select>
+
                     </div>
                 </div>
             </div>
@@ -270,9 +291,9 @@
             </div>
             <div class="card-body">
                 {{-- Ảnh cũ --}}
-                @if ($isEdit && !empty($batDongSan->album_anh))
+                @if ($isEdit && !empty($albumAnhHienTai))
                     <div class="d-flex flex-wrap gap-2 mb-3" id="albumExist">
-                        @foreach ($batDongSan->album_anh as $imgPath)
+                        @foreach ($albumAnhHienTai as $imgPath)
                             @php $imgKey = substr(md5($imgPath), 0, 12); @endphp
                             <div class="position-relative border rounded" id="alb_{{ $imgKey }}"
                                 style="width: 100px; height: 100px;">

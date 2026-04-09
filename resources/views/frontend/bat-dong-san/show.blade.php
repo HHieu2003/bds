@@ -1483,6 +1483,7 @@
                     nhuCau: '{{ $bds->nhu_cau }}',
                     khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
                     duAnId: {{ $bds->du_an_id ?? 'null' }},
+                    soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
                 });
             }
 
