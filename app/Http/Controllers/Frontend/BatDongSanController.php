@@ -340,17 +340,19 @@ class BatDongSanController extends Controller
      */
     public function toaByDuAn(int $duAnId)
     {
-        $nhuCau = request('nhu_cau', 'ban');
+        $nhuCau = request('nhu_cau');
 
         $toaList = BatDongSan::where('du_an_id', $duAnId)
             ->where('hien_thi', 1)
             ->where('trang_thai', 'con_hang')
-            ->where('nhu_cau', $nhuCau)
+            ->when($nhuCau, fn($q) => $q->where('nhu_cau', $nhuCau))
             ->whereNotNull('toa')
             ->where('toa', '!=', '')
-            ->distinct()
-            ->orderBy('toa')
             ->pluck('toa')
+            ->map(fn($toa) => trim((string) $toa))
+            ->filter()
+            ->unique()
+            ->sort()
             ->values();
 
         return response()->json($toaList);

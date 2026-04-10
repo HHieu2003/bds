@@ -4,8 +4,8 @@
 @push('styles')
     <style>
         /* ═══════════════════════════════════════════════════
-                           Override padding layout cha cho trang chat
-                        ═══════════════════════════════════════════════════ */
+                               Override padding layout cha cho trang chat
+                            ═══════════════════════════════════════════════════ */
         .main-content-wrapper,
         .page-content,
         #main-content {
@@ -778,7 +778,7 @@
 @endpush
 
 @push('topbar_actions')
-    <button class="zl-bell-btn" id="globalBellBtn" onclick="window.location='{{ route('nhanvien.chat.index') }}'"
+    <button class="zl-bell-btn" id="globalBellBtn" onclick="window.location='{{ route('nhanvien.admin.chat.index') }}'"
         title="Chat khách hàng">
         <i class="fas fa-bell"></i>
         <span class="bell-dot {{ ($tongChuaDoc ?? 0) > 0 ? 'show' : '' }}" id="globalBellDot"></span>
@@ -857,7 +857,7 @@
                             default => $status,
                         };
                     @endphp
-                    <a href="{{ route('nhanvien.chat.show', $chat->id) }}"
+                    <a href="{{ route('nhanvien.admin.chat.show', $chat->id) }}"
                         class="zl-session {{ $isActive ? 'active' : '' }} {{ $hasUnread ? 'unread' : '' }}"
                         data-status="{{ $status }}"
                         data-keyword="{{ strtolower($name . ' ' . $chat->id . ' ' . ($chat->ten_ngu_canh ?? '')) }}">
@@ -1137,10 +1137,10 @@
         <script>
             let lastId = {{ (int) optional(($currentMessages ?? collect())->last())->id }};
             const ROUTES = {
-                traLoi: '{{ route('nhanvien.chat.tra-loi', ['id' => '__ID__']) }}',
-                tiepNhan: '{{ route('nhanvien.chat.tiep-nhan', ['id' => '__ID__']) }}',
-                dong: '{{ route('nhanvien.chat.dong', ['id' => '__ID__']) }}',
-                longPoll: '{{ route('nhanvien.chat.long-poll', ['id' => '__ID__']) }}',
+                traLoi: '{{ route('nhanvien.admin.chat.tra-loi', ['id' => '__ID__']) }}',
+                tiepNhan: '{{ route('nhanvien.admin.chat.tiep-nhan', ['id' => '__ID__']) }}',
+                dong: '{{ route('nhanvien.admin.chat.dong', ['id' => '__ID__']) }}',
+                longPoll: '{{ route('nhanvien.admin.chat.long-poll', ['id' => '__ID__']) }}',
             };
             const fn = (key, id) => ROUTES[key].replace('__ID__', String(id));
             const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '{{ csrf_token() }}';
@@ -1468,7 +1468,7 @@
             const dot = document.getElementById('globalBellDot');
             if (!dot) return;
             setInterval(() => {
-                fetch('{{ route('nhanvien.chat.index') }}?check_unread=1', {
+                fetch('{{ route('nhanvien.admin.chat.index') }}?check_unread=1', {
                         headers: {
                             Accept: 'application/json'
                         }

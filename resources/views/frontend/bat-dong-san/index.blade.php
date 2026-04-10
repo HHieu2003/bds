@@ -1678,6 +1678,7 @@
     <script>
         const ALL_DU_ANS = @json($duAns ?? []);
         const ALL_TOA = @json($toaList ?? []);
+        const NHU_CAU_HIEN_TAI = @json($nhuCau);
 
         /* ── View toggle ── */
         function setView(mode) {
@@ -1748,7 +1749,7 @@
 
             input.value = '';
 
-            fetch(`/api/toa-by-du-an/${duAnId}`)
+            fetch(`/api/toa-by-du-an/${duAnId}?nhu_cau=${encodeURIComponent(NHU_CAU_HIEN_TAI)}`)
                 .then(r => r.json())
                 .then(data => {
                     chips.innerHTML = '';
@@ -1790,7 +1791,7 @@
                 return;
             }
 
-            fetch(`/api/toa-by-du-an/${duAnId}`)
+            fetch(`/api/toa-by-du-an/${duAnId}?nhu_cau=${encodeURIComponent(NHU_CAU_HIEN_TAI)}`)
                 .then(r => r.json())
                 .then(data => {
                     sel.innerHTML = '<option value="">🏬 Tất cả tòa</option>';
@@ -1812,8 +1813,30 @@
                 });
         }
 
+        function syncKhuVucByDuAn(duAnId, source = 'qs') {
+            const duAnSelect = source === 'qs' ? document.getElementById('qsDuAn') : document.getElementById('sbDuAn');
+            const khuVucSelect = source === 'qs' ? document.getElementById('qsKhuVuc') : document.getElementById(
+                'sbKhuVuc');
+            if (!duAnSelect || !khuVucSelect) return;
+
+            if (!duAnId) return;
+
+            const selectedOption = duAnSelect.options[duAnSelect.selectedIndex];
+            const khuVucId = selectedOption?.dataset?.khuVuc || '';
+            if (!khuVucId) return;
+
+            khuVucSelect.value = khuVucId;
+            // Sau khi map ngược dự án -> khu vực, vẫn giữ danh sách dự án hợp lệ theo khu vực.
+            filterDuAnByKhuVuc(khuVucId, source);
+        }
+
         function handleTopbarDuAnChange(duAnId) {
             const form = document.getElementById('formFilter');
+            syncKhuVucByDuAn(duAnId, 'qs');
+
+            const qsToa = document.getElementById('qsToa');
+            if (qsToa) qsToa.value = '';
+
             if (!duAnId) {
                 loadToa('');
                 form?.submit();
@@ -1828,6 +1851,11 @@
 
         function handleSidebarDuAnChange(duAnId) {
             const form = document.getElementById('formSidebar');
+            syncKhuVucByDuAn(duAnId, 'sb');
+
+            const sbToaInput = document.getElementById('sbToaInput');
+            if (sbToaInput) sbToaInput.value = '';
+
             if (!duAnId) {
                 loadToaSidebar('');
                 form?.submit();
@@ -1913,9 +1941,16 @@
             const qsDuAnValue = document.getElementById('qsDuAn')?.value || '';
             const qsToaValue = document.getElementById('qsToa')?.value || '';
             if (qsDuAnValue) {
+                syncKhuVucByDuAn(qsDuAnValue, 'qs');
                 loadToa(qsDuAnValue, qsToaValue);
             } else {
                 loadToa('');
+            }
+
+            const sbDuAnValue = document.getElementById('sbDuAn')?.value || '';
+            if (sbDuAnValue) {
+                syncKhuVucByDuAn(sbDuAnValue, 'sb');
+                loadToaSidebar(sbDuAnValue);
             }
 
             soSanhList.forEach(item => {

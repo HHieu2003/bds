@@ -15,6 +15,19 @@ use Illuminate\Support\Str;
 
 class BatDongSanController extends Controller
 {
+    private function nhanVienDangNhap(): ?NhanVien
+    {
+        return Auth::guard('nhanvien')->user();
+    }
+
+    private function chongSaleQuanLyTonKho(): void
+    {
+        $nhanVien = $this->nhanVienDangNhap();
+        if ($nhanVien && $nhanVien->isSale()) {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+    }
+
     // ── LẤY DỮ LIỆU CONSTANTS CHO FORM ──
     private function getConstants(): array
     {
@@ -112,6 +125,8 @@ class BatDongSanController extends Controller
     // ── FORM TẠO MỚI ──
     public function create(Request $request)
     {
+        $this->chongSaleQuanLyTonKho();
+
         $duAns = DuAn::orderBy('ten_du_an')->get();
         $nhanViens = NhanVien::where('kich_hoat', true)->get();
         $chuNhas = ChuNha::orderBy('ho_ten')->get();
@@ -138,6 +153,8 @@ class BatDongSanController extends Controller
     // ── LƯU DỮ LIỆU TẠO MỚI ──
     public function store(Request $request)
     {
+        $this->chongSaleQuanLyTonKho();
+
         $data = $this->validateData($request);
 
         // Xử lý Checkbox & Mã BĐS
@@ -185,6 +202,19 @@ class BatDongSanController extends Controller
     // ── CẬP NHẬT DỮ LIỆU ──
     public function update(Request $request, BatDongSan $batDongSan)
     {
+        $nhanVien = $this->nhanVienDangNhap();
+        if ($nhanVien && $nhanVien->isSale()) {
+            $data = $request->validate([
+                'tieu_de' => 'required|string|max:255',
+                'mo_ta' => 'nullable|string',
+            ]);
+
+            $data['slug'] = Str::slug($data['tieu_de']) . '-' . $batDongSan->id;
+            $batDongSan->update($data);
+
+            return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
+        }
+
         $data = $this->validateData($request);
 
         $data['hien_thi'] = $request->has('hien_thi');
@@ -201,7 +231,7 @@ class BatDongSanController extends Controller
         }
 
         // --- XỬ LÝ ALBUM ẢNH (Fix lỗi P1006 Intelephense) ---
-    $albumCu = $this->normalizeAlbumAnh($batDongSan->album_anh);
+        $albumCu = $this->normalizeAlbumAnh($batDongSan->album_anh);
         $xoaAnh = $request->input('xoa_hinh_anh', []);
 
         // 1. Xóa ảnh cũ nếu người dùng đánh dấu X trên form
@@ -231,6 +261,8 @@ class BatDongSanController extends Controller
     // ── XÓA BẤT ĐỘNG SẢN ──
     public function destroy(BatDongSan $batDongSan)
     {
+        $this->chongSaleQuanLyTonKho();
+
         // Xóa ảnh đại diện
         if ($batDongSan->hinh_anh) {
             Storage::disk('public')->delete($batDongSan->hinh_anh);
@@ -254,6 +286,8 @@ class BatDongSanController extends Controller
     // Bật/Tắt Hiển thị (Toggle)
     public function toggle(BatDongSan $batDongSan)
     {
+        $this->chongSaleQuanLyTonKho();
+
         $batDongSan->update(['hien_thi' => !$batDongSan->hien_thi]);
         return response()->json(['ok' => true, 'hien_thi' => $batDongSan->hien_thi]);
     }
@@ -267,6 +301,8 @@ class BatDongSanController extends Controller
     // Đổi trạng thái trực tiếp ở ngoài bảng Index
     public function updateTrangThai(Request $request, BatDongSan $batDongSan)
     {
+        $this->chongSaleQuanLyTonKho();
+
         $request->validate(['trang_thai' => 'required|string']);
         $batDongSan->update(['trang_thai' => $request->trang_thai]);
         return response()->json(['ok' => true]);
@@ -281,6 +317,8 @@ class BatDongSanController extends Controller
     // Xóa từng ảnh riêng lẻ bằng nút X (AJAX)
     public function xoaAnh(Request $request, BatDongSan $batDongSan)
     {
+        $this->chongSaleQuanLyTonKho();
+
         $path = $request->path;
         $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
 

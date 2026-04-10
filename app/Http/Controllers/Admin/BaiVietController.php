@@ -11,6 +11,24 @@ use Illuminate\Support\Str;
 
 class BaiVietController extends Controller
 {
+    private function nhanVienDangNhap()
+    {
+        return Auth::guard('nhanvien')->user();
+    }
+
+    private function yeuCauChuSoHuuHoacAdmin(BaiViet $baiViet): void
+    {
+        $nhanVien = $this->nhanVienDangNhap();
+
+        if (!$nhanVien || $nhanVien->vai_tro === 'admin') {
+            return;
+        }
+
+        if ((int) $baiViet->nhan_vien_id !== (int) $nhanVien->id) {
+            abort(403, 'Bạn chỉ có thể thao tác bài viết của chính mình.');
+        }
+    }
+
     // ──────────────────────────────────────
     // INDEX
     // ──────────────────────────────────────
@@ -131,6 +149,8 @@ class BaiVietController extends Controller
     // ──────────────────────────────────────
     public function edit(BaiViet $baiViet)
     {
+        $this->yeuCauChuSoHuuHoacAdmin($baiViet);
+
         $danhMucs = collect();
 
         return view('admin.bai-viet.edit', compact('baiViet', 'danhMucs'));
@@ -138,6 +158,8 @@ class BaiVietController extends Controller
 
     public function update(Request $request, BaiViet $baiViet)
     {
+        $this->yeuCauChuSoHuuHoacAdmin($baiViet);
+
         $data = $this->validateRequest($request, $baiViet->id);
         $data['loai_bai_viet'] = $data['loai_bai_viet'] ?? ($baiViet->loai_bai_viet ?? 'tin_tuc');
         $data['thoi_diem_dang'] = $request->input('ngay_dang', $request->input('thoi_diem_dang'));
@@ -201,6 +223,8 @@ class BaiVietController extends Controller
     // ──────────────────────────────────────
     public function destroy(BaiViet $baiViet)
     {
+        $this->yeuCauChuSoHuuHoacAdmin($baiViet);
+
         // Xóa ảnh liên quan
         if ($baiViet->hinh_anh) {
             Storage::disk('public')->delete($baiViet->hinh_anh);
@@ -224,6 +248,8 @@ class BaiVietController extends Controller
     // ──────────────────────────────────────
     public function toggleHienThi(BaiViet $baiViet)
     {
+        $this->yeuCauChuSoHuuHoacAdmin($baiViet);
+
         $baiViet->update(['hien_thi' => !$baiViet->hien_thi]);
         return response()->json(['ok' => true, 'hien_thi' => $baiViet->hien_thi]);
     }
@@ -233,6 +259,8 @@ class BaiVietController extends Controller
     // ──────────────────────────────────────
     public function toggleNoiBat(BaiViet $baiViet)
     {
+        $this->yeuCauChuSoHuuHoacAdmin($baiViet);
+
         $baiViet->update(['noi_bat' => !$baiViet->noi_bat]);
         return response()->json(['ok' => true, 'noi_bat' => $baiViet->noi_bat]);
     }
@@ -242,6 +270,11 @@ class BaiVietController extends Controller
     // ──────────────────────────────────────
     public function bulkAction(Request $request)
     {
+        $nhanVien = $this->nhanVienDangNhap();
+        if (!$nhanVien || $nhanVien->vai_tro !== 'admin') {
+            abort(403, 'Bạn không có quyền thực hiện thao tác hàng loạt.');
+        }
+
         $data = $request->validate([
             'action'   => 'required|in:publish,delete',
             'ids'      => 'required|array|min:1',

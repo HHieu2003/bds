@@ -6,10 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\BatDongSan;
 use App\Models\KhuVuc;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class KhuVucController extends Controller
 {
+    private function yeuCauQuyenQuanLy(): void
+    {
+        $nhanVien = Auth::guard('nhanvien')->user();
+        if ($nhanVien && $nhanVien->vai_tro === 'sale') {
+            abort(403, 'Bạn chỉ có quyền xem khu vực.');
+        }
+    }
+
     // ──────────────────────────────────────
     // INDEX
     // ──────────────────────────────────────
@@ -84,6 +93,8 @@ class KhuVucController extends Controller
     // ──────────────────────────────────────
     public function create(Request $request)
     {
+        $this->yeuCauQuyenQuanLy();
+
         // Nếu truyền cap=quan_huyen và cha_id thì pre-fill
         $capMacDinh = $request->get('cap', 'quan_huyen');
         $chaMacDinh = $request->get('cha_id');
@@ -98,6 +109,8 @@ class KhuVucController extends Controller
 
     public function store(Request $request)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $data = $this->validateRequest($request);
 
         $data['slug']    = $this->taoSlugDuyNhat($request->ten_khu_vuc);
@@ -131,6 +144,8 @@ class KhuVucController extends Controller
     // ──────────────────────────────────────
     public function edit(KhuVuc $khuVuc)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $tinhThanhs = KhuVuc::where('cap_khu_vuc', 'tinh_thanh')
             ->where('id', '!=', $khuVuc->id)
             ->orderBy('thu_tu_hien_thi')->orderBy('ten_khu_vuc')->get();
@@ -144,6 +159,8 @@ class KhuVucController extends Controller
 
     public function update(Request $request, KhuVuc $khuVuc)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $data = $this->validateRequest($request, $khuVuc->id);
 
         // Cập nhật slug nếu tên thay đổi
@@ -170,6 +187,8 @@ class KhuVucController extends Controller
     // ──────────────────────────────────────
     public function destroy(KhuVuc $khuVuc)
     {
+        $this->yeuCauQuyenQuanLy();
+
         // Không cho xóa nếu có con
         if ($khuVuc->con()->count() > 0) {
             return redirect()
@@ -199,6 +218,8 @@ class KhuVucController extends Controller
     // ──────────────────────────────────────
     public function toggleHienThi(KhuVuc $khuVuc)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $khuVuc->update(['hien_thi' => !$khuVuc->hien_thi]);
         return response()->json(['ok' => true, 'hien_thi' => $khuVuc->hien_thi]);
     }

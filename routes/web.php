@@ -191,10 +191,13 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             });
 
             // ── Admin + Nguồn hàng ─────────────
-            Route::middleware('check.role:admin,nguon_hang')->group(function () {
+            Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::resource('du-an', DuAnController::class);
                 Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
                     ->name('du-an.toggle');
+            });
+
+            Route::middleware('check.role:admin,nguon_hang')->group(function () {
                 Route::resource('chu-nha', ChuNhaController::class)
                     ->except(['create', 'edit']);
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
@@ -283,13 +286,16 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::patch('/{khuVuc}/toggle',  [KhuVucController::class, 'toggleHienThi'])->name('toggle');
             });
 
-            Route::prefix('chat')->name('chat.')->group(function () {
-                Route::get('/',              [AdminChatController::class, 'index'])->name('index');
-                Route::get('/{id}',          [AdminChatController::class, 'show'])->name('show');
-                Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
-                Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
-                Route::post('/{id}/dong',   [AdminChatController::class, 'dongPhien'])->name('dong');
-                Route::get('/{id}/long-poll', [AdminChatController::class, 'longPoll'])->name('long-poll');
+            Route::middleware('check.role:admin,sale')->group(function () {
+                Route::prefix('chat')->name('chat.')->group(function () {
+                    Route::get('/',              [AdminChatController::class, 'index'])->name('index');
+                    Route::get('/{id}',          [AdminChatController::class, 'show'])->name('show');
+                    Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
+
+                    Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
+                    Route::post('/{id}/dong',      [AdminChatController::class, 'dongPhien'])->name('dong');
+                    Route::get('/{id}/long-poll',  [AdminChatController::class, 'longPoll'])->name('long-poll');
+                });
             });
         });
     });

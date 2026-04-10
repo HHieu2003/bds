@@ -6,11 +6,20 @@ use App\Http\Controllers\Controller;
 use App\Models\DuAn;
 use App\Models\KhuVuc;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 class DuAnController extends Controller
 {
+    private function yeuCauQuyenQuanLy(): void
+    {
+        $nhanVien = Auth::guard('nhanvien')->user();
+        if ($nhanVien && $nhanVien->vai_tro === 'sale') {
+            abort(403, 'Bạn chỉ có quyền xem dự án.');
+        }
+    }
+
     public function index(Request $request)
     {
         $query = DuAn::with('khuVuc')
@@ -42,12 +51,16 @@ class DuAnController extends Controller
 
     public function create()
     {
+        $this->yeuCauQuyenQuanLy();
+
         $khuVucs = KhuVuc::whereNull('deleted_at')->orderBy('ten_khu_vuc')->get();
         return view('admin.du-an.create', compact('khuVucs'));
     }
 
     public function store(Request $request)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $validated = $request->validate([
             'ten_du_an'        => 'required|string|max:255',
             'khu_vuc_id'       => 'required|exists:khu_vuc,id',
@@ -89,12 +102,16 @@ class DuAnController extends Controller
 
     public function edit(DuAn $duAn)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $khuVucs = KhuVuc::whereNull('deleted_at')->orderBy('ten_khu_vuc')->get();
         return view('admin.du-an.edit', compact('duAn', 'khuVucs'));
     }
 
     public function update(Request $request, DuAn $duAn)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $validated = $request->validate([
             'ten_du_an'        => 'required|string|max:255',
             'khu_vuc_id'       => 'required|exists:khu_vuc,id',
@@ -134,6 +151,8 @@ class DuAnController extends Controller
 
     public function destroy(DuAn $duAn)
     {
+        $this->yeuCauQuyenQuanLy();
+
         if ($duAn->hinh_anh_dai_dien) {
             Storage::disk('public')->delete($duAn->hinh_anh_dai_dien);
         }
@@ -145,6 +164,8 @@ class DuAnController extends Controller
 
     public function toggleHienThi(DuAn $duAn)
     {
+        $this->yeuCauQuyenQuanLy();
+
         $duAn->update(['hien_thi' => !$duAn->hien_thi]);
         return response()->json(['hien_thi' => $duAn->hien_thi]);
     }
