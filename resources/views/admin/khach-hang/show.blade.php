@@ -656,7 +656,6 @@
                         @if ($nhanVien->hasRole('admin'))
                             <hr class="my-3">
                             <div class="form-check form-switch">
-                                <input type="hidden" name="email_verified" value="0">
                                 <input class="form-check-input" type="checkbox" role="switch" id="emailVerifiedSwitch"
                                     name="email_verified" value="1" {{ $emailVerified ? 'checked' : '' }}>
                                 <label class="form-check-label" for="emailVerifiedSwitch">

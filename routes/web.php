@@ -148,39 +148,6 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
-        Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
-            Route::get('/',                   [AdminKyGuiController::class, 'index'])->name('index');
-            Route::get('/create',             [AdminKyGuiController::class, 'create'])->name('create');
-            Route::post('/',                  [AdminKyGuiController::class, 'store'])->name('store');
-            Route::get('/{kyGui}',            [AdminKyGuiController::class, 'show'])->name('show');
-            Route::get('/{kyGui}/edit',       [AdminKyGuiController::class, 'edit'])->name('edit');
-            Route::put('/{kyGui}',            [AdminKyGuiController::class, 'update'])->name('update');
-            Route::delete('/{kyGui}',         [AdminKyGuiController::class, 'destroy'])->name('destroy');
-            Route::post('/{kyGui}/xu-ly',     [AdminKyGuiController::class, 'xuLy'])->name('xu-ly');
-            Route::post('/{kyGui}/phan-cong', [AdminKyGuiController::class, 'phanCong'])->name('phan-cong');
-        });
-
-        Route::prefix('bai-viet')->name('bai-viet.')->group(function () {
-            Route::get('/',                     [BaiVietController::class, 'index'])->name('index');
-            Route::get('/create',               [BaiVietController::class, 'create'])->name('create');
-            Route::post('/',                    [BaiVietController::class, 'store'])->name('store');
-            Route::get('/{baiViet}',            [BaiVietController::class, 'show'])->name('show');
-            Route::get('/{baiViet}/edit',       [BaiVietController::class, 'edit'])->name('edit');
-            Route::put('/{baiViet}',            [BaiVietController::class, 'update'])->name('update');
-            Route::delete('/{baiViet}',         [BaiVietController::class, 'destroy'])->name('destroy');
-            Route::patch('/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])->name('toggle-hien-thi');
-            Route::patch('/{baiViet}/noi-bat',  [BaiVietController::class, 'toggleNoiBat'])->name('toggle-noi-bat');
-        });
-
-        Route::prefix('chat')->name('chat.')->group(function () {
-            Route::get('/',              [AdminChatController::class, 'index'])->name('index');
-            Route::get('/{id}',         [AdminChatController::class, 'show'])->name('show');
-            Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
-            Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
-            Route::post('/{id}/dong',   [AdminChatController::class, 'dongPhien'])->name('dong');
-            Route::get('/{id}/long-poll', [AdminChatController::class, 'longPoll'])->name('long-poll');
-        });
-
         // ══════════════════════════════════════
         // ADMIN PANEL
         // ══════════════════════════════════════
@@ -190,7 +157,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             Route::middleware('check.role:admin')->group(function () {
                 Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])
-                    ->name('nhanvien.admin.nhan-vien.edit-data');
+                    ->name('nhanvien.edit-data');
                 Route::prefix('nhan-vien')->name('nhan-vien.')->group(function () {
                     Route::get('/',                          [NhanVienController::class, 'index'])->name('index');
                     Route::post('/',                         [NhanVienController::class, 'store'])->name('store');
@@ -247,12 +214,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 // Bổ sung route xử lý AJAX cập nhật trạng thái nếu chưa có
                 Route::match(['post', 'patch'], 'ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])
                     ->name('ky-gui.xu-ly');
-
-
-
-                Route::patch('/bat-dong-san/{batDongSan}/toggle', [BatDongSanController::class, 'toggle']);
-                Route::patch('/bat-dong-san/{batDongSan}/trang-thai', [BatDongSanController::class, 'updateTrangThai']);
-                Route::delete('/bat-dong-san/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh']);
+                Route::post('ky-gui/{kyGui}/phan-cong', [AdminKyGuiController::class, 'phanCong'])
+                    ->name('ky-gui.phan-cong');
             });
 
             // ── Admin + Sale + Nguồn hàng (BĐS) ───────
@@ -288,6 +251,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::get('/create',                     [KhachHangController::class, 'create'])->name('create');
                     Route::post('/',                          [KhachHangController::class, 'store'])->name('store');
                     Route::get('/{khachHang}',                [KhachHangController::class, 'show'])->name('show');
+                    Route::post('/{khachHang}/nhat-ky',       [KhachHangController::class, 'storeNhatKy'])->name('nhat-ky');
                     Route::get('/{khachHang}/edit',           [KhachHangController::class, 'edit'])->name('edit');
                     Route::put('/{khachHang}',                [KhachHangController::class, 'update'])->name('update');
                     Route::delete('/{khachHang}',             [KhachHangController::class, 'destroy'])->name('destroy');
@@ -323,6 +287,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::get('/',              [AdminChatController::class, 'index'])->name('index');
                 Route::get('/{id}',          [AdminChatController::class, 'show'])->name('show');
                 Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
+                Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
+                Route::post('/{id}/dong',   [AdminChatController::class, 'dongPhien'])->name('dong');
+                Route::get('/{id}/long-poll', [AdminChatController::class, 'longPoll'])->name('long-poll');
             });
         });
     });

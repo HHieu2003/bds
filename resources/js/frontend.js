@@ -222,6 +222,32 @@ function showAuthErrors(errors) {
     });
 }
 
+function setAuthFieldError(errorId, inputId, message) {
+    const errEl = document.getElementById(errorId);
+    const inputEl = document.getElementById(inputId);
+    if (errEl) {
+        errEl.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+        errEl.style.display = "flex";
+    }
+    if (inputEl) {
+        inputEl.classList.add("error");
+        inputEl.focus();
+    }
+    showFlash(message, "warning");
+}
+
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(String(email || "").trim());
+}
+
+function normalizePhone(phone) {
+    return String(phone || "").replace(/\D/g, "");
+}
+
+function isValidVnPhone(phone) {
+    return /^0\d{7,12}$/.test(phone);
+}
+
 async function authPost(url, data, btn, origHtml) {
     if (!window.APP)
         return { success: false, message: "Lỗi cấu hình hệ thống." };
@@ -255,12 +281,40 @@ document
     ?.addEventListener("submit", async function (e) {
         e.preventDefault();
         clearAuthErrors();
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value;
+
+        if (!email) {
+            setAuthFieldError(
+                "errLoginEmail",
+                "loginEmail",
+                "Vui lòng nhập email.",
+            );
+            return;
+        }
+        if (!isValidEmail(email)) {
+            setAuthFieldError(
+                "errLoginEmail",
+                "loginEmail",
+                "Email không đúng định dạng.",
+            );
+            return;
+        }
+        if (!password) {
+            setAuthFieldError(
+                "errLoginPassword",
+                "loginPassword",
+                "Vui lòng nhập mật khẩu.",
+            );
+            return;
+        }
+
         const btn = document.getElementById("btnAuthLogin");
         const data = await authPost(
             window.APP.routes.loginPost,
             {
-                email: document.getElementById("loginEmail").value.trim(),
-                password: document.getElementById("loginPassword").value,
+                email,
+                password,
             },
             btn,
             '<i class="fas fa-sign-in-alt"></i> Đăng nhập',
@@ -293,16 +347,73 @@ document
     ?.addEventListener("submit", async function (e) {
         e.preventDefault();
         clearAuthErrors();
+
+        const hoTen = document.getElementById("regHoTen").value.trim();
+        const email = document.getElementById("regEmail").value.trim();
+        const soDienThoaiRaw = document.getElementById("regSdt").value.trim();
+        const soDienThoai = normalizePhone(soDienThoaiRaw);
+        const password = document.getElementById("regPassword").value;
+        const passwordConfirmation =
+            document.getElementById("regPasswordConfirm").value;
+
+        if (!hoTen) {
+            setAuthFieldError(
+                "errRegHoTen",
+                "regHoTen",
+                "Vui lòng nhập họ và tên.",
+            );
+            return;
+        }
+        if (!email) {
+            setAuthFieldError(
+                "errRegEmail",
+                "regEmail",
+                "Vui lòng nhập email.",
+            );
+            return;
+        }
+        if (!isValidEmail(email)) {
+            setAuthFieldError(
+                "errRegEmail",
+                "regEmail",
+                "Email không đúng định dạng.",
+            );
+            return;
+        }
+        if (soDienThoaiRaw && !isValidVnPhone(soDienThoai)) {
+            setAuthFieldError(
+                "errRegSoDienThoai",
+                "regSdt",
+                "Số điện thoại sai định dạng.",
+            );
+            return;
+        }
+        if (!password || password.length < 6) {
+            setAuthFieldError(
+                "errRegPassword",
+                "regPassword",
+                "Mật khẩu phải có ít nhất 6 ký tự.",
+            );
+            return;
+        }
+        if (password !== passwordConfirmation) {
+            setAuthFieldError(
+                "errRegPasswordConfirmation",
+                "regPasswordConfirm",
+                "Xác nhận mật khẩu không khớp.",
+            );
+            return;
+        }
+
         const btn = document.getElementById("btnAuthRegister");
         const data = await authPost(
             window.APP.routes.registerPost,
             {
-                ho_ten: document.getElementById("regHoTen").value.trim(),
-                email: document.getElementById("regEmail").value.trim(),
-                so_dien_thoai: document.getElementById("regSdt").value.trim(),
-                password: document.getElementById("regPassword").value,
-                password_confirmation:
-                    document.getElementById("regPasswordConfirm").value,
+                ho_ten: hoTen,
+                email,
+                so_dien_thoai: soDienThoaiRaw ? soDienThoai : "",
+                password,
+                password_confirmation: passwordConfirmation,
             },
             btn,
             '<i class="fas fa-user-plus"></i> Đăng ký',
@@ -415,6 +526,24 @@ document
         clearAuthErrors();
         const btn = document.getElementById("btnAuthForgot");
         _resetEmail = document.getElementById("forgotEmail").value.trim();
+
+        if (!_resetEmail) {
+            setAuthFieldError(
+                "errForgotEmail",
+                "forgotEmail",
+                "Vui lòng nhập email để nhận OTP.",
+            );
+            return;
+        }
+        if (!isValidEmail(_resetEmail)) {
+            setAuthFieldError(
+                "errForgotEmail",
+                "forgotEmail",
+                "Email không đúng định dạng.",
+            );
+            return;
+        }
+
         const data = await authPost(
             window.APP.routes.forgotPost,
             { email: _resetEmail },
@@ -448,16 +577,53 @@ document
     ?.addEventListener("submit", async function (e) {
         e.preventDefault();
         clearAuthErrors();
+        const otp = document.getElementById("resetOtp").value.trim();
+        const password = document.getElementById("resetNewPassword").value;
+        const passwordConfirmation = document.getElementById(
+            "resetNewPasswordConfirm",
+        ).value;
+
+        if (!_resetEmail || !isValidEmail(_resetEmail)) {
+            setAuthFieldError(
+                "errResetConfirmGeneral",
+                "resetOtp",
+                "Phiên đặt lại mật khẩu không hợp lệ. Vui lòng thử lại từ bước Quên mật khẩu.",
+            );
+            return;
+        }
+        if (!/^\d{6}$/.test(otp)) {
+            setAuthFieldError(
+                "errResetOtp",
+                "resetOtp",
+                "OTP phải gồm đúng 6 chữ số.",
+            );
+            return;
+        }
+        if (!password || password.length < 6) {
+            setAuthFieldError(
+                "errResetNewPassword",
+                "resetNewPassword",
+                "Mật khẩu mới phải có ít nhất 6 ký tự.",
+            );
+            return;
+        }
+        if (password !== passwordConfirmation) {
+            setAuthFieldError(
+                "errResetConfirmGeneral",
+                "resetNewPasswordConfirm",
+                "Xác nhận mật khẩu không khớp.",
+            );
+            return;
+        }
+
         const btn = document.getElementById("btnAuthResetConfirm");
         const data = await authPost(
             window.APP.routes.resetPost,
             {
                 email: _resetEmail,
-                token: document.getElementById("resetOtp").value.trim(),
-                password: document.getElementById("resetNewPassword").value,
-                password_confirmation: document.getElementById(
-                    "resetNewPasswordConfirm",
-                ).value,
+                token: otp,
+                password,
+                password_confirmation: passwordConfirmation,
             },
             btn,
             '<i class="fas fa-save"></i> Cập nhật mật khẩu',
@@ -1257,66 +1423,72 @@ window.transferBackToBot = function () {
         })
         .catch(() => showFlash("Không thể chuyển lại AI.", "danger"));
 };
+
 /* =========================================================
    SO SÁNH BẤT ĐỘNG SẢN LOGIC
 ========================================================= */
-if (typeof window.soSanhList === "undefined") {
-    var soSanhList = JSON.parse(localStorage.getItem("tcl_sosanh") || "[]");
-} else {
-    var soSanhList = window.soSanhList;
-}
+// 1. Lấy dữ liệu từ LocalStorage chuẩn 1 key duy nhất
+window.soSanhList = JSON.parse(localStorage.getItem("tcl_sosanh") || "[]");
 
 window.addSoSanh = function (id, ten) {
     id = parseInt(id);
-    if (soSanhList.find((x) => x.id === id)) {
-        showFlash("BĐS này đã có trong danh sách.", "info");
+    if (window.soSanhList.find((x) => x.id === id)) {
+        showFlash("BĐS này đã có trong danh sách so sánh.", "info");
         return;
     }
-    if (soSanhList.length >= 3) {
-        showFlash("Tối đa 3 BĐS.", "warning");
+    if (window.soSanhList.length >= 3) {
+        showFlash("Chỉ so sánh tối đa 3 BĐS cùng lúc.", "warning");
         return;
     }
-    soSanhList.push({ id, ten });
-    localStorage.setItem("tcl_sosanh", JSON.stringify(soSanhList));
-    renderSoSanhBar();
+    window.soSanhList.push({ id, ten });
+    localStorage.setItem("tcl_sosanh", JSON.stringify(window.soSanhList));
+
+    window.renderSoSanhBar();
     showFlash("Đã thêm vào so sánh.", "success");
 };
 
 window.removeSoSanh = function (id) {
-    soSanhList = soSanhList.filter((x) => x.id !== parseInt(id));
-    localStorage.setItem("tcl_sosanh", JSON.stringify(soSanhList));
-    renderSoSanhBar();
+    window.soSanhList = window.soSanhList.filter((x) => x.id !== parseInt(id));
+    localStorage.setItem("tcl_sosanh", JSON.stringify(window.soSanhList));
+
+    window.renderSoSanhBar();
     const modalEl = document.getElementById("soSanhModal");
     if (modalEl && modalEl.classList.contains("show")) {
-        if (soSanhList.length >= 2) openSoSanhModal();
+        if (window.soSanhList.length >= 2) window.openSoSanhModal();
         else bootstrap.Modal.getInstance(modalEl)?.hide();
     }
 };
 
 window.clearSoSanh = function () {
-    soSanhList = [];
+    window.soSanhList = [];
     localStorage.setItem("tcl_sosanh", "[]");
-    renderSoSanhBar();
+    window.renderSoSanhBar();
+
     const modalEl = document.getElementById("soSanhModal");
-    if (modalEl && modalEl.classList.contains("show"))
+    if (modalEl && modalEl.classList.contains("show")) {
         bootstrap.Modal.getInstance(modalEl)?.hide();
+    }
     showFlash("Đã xóa toàn bộ.", "info");
 };
 
-function renderSoSanhBar() {
+window.renderSoSanhBar = function () {
     const bar = document.getElementById("so-sanh-bar");
     if (!bar) return;
-    if (soSanhList.length === 0) {
+
+    if (window.soSanhList.length === 0) {
         bar.style.display = "none";
         return;
     }
+
     bar.style.display = "block";
-    if (document.getElementById("ssSanhCount"))
-        document.getElementById("ssSanhCount").textContent = soSanhList.length;
+    if (document.getElementById("ssSanhCount")) {
+        document.getElementById("ssSanhCount").textContent =
+            window.soSanhList.length;
+    }
 
     const itemsEl = document.getElementById("ssSanhItems");
     if (itemsEl) {
-        itemsEl.innerHTML = soSanhList
+        itemsEl.innerHTML = window.soSanhList
             .map((item) => {
                 const shortName =
                     item.ten.length > 22
@@ -1326,23 +1498,26 @@ function renderSoSanhBar() {
             })
             .join("");
     }
-}
+};
 
 window.openSoSanhModal = function () {
-    if (soSanhList.length === 0) return;
+    if (window.soSanhList.length === 0) return;
     const modalEl = document.getElementById("soSanhModal");
     const modalBody = document.getElementById("soSanhModalBody");
     if (!modalEl) return;
-    if (document.getElementById("soSanhModalCount"))
-        document.getElementById("soSanhModalCount").textContent =
-            soSanhList.length + " BĐS";
 
-    if (modalBody)
+    if (document.getElementById("soSanhModalCount")) {
+        document.getElementById("soSanhModalCount").textContent =
+            window.soSanhList.length + " BĐS";
+    }
+
+    if (modalBody) {
         modalBody.innerHTML =
             '<div class="text-center py-5"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted fw-bold">Đang tải...</p></div>';
+    }
     bootstrap.Modal.getOrCreateInstance(modalEl).show();
 
-    const ids = soSanhList.map((item) => item.id).join(",");
+    const ids = window.soSanhList.map((item) => item.id).join(",");
     fetch(`${window.APP.routes.soSanhModal}?ids=${ids}`)
         .then((r) => r.text())
         .then((html) => {
@@ -1356,16 +1531,20 @@ window.openSoSanhModal = function () {
 };
 
 window.moTrangSoSanh = function () {
-    if (soSanhList.length === 0) {
+    if (window.soSanhList.length === 0) {
         showFlash("Chưa có BĐS nào.", "warning");
         return;
     }
     window.open(
-        `${window.APP.routes.soSanhIndex}?ids=${soSanhList.map((x) => x.id).join(",")}`,
+        `${window.APP.routes.soSanhIndex}?ids=${window.soSanhList.map((x) => x.id).join(",")}`,
         "_blank",
     );
 };
 
+// TỰ ĐỘNG TẢI LẠI THANH SO SÁNH KHI CHUYỂN TRANG
+document.addEventListener("DOMContentLoaded", function () {
+    window.renderSoSanhBar();
+});
 /* =========================================================
    MODAL HỒ SƠ KHÁCH HÀNG
 ========================================================= */

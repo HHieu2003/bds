@@ -74,7 +74,7 @@
                 <a class="nav-link-item {{ $active('nhanvien.admin.khach-hang') }}"
                     href="{{ route('nhanvien.admin.khach-hang.index') }}" data-tooltip="Khách hàng">
                     <i class="fas fa-users nav-icon"></i>
-                    <span class="nav-link-text">Khách hàng 360</span>
+                    <span class="nav-link-text">Khách hàng</span>
                 </a>
             </div>
         @endif
@@ -84,7 +84,7 @@
                 <a class="nav-link-item {{ $active('nhanvien.admin.lich-hen') }}"
                     href="{{ route('nhanvien.admin.lich-hen.index') }}" data-tooltip="Lịch hẹn">
                     <i class="fas fa-calendar-alt nav-icon"></i>
-                    <span class="nav-link-text">Lịch làm việc</span>
+                    <span class="nav-link-text">Lịch hẹn</span>
                     @php $totalLichHenBadge = $lichHenCount + $lichHenMoiCount; @endphp
                     @if ($totalLichHenBadge > 0)
                         <span class="nav-badge {{ $lichHenMoiCount > 0 ? 'nav-badge-red' : '' }}">
@@ -95,16 +95,18 @@
             </div>
         @endif
 
-        <div class="nav-item">
-            <a class="nav-link-item {{ $active('nhanvien.admin.chat') }}"
-                href="{{ route('nhanvien.admin.chat.index') }}" data-tooltip="Chat Tư Vấn">
-                <i class="fas fa-comments nav-icon"></i>
-                <span class="nav-link-text">Chat Tư Vấn</span>
-                @if ($chatCount > 0)
-                    <span class="nav-badge">{{ $chatCount }}</span>
-                @endif
-            </a>
-        </div>
+        @if (!$nhanVien->isNguonHang())
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.chat') }}"
+                    href="{{ route('nhanvien.admin.chat.index') }}" data-tooltip="Chat Tư Vấn">
+                    <i class="fas fa-comments nav-icon"></i>
+                    <span class="nav-link-text">Tin nhắn</span>
+                    @if ($chatCount > 0)
+                        <span class="nav-badge">{{ $chatCount }}</span>
+                    @endif
+                </a>
+            </div>
+        @endif
 
         {{-- ── 3. QUẢN LÝ NGUỒN HÀNG (Kho dữ liệu sản phẩm) ── --}}
         <div class="nav-group-label">Kho Bất Động Sản</div>

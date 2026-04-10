@@ -73,6 +73,9 @@
                                 <input type="email" name="email" class="kg-fe-fi"
                                     value="{{ old('email', auth('customer')->user()?->email) }}"
                                     placeholder="email@example.com">
+                                @error('email')
+                                    <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                     </div>
@@ -144,7 +147,7 @@
                                 @enderror
                             </div>
                             <div class="kg-fe-fg">
-                                <label class="kg-fe-lbl">Mã căn</label>
+                                <label class="kg-fe-lbl req">Mã căn</label>
                                 <input type="text" name="ma_can" class="kg-fe-fi @error('ma_can') err @enderror"
                                     value="{{ old('ma_can') }}" placeholder="VD: S2.03-1212">
                                 @error('ma_can')
@@ -155,9 +158,10 @@
 
                         <div class="kg-fe-row3">
                             <div class="kg-fe-fg">
-                                <label class="kg-fe-lbl req">Diện tích (m²)</label>
-                                <input type="number" name="dien_tich" class="kg-fe-fi @error('dien_tich') err @enderror"
-                                    value="{{ old('dien_tich') }}" placeholder="75" min="1" step="0.1">
+                                <label class="kg-fe-lbl">Diện tích (m²)</label>
+                                <input type="text" inputmode="decimal" name="dien_tich"
+                                    class="kg-fe-fi js-decimal @error('dien_tich') err @enderror"
+                                    value="{{ old('dien_tich') }}" placeholder="75,5 hoặc 75.5">
                                 @error('dien_tich')
                                     <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
                                 @enderror
@@ -211,8 +215,9 @@
                             <div class="kg-fe-row3">
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Giá bán mong muốn (VNĐ)</label>
-                                    <input type="number" name="gia_ban_mong_muon" class="kg-fe-fi"
-                                        value="{{ old('gia_ban_mong_muon') }}" placeholder="3500000000" step="1000000">
+                                    <input type="text" inputmode="decimal" name="gia_ban_mong_muon"
+                                        class="kg-fe-fi js-price" value="{{ old('gia_ban_mong_muon') }}"
+                                        placeholder="3.500.000.000 hoặc 3.500.000.000,5">
                                     <div class="kg-fe-price-hint" id="giaHienThi"></div>
                                 </div>
                                 <div class="kg-fe-fg">
@@ -234,8 +239,9 @@
                             <div class="kg-fe-row3">
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Giá thuê/tháng (VNĐ)</label>
-                                    <input type="number" name="gia_thue_mong_muon" class="kg-fe-fi"
-                                        value="{{ old('gia_thue_mong_muon') }}" placeholder="15000000" step="500000">
+                                    <input type="text" inputmode="decimal" name="gia_thue_mong_muon"
+                                        class="kg-fe-fi js-price" value="{{ old('gia_thue_mong_muon') }}"
+                                        placeholder="15.000.000 hoặc 15.000.000,25">
                                 </div>
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Hình thức thanh toán</label>
@@ -807,6 +813,85 @@
 
 @push('scripts')
     <script>
+        function showToast(message, type = 'warning') {
+            if (typeof showFlash === 'function') {
+                showFlash(message, type);
+            }
+        }
+
+        function normalizePhone(value) {
+            return (value || '').replace(/\D+/g, '');
+        }
+
+        function isValidVnPhone(value) {
+            return /^0\d{9,12}$/.test(value);
+        }
+
+        function isValidEmail(value) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i.test(value);
+        }
+
+        function sanitizeNumericTyping(value) {
+            const cleaned = (value || '').replace(/[^\d.,]/g, '');
+            const firstSepIndex = cleaned.search(/[.,]/);
+            if (firstSepIndex === -1) return cleaned;
+
+            const intPart = cleaned.slice(0, firstSepIndex);
+            const sep = cleaned[firstSepIndex];
+            const decimalPart = cleaned.slice(firstSepIndex + 1).replace(/[.,]/g, '');
+            return intPart + sep + decimalPart;
+        }
+
+        function normalizeLocalizedNumber(value) {
+            if (value === null || value === undefined) return null;
+            let raw = String(value).trim();
+            if (!raw) return null;
+            raw = raw.replace(/\s|\u00A0/g, '');
+
+            if (raw.includes(',') && raw.includes('.')) {
+                raw = raw.replace(/\./g, '').replace(',', '.');
+            } else if (raw.includes(',')) {
+                raw = raw.replace(',', '.');
+            } else {
+                raw = raw.replace(/,/g, '');
+            }
+
+            if (!/^\d+(\.\d+)?$/.test(raw)) return null;
+            return raw;
+        }
+
+        function formatViNumber(value) {
+            const normalized = normalizeLocalizedNumber(value);
+            if (!normalized) return '';
+            const [intPart, decimalPart] = normalized.split('.');
+            const grouped = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return decimalPart ? `${grouped},${decimalPart}` : grouped;
+        }
+
+        function formatMoneyHint(value) {
+            const isTy = value >= 1_000_000_000;
+            const amount = isTy ? (value / 1_000_000_000) : (value / 1_000_000);
+            const unit = isTy ? 'tỷ đồng' : 'triệu đồng';
+            const formatted = amount.toLocaleString('vi-VN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2,
+            });
+
+            return `≈ ${formatted} ${unit}`;
+        }
+
+        function setFieldError(input, message) {
+            if (!input) return;
+            input.classList.add('err');
+            showToast(message, 'warning');
+            input.focus();
+        }
+
+        function clearFieldError(input) {
+            if (!input) return;
+            input.classList.remove('err');
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             @if ($errors->any())
                 const errorMessages = @json($errors->all());
@@ -824,6 +909,130 @@
                     showFlash(@json(session('error')), 'error');
                 }
             @endif
+
+            const form = document.getElementById('kyGuiForm');
+            const phoneInput = form?.querySelector('[name="so_dien_thoai"]');
+            const areaInput = form?.querySelector('[name="dien_tich"]');
+            const priceInputs = form ? Array.from(form.querySelectorAll('.js-price')) : [];
+            const decimalInputs = form ? Array.from(form.querySelectorAll('.js-decimal, .js-price')) : [];
+
+            if (phoneInput) {
+                phoneInput.addEventListener('input', () => {
+                    phoneInput.value = normalizePhone(phoneInput.value);
+                    clearFieldError(phoneInput);
+                });
+            }
+
+            decimalInputs.forEach((input) => {
+                input.addEventListener('input', () => {
+                    input.value = sanitizeNumericTyping(input.value);
+                    clearFieldError(input);
+                });
+
+                input.addEventListener('blur', () => {
+                    if (!input.value) return;
+                    const formatted = formatViNumber(input.value);
+                    if (formatted) {
+                        input.value = formatted;
+                    }
+                });
+            });
+
+            priceInputs.forEach((input) => {
+                if (input.value) {
+                    const formatted = formatViNumber(input.value);
+                    if (formatted) input.value = formatted;
+                }
+            });
+
+            if (areaInput?.value) {
+                const formattedArea = formatViNumber(areaInput.value);
+                if (formattedArea) areaInput.value = formattedArea;
+            }
+
+            form?.addEventListener('submit', function(e) {
+                const hoTenInput = form.querySelector('[name="ho_ten_chu_nha"]');
+                const emailInput = form.querySelector('[name="email"]');
+                const maCanInput = form.querySelector('[name="ma_can"]');
+                const nhuCauInput = form.querySelector('input[name="nhu_cau"]:checked');
+                const giaBanInput = form.querySelector('[name="gia_ban_mong_muon"]');
+                const giaThueInput = form.querySelector('[name="gia_thue_mong_muon"]');
+
+                [hoTenInput, emailInput, maCanInput, phoneInput, areaInput, giaBanInput, giaThueInput]
+                .forEach(clearFieldError);
+
+                const hoTen = (hoTenInput?.value || '').trim();
+                const email = (emailInput?.value || '').trim();
+                const maCan = (maCanInput?.value || '').trim();
+                const phone = normalizePhone(phoneInput?.value || '');
+                const areaRaw = areaInput?.value || '';
+                const areaNormalized = normalizeLocalizedNumber(areaRaw);
+
+                if (!hoTen) {
+                    e.preventDefault();
+                    return setFieldError(hoTenInput, 'Vui lòng nhập họ tên chủ nhà.');
+                }
+
+                if (!isValidVnPhone(phone)) {
+                    e.preventDefault();
+                    return setFieldError(phoneInput,
+                        'Số điện thoại phải bắt đầu bằng 0 và có từ 10 đến 13 chữ số.');
+                }
+
+                if (email && !isValidEmail(email)) {
+                    e.preventDefault();
+                    return setFieldError(emailInput, 'Email không đúng định dạng.');
+                }
+
+                if (!maCan) {
+                    e.preventDefault();
+                    return setFieldError(maCanInput, 'Vui lòng nhập mã căn.');
+                }
+
+                if (!nhuCauInput) {
+                    e.preventDefault();
+                    return showToast('Vui lòng chọn nhu cầu bán hoặc cho thuê.', 'warning');
+                }
+
+                if (areaRaw && (!areaNormalized || Number(areaNormalized) <= 0)) {
+                    e.preventDefault();
+                    return setFieldError(areaInput,
+                        'Diện tích phải là số lớn hơn 0 (có thể có phần thập phân).');
+                }
+
+                const normalizedGiaBan = normalizeLocalizedNumber(giaBanInput?.value || '');
+                const normalizedGiaThue = normalizeLocalizedNumber(giaThueInput?.value || '');
+
+                if (giaBanInput?.value && !normalizedGiaBan) {
+                    e.preventDefault();
+                    return setFieldError(giaBanInput,
+                        'Giá bán chỉ được nhập số, có thể có phần thập phân.');
+                }
+
+                if (giaThueInput?.value && !normalizedGiaThue) {
+                    e.preventDefault();
+                    return setFieldError(giaThueInput,
+                        'Giá thuê chỉ được nhập số, có thể có phần thập phân.');
+                }
+
+                if (nhuCauInput?.value === 'ban' && normalizedGiaBan !== null && Number(normalizedGiaBan) <
+                    0) {
+                    e.preventDefault();
+                    return setFieldError(giaBanInput, 'Giá bán không được âm.');
+                }
+
+                if (nhuCauInput?.value === 'thue' && normalizedGiaThue !== null && Number(
+                        normalizedGiaThue) < 0) {
+                    e.preventDefault();
+                    return setFieldError(giaThueInput, 'Giá thuê không được âm.');
+                }
+
+                // Convert ve dang backend de validate numeric.
+                phoneInput.value = phone;
+                if (areaInput) areaInput.value = areaNormalized ?? '';
+                if (giaBanInput) giaBanInput.value = normalizedGiaBan ?? '';
+                if (giaThueInput) giaThueInput.value = normalizedGiaThue ?? '';
+            });
         });
 
         /* ── Nhu cầu toggle ── */
@@ -867,14 +1076,13 @@
         const giaHienThi = document.getElementById('giaHienThi');
         if (giaBanInput && giaHienThi) {
             giaBanInput.addEventListener('input', function() {
-                const v = parseFloat(this.value);
+                const normalized = normalizeLocalizedNumber(this.value);
+                const v = normalized ? parseFloat(normalized) : null;
                 if (!v) {
                     giaHienThi.textContent = '';
                     return;
                 }
-                giaHienThi.textContent = v >= 1_000_000_000 ?
-                    '≈ ' + (v / 1_000_000_000).toFixed(2) + ' tỷ đồng' :
-                    '≈ ' + (v / 1_000_000).toFixed(0) + ' triệu đồng';
+                giaHienThi.textContent = formatMoneyHint(v);
             });
         }
 

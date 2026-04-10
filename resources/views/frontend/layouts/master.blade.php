@@ -34,10 +34,9 @@
     <meta name="author" content="Thành Công Land">
     <link rel="preload" as="style" href="{{ asset('css/frontend.css') }}">
 
-    {{-- File CSS Tổng (Có tham số thời gian để ép trình duyệt nhận CSS mới) --}}
-    <link rel="stylesheet" href="{{ asset('css/frontend.css') }}?v={{ time() }}">
-
+    @vite(['resources/css/frontend.css', 'resources/js/frontend.js'])
     @stack('styles')
+
 </head>
 
 <body>
@@ -125,8 +124,6 @@
         };
     </script>
 
-    {{-- LOAD FILE FRONTEND.JS (Chống Cache Cực Mạnh) --}}
-    <script src="{{ asset('js/frontend.js') }}?v={{ time() }}"></script>
 
     @stack('scripts')
 </body>

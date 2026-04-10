@@ -20,8 +20,8 @@
         rel="stylesheet">
 
     {{-- ── Admin CSS ── --}}
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v={{ @filemtime(public_path('css/admin.css')) }}">
 
+    @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     {{-- ── CSS riêng từng trang ── --}}
     @stack('styles')
 </head>
@@ -73,7 +73,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ asset('js/admin.js') }}"></script>
+
 
     @php
         $flashToasts = [];

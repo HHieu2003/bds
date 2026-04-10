@@ -43,12 +43,19 @@ class KhachHangAuthController extends Controller
             return response()->json(['success' => false, 'message' => 'Email hoặc mật khẩu không chính xác.']);
         }
 
-        if (!$kh->email_xac_thuc_at) {
-            return response()->json(['success' => false, 'message' => 'Tài khoản chưa xác thực email. Vui lòng kiểm tra hộp thư.']);
-        }
-
         if (!$kh->kich_hoat) {
             return response()->json(['success' => false, 'message' => 'Tài khoản đã bị vô hiệu hoá. Vui lòng liên hệ hỗ trợ.']);
+        }
+
+        // Tuong thich du lieu cu: tai khoan da duoc Admin kich hoat
+        // nhung chua co moc thoi gian xac thuc email.
+        if (!$kh->email_xac_thuc_at && $kh->kich_hoat && empty($kh->verification_token)) {
+            $kh->forceFill(['email_xac_thuc_at' => now()])->save();
+            $kh->refresh();
+        }
+
+        if (!$kh->email_xac_thuc_at) {
+            return response()->json(['success' => false, 'message' => 'Tài khoản chưa xác thực email. Vui lòng kiểm tra hộp thư.']);
         }
 
         Auth::guard('customer')->login($kh, $request->boolean('remember'));
@@ -88,7 +95,12 @@ class KhachHangAuthController extends Controller
         }
 
         $existing = KhachHang::where('email', $request->email)->first();
-        if ($existing && $existing->email_xac_thuc_at) {
+        $alreadyVerified = $existing && (
+            $existing->email_xac_thuc_at ||
+            ($existing->kich_hoat && empty($existing->verification_token))
+        );
+
+        if ($alreadyVerified) {
             return response()->json(['success' => false, 'errors'  => ['email' => ['Email này đã được sử dụng.']]], 422);
         }
 
@@ -204,6 +216,11 @@ class KhachHangAuthController extends Controller
         }
 
         // 4. KIỂM TRA: Nếu tài khoản tồn tại nhưng chưa xác thực email (chưa kích hoạt)
+        if (!$kh->email_xac_thuc_at && $kh->kich_hoat && empty($kh->verification_token)) {
+            $kh->forceFill(['email_xac_thuc_at' => now()])->save();
+            $kh->refresh();
+        }
+
         if (!$kh->email_xac_thuc_at) {
             return response()->json([
                 'success' => false,

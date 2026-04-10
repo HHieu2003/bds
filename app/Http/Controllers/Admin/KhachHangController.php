@@ -125,9 +125,35 @@ class KhachHangController extends Controller
     public function update(Request $request, KhachHang $khachHang)
     {
         $nhanVien = $this->currentNhanVien();
+        $isAdmin = $nhanVien->hasRole('admin');
 
         if ($nhanVien->isSale() && $khachHang->nhan_vien_phu_trach_id !== $nhanVien->id) {
             abort(403, 'Bạn không có quyền sửa khách hàng này.');
+        }
+
+        // Checkbox duoc check => co key email_verified trong request.
+        // Cach nay tranh xung dot gia tri khi form gui nhieu input cung ten.
+        $emailVerifiedInput = $isAdmin ? $request->has('email_verified') : null;
+
+        // Admin luon co the thay doi trang thai xac thuc,
+        // khong bi phu thuoc vao validate cac field ho so.
+        if ($isAdmin) {
+            $verificationData = $emailVerifiedInput
+                ? [
+                    'email_xac_thuc_at' => $khachHang->email_xac_thuc_at ?? now(),
+                    'kich_hoat' => true,
+                    'verification_token' => null,
+                    'token_expiry' => null,
+                ]
+                : [
+                    'email_xac_thuc_at' => null,
+                    'kich_hoat' => false,
+                    'verification_token' => null,
+                    'token_expiry' => null,
+                ];
+
+            $khachHang->forceFill($verificationData)->save();
+            $khachHang->refresh();
         }
 
         $data = $request->validate([
@@ -147,11 +173,11 @@ class KhachHangController extends Controller
 
         if ($nhanVien->isSale()) unset($data['nhan_vien_phu_trach_id']);
 
-        if ($nhanVien->hasRole('admin') && $request->has('email_verified')) {
-            $isVerified = $request->boolean('email_verified');
-            $data['email_xac_thuc_at'] = $isVerified
-                ? ($khachHang->email_xac_thuc_at ?? now())
-                : null;
+        if ($isAdmin) {
+            $data['email_xac_thuc_at'] = $khachHang->email_xac_thuc_at;
+            $data['kich_hoat'] = $khachHang->kich_hoat;
+            $data['verification_token'] = $khachHang->verification_token;
+            $data['token_expiry'] = $khachHang->token_expiry;
         }
 
         $khachHang->update($data);

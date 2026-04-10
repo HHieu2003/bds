@@ -7,7 +7,7 @@
     --primary-dark: #e89f22; /* Bronze đậm - Khi hover CTA */
     --primary-light: rgba(192, 102, 42, 0.1); /* Bronze siêu nhạt cho nền phụ */
 
-    --secondary: #ca7916; /* Navy Blue - Trust, Nút phụ, Footer, Topbar (10%) */
+    --secondary: #060d16; /* Navy Blue - Trust, Nút phụ, Footer, Topbar (10%) */
     --secondary-dark: #12284b; /* Navy đậm - Khi hover nút phụ */
 
     /* --- Tông màu Nền (Backgrounds - 60%) --- */
@@ -324,7 +324,7 @@ ol {
 
 /* Topbar (Nền Navy Blue cho sự tin cậy) */
 .topbar {
-    background: var(--secondary);
+    background: #af650b;
     padding: 0.45rem 0;
     font-size: 0.8rem;
 }

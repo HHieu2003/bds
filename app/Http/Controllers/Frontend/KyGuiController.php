@@ -20,16 +20,23 @@ class KyGuiController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge([
+            'so_dien_thoai' => preg_replace('/\D+/', '', (string) $request->input('so_dien_thoai', '')),
+            'dien_tich' => $this->normalizeDecimalInput($request->input('dien_tich')),
+            'gia_ban_mong_muon' => $this->normalizeDecimalInput($request->input('gia_ban_mong_muon')),
+            'gia_thue_mong_muon' => $this->normalizeDecimalInput($request->input('gia_thue_mong_muon')),
+        ]);
+
         $request->validate([
             'ho_ten_chu_nha' => 'required|string|max:100',
-            'so_dien_thoai'  => 'required|string|max:15',
+            'so_dien_thoai'  => 'required|string|regex:/^0\d{9,12}$/',
             'email'          => 'nullable|email|max:100',
-            'loai_hinh'      => 'required|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
+            'loai_hinh'      => 'nullable|in:can_ho,nha_pho,biet_thu,dat_nen,shophouse',
             'nhu_cau'        => 'required|in:ban,thue',
             'du_an'          => 'nullable|string|max:150',
-            'ma_can'         => 'nullable|string|max:50',
+            'ma_can'         => 'required|string|max:50',
             'dia_chi'        => 'nullable|string|max:255',
-            'dien_tich'      => 'required|numeric|min:1|max:99999',
+            'dien_tich'      => 'nullable|numeric|min:1|max:99999',
             'huong_nha'      => 'nullable|string',
             'so_phong_ngu'   => 'nullable|integer|min:0|max:20',
             'so_phong_tam'   => 'nullable|integer|min:0|max:20',
@@ -40,6 +47,13 @@ class KyGuiController extends Controller
             'hinh_thuc_thanh_toan' => 'nullable|string',
             'hinh_anh_tham_khao.*' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:3072',
             'ghi_chu'        => 'nullable|string|max:2000',
+        ], [
+            'so_dien_thoai.regex' => 'Số điện thoại phải bắt đầu bằng số 0 và có từ 10 đến 13 chữ số.',
+            'email.email' => 'Email không đúng định dạng.',
+            'ma_can.required' => 'Vui lòng nhập mã căn.',
+            'dien_tich.numeric' => 'Diện tích chỉ được nhập số (có thể có phần thập phân).',
+            'gia_ban_mong_muon.numeric' => 'Giá bán chỉ được nhập số (có thể có phần thập phân).',
+            'gia_thue_mong_muon.numeric' => 'Giá thuê chỉ được nhập số (có thể có phần thập phân).',
         ]);
 
         $hinhAnh = [];
@@ -55,12 +69,12 @@ class KyGuiController extends Controller
             'ho_ten_chu_nha'       => $request->ho_ten_chu_nha,
             'so_dien_thoai'        => $request->so_dien_thoai,
             'email'                => $request->email,
-            'loai_hinh'            => $request->loai_hinh,
+            'loai_hinh'            => $request->loai_hinh ?? 'can_ho',
             'nhu_cau'              => $request->nhu_cau,
             'du_an'                => $request->du_an,
             'ma_can'               => $request->ma_can,
             'dia_chi'              => $request->dia_chi,
-            'dien_tich'            => $request->dien_tich,
+            'dien_tich'            => $request->dien_tich ?? 1,
             'huong_nha'            => $request->huong_nha,
             'so_phong_ngu'         => $request->so_phong_ngu ?? 0,
             'so_phong_tam'         => $request->so_phong_tam ?? 0,
@@ -125,5 +139,33 @@ class KyGuiController extends Controller
         $kyGui->delete();
 
         return back()->with('success', 'Đã hủy yêu cầu ký gửi thành công.');
+    }
+
+    private function normalizeDecimalInput($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $raw = trim((string) $value);
+        if ($raw === '') {
+            return null;
+        }
+
+        $raw = str_replace([' ', "\u{00A0}"], '', $raw);
+
+        // vi-VN input: 1.234,56 => 1234.56
+        if (str_contains($raw, ',') && str_contains($raw, '.')) {
+            $raw = str_replace('.', '', $raw);
+            $raw = str_replace(',', '.', $raw);
+        } elseif (str_contains($raw, ',')) {
+            // 123,45 => 123.45
+            $raw = str_replace(',', '.', $raw);
+        } else {
+            // 1,234.56 or 1,234
+            $raw = str_replace(',', '', $raw);
+        }
+
+        return $raw;
     }
 }
