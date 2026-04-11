@@ -142,49 +142,26 @@
         <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
             <div>
                 <h4 class="fw-bold mb-0"><i class="fas fa-users text-primary me-2"></i>Quản lý Khách Hàng</h4>
-                <small class="text-muted">Phân loại tiềm năng · Chăm sóc · Theo dõi hành trình mua</small>
+                <div style="font-size:.78rem;color:var(--text-sub)">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <span><strong>{{ number_format($stats['tong']) }}</strong> tổng</span>
+                        <span
+                            style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                        <span style="color:#e74c3c"><strong>{{ number_format($stats['nong']) }}</strong> 🔥 nóng</span>
+                        <span
+                            style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                        <span style="color:#FF9800"><strong>{{ number_format($stats['am']) }}</strong> ☀️ ấm</span>
+                        <span
+                            style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                        <span
+                            style="color:#6c757d"><strong>{{ number_format($stats['tong'] - $stats['nong'] - $stats['am']) }}</strong>
+                            ❄️ lạnh</span>
+                    </div>
+                </div>
             </div>
             <button class="btn btn-primary fw-semibold" data-bs-toggle="modal" data-bs-target="#modalThemKH">
                 <i class="fas fa-user-plus me-2"></i>Thêm Khách Hàng
             </button>
-        </div>
-
-        {{-- KPI CARDS — dùng Bootstrap card + text-{color} --}}
-        <div class="row g-3 mb-4">
-            @php
-                $kpiList = [
-                    ['label' => 'Tổng khách hàng', 'val' => $stats['tong'], 'icon' => 'fa-users', 'color' => 'primary'],
-                    [
-                        'label' => '🔥 Nóng – Sắp chốt',
-                        'val' => $stats['nong'],
-                        'icon' => 'fa-fire',
-                        'color' => 'danger',
-                    ],
-                    ['label' => '☀️ Ấm – Đang chăm', 'val' => $stats['am'], 'icon' => 'fa-sun', 'color' => 'warning'],
-                    [
-                        'label' => '❄️ Lạnh',
-                        'val' => $stats['tong'] - $stats['nong'] - $stats['am'],
-                        'icon' => 'fa-snowflake',
-                        'color' => 'secondary',
-                    ],
-                ];
-            @endphp
-            @foreach ($kpiList as $k)
-                <div class="col-6 col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-body d-flex align-items-center gap-3 py-3">
-                            <div class="rounded-circle d-flex align-items-center justify-content-center bg-{{ $k['color'] }} bg-opacity-10 flex-shrink-0"
-                                style="width:46px;height:46px;">
-                                <i class="fas {{ $k['icon'] }} text-{{ $k['color'] }}"></i>
-                            </div>
-                            <div>
-                                <div class="fw-bold fs-4 lh-1 text-{{ $k['color'] }}">{{ $k['val'] }}</div>
-                                <div class="text-muted" style="font-size:.76rem;">{{ $k['label'] }}</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            @endforeach
         </div>
 
         {{-- BỘ LỌC --}}
@@ -446,22 +423,27 @@
                                         <i class="fas fa-id-badge"></i>Thông tin liên hệ
                                     </div>
 
-                                    <label class="form-label small fw-semibold">Họ tên <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-semibold">Họ tên <span
+                                            class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm mb-2">
                                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                        <input type="text" name="ho_ten" class="form-control" placeholder="Nguyễn Văn A" required>
+                                        <input type="text" name="ho_ten" class="form-control"
+                                            placeholder="Nguyễn Văn A" required>
                                     </div>
 
-                                    <label class="form-label small fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-semibold">Số điện thoại <span
+                                            class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm mb-2">
                                         <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                        <input type="text" name="so_dien_thoai" class="form-control" placeholder="0901 234 567" required>
+                                        <input type="text" name="so_dien_thoai" class="form-control"
+                                            placeholder="0901 234 567" required>
                                     </div>
 
                                     <label class="form-label small fw-semibold">Email</label>
                                     <div class="input-group input-group-sm mb-0">
                                         <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                        <input type="email" name="email" class="form-control" placeholder="email@example.com">
+                                        <input type="email" name="email" class="form-control"
+                                            placeholder="email@example.com">
                                     </div>
                                 </div>
                             </div>
@@ -472,16 +454,20 @@
                                         <i class="fas fa-shield-alt"></i>Tài khoản truy cập
                                     </div>
 
-                                    <label class="form-label small fw-semibold">Mật khẩu <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-semibold">Mật khẩu <span
+                                            class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm mb-2">
                                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                                        <input type="password" name="password" class="form-control" minlength="6" placeholder="Nhập mật khẩu đăng nhập" required>
+                                        <input type="password" name="password" class="form-control" minlength="6"
+                                            placeholder="Nhập mật khẩu đăng nhập" required>
                                     </div>
 
-                                    <label class="form-label small fw-semibold">Nhập lại mật khẩu <span class="text-danger">*</span></label>
+                                    <label class="form-label small fw-semibold">Nhập lại mật khẩu <span
+                                            class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm mb-0">
                                         <span class="input-group-text"><i class="fas fa-check-circle"></i></span>
-                                        <input type="password" name="password_confirmation" class="form-control" minlength="6" placeholder="Nhập lại mật khẩu" required>
+                                        <input type="password" name="password_confirmation" class="form-control"
+                                            minlength="6" placeholder="Nhập lại mật khẩu" required>
                                     </div>
                                 </div>
                             </div>
@@ -508,7 +494,8 @@
                                             <label class="form-label small fw-semibold">Mức độ tiềm năng</label>
                                             <select name="muc_do_tiem_nang" class="form-select form-select-sm">
                                                 @foreach ($mucDoTiemNang as $key => $tt)
-                                                    <option value="{{ $key }}" {{ $key === 'am' ? 'selected' : '' }}>
+                                                    <option value="{{ $key }}"
+                                                        {{ $key === 'am' ? 'selected' : '' }}>
                                                         {{ $tt['label'] }}</option>
                                                 @endforeach
                                             </select>

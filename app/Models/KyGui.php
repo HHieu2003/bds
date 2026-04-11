@@ -117,7 +117,7 @@ class KyGui extends Model
     public function getGiaHienThiAttribute(): string
     {
         if ($this->nhu_cau === 'ban' && $this->gia_ban_mong_muon) return number_format($this->gia_ban_mong_muon / 1_000_000_000, 2) . ' tỷ';
-        if ($this->nhu_cau === 'thue' && $this->gia_thue_mong_muon) return number_format($this->gia_thue_mong_muon / 1_000_000) . ' tr/tháng';
+        if ($this->nhu_cau === 'thue' && $this->gia_thue_mong_muon) return number_format($this->gia_thue_mong_muon / 1_000_000) . ' tr';
         return 'Thỏa thuận';
     }
 }

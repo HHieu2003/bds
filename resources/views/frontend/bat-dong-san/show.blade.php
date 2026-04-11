@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                               TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                            ═══════════════════════════════════════ */
+                                                                                                                                                                                                       TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -412,14 +412,14 @@
         }
 
         .mo-ta-preview {
-            max-height: 400px;
+            max-height: 300px;
             overflow: hidden;
             position: relative;
             transition: max-height 0.4s ease-in-out;
         }
 
         .mo-ta-preview.expanded {
-            max-height: 5000px;
+            max-height: none;
             transition: max-height 0.6s ease-in-out;
         }
 
@@ -1037,31 +1037,33 @@
                             <div class="col-6 col-md-3">
                                 <div class="spec-item">
                                     <div class="spec-icon"><i class="fas fa-compass"></i></div>
-                                    <div class="spec-label">Hướng ban công</div>
-                                    <div class="spec-value">{{ $bds->huong_ban_cong ?? 'N/A' }}</div>
+                                    <div class="spec-label">Nội thất</div>
+                                    <div class="spec-value">{{ $bds->noi_that ?? '-' }}</div>
                                 </div>
                             </div>
+                            <div class="col-6 col-md-3">
+                                <div class="spec-item">
+                                    <div class="spec-icon"><i class="fas fa-compass"></i></div>
+                                    <div class="spec-label">Hướng ban công</div>
+                                    <div class="spec-value">{{ $bds->huong_ban_cong ?? '-' }}</div>
+                                </div>
+                            </div>
+
+
                         </div>
 
                         <div class="info-row">
                             <div class="info-item">
-                                <div class="info-item-icon"><i class="fas fa-file-alt"></i></div>
+                                <div class="info-item-icon"><i class="fas fa-building"></i></div>
                                 <div class="info-item-text">
-                                    <span class="lbl">Pháp lý</span>
-                                    <span class="val">{{ $bds->phap_ly ?? 'Sổ đỏ / Sổ hồng' }}</span>
-                                </div>
-                            </div>
-                            <div class="info-item">
-                                <div class="info-item-icon"><i class="fas fa-couch"></i></div>
-                                <div class="info-item-text">
-                                    <span class="lbl">Nội thất</span>
-                                    <span class="val">{{ $bds->noi_that ?? 'Cơ bản' }}</span>
+                                    <span class="lbl">Thuộc tòa</span>
+                                    <span class="val">{{ $bds->toa ? 'Tòa ' . $bds->toa : 'Đang cập nhật' }}</span>
                                 </div>
                             </div>
                             <div class="info-item">
                                 <div class="info-item-icon"><i class="fas fa-layer-group"></i></div>
                                 <div class="info-item-text">
-                                    <span class="lbl">Tầng số</span>
+                                    <span class="lbl">Tầng</span>
                                     <span class="val">
                                         @if (!$bds->tang)
                                             Đang cập nhật
@@ -1075,9 +1077,63 @@
                                     </span>
                                 </div>
                             </div>
+
+
+                            @if ($bds->nhu_cau === 'ban')
+                                @php
+                                    $phapLyMap = [
+                                        'so_hong' => 'Sổ hồng',
+                                        'so_do' => 'Sổ đỏ',
+                                        'hdmb' => 'Hợp đồng mua bán',
+                                        'hop_dong_mua_ban' => 'Hợp đồng mua bán',
+                                        'dang_cho_so' => 'Đang chờ sổ',
+                                        'dang_cap_so' => 'Đang cấp sổ',
+                                        'giay_tay' => 'Giấy tờ tay',
+                                        'vi_bang' => 'Vi bằng',
+                                        'thua_ke' => 'Thừa kế',
+                                        'thoa_thuan' => 'Thỏa thuận',
+                                    ];
+                                    $phapLyLabel = $bds->phap_ly
+                                        ? $phapLyMap[$bds->phap_ly] ?? $bds->phap_ly
+                                        : 'Đang cập nhật';
+                                @endphp
+                                <div class="info-item">
+                                    <div class="info-item-icon"><i class="fas fa-file-alt"></i></div>
+                                    <div class="info-item-text">
+                                        <span class="lbl">Pháp lý</span>
+                                        <span class="val">{{ $phapLyLabel }}</span>
+                                    </div>
+                                </div>
+                            @else
+                                @php
+                                    $hinhThucThanhToanMap = [
+                                        'thang_1' => 'Thanh toán 1 tháng/lần',
+                                        'thang_3' => 'Thanh toán 3 tháng/lần',
+                                        'thang_6' => 'Thanh toán 6 tháng/lần',
+                                        'nam_1' => 'Thanh toán 1 năm/lần',
+                                    ];
+                                    $hinhThucThanhToanLabel = $bds->hinh_thuc_thanh_toan
+                                        ? $hinhThucThanhToanMap[$bds->hinh_thuc_thanh_toan] ??
+                                            $bds->hinh_thuc_thanh_toan
+                                        : 'Đang cập nhật';
+                                @endphp
+                                <div class="info-item">
+                                    <div class="info-item-icon"><i class="fas fa-wallet"></i></div>
+                                    <div class="info-item-text">
+                                        <span class="lbl">Hình thức thanh toán</span>
+                                        <span class="val">{{ $hinhThucThanhToanLabel }}</span>
+                                    </div>
+                                </div>
+                            @endif
+
+
+
+
+
+
                             @if ($bds->duAn)
                                 <div class="info-item">
-                                    <div class="info-item-icon"><i class="fas fa-building"></i></div>
+                                    <div class="info-item-icon"><i class="fas fa-city"></i></div>
                                     <div class="info-item-text">
                                         <span class="lbl">Dự án</span>
                                         <a href="{{ route('frontend.du-an.show', $bds->duAn->slug) }}"
@@ -1087,6 +1143,13 @@
                                     </div>
                                 </div>
                             @endif
+                            <div class="info-item">
+                                <div class="info-item-icon"><i class="fas fa-hashtag"></i></div>
+                                <div class="info-item-text">
+                                    <span class="lbl">Mã BĐS</span>
+                                    <span class="val">{{ $bds->ma_bat_dong_san ?? 'BĐS#' . $bds->id }}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -1104,7 +1167,7 @@
                             </div>
                             <div class="mo-ta-fade" id="motaFade"></div>
                         </div>
-                        <button class="btn-read-more" id="btnReadMore" type="button">
+                        <button class="btn-read-more" id="btnReadMore" type="button" onclick="toggleMoTa()">
                             <i class="fas fa-chevron-down" id="iconReadMore"></i>
                             <span id="txtReadMore">Xem thêm nội dung</span>
                         </button>
@@ -1187,7 +1250,7 @@
                                 <i class="{{ $bds->isYeuThich ?? false ? 'fas' : 'far' }} fa-heart"></i> Lưu tin
                             </button>
                             <button class="btn-action btn-compare"
-                                onclick="addSoSanh({{ $bds->id }}, {{ json_encode($bds->tieu_de) }})">
+                                onclick="addSoSanh({{ $bds->id }}, @js($bds->tieu_de))">
                                 <i class="fas fa-balance-scale"></i> So sánh
                             </button>
                             <button class="btn-action btn-price-alert" onclick="dangKyCanhBaoGia()">
@@ -1329,61 +1392,16 @@
 
 @endsection
 @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
     <script>
-        /* ═══ HÀM TOGGLE MÔ TẢ ═══ */
-        function toggleMoTa() {
-            var el = document.getElementById('motaPreview');
-            var icon = document.getElementById('iconReadMore');
-            var txt = document.getElementById('txtReadMore');
-            var fade = document.getElementById('motaFade');
-
-            if (!el || !icon || !txt) {
-                console.error('Không tìm thấy các phần tử:', {
-                    el: !!el,
-                    icon: !!icon,
-                    txt: !!txt,
-                    fade: !!fade
-                });
-                return;
-            }
-
-            const isExpanded = el.classList.contains('expanded');
-            console.log('Toggle mô tả - Trạng thái hiện tại:', isExpanded ? 'Mở rộng' : 'Thu gọn');
-
-            if (isExpanded) {
-                el.classList.remove('expanded');
-                icon.className = 'fas fa-chevron-down';
-                txt.textContent = 'Xem thêm nội dung';
-                if (fade) fade.style.display = 'block';
-            } else {
-                el.classList.add('expanded');
-                icon.className = 'fas fa-chevron-up';
-                txt.textContent = 'Thu gọn';
-                if (fade) fade.style.display = 'none';
-            }
-        }
-
-        /* Khởi tạo khi DOM sẵn sàng */
-        document.addEventListener('DOMContentLoaded', function() {
-            const btnReadMore = document.getElementById('btnReadMore');
-            if (btnReadMore) {
-                btnReadMore.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    toggleMoTa();
-                });
-                console.log('✓ Sự kiện click cho nút "Xem thêm nội dung" đã được liên kết');
-            } else {
-                console.error('Không tìm thấy nút btnReadMore');
-            }
-        });
-
         /* Lightbox config */
-        lightbox.option({
-            resizeDuration: 200,
-            wrapAround: true,
-            albumLabel: 'Ảnh %1 / %2'
-        });
+        if (typeof lightbox !== 'undefined') {
+            lightbox.option({
+                resizeDuration: 200,
+                wrapAround: true,
+                albumLabel: 'Ảnh %1 / %2'
+            });
+        }
 
         /* Gửi yêu cầu gọi lại */
         function guiYeuCauGoiLai(e) {
@@ -1439,7 +1457,7 @@
                 })
                 .then((data) => {
                     showFlash(data.message || 'Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
-                    var defaultNoiDung = 'Tôi quan tâm đến BĐS: ' + {{ json_encode($bds->tieu_de) }};
+                    var defaultNoiDung = 'Tôi quan tâm đến BĐS: ' + @json($bds->tieu_de);
                     var noiDungEl = form.querySelector('[name=noi_dung]');
                     if (noiDungEl) noiDungEl.value = defaultNoiDung;
                     if (!{{ $customer ? 'true' : 'false' }}) {
@@ -1515,7 +1533,7 @@
                     showFlash(data.message || 'Gửi yêu cầu đặt lịch thành công!', 'success');
 
                     const defaultGhiChu =
-                        'Tôi muốn đặt lịch xem BĐS: ' + {{ json_encode($bds->tieu_de) }};
+                        'Tôi muốn đặt lịch xem BĐS: ' + @json($bds->tieu_de);
                     const ghiChuEl = form.querySelector('[name=ghi_chu]');
 
                     if (!{{ $customer ? 'true' : 'false' }}) {
@@ -1546,8 +1564,8 @@
 
             openModalDangKy('', {
                 batDongSanId: {{ $bds->id }},
-                batDongSanTitle: {{ json_encode($bds->tieu_de) }},
-                nhuCau: {{ json_encode($bds->nhu_cau) }},
+                batDongSanTitle: @json($bds->tieu_de),
+                nhuCau: @json($bds->nhu_cau),
                 khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
                 duAnId: {{ $bds->du_an_id ?? 'null' }},
                 soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},

@@ -27,9 +27,9 @@ class KhachHangController extends Controller
     private function getMucDoTiemNang()
     {
         return [
-            'nong' => ['label' => 'Nóng (Sắp chốt)', 'color' => 'danger'],
-            'am'   => ['label' => 'Ấm (Đang chăm)', 'color' => 'warning'],
-            'lanh' => ['label' => 'Lạnh (Chưa nhu cầu)', 'color' => 'secondary'],
+            'nong' => ['label' => 'Nóng', 'color' => 'danger'],
+            'am'   => ['label' => 'Ấm', 'color' => 'warning'],
+            'lanh' => ['label' => 'Lạnh', 'color' => 'secondary'],
         ];
     }
 

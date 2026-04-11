@@ -248,17 +248,21 @@
                         <div class="target-box border-start border-3 border-warning">
                             <div>
                                 <span class="d-block small text-muted">BĐS Khách muốn xem:</span>
-                                <a href="{{ route('frontend.bat-dong-san.show', $lh->batDongSan->slug ?? '') }}"
-                                    target="_blank" class="fw-bold text-dark text-decoration-none">
-                                    {{ $lh->batDongSan->ma_can ?? '' ? '[' . $lh->batDongSan->ma_can . ']' : '' }}
-                                    {{ \Illuminate\Support\Str::limit($lh->batDongSan->ten_bat_dong_san ?? 'N/A', 50) }}
-                                </a>
+                                @if ($lh->batDongSan)
+                                    <a href="{{ route('frontend.bat-dong-san.show', $lh->batDongSan?->slug ?? '') }}"
+                                        target="_blank" class="fw-bold text-dark text-decoration-none">
+                                        {{ $lh->batDongSan?->ma_can ? '[' . $lh->batDongSan->ma_can . ']' : '' }}
+                                        {{ \Illuminate\Support\Str::limit($lh->batDongSan?->ten_bat_dong_san ?? 'N/A', 50) }}
+                                    </a>
+                                @else
+                                    <span class="text-danger fst-italic">BĐS không tồn tại</span>
+                                @endif
                             </div>
                             <div class="text-end mt-2 mt-md-0">
                                 <span class="d-block small text-muted">Đầu chủ (Nguồn hàng):</span>
                                 {{-- ĐÃ FIX: Lấy tên người nắm nguồn từ BĐS chứ không gọi qua lịch hẹn --}}
                                 <strong class="text-primary"><i
-                                        class="fas fa-key me-1"></i>{{ $lh->batDongSan->nhanVienPhuTrach->ho_ten ?? 'Hệ thống chung' }}</strong>
+                                        class="fas fa-key me-1"></i>{{ $lh->batDongSan?->nhanVienPhuTrach?->ho_ten ?? 'Hệ thống chung' }}</strong>
                             </div>
                         </div>
                     @endif
@@ -267,13 +271,18 @@
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
                                 <div class="small text-muted text-uppercase fw-bold mb-1">Bất động sản của bạn</div>
-                                <h5 class="fw-bold text-navy mb-1">
-                                    <i class="fas fa-building me-1"></i>
-                                    {{ $lh->batDongSan->ma_can ?? '' ? '[' . $lh->batDongSan->ma_can . ']' : '' }}
-                                    {{ \Illuminate\Support\Str::limit($lh->batDongSan->ten_bat_dong_san ?? '', 50) }}
-                                </h5>
-                                <div class="text-muted small"><i
-                                        class="fas fa-map-marker-alt me-1"></i>{{ $lh->batDongSan->dia_chi ?? '' }}</div>
+                                @if ($lh->batDongSan)
+                                    <h5 class="fw-bold text-navy mb-1">
+                                        <i class="fas fa-building me-1"></i>
+                                        {{ $lh->batDongSan?->ma_can ? '[' . $lh->batDongSan->ma_can . ']' : '' }}
+                                        {{ \Illuminate\Support\Str::limit($lh->batDongSan?->ten_bat_dong_san ?? '', 50) }}
+                                    </h5>
+                                    <div class="text-muted small"><i
+                                            class="fas fa-map-marker-alt me-1"></i>{{ $lh->batDongSan?->dia_chi ?? '' }}
+                                    </div>
+                                @else
+                                    <span class="text-danger fst-italic">BĐS không tồn tại</span>
+                                @endif
                             </div>
                         </div>
                         <div class="target-box border-start border-3 border-success">

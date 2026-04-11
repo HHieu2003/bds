@@ -59,6 +59,28 @@
             border-left: 4px solid #e74c3c;
         }
 
+        /* Modal Enhancement */
+        .modal-content {
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .shadow-xl {
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15) !important;
+        }
+
+        .btn-close-white {
+            filter: brightness(0) invert(1);
+        }
+
+        /* Cursor pointer trên cột ngữ cảnh tư vấn */
+        table tbody td:nth-child(2) {
+            transition: background-color 0.2s ease;
+        }
+
+        table tbody tr:hover td:nth-child(2) {
+            background-color: #f0f7ff !important;
+        }
+
         /* Mobile UX */
         @media (max-width: 768px) {
             .mobile-card {
@@ -102,36 +124,28 @@
                         style="font-size: 0.75rem; vertical-align: middle;">{{ $leadChuaNhan }} Lead chưa nhận</span>
                 @endif
             </h1>
-            <p class="text-muted mb-0">Nhận Lead, gọi điện, cập nhật tiến độ và vứt vào kho Khách Hàng CRM.</p>
+            {{-- THỐNG KÊ NHANH --}}
+            <div style="font-size:.78rem;color:var(--text-sub);">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ number_format($thongKe['tat_ca'] ?? 0) }}</strong> tổng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#0d6efd"><strong>{{ number_format($thongKe['moi'] ?? 0) }}</strong> 🆕 mới</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#FF9800"><strong>{{ number_format($thongKe['dang_xu_ly'] ?? 0) }}</strong> ⏳ đang xử
+                        lý</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#28a745"><strong>{{ number_format($thongKe['da_chot'] ?? 0) }}</strong> ✅ đã
+                        chốt</span>
+                </div>
+            </div>
         </div>
     </div>
 
     @include('frontend.partials.flash-messages')
 
-    {{-- THỐNG KÊ NHANH --}}
-    <div class="row g-2 g-md-3 mb-4">
-        @php
-            $ttItems = array_merge(
-                ['tat_ca' => ['label' => 'Tất cả Data', 'color' => '#1a3c5e', 'bg' => '#f8fafc']],
-                \App\Models\YeuCauLienHe::TRANG_THAI,
-            );
-        @endphp
-        @foreach ($ttItems as $key => $info)
-            <div class="col-4 col-md-2">
-                <a href="{{ request()->fullUrlWithQuery(['trang_thai' => $key === 'tat_ca' ? null : $key, 'page' => null]) }}"
-                    class="text-decoration-none">
-                    <div class="card border-0 shadow-sm transition-hover {{ request('trang_thai') == $key || ($key === 'tat_ca' && !request('trang_thai')) ? 'border-bottom border-3 border-primary' : '' }}"
-                        style="background: {{ $info['bg'] }};">
-                        <div class="card-body text-center py-2 py-md-3">
-                            <h4 class="fw-bold mb-0" style="color: {{ $info['color'] }}">{{ $thongKe[$key] ?? 0 }}</h4>
-                            <div class="small fw-bold text-uppercase text-muted mt-1" style="font-size: 0.65rem;">
-                                {{ $info['label'] }}</div>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        @endforeach
-    </div>
 
     {{-- BỘ LỌC --}}
     <div class="card border-0 shadow-sm mb-3">
@@ -194,8 +208,7 @@
                             $ttInfo = $lh->trang_thai_info ?? \App\Models\YeuCauLienHe::TRANG_THAI['moi'];
                             $isUnassigned = is_null($lh->nhan_vien_phu_trach_id);
                         @endphp
-                        <tr class="{{ $isUnassigned ? 'lead-row-new' : '' }}" data-lead-id="{{ $lh->id }}"
-                            style="cursor: pointer;" onclick="showLeadDetail({{ $lh->id }})">
+                        <tr class="{{ $isUnassigned ? 'lead-row-new' : '' }}" data-lead-id="{{ $lh->id }}">
                             {{-- CỘT 1: KHÁCH HÀNG --}}
                             <td>
                                 <div class="d-flex align-items-center gap-2 mb-1">
@@ -215,22 +228,21 @@
                                 </div>
                             </td>
 
-                            {{-- CỘT 2: BỐI CẢNH --}}
-                            <td>
+                            {{-- CỘT 2: BỐI CẢNH (CLICK ĐỂ MỞ MODAL) --}}
+                            <td style="cursor: pointer;" onclick="showLeadDetail({{ $lh->id }}); return false;">
                                 @if ($lh->batDongSan)
                                     <span class="badge bg-success-subtle text-success mb-1 border border-success-subtle"><i
                                             class="fas fa-home"></i> Hỏi mua BĐS</span>
-                                    <a href="{{ route('frontend.bat-dong-san.show', $lh->batDongSan->slug ?? '') }}"
-                                        target="_blank"
-                                        class="fw-bold text-navy text-decoration-none d-block small lh-sm line-clamp-2"
-                                        title="{{ $lh->batDongSan->ten_bat_dong_san }}">
+                                    <div class="fw-bold text-navy text-decoration-none d-block small lh-sm line-clamp-2"
+                                        title="{{ $lh->batDongSan->ten_bat_dong_san }}" style="cursor: pointer;">
                                         {{ $lh->batDongSan->ten_bat_dong_san }}
-                                    </a>
+                                    </div>
                                 @else
                                     <span
                                         class="badge bg-secondary-subtle text-secondary mb-1 border border-secondary-subtle"><i
                                             class="fas fa-globe"></i> Hỏi đáp chung</span>
-                                    <div class="small text-dark fw-medium line-clamp-2" title="{{ $lh->noi_dung }}">
+                                    <div class="small text-dark fw-medium line-clamp-2" title="{{ $lh->noi_dung }}"
+                                        style="cursor: pointer;">
                                         "{{ $lh->noi_dung }}"</div>
                                 @endif
                             </td>
@@ -427,79 +439,75 @@
         @endif
     </div>
 
-    {{-- MODAL CHI TIẾT LEAD --}}
+    {{-- MODAL CHI TIẾT LEAD (REDESIGNED) --}}
     <div class="modal fade" id="modalLeadDetail" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
-                <div class="modal-header bg-light border-0">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-id-card text-primary me-2"></i>Chi tiết Lead</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">
+                <div class="modal-header py-2 px-3" style="background: linear-gradient(90deg,#1a3c5e,#2d5a8a);">
+                    <h6 class="modal-title text-white mb-0"><i class="fas fa-file-alt me-2"></i>Chi tiết Lead</h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-4">
-                    <div class="spinner-border text-primary" role="status" id="leadDetailSpinner">
-                        <span class="visually-hidden">Loading...</span>
+
+                <div class="modal-body p-3">
+                    <div class="d-flex align-items-start gap-3">
+                        <div style="flex:1; min-width:0">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="small text-muted">Khách hàng</div>
+                                    <div class="fw-bold" id="ld_ho_ten">—</div>
+                                </div>
+                                <div><span class="badge bg-dark" id="ld_ma_yeu_cau">—</span></div>
+                            </div>
+
+                            <div class="d-flex gap-3 mb-2 flex-wrap">
+                                <div>
+                                    <div class="small text-muted">📞</div>
+                                    <div id="ld_so_dien_thoai" class="fw-semibold text-success">—</div>
+                                </div>
+                                <div>
+                                    <div class="small text-muted">📧</div>
+                                    <div id="ld_email">—</div>
+                                </div>
+                            </div>
+
+                            <div class="mt-2">
+                                <div class="small text-muted">Nội dung / Bối cảnh</div>
+                                <div id="ld_bds_info" class="mb-1"></div>
+                                <div id="ld_noi_dung" class="small text-dark" style="line-height:1.4;">—</div>
+                            </div>
+                        </div>
+
+                        <div style="width:38%; min-width:200px">
+                            <div class="small text-muted mb-1">Trạng thái</div>
+                            <div id="ld_trang_thai" class="mb-2"></div>
+
+                            <div class="small text-muted mb-1">Phụ trách</div>
+                            <div id="ld_nhan_vien" class="fw-semibold mb-2">—</div>
+
+                            <div class="small text-muted mb-1">Tiềm năng</div>
+                            <div id="ld_muc_do" class="mb-2">—</div>
+
+                            <div class="small text-muted mb-1">Nhận lúc</div>
+                            <div id="ld_thoi_gian">—</div>
+                        </div>
                     </div>
-                    <div id="leadDetailContent" style="display: none;">
-                        {{-- Thông tin khách hàng --}}
-                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user me-2"></i>Thông tin Khách hàng</h6>
-                        <div class="row g-3 mb-4 bg-light p-3 rounded">
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Tên khách hàng</label>
-                                <div class="fw-bold text-dark" id="ld_ho_ten"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Mã yêu cầu</label>
-                                <div class="fw-bold text-dark" id="ld_ma_yeu_cau"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Số điện thoại</label>
-                                <div class="fw-bold text-success" id="ld_so_dien_thoai"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Email</label>
-                                <div class="text-dark" id="ld_email"></div>
-                            </div>
-                        </div>
 
-                        {{-- Thông tin tư vấn --}}
-                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-comment-dots me-2"></i>Nhu cầu tư vấn</h6>
-                        <div class="bg-light p-3 rounded mb-4">
-                            <div class="mb-2" id="ld_bds_info"></div>
-                            <div class="fst-italic" id="ld_noi_dung" style="color: #666;"></div>
-                        </div>
+                    <hr class="my-3">
 
-                        {{-- Trạng thái --}}
-                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-tasks me-2"></i>Trạng thái xử lý</h6>
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Trạng thái Lead</label>
-                                <div id="ld_trang_thai"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Người phụ trách</label>
-                                <div class="fw-bold text-dark" id="ld_nhan_vien"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Đánh giá tiềm năng</label>
-                                <div class="fw-bold text-dark" id="ld_muc_do"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="text-muted small fw-bold">Thời gian nhận</label>
-                                <div class="text-dark" id="ld_thoi_gian"></div>
-                            </div>
+                    <div>
+                        <div class="small text-muted mb-2">Lịch sử Chăm sóc</div>
+                        <div id="ld_ghi_chu" class="bg-light p-2"
+                            style="max-height:180px;overflow:auto;font-size:0.9rem;line-height:1.5;">
+                            <div class="text-muted fst-italic">Chưa có ghi chú</div>
                         </div>
-
-                        {{-- Ghi chú --}}
-                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-history me-2"></i>Lịch sử chăm sóc</h6>
-                        <div class="bg-light p-3 rounded" id="ld_ghi_chu"
-                            style="max-height: 200px; overflow-y: auto; font-size: 0.85rem;"></div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light border-0">
-                    <a href="#" class="btn btn-primary" id="ld_btn_detail" target="_blank">
-                        <i class="fas fa-external-link-alt me-1"></i> Xem chi tiết đầy đủ
-                    </a>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+
+                <div class="modal-footer py-2 px-3 bg-white border-top-0">
+                    <a href="#" class="btn btn-sm btn-outline-secondary" id="ld_btn_detail" target="_blank">Xem
+                        full</a>
+                    <button type="button" class="btn btn-sm btn-primary" data-bs-dismiss="modal">Đóng</button>
                 </div>
             </div>
         </div>
@@ -594,9 +602,9 @@
             const content = document.getElementById('leadDetailContent');
 
             // Hiển thị spinner
-            spinner.style.display = 'block';
-            content.style.display = 'none';
             modal.show();
+            if (spinner) spinner.style.display = 'block';
+            if (content) content.style.display = 'none';
 
             // Fetch dữ liệu
             fetch(`/nhan-vien/admin/lien-he/${leadId}`, {
@@ -643,14 +651,18 @@
                     document.getElementById('ld_btn_detail').href = data.detail_url;
 
                     // Ẩn spinner, hiển thị content
-                    spinner.style.display = 'none';
-                    content.style.display = 'block';
+                    if (spinner) spinner.style.display = 'none';
+                    if (content) content.style.display = 'block';
                 })
                 .catch(err => {
-                    spinner.style.display = 'none';
-                    content.style.display = 'block';
-                    document.getElementById('leadDetailContent').innerHTML =
-                        '<div class="alert alert-danger">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>';
+                    if (spinner) spinner.style.display = 'none';
+                    if (content) {
+                        content.style.display = 'block';
+                        content.innerHTML =
+                            '<div class="alert alert-danger">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>';
+                    } else {
+                        document.getElementById('ld_noi_dung').textContent = 'Lỗi khi tải dữ liệu. Vui lòng thử lại.';
+                    }
                     showAdminToast('Lỗi khi tải chi tiết lead', 'error');
                 });
         }

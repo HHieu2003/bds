@@ -1734,6 +1734,24 @@ function showFlash(message, type = "info") {
     }, 2400);
 }
 
+window.toggleMoTa = function () {
+    const el = document.getElementById("motaPreview");
+    const icon = document.getElementById("iconReadMore");
+    const txt = document.getElementById("txtReadMore");
+    const fade = document.getElementById("motaFade");
+    const btn = document.getElementById("btnReadMore");
+
+    if (!el || !icon || !txt) return;
+
+    const isExpanded = el.classList.contains("expanded");
+    el.classList.toggle("expanded", !isExpanded);
+    icon.className = isExpanded ? "fas fa-chevron-down" : "fas fa-chevron-up";
+    txt.textContent = isExpanded ? "Xem thêm nội dung" : "Thu gọn";
+
+    if (fade) fade.style.display = isExpanded ? "block" : "none";
+    if (btn) btn.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+};
+
 function applyYeuThichUiById(batDongSanId, isLiked) {
     document
         .querySelectorAll(`.heart-icon-${batDongSanId}`)
@@ -1747,7 +1765,9 @@ function applyYeuThichUiById(batDongSanId, isLiked) {
         });
 }
 
-function toggleYeuThich(btn, batDongSanId) {
+window.applyYeuThichUiById = applyYeuThichUiById;
+
+window.toggleYeuThich = function (btn, batDongSanId) {
     if (!window.APP || !window.APP.isLoggedIn) {
         window.openAuthModal("login");
         showFlash("Vui lòng đăng nhập để lưu yêu thích.", "info");
@@ -1788,4 +1808,4 @@ function toggleYeuThich(btn, batDongSanId) {
             applyYeuThichUiById(batDongSanId, wasLiked);
             showFlash("Lỗi kết nối. Vui lòng thử lại.", "danger");
         });
-}
+};
