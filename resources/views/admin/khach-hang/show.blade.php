@@ -184,7 +184,7 @@
         $emailVerified = !is_null($khachHang->email_xac_thuc_at);
     @endphp
 
-    <div class="container-fluid py-3 px-4">
+    <div class="container-fluid py-2 px-3">
 
         {{-- Breadcrumb --}}
         <nav aria-label="breadcrumb" class="mb-3">
@@ -204,13 +204,13 @@
             <div class="col-lg-4 col-xl-3">
 
                 {{-- Profile card --}}
-                <div class="card border-0 shadow-sm mb-3 overflow-hidden">
-                    <div class="profile-header-bg"></div>
-                    <div class="card-body text-center pt-0 pb-4" style="margin-top:-32px;">
-                        <div class="avatar-circle-lg {{ $toneClass }} border border-3 border-white mb-2">
-                            {{ $initial }}
-                        </div>
+                <div class="card border-0 shadow-sm mb-1 overflow-hidden">
+
+                    <div class="card-body text-center pt-1 pb-1">
+
                         <h5 class="fw-bold mb-1">{{ $khachHang->ho_ten }}</h5>
+
+
                         {{-- Badge dùng $tt['color'] từ controller --}}
                         <span class="potential-badge {{ $toneClass }}">
                             @if ($color === 'danger')
@@ -223,33 +223,21 @@
                             {{ $tt['label'] }}
                         </span>
 
-                        <div class="d-flex gap-2 justify-content-center mt-3">
-                            @if ($khachHang->so_dien_thoai)
-                                <a href="tel:{{ $khachHang->so_dien_thoai }}" class="btn btn-success btn-sm">
-                                    <i class="fas fa-phone-alt me-1"></i>Gọi ngay
-                                </a>
-                            @endif
-                            @if ($khachHang->email)
-                                <a href="mailto:{{ $khachHang->email }}" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-envelope me-1"></i>Email
-                                </a>
-                            @endif
-                        </div>
 
-                        <hr class="my-3">
+                        <hr class="my-2">
 
                         {{-- Thông tin liên hệ --}}
                         <div class="text-start">
-                            @foreach ([['fas fa-phone text-success', 'SĐT', $khachHang->so_dien_thoai], ['fas fa-envelope text-primary', 'Email', $khachHang->email], ['fas fa-map-marker-alt text-danger', 'Địa chỉ', $khachHang->dia_chi ?? null], ['fas fa-birthday-cake text-warning', 'Ngày sinh', $khachHang->ngay_sinh ? \Carbon\Carbon::parse($khachHang->ngay_sinh)->format('d/m/Y') : null]] as [$icn, $lbl, $val])
+                            @foreach ([['fas fa-phone text-success', 'SĐT', $khachHang->so_dien_thoai], ['fas fa-envelope text-primary', 'Email', $khachHang->email]] as [$icn, $lbl, $val])
                                 <div class="d-flex align-items-start gap-2 mb-2" style="font-size:.85rem;">
                                     <i class="{{ $icn }} mt-1 flex-shrink-0"
                                         style="width:16px;font-size:.78rem;"></i>
-                                    <div>
-                                        <div class="text-uppercase text-muted"
-                                            style="font-size:.68rem;letter-spacing:.4px;">{{ $lbl }}</div>
-                                        <div class="{{ $val ? 'fw-semibold text-dark' : 'text-muted fst-italic' }}">
-                                            {{ $val ?? 'Chưa cập nhật' }}</div>
-                                    </div>
+
+                                    <div class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.4px;">
+                                        {{ $lbl }}</div>
+                                    <div class="{{ $val ? 'fw-semibold text-dark' : 'text-muted fst-italic' }}">
+                                        {{ $val ?? 'Chưa cập nhật' }}</div>
+
                                 </div>
                             @endforeach
                         </div>
@@ -257,13 +245,9 @@
                 </div>
 
                 {{-- CRM Meta --}}
-                <div class="card border-0 shadow-sm mb-3">
-                    <div class="card-header bg-white border-bottom py-2">
-                        <span class="text-uppercase text-muted fw-bold" style="font-size:.72rem;letter-spacing:.5px;">
-                            <i class="fas fa-chart-bar text-primary me-1"></i>Thông tin CRM
-                        </span>
-                    </div>
-                    <div class="card-body py-3">
+                <div class="card border-0 shadow-sm mb-1">
+
+                    <div class="card-body py-2">
                         <div class="row g-2" style="font-size:.83rem;">
                             <div class="col-6">
                                 <div class="text-muted"
@@ -302,12 +286,7 @@
                                     </span>
                                 </div>
                             </div>
-                            <div class="col-6">
-                                <div class="text-muted"
-                                    style="font-size:.7rem;text-transform:uppercase;letter-spacing:.4px;">Thời điểm xác thực
-                                </div>
-                                <div>{{ $emailVerified ? $khachHang->email_xac_thuc_at->format('d/m/Y H:i') : '–' }}</div>
-                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -431,7 +410,7 @@
                                 @endforeach
                             </div>
                         @else
-                            <div class="text-center py-5 text-muted">
+                            <div class="text-center py-2 text-muted">
                                 <i class="fas fa-clipboard fa-3x d-block mb-3 opacity-25"></i>
                                 <p class="fw-semibold text-secondary mb-1">Chưa có nhật ký nào</p>
                                 <small>Thêm ghi chú đầu tiên để bắt đầu theo dõi</small>

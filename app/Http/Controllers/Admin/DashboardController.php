@@ -18,6 +18,7 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        /** @var \App\Models\NhanVien $nhanVien */
         $nhanVien = Auth::guard('nhanvien')->user();
 
         // Điều phối (Dispatch) tới các hàm xử lý riêng biệt dựa trên Role
@@ -38,25 +39,107 @@ class DashboardController extends Controller
     // ==========================================
     private function dashboardSale($nhanVien)
     {
-        // Leads cần gọi ngay (Mới hoặc đang chờ xử lý)
-        $leadsCuaToi = YeuCauLienHe::where('trang_thai', 'cho_xu_ly')
+        $today = Carbon::today();
+        $now = Carbon::now();
+        $monthStart = $now->copy()->startOfMonth();
+        $monthEnd = $now->copy()->endOfMonth();
+
+        $leadBase = YeuCauLienHe::with(['batDongSan'])
+            ->where(function ($q) use ($nhanVien) {
+                $q->where('nhan_vien_phu_trach_id', $nhanVien->id)
+                    ->orWhereNull('nhan_vien_phu_trach_id');
+            });
+
+        $leadsCuaToi = (clone $leadBase)
+            ->whereIn('trang_thai', ['moi', 'dang_tu_van', 'da_lien_he'])
+            ->orderByRaw("CASE WHEN trang_thai = 'moi' THEN 1 WHEN trang_thai = 'dang_tu_van' THEN 2 ELSE 3 END")
             ->latest()
             ->limit(10)
             ->get();
 
-        // Lịch hẹn hôm nay của riêng Sale
-        $lichHenHomNay = LichHen::with(['khachHang', 'batDongSan'])
-            ->where('nhan_vien_sale_id', $nhanVien->id)
-            ->whereDate('thoi_gian_hen', Carbon::today())
+        $leadsQuaHan = (clone $leadBase)
+            ->where('trang_thai', 'moi')
+            ->where('created_at', '<=', $now->copy()->subHours(2))
+            ->count();
+
+        $leadMoiHomNay = (clone $leadBase)
+            ->whereDate('created_at', $today)
+            ->where('trang_thai', 'moi')
+            ->count();
+
+        $leadDaChotThang = (clone $leadBase)
+            ->where('trang_thai', 'da_chot')
+            ->whereBetween('updated_at', [$monthStart, $monthEnd])
+            ->count();
+
+        $lichHenBase = LichHen::with(['khachHang', 'batDongSan'])
+            ->where('nhan_vien_sale_id', $nhanVien->id);
+
+        $lichHenHomNay = (clone $lichHenBase)
+            ->whereDate('thoi_gian_hen', $today)
             ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh'])
             ->orderBy('thoi_gian_hen')
             ->get();
 
-        // KPI Cá nhân (Tổng khách hàng đang chăm sóc)
-        $tongKhachCuaToi = KhachHang::count(); // Tạm tính tổng, sau này có `nhan_vien_phu_trach_id` thì where theo ID
-        $lichHenThang = LichHen::where('nhan_vien_sale_id', $nhanVien->id)->whereMonth('thoi_gian_hen', Carbon::now()->month)->count();
+        $lichHenSapToi = (clone $lichHenBase)
+            ->whereBetween('thoi_gian_hen', [$now, $now->copy()->addDays(7)])
+            ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh'])
+            ->orderBy('thoi_gian_hen')
+            ->limit(12)
+            ->get();
 
-        return view('admin.dashboard.sale', compact('nhanVien', 'leadsCuaToi', 'lichHenHomNay', 'tongKhachCuaToi', 'lichHenThang'));
+        $lichHenQuaHan = (clone $lichHenBase)
+            ->where('thoi_gian_hen', '<', $now)
+            ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh'])
+            ->orderByDesc('thoi_gian_hen')
+            ->limit(8)
+            ->get();
+
+        $lichHenCanXuLy = (clone $lichHenBase)
+            ->whereIn('trang_thai', ['moi_dat', 'cho_tiep_nhan', 'cho_xac_nhan', 'bao_lai_gio', 'sale_doi_gio'])
+            ->count();
+
+        $lichHen2hToi = (clone $lichHenBase)
+            ->whereBetween('thoi_gian_hen', [$now, $now->copy()->addHours(2)])
+            ->whereIn('trang_thai', ['da_xac_nhan', 'cho_xac_nhan'])
+            ->count();
+
+        $lichHenThang = (clone $lichHenBase)
+            ->whereBetween('thoi_gian_hen', [$monthStart, $monthEnd])
+            ->count();
+
+        $lichHenHoanThanhThang = (clone $lichHenBase)
+            ->where('trang_thai', 'hoan_thanh')
+            ->whereBetween('thoi_gian_hen', [$monthStart, $monthEnd])
+            ->count();
+
+        $lichHenHuyThang = (clone $lichHenBase)
+            ->whereIn('trang_thai', ['huy', 'tu_choi'])
+            ->whereBetween('thoi_gian_hen', [$monthStart, $monthEnd])
+            ->count();
+
+        $tongClosedThang = $lichHenHoanThanhThang + $lichHenHuyThang;
+        $tiLeChotLich = $tongClosedThang > 0 ? round(($lichHenHoanThanhThang / $tongClosedThang) * 100, 1) : 0;
+
+        $tongKhachCuaToi = KhachHang::where('nhan_vien_phu_trach_id', $nhanVien->id)->count();
+
+        return view('admin.dashboard.sale', compact(
+            'nhanVien',
+            'leadsCuaToi',
+            'lichHenHomNay',
+            'tongKhachCuaToi',
+            'lichHenThang',
+            'leadMoiHomNay',
+            'leadDaChotThang',
+            'leadsQuaHan',
+            'lichHenCanXuLy',
+            'lichHen2hToi',
+            'lichHenSapToi',
+            'lichHenQuaHan',
+            'lichHenHoanThanhThang',
+            'lichHenHuyThang',
+            'tiLeChotLich'
+        ));
     }
 
     // ==========================================
@@ -64,25 +147,93 @@ class DashboardController extends Controller
     // ==========================================
     private function dashboardNguonHang($nhanVien)
     {
-        // Thống kê nhanh kho hàng
+        $today = Carbon::today();
+        $now = Carbon::now();
+
+        $bdsBase = BatDongSan::with(['duAn', 'chuNha'])
+            ->where('nhan_vien_phu_trach_id', $nhanVien->id)
+            ->whereNull('deleted_at');
+
+        $lichHenBase = LichHen::with(['khachHang', 'batDongSan', 'nhanVienSale', 'nhanVienNguonHang'])
+            ->where(function ($q) use ($nhanVien) {
+                $q->where('nhan_vien_nguon_hang_id', $nhanVien->id)
+                    ->orWhereHas('batDongSan', function ($bq) use ($nhanVien) {
+                        $bq->where('nhan_vien_phu_trach_id', $nhanVien->id);
+                    });
+            });
+
+        $kyGuiBase = KyGui::with('khachHang')
+            ->where(function ($q) use ($nhanVien) {
+                $q->where('nhan_vien_phu_trach_id', $nhanVien->id)
+                    ->orWhereNull('nhan_vien_phu_trach_id');
+            })
+            ->whereNull('deleted_at');
+
         $tongQuan = [
-            'tong_bds' => BatDongSan::whereNull('deleted_at')->count(),
-            'bds_con_hang' => BatDongSan::where('trang_thai', 'con_hang')->whereNull('deleted_at')->count(),
-            'ky_gui_cho' => KyGui::where('trang_thai', 'cho_duyet')->whereNull('deleted_at')->count(),
-            'tong_chu_nha' => \App\Models\ChuNha::whereNull('deleted_at')->count(),
+            'tong_bds' => (clone $bdsBase)->count(),
+            'bds_con_hang' => (clone $bdsBase)->where('trang_thai', 'con_hang')->count(),
+            'bds_da_ban_thue' => (clone $bdsBase)->whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
+            'ky_gui_cho' => (clone $kyGuiBase)->where('trang_thai', 'cho_duyet')->count(),
+            'tong_chu_nha' => \App\Models\ChuNha::where('nhan_vien_phu_trach_id', $nhanVien->id)->whereNull('deleted_at')->count(),
+            'lich_can_xu_ly' => (clone $lichHenBase)->whereIn('trang_thai', ['cho_xac_nhan', 'sale_doi_gio', 'bao_lai_gio'])->count(),
         ];
 
-        // Công việc cần duyệt
-        $kyGuiChoDuyet = KyGui::with('khachHang')
+        $lichCanXuLyNgay = (clone $lichHenBase)
+            ->whereIn('trang_thai', ['cho_xac_nhan', 'sale_doi_gio', 'bao_lai_gio'])
+            ->where('thoi_gian_hen', '>=', $now->copy()->subHours(6))
+            ->orderByRaw("CASE WHEN trang_thai = 'sale_doi_gio' THEN 1 WHEN trang_thai = 'cho_xac_nhan' THEN 2 ELSE 3 END")
+            ->orderBy('thoi_gian_hen', 'asc')
+            ->limit(10)
+            ->get();
+
+        $lichHomNayDaXacNhan = (clone $lichHenBase)
+            ->whereDate('thoi_gian_hen', $today)
+            ->where('trang_thai', 'da_xac_nhan')
+            ->orderBy('thoi_gian_hen')
+            ->get();
+
+        $lichQuaHan = (clone $lichHenBase)
+            ->where('thoi_gian_hen', '<', $now)
+            ->whereNotIn('trang_thai', ['hoan_thanh', 'huy', 'tu_choi'])
+            ->orderByDesc('thoi_gian_hen')
+            ->limit(8)
+            ->get();
+
+        $kyGuiChoDuyet = (clone $kyGuiBase)
             ->where('trang_thai', 'cho_duyet')
             ->latest()
             ->limit(8)
             ->get();
 
-        // BĐS mới lên kệ
-        $bdsMoiNhat = BatDongSan::with('duAn')->whereNull('deleted_at')->latest()->limit(6)->get();
+        $kyGuiDangThamDinh = (clone $kyGuiBase)
+            ->where('trang_thai', 'dang_tham_dinh')
+            ->latest()
+            ->limit(8)
+            ->get();
 
-        return view('admin.dashboard.nguon_hang', compact('nhanVien', 'tongQuan', 'kyGuiChoDuyet', 'bdsMoiNhat'));
+        $bdsMoiNhat = (clone $bdsBase)
+            ->latest()
+            ->limit(8)
+            ->get();
+
+        $chuNhaNoiBat = \App\Models\ChuNha::withCount('batDongSans')
+            ->where('nhan_vien_phu_trach_id', $nhanVien->id)
+            ->whereNull('deleted_at')
+            ->orderByDesc('bat_dong_sans_count')
+            ->limit(6)
+            ->get();
+
+        return view('admin.dashboard.nguon_hang', compact(
+            'nhanVien',
+            'tongQuan',
+            'kyGuiChoDuyet',
+            'kyGuiDangThamDinh',
+            'bdsMoiNhat',
+            'lichCanXuLyNgay',
+            'lichHomNayDaXacNhan',
+            'lichQuaHan',
+            'chuNhaNoiBat'
+        ));
     }
 
     // ==========================================

@@ -182,11 +182,15 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 // Quyền thao tác chi tiết tiếp tục được kiểm soát trong controller.
                 Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
                     Route::get('/',                    [LichHenController::class, 'index'])->name('index');
+                    Route::get('/thong-ke',            [LichHenController::class, 'thongKe'])->name('thong-ke');
+                    Route::get('/api/hom-nay',         [LichHenController::class, 'apiLichHenHomNay'])->name('api.hom-nay');
                     Route::get('/create',              [LichHenController::class, 'create'])->name('create');
                     Route::post('/',                   [LichHenController::class, 'store'])->name('store');
                     Route::get('/api-events',          [LichHenController::class, 'apiEvents'])->name('api-events');
                     Route::get('/{lichHen}',           [LichHenController::class, 'show'])->name('show');
                     Route::patch('/{lichHen}/tiep-nhan', [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
+                    Route::post('/{lichHen}/doi-gio-nhanh', [LichHenController::class, 'doiGioNhanh'])->name('doi-gio-nhanh');
+                    Route::post('/{lichHen}/xac-nhan-doi-gio', [LichHenController::class, 'xacNhanDoiGio'])->name('xac-nhan-doi-gio');
                     Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
                     Route::patch('/{lichHen}/huy',     [LichHenController::class, 'huy'])->name('huy');
                     Route::patch('/{lichHen}/bao-lai-gio', [LichHenController::class, 'baoLaiGio'])->name('bao-lai-gio');
