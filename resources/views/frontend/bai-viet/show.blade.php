@@ -152,34 +152,6 @@
                 <div class="col-lg-4">
                     <div class="position-sticky" style="top: 100px;">
 
-                        {{-- Card Tư vấn --}}
-                        <div class="bvct-consult-card mb-4" data-aos="fade-left" data-aos-duration="600"
-                            data-aos-delay="100">
-                            <div class="bvct-consult-header">
-                                <div class="bvct-consult-icon">
-                                    <i class="fas fa-headset"></i>
-                                </div>
-                                <div>
-                                    <h5 class="fw-bold mb-1">Tư Vấn Miễn Phí</h5>
-                                    <p class="small opacity-75 mb-0">Hỗ trợ pháp lý, định giá nhà đất</p>
-                                </div>
-                            </div>
-                            <div class="bvct-consult-body">
-                                <form action="#" method="POST">
-                                    <div class="mb-3">
-                                        <input type="text" class="form-control bvct-input"
-                                            placeholder="Họ và tên của bạn">
-                                    </div>
-                                    <div class="mb-3">
-                                        <input type="text" class="form-control bvct-input"
-                                            placeholder="Số điện thoại *" required>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary-brand w-100 py-2">
-                                        <i class="fas fa-phone-alt me-2"></i>Yêu Cầu Gọi Lại
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
 
                         {{-- Tin đọc nhiều --}}
                         <div class="card border-0 shadow-sm rounded-4" data-aos="fade-left" data-aos-duration="600"

@@ -44,6 +44,30 @@ class BatDongSanController extends Controller
         }
     }
 
+    // ── Lấy tất cả khu_vuc_id bao gồm khu vực cha và con ──
+    private function getKhuVucIdsWithChildren($khuVucId): array
+    {
+        $khuVuc = KhuVuc::find($khuVucId);
+        if (!$khuVuc) {
+            return [];
+        }
+
+        $ids = [$khuVucId];
+
+        // Lấy tất cả khu vực con
+        $children = $khuVuc->con()->get();
+        foreach ($children as $child) {
+            $ids[] = $child->id;
+            // Nếu con có con nữa, lấy tiếp (recursive)
+            $grandChildren = $child->con()->get();
+            foreach ($grandChildren as $grandChild) {
+                $ids[] = $grandChild->id;
+            }
+        }
+
+        return $ids;
+    }
+
     // ── LẤY DỮ LIỆU CONSTANTS CHO FORM ──
     private function getConstants(): array
     {
@@ -81,20 +105,19 @@ class BatDongSanController extends Controller
 
         // Lọc theo dropdown
 
-        $loaiHinh = $request->input('loai_hinh', 'can_ho');
-        if (!empty($loaiHinh)) {
-            $query->where('loai_hinh', $loaiHinh);
+        if ($request->filled('nhu_cau')) {
+            $query->where('nhu_cau', $request->nhu_cau);
         }
 
-        $trangThai = $request->input('trang_thai', 'con_hang');
-        if (!empty($trangThai)) {
-            $query->where('trang_thai', $trangThai);
+        if ($request->filled('trang_thai')) {
+            $query->where('trang_thai', $request->trang_thai);
         }
 
         if ($request->filled('du_an_id')) $query->where('du_an_id', $request->du_an_id);
         if ($request->filled('khu_vuc_id')) {
-            $query->whereHas('duAn', function ($q) use ($request) {
-                $q->where('khu_vuc_id', $request->khu_vuc_id);
+            $khuVucIds = $this->getKhuVucIdsWithChildren($request->khu_vuc_id);
+            $query->whereHas('duAn', function ($q) use ($khuVucIds) {
+                $q->whereIn('khu_vuc_id', $khuVucIds);
             });
         }
 
@@ -103,7 +126,7 @@ class BatDongSanController extends Controller
         }
 
         if ($request->filled('so_phong_ngu') || $request->input('so_phong_ngu') === '0') {
-            $query->where('so_phong_ngu', (int) $request->input('so_phong_ngu'));
+            $query->where('so_phong_ngu', (string) $request->input('so_phong_ngu'));
         }
 
         if ($request->filled('noi_that')) {
@@ -146,7 +169,8 @@ class BatDongSanController extends Controller
 
         $duAns = DuAn::query()
             ->when($request->filled('khu_vuc_id'), function ($q) use ($request) {
-                $q->where('khu_vuc_id', $request->khu_vuc_id);
+                $khuVucIds = $this->getKhuVucIdsWithChildren($request->khu_vuc_id);
+                $q->whereIn('khu_vuc_id', $khuVucIds);
             })
             ->orderBy('ten_du_an')
             ->get();
@@ -170,9 +194,20 @@ class BatDongSanController extends Controller
                 ->values();
         }
 
+        // Lấy danh sách phòng ngủ độc nhất từ BDS
+        $soPhongNguOptions = BatDongSan::query()
+            ->whereNotNull('so_phong_ngu')
+            ->distinct('so_phong_ngu')
+            ->pluck('so_phong_ngu')
+            ->map(fn($pn) => (string) $pn)
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
+
         $noiThatOptions = $this->getConstants()['noi_that'];
 
-        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns', 'khuVucs', 'toaOptions', 'noiThatOptions'));
+        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns', 'khuVucs', 'toaOptions', 'soPhongNguOptions', 'noiThatOptions'));
     }
 
     // ── FORM TẠO MỚI ──

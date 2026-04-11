@@ -20,7 +20,7 @@
                             value="{{ number_format($bds->gia, 0, ',', '.') }}" inputmode="numeric"
                             placeholder="Nhập giá trị BĐS">
                     </div>
-                    s
+
                     <div class="fin-form-group">
                         <label class="d-flex justify-content-between">
                             <span>Mức vay ưu đãi: <strong id="fin_ty_le_text"

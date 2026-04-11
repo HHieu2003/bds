@@ -106,11 +106,11 @@
                 <thead class="bg-light">
                     <tr>
                         <th class="text-center" style="width: 40px">#</th>
-                        <th style="width: 20%">Khách hàng / Chủ nhà</th>
-                        <th style="width: 15%">Loại BĐS</th>
+                        <th style="width: 17%">Khách hàng / Chủ nhà</th>
+                        <th style="width: 18%">Loại BĐS</th>
                         <th>Địa chỉ / Diện tích</th>
-                        <th style="width: 12%">Giá mong muốn</th>
-                        <th style="width: 15%">Trạng thái</th>
+                        <th style="width: 9%">Giá</th>
+                        <th style="width: 18%">Trạng thái</th>
                         <th class="text-center" style="width: 120px">Thao tác</th>
                     </tr>
                 </thead>
@@ -158,7 +158,7 @@
                                         </span>
                                     </div>
                                     @if ($kg->email)
-                                        <div><i class="fas fa-envelope text-secondary me-1"></i>{{ $kg->email }}</div>
+                                        <div>{{ $kg->email }}</div>
                                     @endif
                                 </div>
                             </td>

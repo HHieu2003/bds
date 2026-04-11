@@ -49,38 +49,23 @@
     {{-- ══ BỘ LỌC ══ --}}
     <div class="filter-box mb-4 bds-filter-panel">
         <form method="GET" id="filterForm">
-            <div class="row g-2 align-items-center mb-2 bds-filter-row">
-                <div class="col-12 col-lg-3 filter-cell">
+            <input type="hidden" name="du_an_id" id="duAnIdInput" value="{{ request('du_an_id') }}">
+            <div class="row g-2 align-items-end mb-2 bds-filter-row">
+                <div class="col-12 col-lg-3">
                     <input type="text" name="tukhoa" class="filter-ctrl filter-ctrl-search w-100"
                         value="{{ request('tukhoa') }}" placeholder="Tìm nhanh theo tiêu đề hoặc mã BĐS...">
                 </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
-                    <select name="loai_hinh" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">Loại hình</option>
-                        @foreach (['can_ho' => 'Căn hộ', 'nha_pho' => 'Nhà phố', 'biet_thu' => 'Biệt thự', 'dat_nen' => 'Đất nền', 'shophouse' => 'Shophouse'] as $v => $l)
-                            <option value="{{ $v }}" @selected(request('loai_hinh', 'can_ho') == $v)>{{ $l }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                <div class="col-6 col-lg" style="min-width: 115px;">
                     <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Trạng thái</option>
                         @foreach (['con_hang' => 'Còn hàng', 'dat_coc' => 'Đặt cọc', 'da_ban' => 'Đã bán', 'dang_thue' => 'Đang thuê', 'da_thue' => 'Đã thuê', 'tam_an' => 'Tạm ẩn'] as $v => $l)
-                            <option value="{{ $v }}" @selected(request('trang_thai', 'con_hang') == $v)>{{ $l }}</option>
+                            <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $l }}</option>
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
-                    <select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
-                        <option value="gia_tang" @selected(request('sapxep') == 'gia_tang')>Giá tăng dần</option>
-                        <option value="gia_giam" @selected(request('sapxep') == 'gia_giam')>Giá giảm dần</option>
-                        <option value="luot_xem" @selected(request('sapxep') == 'luot_xem')>Lượt xem nhiều</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-4 col-lg-2 filter-cell">
+                <div class="col-6 col-lg" style="min-width: 110px;">
                     <select name="khu_vuc_id" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">Tất cả khu vực</option>
+                        <option value="">Khu vực</option>
                         @foreach ($khuVucs as $kv)
                             <option value="{{ $kv->id }}" @selected((string) request('khu_vuc_id') === (string) $kv->id)>
                                 {{ $kv->ten_khu_vuc }}
@@ -88,9 +73,9 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                <div class="col-6 col-lg" style="min-width: 50px;">
                     <select name="toa" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">{{ request('du_an_id') ? 'Tất cả tòa' : 'Chọn dự án' }}</option>
+                        <option value="">Tòa</option>
                         @foreach ($toaOptions as $toa)
                             <option value="{{ $toa }}" @selected((string) request('toa') === (string) $toa)>
                                 {{ $toa }}
@@ -98,17 +83,17 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                <div class="col-6 col-lg" style="min-width: px;">
                     <select name="so_phong_ngu" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Phòng ngủ</option>
-                        @for ($pn = 0; $pn <= 5; $pn++)
+                        @foreach ($soPhongNguOptions as $pn)
                             <option value="{{ $pn }}" @selected((string) request('so_phong_ngu') === (string) $pn)>
-                                {{ $pn === 0 ? 'Studio' : $pn . ' PN' }}
+                                {{ $pn == 0 ? 'Studio' : $pn . ' PN' }}
                             </option>
-                        @endfor
+                        @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                <div class="col-6 col-lg" style="min-width: 90px;">
                     <select name="noi_that" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Nội thất</option>
                         @foreach ($noiThatOptions as $value => $label)
@@ -118,34 +103,32 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-12 col-md-8 col-lg-2 filter-cell">
-                    <div class="price-range-inline">
-                        <input type="number" min="0" step="1000000" name="gia_tu" class="filter-ctrl w-100"
-                            value="{{ request('gia_tu') }}" placeholder="Giá từ">
-                        <input type="number" min="0" step="1000000" name="gia_den" class="filter-ctrl w-100"
-                            value="{{ request('gia_den') }}" placeholder="Giá đến">
+                <div class="col-6 col-lg" style="min-width: 110px;">
+                    <select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
+                        <option value="gia_tang" @selected(request('sapxep') == 'gia_tang')>Giá tăng ↑</option>
+                        <option value="gia_giam" @selected(request('sapxep') == 'gia_giam')>Giá giảm ↓</option>
+                        <option value="luot_xem" @selected(request('sapxep') == 'luot_xem')>Lượt xem</option>
+                    </select>
+                </div>
+                @if (request()->hasAny([
+                        'tukhoa',
+                        'trang_thai',
+                        'du_an_id',
+                        'khu_vuc_id',
+                        'sapxep',
+                        'toa',
+                        'so_phong_ngu',
+                        'noi_that',
+                        'gia_tu',
+                        'gia_den',
+                    ]))
+                    <div class="col-12 col-lg-auto">
+                        <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="btn btn-sm btn-danger w-100">
+                            <i class="fas fa-rotate-left me-1"></i>
+                        </a>
                     </div>
-                </div>
-                <div class="col-12 col-md-4 col-lg-2 d-flex gap-2 justify-content-end filter-actions">
-                    <button type="submit" class="btn btn-navy"><i class="fas fa-search me-0"></i><span
-                            class="btn-label-desktop-hide"> Lọc</span></button>
-                    @if (request()->hasAny([
-                            'tukhoa',
-                            'loai_hinh',
-                            'trang_thai',
-                            'du_an_id',
-                            'khu_vuc_id',
-                            'sapxep',
-                            'toa',
-                            'so_phong_ngu',
-                            'noi_that',
-                            'gia_tu',
-                            'gia_den',
-                        ]))
-                        <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="btn btn-danger"><i
-                                class="fas fa-rotate-left me-0"></i><span class="btn-label-desktop-hide"> Xóa</span></a>
-                    @endif
-                </div>
+                @endif
             </div>
         </form>
 
@@ -162,7 +145,7 @@
             <div class="project-tabs-scroller">
                 <a href="{{ route('nhanvien.admin.bat-dong-san.index', $projectQueryBase) }}"
                     class="project-tab {{ !request()->filled('du_an_id') ? 'active' : '' }}">
-                    Tất cả dự án
+                    ALL
                 </a>
                 @foreach ($duAns as $da)
                     <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge($projectQueryBase, ['du_an_id' => $da->id, 'khu_vuc_id' => $da->khu_vuc_id])) }}"
@@ -214,14 +197,14 @@
                 style="table-layout: fixed; width: 100%; word-wrap: break-word;">
                 <thead class="bg-light">
                     <tr>
-                        <th class="text-center" style="width: 40px">#</th>
+                        <th class="text-center" style="width: 50px">#</th>
                         <th>Bất động sản</th>
                         @unless ($isSaleView)
-                            <th style="width: 14%">Chủ nhà</th>
+                            <th style="width: 12%">Chủ nhà</th>
                         @endunless
                         <th style="width: 13%">Giá</th>
                         <th style="width: 9%">Diện tích</th>
-                        <th style="width: 13%">Trạng thái</th>
+                        <th style="width: 12%">Trạng thái</th>
                         <th class="text-center" style="width: 92px">Hiển thị</th>
                         <th class="text-center" style="width: 90px">Thao tác</th>
                     </tr>
@@ -235,21 +218,35 @@
                             {{-- Cột 1: Thông tin Bất động sản --}}
                             <td>
                                 <div class="d-flex align-items-start gap-2">
-                                    <div class="position-relative flex-shrink-0">
+                                    <div class="position-relative d-flex flex-column flex-shrink-0">
                                         @if ($bds->hinh_anh)
                                             <img src="{{ asset('storage/' . $bds->hinh_anh) }}" class="rounded border"
-                                                style="width: 55px; height: 45px; object-fit: cover;" alt="">
+                                                style="width: auto; height: 45px; object-fit: cover;" alt="">
                                         @else
                                             <div class="rounded border bg-light text-muted d-flex align-items-center justify-content-center"
                                                 style="width: 55px; height: 45px;"><i class="fas fa-image"></i></div>
                                         @endif
                                         @if ($bds->noi_bat)
-                                            <span class="badge bg-danger position-absolute top-0 start-0 translate-middle"
+                                            <span class="badge bg-danger position-absolute top-0 end-0 translate-middle"
                                                 style="font-size: 0.5rem; padding: 0.25em 0.4em;">HOT</span>
                                         @endif
                                         <span
+                                            class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-warning text-dark' : 'bg-info text-dark' }} position-absolute top-0 start-0 translate-middle"
+                                            style="font-size: 0.66rem; padding: 0.25em 0.4em;">
+                                            {{ $bds->nhu_cau == 'ban' ? 'Bán' : 'Thuê' }}
+                                        </span>
+                                        <span
                                             class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle fw-normal">#{{ $bds->ma_bat_dong_san }}</span>
-
+                                        <div style="font-size: 0.7rem; color: #666; margin-top: 2px;">
+                                            @if ($bds->toa)
+                                                <div>Căn: <strong>{{ $bds->toa }}</strong> - @if ($bds->ma_can)
+                                                        <strong>{{ $bds->ma_can }}</strong>
+                                                    @endif
+                                                </div>
+                                            @elseif ($bds->ma_can)
+                                                <div>Căn: <strong>{{ $bds->ma_can }}</strong></div>
+                                            @endif
+                                        </div>
                                     </div>
                                     <div style="min-width: 0; flex: 1;">
                                         <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
@@ -262,14 +259,6 @@
                                                     title="{{ $bds->duAn->ten_du_an }}"><i
                                                         class="fas fa-city me-1"></i>{{ $bds->duAn->ten_du_an }}</span>
                                             @endif
-                                            <span class="badge bg-light text-dark border" style="font-size: 0.66rem;">
-                                                {{ $loaiMap[$bds->loai_hinh] ?? $bds->loai_hinh }}
-                                            </span>
-                                            <span
-                                                class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-warning text-dark' : 'bg-info text-dark' }}"
-                                                style="font-size: 0.66rem;">
-                                                {{ $bds->nhu_cau == 'ban' ? 'Bán' : 'Thuê' }}
-                                            </span>
                                             @if ($bds->nhanVienPhuTrach)
                                                 <span class="text-muted ms-1"><i
                                                         class="fas fa-user-tie me-1"></i>{{ $bds->nhanVienPhuTrach->ho_ten }}</span>
@@ -292,8 +281,7 @@
                                             data-ghichu="{{ $bds->chuNha->ghi_chu }}">
                                             <i class="fas fa-user-tie text-secondary me-1"></i>{{ $bds->chuNha->ho_ten }}
                                         </a>
-                                        <div class="text-muted" style="font-size: 0.75rem;"><i
-                                                class="fas fa-phone-alt text-success me-1"></i>{{ $bds->chuNha->so_dien_thoai }}
+                                        <div class="text-muted" style="font-size: 0.75rem;">{{ $bds->chuNha->so_dien_thoai }}
                                         </div>
                                     @else
                                         <span class="text-muted fst-italic" style="font-size: 0.75rem;">— Chưa gán —</span>
@@ -317,8 +305,8 @@
                             <td>
                                 <div class="fw-bold text-dark">{{ (float) $bds->dien_tich }} m²</div>
                                 @if ($bds->so_phong_ngu !== null)
-                                    <div class="text-muted" style="font-size: 0.8rem"><i
-                                            class="fas fa-bed me-1"></i>{{ $bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu . ' PN' }}
+                                    <div class="text-muted" style="font-size: 0.8rem">
+                                        {{ $bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu }}
                                     </div>
                                 @endif
                             </td>
@@ -351,7 +339,8 @@
                                         data-display-id="{{ $bds->id }}">{{ $bds->hien_thi ? 'Đang hiện' : 'Đang ẩn' }}</span>
                                 </div>
                                 <div class="text-muted" style="font-size: 0.68rem" title="Lượt xem"><i
-                                        class="fas fa-eye"></i> {{ number_format($bds->luot_xem) }}</div>
+                                        class="fas fa-eye"></i>
+                                    {{ number_format($bds->luot_xem) }}</div>
                             </td>
 
                             {{-- Cột 7: Thao tác --}}
@@ -434,7 +423,7 @@
                         <div><i class="fas fa-vector-square text-muted"></i> {{ (float) $bds->dien_tich }}m²</div>
                         @if ($bds->so_phong_ngu !== null)
                             <div><i class="fas fa-bed text-muted"></i>
-                                {{ $bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu . 'PN' }}</div>
+                                {{ $bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu }}</div>
                         @endif
                     </div>
                     <div class="mobile-card-foot">
@@ -455,7 +444,8 @@
         </div>
 
         @if ($batDongSans->hasPages())
-            <div class="card-footer bg-white border-top p-3 d-flex justify-content-center justify-content-md-end">
+            <div class="card-footer bg-white border-top p-3 d-flex justify-content-center justify-content-md-end"
+                id="paginationContainer">
                 {{ $batDongSans->links('pagination::bootstrap-5') }}</div>
         @endif
     </div>
@@ -533,17 +523,167 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const CSRF = document.querySelector('meta[name=csrf-token]').content;
+            const filterForm = document.getElementById('filterForm');
+            const searchInput = filterForm?.querySelector('input[name="tukhoa"]');
 
-            // Xóa BĐS
-            document.querySelectorAll('.btn-delete-bds').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const name = this.dataset.name,
-                        id = this.dataset.id;
-                    confirmDelete('bất động sản #' + name, function() {
-                        document.getElementById('frmDel_' + id).submit();
+            // ══ AJAX PAGINATION ══
+            function bindPaginationLinks() {
+                document.querySelectorAll('#paginationContainer a').forEach(link => {
+                    link.addEventListener('click', function(e) {
+                        const href = this.getAttribute('href');
+                        if (href && (href.includes('?') || href.includes('&'))) {
+                            e.preventDefault();
+                            fetchTableData(href);
+                        }
                     });
                 });
+            }
+
+            function fetchTableData(url) {
+                // Show loading state
+                const tbody = document.querySelector('table tbody');
+                if (tbody) {
+                    tbody.style.opacity = '0.6';
+                }
+
+                fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'text/html'
+                        }
+                    }).then(response => response.text())
+                    .then(html => {
+                        // Parse HTML response
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+
+                        // Update table tbody
+                        const newTbody = doc.querySelector('table tbody');
+                        const oldTbody = document.querySelector('table tbody');
+                        if (newTbody && oldTbody) {
+                            oldTbody.innerHTML = newTbody.innerHTML;
+                        }
+
+                        // Update pagination
+                        const newPagination = doc.querySelector('#paginationContainer');
+                        const oldPagination = document.querySelector('#paginationContainer');
+                        if (newPagination && oldPagination) {
+                            oldPagination.innerHTML = newPagination.innerHTML;
+                        }
+
+                        // Update header stats
+                        const newHeader = doc.querySelector('.card-header span');
+                        const oldHeader = document.querySelector('.card-header span');
+                        if (newHeader && oldHeader) {
+                            oldHeader.innerHTML = newHeader.innerHTML;
+                        }
+
+                        // Rebind all event listeners
+                        bindPaginationLinks();
+                        bindDeleteButtons();
+                        bindStatusButtons();
+                        bindToggleCheckboxes();
+                        bindChuNhaButtons();
+
+                        // Scroll to top of table
+                        document.querySelector('table').scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+
+                        // Restore visibility
+                        if (tbody) {
+                            tbody.style.opacity = '1';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Pagination error:', err);
+                        if (tbody) {
+                            tbody.style.opacity = '1';
+                        }
+                        showAdminToast('Lỗi tải dữ liệu', 'error');
+                    });
+            }
+
+            // ══ AUTO-SUBMIT KHI CHỌN SELECT ══
+            document.querySelectorAll('.filter-auto-submit').forEach(select => {
+                select.addEventListener('change', function() {
+                    if (filterForm) {
+                        filterForm.submit();
+                    }
+                });
             });
+
+            // ══ SUBMIT KHI ẤN ENTER TRÊN SEARCH ══
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (filterForm) {
+                            filterForm.submit();
+                        }
+                    }
+                });
+            }
+
+            // ══ DELETE HANDLER ══
+            function bindDeleteButtons() {
+                document.querySelectorAll('.btn-delete-bds').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const name = this.dataset.name,
+                            id = this.dataset.id;
+                        confirmDelete('bất động sản #' + name, function() {
+                            const form = document.getElementById('frmDel_' + id);
+                            if (form) {
+                                fetch(form.action, {
+                                    method: 'POST',
+                                    body: new FormData(form),
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest'
+                                    }
+                                }).then(response => {
+                                    if (response.ok || response.status === 200 ||
+                                        response.status === 302 || response
+                                        .status ===
+                                        204) {
+                                        const row = form.closest('tr');
+                                        if (row) {
+                                            row.style.opacity = '0';
+                                            row.style.transition =
+                                                'opacity 0.3s ease';
+                                            setTimeout(() => row.remove(), 300);
+                                        }
+
+                                        document.querySelectorAll(
+                                                `.btn-delete-bds[data-id="${id}"]`)
+                                            .forEach(btn => {
+                                                const card = btn.closest(
+                                                    '.mobile-card');
+                                                if (card && !card.contains(
+                                                        form)) {
+                                                    card.style.opacity = '0';
+                                                    card.style.transition =
+                                                        'opacity 0.3s ease';
+                                                    setTimeout(() => card
+                                                        .remove(),
+                                                        300);
+                                                }
+                                            });
+
+                                        showAdminToast('Đã xóa bất động sản',
+                                            'success');
+                                    } else {
+                                        showAdminToast('Có lỗi khi xóa', 'error');
+                                    }
+                                }).catch(err => {
+                                    console.error('Delete error:', err);
+                                    showAdminToast('Lỗi kết nối', 'error');
+                                });
+                            }
+                        });
+                    });
+                });
+            }
 
             const statusMap = {
                 con_hang: {
@@ -578,111 +718,124 @@
                 }
             };
 
-            // Đổi trạng thái AJAX
-            document.querySelectorAll('.tt-update-btn').forEach(item => {
-                item.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const bdsId = this.dataset.id;
-                    const newStatus = this.dataset.val;
+            // ══ STATUS UPDATE HANDLER ══
+            function bindStatusButtons() {
+                document.querySelectorAll('.tt-update-btn').forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const bdsId = this.dataset.id;
+                        const newStatus = this.dataset.val;
 
-                    fetch(`/nhan-vien/admin/bat-dong-san/${this.dataset.id}/trang-thai`, {
-                        method: 'PATCH',
-                        headers: {
-                            'X-CSRF-TOKEN': CSRF,
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            trang_thai: newStatus
-                        })
-                    }).then(r => r.json()).then(data => {
-                        if (data.ok) {
-                            const badge = document.querySelector(
-                                `.js-status-badge[data-status-id="${bdsId}"]`);
-                            const statusInfo = statusMap[newStatus];
-                            if (badge && statusInfo) {
-                                badge.textContent = statusInfo.label;
-                                badge.style.background = statusInfo.bg;
-                                badge.style.color = statusInfo.color;
-                            }
-                            showAdminToast('Đã cập nhật trạng thái', 'success');
-                        } else showAdminToast('Lỗi cập nhật', 'error');
-                    }).catch(() => showAdminToast('Lỗi kết nối', 'error'));
-                });
-            });
-
-            // Toggle hiển thị AJAX
-            document.querySelectorAll('input[type="checkbox"][data-toggle-url]').forEach(cb => {
-                cb.addEventListener('change', function() {
-                    const checkbox = this;
-                    const oldState = !checkbox.checked;
-                    checkbox.disabled = true;
-
-                    fetch(checkbox.dataset.toggleUrl, {
-                        method: 'PATCH',
-                        headers: {
-                            'X-CSRF-TOKEN': CSRF,
-                            'Accept': 'application/json'
-                        }
-                    }).then(r => r.json()).then(data => {
-                        const ok = data.ok === true || typeof data.hien_thi !== 'undefined';
-                        if (!ok) {
-                            checkbox.checked = oldState;
-                            showAdminToast('Không thể cập nhật hiển thị', 'error');
-                            return;
-                        }
-
-                        const isVisible = typeof data.hien_thi === 'boolean' ? data
-                            .hien_thi : checkbox.checked;
-                        checkbox.checked = isVisible;
-                        const label = document.querySelector(
-                            `.js-display-label[data-display-id="${checkbox.dataset.displayId}"]`
-                        );
-                        if (label) {
-                            label.textContent = isVisible ? 'Đang hiện' : 'Đang ẩn';
-                            label.classList.toggle('text-success', isVisible);
-                            label.classList.toggle('text-muted', !isVisible);
-                        }
-                        showAdminToast('Đã cập nhật hiển thị', 'success');
-                    }).catch(() => {
-                        checkbox.checked = oldState;
-                        showAdminToast('Lỗi kết nối', 'error');
-                    }).finally(() => {
-                        checkbox.disabled = false;
+                        fetch(`/nhan-vien/admin/bat-dong-san/${this.dataset.id}/trang-thai`, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': CSRF,
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                trang_thai: newStatus
+                            })
+                        }).then(r => r.json()).then(data => {
+                            if (data.ok) {
+                                const badge = document.querySelector(
+                                    `.js-status-badge[data-status-id="${bdsId}"]`);
+                                const statusInfo = statusMap[newStatus];
+                                if (badge && statusInfo) {
+                                    badge.textContent = statusInfo.label;
+                                    badge.style.background = statusInfo.bg;
+                                    badge.style.color = statusInfo.color;
+                                }
+                                showAdminToast('Đã cập nhật trạng thái', 'success');
+                            } else showAdminToast('Lỗi cập nhật', 'error');
+                        }).catch(() => showAdminToast('Lỗi kết nối', 'error'));
                     });
                 });
-            });
+            }
 
-            // Bật Modal Thông tin Chủ nhà (JS Thuần)
-            document.querySelectorAll('.btn-view-chunha').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    // Đẩy dữ liệu vào Modal
-                    const hoten = this.dataset.hoten;
-                    const sdt = this.dataset.sdt;
+            // ══ TOGGLE CHECKBOX HANDLER ══
+            function bindToggleCheckboxes() {
+                document.querySelectorAll('input[type="checkbox"][data-toggle-url]').forEach(cb => {
+                    cb.addEventListener('change', function() {
+                        const checkbox = this;
+                        const oldState = !checkbox.checked;
+                        checkbox.disabled = true;
 
-                    document.getElementById('md_avatar').textContent = hoten.charAt(0)
-                        .toUpperCase();
-                    document.getElementById('md_hoten').textContent = hoten;
-                    document.getElementById('md_sdt').innerHTML =
-                        `<i class="fas fa-phone-alt text-success me-1"></i> ${sdt}`;
-                    document.getElementById('md_call').href = 'tel:' + sdt;
+                        fetch(checkbox.dataset.toggleUrl, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': CSRF,
+                                'Accept': 'application/json'
+                            }
+                        }).then(r => r.json()).then(data => {
+                            const ok = data.ok === true || typeof data.hien_thi !==
+                                'undefined';
+                            if (!ok) {
+                                checkbox.checked = oldState;
+                                showAdminToast('Không thể cập nhật hiển thị', 'error');
+                                return;
+                            }
 
-                    const email = this.dataset.email;
-                    document.getElementById('md_email').textContent = email ? email : '—';
-                    document.getElementById('md_email').title = email ? email : '';
-
-                    document.getElementById('md_cccd').textContent = this.dataset.cccd ? this
-                        .dataset.cccd : '—';
-                    document.getElementById('md_diachi').textContent = this.dataset.diachi ? this
-                        .dataset.diachi : '—';
-                    document.getElementById('md_ghichu').innerHTML = this.dataset.ghichu ? this
-                        .dataset.ghichu.replace(/\n/g, '<br>') :
-                        '<span class="text-muted fst-italic">Không có ghi chú</span>';
-
-                    // Mở modal bằng Bootstrap API
-                    new bootstrap.Modal(document.getElementById('modalChuNha')).show();
+                            const isVisible = typeof data.hien_thi === 'boolean' ? data
+                                .hien_thi : checkbox.checked;
+                            checkbox.checked = isVisible;
+                            const label = document.querySelector(
+                                `.js-display-label[data-display-id="${checkbox.dataset.displayId}"]`
+                            );
+                            if (label) {
+                                label.textContent = isVisible ? 'Đang hiện' : 'Đang ẩn';
+                                label.classList.toggle('text-success', isVisible);
+                                label.classList.toggle('text-muted', !isVisible);
+                            }
+                            showAdminToast('Đã cập nhật hiển thị', 'success');
+                        }).catch(() => {
+                            checkbox.checked = oldState;
+                            showAdminToast('Lỗi kết nối', 'error');
+                        }).finally(() => {
+                            checkbox.disabled = false;
+                        });
+                    });
                 });
-            });
+            }
+
+            // ══ CHỦ NHÀ MODAL HANDLER ══
+            function bindChuNhaButtons() {
+                document.querySelectorAll('.btn-view-chunha').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const hoten = this.dataset.hoten;
+                        const sdt = this.dataset.sdt;
+
+                        document.getElementById('md_avatar').textContent = hoten.charAt(0)
+                            .toUpperCase();
+                        document.getElementById('md_hoten').textContent = hoten;
+                        document.getElementById('md_sdt').innerHTML =
+                            `<i class="fas fa-phone-alt text-success me-1"></i> ${sdt}`;
+                        document.getElementById('md_call').href = 'tel:' + sdt;
+
+                        const email = this.dataset.email;
+                        document.getElementById('md_email').textContent = email ? email : '—';
+                        document.getElementById('md_email').title = email ? email : '';
+
+                        document.getElementById('md_cccd').textContent = this.dataset.cccd ? this
+                            .dataset.cccd : '—';
+                        document.getElementById('md_diachi').textContent = this.dataset.diachi ?
+                            this
+                            .dataset.diachi : '—';
+                        document.getElementById('md_ghichu').innerHTML = this.dataset.ghichu ? this
+                            .dataset.ghichu.replace(/\n/g, '<br>') :
+                            '<span class="text-muted fst-italic">Không có ghi chú</span>';
+
+                        new bootstrap.Modal(document.getElementById('modalChuNha')).show();
+                    });
+                });
+            }
+
+            // Initial bindings
+            bindPaginationLinks();
+            bindDeleteButtons();
+            bindStatusButtons();
+            bindToggleCheckboxes();
+            bindChuNhaButtons();
         });
     </script>
 @endpush
@@ -693,16 +846,45 @@
             border: 1px solid rgba(15, 23, 42, 0.08);
         }
 
+        .bds-filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+
+        @media (max-width: 1199.98px) {
+            .bds-filter-row>div:not(:first-child) {
+                min-width: 90px !important;
+                flex: 0 1 auto !important;
+            }
+
+            .bds-filter-row>.col-12:first-child {
+                flex: 0 0 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .bds-filter-row>div {
+                flex: 0 1 calc(50% - 0.5rem) !important;
+                min-width: auto !important;
+            }
+
+            .bds-filter-row>.col-12 {
+                flex: 0 0 100% !important;
+            }
+        }
+
         .project-tabs-title {
-            font-size: 0.78rem;
-            font-weight: 700;
+            font-size: 0.6rem;
+            font-weight: 500;
             color: #475569;
             margin-bottom: 0.5rem;
         }
 
         .project-tabs-scroller {
             display: flex;
-            gap: 0.45rem;
+            gap: 0.25rem;
             overflow-x: auto;
             padding-bottom: 0.15rem;
         }
@@ -710,7 +892,7 @@
         .project-tab {
             flex: 0 0 auto;
             text-decoration: none;
-            font-size: 0.78rem;
+            font-size: 0.6rem;
             font-weight: 600;
             color: #334155;
             background: #f8fafc;
@@ -722,8 +904,8 @@
         }
 
         .project-tab:hover {
-            color: #0f172a;
-            background: #eef2ff;
+            color: #ffffff;
+            background: #e77a27;
             border-color: #c7d2fe;
         }
 
@@ -739,8 +921,7 @@
                 flex-wrap: wrap;
             }
 
-            .bds-filter-row>.filter-cell,
-            .bds-filter-row>.filter-actions {
+            .bds-filter-row>div {
                 min-width: 0;
             }
 
@@ -752,10 +933,6 @@
 
             .bds-filter-panel .filter-ctrl-search::placeholder {
                 font-size: 0.8rem;
-            }
-
-            .bds-filter-panel .filter-actions {
-                flex-wrap: nowrap;
             }
 
             .bds-filter-panel .price-range-inline {

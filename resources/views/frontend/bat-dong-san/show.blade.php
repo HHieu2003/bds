@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                       TRANG CHI TIẾT BĐS — Global Styles
-                                    ═══════════════════════════════════════ */
+                                                                                                                               TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                            ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -415,10 +415,12 @@
             max-height: 400px;
             overflow: hidden;
             position: relative;
+            transition: max-height 0.4s ease-in-out;
         }
 
         .mo-ta-preview.expanded {
-            max-height: none;
+            max-height: 5000px;
+            transition: max-height 0.6s ease-in-out;
         }
 
         .mo-ta-fade {
@@ -429,6 +431,7 @@
             height: 80px;
             background: linear-gradient(to bottom, transparent, #fff);
             pointer-events: none;
+            display: block;
         }
 
         .mo-ta-preview.expanded .mo-ta-fade {
@@ -763,37 +766,6 @@
             color: #fff;
         }
 
-        /* ── THỐNG KÊ NHANH ── */
-        .quick-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: .5rem;
-            margin-bottom: .8rem;
-        }
-
-        .qs-item {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: .65rem .5rem;
-            text-align: center;
-            border: 1px solid #e9ecef;
-        }
-
-        .qs-item .qs-num {
-            font-size: 1rem;
-            font-weight: 900;
-            color: #0F172A;
-            display: block;
-        }
-
-        .qs-item .qs-lbl {
-            font-size: .62rem;
-            color: #9ca3af;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: .4px;
-        }
-
         /* ── BĐS LIÊN QUAN ── */
         .related-section {
             margin-top: 2.5rem;
@@ -1028,7 +1000,7 @@
                         <h1 class="bds-main-title">{{ $bds->tieu_de }}</h1>
                         <p class="bds-address">
                             <i class="fas fa-map-marker-alt"></i>
-                            {{ $bds->dia_chi }}
+                            {{ $bds->duAn->dia_chi }}
                         </p>
                         <div class="bds-price-row">
                             <div class="bds-price">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</div>
@@ -1059,21 +1031,14 @@
                                 <div class="spec-item">
                                     <div class="spec-icon"><i class="fas fa-bed"></i></div>
                                     <div class="spec-label">Phòng ngủ</div>
-                                    <div class="spec-value">{{ $bds->so_phong_ngu ?? '—' }} PN</div>
-                                </div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="spec-item">
-                                    <div class="spec-icon"><i class="fas fa-bath"></i></div>
-                                    <div class="spec-label">Phòng tắm</div>
-                                    <div class="spec-value">{{ $bds->so_phong_tam ?? '—' }} WC</div>
+                                    <div class="spec-value">{{ $bds->so_phong_ngu ?? '—' }}</div>
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
                                 <div class="spec-item">
                                     <div class="spec-icon"><i class="fas fa-compass"></i></div>
-                                    <div class="spec-label">Hướng nhà</div>
-                                    <div class="spec-value">{{ $bds->huong ?? 'N/A' }}</div>
+                                    <div class="spec-label">Hướng ban công</div>
+                                    <div class="spec-value">{{ $bds->huong_ban_cong ?? 'N/A' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -1139,7 +1104,7 @@
                             </div>
                             <div class="mo-ta-fade" id="motaFade"></div>
                         </div>
-                        <button class="btn-read-more" id="btnReadMore" onclick="toggleMoTa()">
+                        <button class="btn-read-more" id="btnReadMore" type="button">
                             <i class="fas fa-chevron-down" id="iconReadMore"></i>
                             <span id="txtReadMore">Xem thêm nội dung</span>
                         </button>
@@ -1154,21 +1119,6 @@
                 <div class="col-lg-4">
                     <div class="sidebar-sticky">
 
-                        {{-- Thống kê nhanh --}}
-                        <div class="quick-stats">
-                            <div class="qs-item">
-                                <span class="qs-num">{{ $bds->dien_tich }}</span>
-                                <span class="qs-lbl">m² DT</span>
-                            </div>
-                            <div class="qs-item">
-                                <span class="qs-num">{{ $bds->so_phong_ngu ?? '—' }}</span>
-                                <span class="qs-lbl">Phòng ngủ</span>
-                            </div>
-                            <div class="qs-item">
-                                <span class="qs-num">{{ $bds->so_phong_tam ?? '—' }}</span>
-                                <span class="qs-lbl">Phòng tắm</span>
-                            </div>
-                        </div>
 
                         {{-- Card chuyên viên --}}
                         <div class="consultant-card">
@@ -1237,7 +1187,7 @@
                                 <i class="{{ $bds->isYeuThich ?? false ? 'fas' : 'far' }} fa-heart"></i> Lưu tin
                             </button>
                             <button class="btn-action btn-compare"
-                                onclick="addSoSanh({{ $bds->id }}, '{{ addslashes($bds->tieu_de) }}')">
+                                onclick="addSoSanh({{ $bds->id }}, {{ json_encode($bds->tieu_de) }})">
                                 <i class="fas fa-balance-scale"></i> So sánh
                             </button>
                             <button class="btn-action btn-price-alert" onclick="dangKyCanhBaoGia()">
@@ -1377,217 +1327,250 @@
         </div>
     </div>
 
-    @push('scripts')
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
-        <script>
-            /* Lightbox config */
-            lightbox.option({
-                resizeDuration: 200,
-                wrapAround: true,
-                albumLabel: 'Ảnh %1 / %2'
-            });
-
-            /* Đọc thêm / Thu gọn */
-            function toggleMoTa() {
-                var el = document.getElementById('motaPreview');
-                var icon = document.getElementById('iconReadMore');
-                var txt = document.getElementById('txtReadMore');
-                var fade = document.getElementById('motaFade');
-                var open = el.classList.toggle('expanded');
-                icon.className = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-                txt.textContent = open ? 'Thu gọn' : 'Xem thêm nội dung';
-                if (fade) fade.style.display = open ? 'none' : 'block';
-            }
-
-            /* Gửi yêu cầu gọi lại */
-            function guiYeuCauGoiLai(e) {
-                e.preventDefault();
-                var btn = document.getElementById('btnCallBack');
-                var form = document.getElementById('formCallBack');
-                var sdt = form.querySelector('[name=so_dien_thoai]').value.trim();
-                var hoTen = form.querySelector('[name=ho_ten]').value.trim();
-                var errorBox = document.getElementById('callBackError');
-
-                if (errorBox) {
-                    errorBox.classList.add('d-none');
-                    errorBox.classList.remove('text-danger', 'text-success');
-                    errorBox.textContent = '';
-                }
-
-                if (!sdt) {
-                    showFlash('Vui lòng nhập số điện thoại.', 'warning');
-                    return;
-                }
-
-                if (!hoTen) {
-                    showFlash('Vui lòng nhập họ tên.', 'warning');
-                    return;
-                }
-
-                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang gửi...';
-                btn.disabled = true;
-
-                fetch('{{ route('frontend.lien-he.store') }}', {
-                        method: 'POST',
-                        headers: (window.getCsrfHeaders ? window.getCsrfHeaders({
-                            'Accept': 'application/json'
-                        }) : {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }),
-                        credentials: 'same-origin',
-                        body: new FormData(form)
-                    })
-                    .then(async r => {
-                        let data = {};
-                        try {
-                            data = await r.json();
-                        } catch (_) {}
-
-                        if (!r.ok) {
-                            throw new Error(data.message || (r.status === 429 ?
-                                'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
-                                'Có lỗi xảy ra, vui lòng thử lại.'));
-                        }
-
-                        return data;
-                    })
-                    .then((data) => {
-                        showFlash(data.message || 'Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
-                        var defaultNoiDung = 'Tôi quan tâm đến BĐS: {{ addslashes($bds->tieu_de) }}';
-                        var noiDungEl = form.querySelector('[name=noi_dung]');
-                        if (noiDungEl) noiDungEl.value = defaultNoiDung;
-                        if (!{{ $customer ? 'true' : 'false' }}) {
-                            form.reset();
-                            if (noiDungEl) noiDungEl.value = defaultNoiDung;
-                        }
-
-                        if (errorBox) {
-                            errorBox.classList.remove('d-none');
-                            errorBox.classList.add('text-success');
-                            errorBox.textContent = data.message || 'Yêu cầu đã được gửi thành công.';
-                        }
-                    })
-                    .catch((err) => {
-                        showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
-                        if (errorBox) {
-                            errorBox.classList.remove('d-none');
-                            errorBox.classList.add('text-danger');
-                            errorBox.textContent = err.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-                        }
-                    })
-                    .finally(() => {
-                        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
-                        btn.disabled = false;
-                    });
-            }
-
-            /* XỬ LÝ AJAX FORM ĐẶT LỊCH XEM NHÀ (MỚI) */
-            document.getElementById('frmDatLich').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                let form = this;
-                let btn = document.getElementById('btnSubmitDatLich');
-                let errorBox = document.getElementById('datLichError');
-                let originalText = btn.innerHTML;
-
-                if (errorBox) {
-                    errorBox.classList.add('d-none');
-                    errorBox.textContent = '';
-                }
-
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-                btn.disabled = true;
-
-                let formData = new FormData(form);
-
-                fetch(form.action, {
-                        method: 'POST',
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
-                        body: formData
-                    })
-                    .then(async response => {
-                        const data = await response.json().catch(() => ({}));
-                        if (!response.ok) {
-                            throw new Error(data.message || (response.status === 429 ?
-                                'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
-                                'Có lỗi xảy ra, vui lòng kiểm tra lại thông tin.'));
-                        }
-                        return data;
-                    })
-                    .then(data => {
-                        if (data.status !== 'success') {
-                            throw new Error(data.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại.');
-                        }
-
-                        var myModalEl = document.getElementById('modalDatLich');
-                        var modal = bootstrap.Modal.getInstance(myModalEl);
-                        if (modal) modal.hide();
-
-                        showFlash(data.message || 'Gửi yêu cầu đặt lịch thành công!', 'success');
-
-                        const defaultGhiChu =
-                            'Tôi muốn đặt lịch xem BĐS: {{ addslashes($bds->tieu_de) }}';
-                        const ghiChuEl = form.querySelector('[name=ghi_chu]');
-
-                        if (!{{ $customer ? 'true' : 'false' }}) {
-                            form.reset();
-                        }
-                        if (ghiChuEl) {
-                            ghiChuEl.value = defaultGhiChu;
-                        }
-                    })
-                    .catch(error => {
-                        showFlash(error.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'warning');
-                        if (errorBox) {
-                            errorBox.classList.remove('d-none');
-                            errorBox.textContent = error.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-                        }
-                    })
-                    .finally(() => {
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    });
-            });
-
-            function dangKyCanhBaoGia() {
-                if (typeof openModalDangKy !== 'function') {
-                    showFlash('Chưa thể mở form đăng ký nhận tin lúc này.', 'danger');
-                    return;
-                }
-
-                openModalDangKy('', {
-                    batDongSanId: {{ $bds->id }},
-                    batDongSanTitle: '{{ addslashes($bds->tieu_de) }}',
-                    nhuCau: '{{ $bds->nhu_cau }}',
-                    khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
-                    duAnId: {{ $bds->du_an_id ?? 'null' }},
-                    soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
-                });
-            }
-
-            // Ghi nhận thời gian xem (Tracking)
-            (function() {
-                const startTime = Date.now();
-                const bdsId = {{ $bds->id }};
-
-                window.addEventListener('beforeunload', function() {
-                    const seconds = Math.floor((Date.now() - startTime) / 1000);
-                    if (seconds < 3) return;
-
-                    navigator.sendBeacon('{{ route('frontend.bds.track-time') }}',
-                        JSON.stringify({
-                            bds_id: bdsId,
-                            seconds: seconds,
-                            _token: '{{ csrf_token() }}'
-                        })
-                    );
-                });
-            })();
-        </script>
-    @endpush
-
 @endsection
+@push('scripts')
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+    <script>
+        /* ═══ HÀM TOGGLE MÔ TẢ ═══ */
+        function toggleMoTa() {
+            var el = document.getElementById('motaPreview');
+            var icon = document.getElementById('iconReadMore');
+            var txt = document.getElementById('txtReadMore');
+            var fade = document.getElementById('motaFade');
+
+            if (!el || !icon || !txt) {
+                console.error('Không tìm thấy các phần tử:', {
+                    el: !!el,
+                    icon: !!icon,
+                    txt: !!txt,
+                    fade: !!fade
+                });
+                return;
+            }
+
+            const isExpanded = el.classList.contains('expanded');
+            console.log('Toggle mô tả - Trạng thái hiện tại:', isExpanded ? 'Mở rộng' : 'Thu gọn');
+
+            if (isExpanded) {
+                el.classList.remove('expanded');
+                icon.className = 'fas fa-chevron-down';
+                txt.textContent = 'Xem thêm nội dung';
+                if (fade) fade.style.display = 'block';
+            } else {
+                el.classList.add('expanded');
+                icon.className = 'fas fa-chevron-up';
+                txt.textContent = 'Thu gọn';
+                if (fade) fade.style.display = 'none';
+            }
+        }
+
+        /* Khởi tạo khi DOM sẵn sàng */
+        document.addEventListener('DOMContentLoaded', function() {
+            const btnReadMore = document.getElementById('btnReadMore');
+            if (btnReadMore) {
+                btnReadMore.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    toggleMoTa();
+                });
+                console.log('✓ Sự kiện click cho nút "Xem thêm nội dung" đã được liên kết');
+            } else {
+                console.error('Không tìm thấy nút btnReadMore');
+            }
+        });
+
+        /* Lightbox config */
+        lightbox.option({
+            resizeDuration: 200,
+            wrapAround: true,
+            albumLabel: 'Ảnh %1 / %2'
+        });
+
+        /* Gửi yêu cầu gọi lại */
+        function guiYeuCauGoiLai(e) {
+            e.preventDefault();
+            var btn = document.getElementById('btnCallBack');
+            var form = document.getElementById('formCallBack');
+            var sdt = form.querySelector('[name=so_dien_thoai]').value.trim();
+            var hoTen = form.querySelector('[name=ho_ten]').value.trim();
+            var errorBox = document.getElementById('callBackError');
+
+            if (errorBox) {
+                errorBox.classList.add('d-none');
+                errorBox.classList.remove('text-danger', 'text-success');
+                errorBox.textContent = '';
+            }
+
+            if (!sdt) {
+                showFlash('Vui lòng nhập số điện thoại.', 'warning');
+                return;
+            }
+
+            if (!hoTen) {
+                showFlash('Vui lòng nhập họ tên.', 'warning');
+                return;
+            }
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang gửi...';
+            btn.disabled = true;
+
+            fetch('{{ route('frontend.lien-he.store') }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': window.APP?.csrfToken || ''
+                    },
+                    credentials: 'same-origin',
+                    body: new FormData(form)
+                })
+                .then(async r => {
+                    let data = {};
+                    try {
+                        data = await r.json();
+                    } catch (_) {}
+
+                    if (!r.ok) {
+                        throw new Error(data.message || (r.status === 429 ?
+                            'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
+                            'Có lỗi xảy ra, vui lòng thử lại.'));
+                    }
+
+                    return data;
+                })
+                .then((data) => {
+                    showFlash(data.message || 'Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
+                    var defaultNoiDung = 'Tôi quan tâm đến BĐS: ' + {{ json_encode($bds->tieu_de) }};
+                    var noiDungEl = form.querySelector('[name=noi_dung]');
+                    if (noiDungEl) noiDungEl.value = defaultNoiDung;
+                    if (!{{ $customer ? 'true' : 'false' }}) {
+                        form.reset();
+                        if (noiDungEl) noiDungEl.value = defaultNoiDung;
+                    }
+
+                    if (errorBox) {
+                        errorBox.classList.remove('d-none');
+                        errorBox.classList.add('text-success');
+                        errorBox.textContent = data.message || 'Yêu cầu đã được gửi thành công.';
+                    }
+                })
+                .catch((err) => {
+                    showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                    if (errorBox) {
+                        errorBox.classList.remove('d-none');
+                        errorBox.classList.add('text-danger');
+                        errorBox.textContent = err.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+                    }
+                })
+                .finally(() => {
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
+                    btn.disabled = false;
+                });
+        }
+
+        /* XỬ LÝ AJAX FORM ĐẶT LỊCH XEM NHÀ (MỚI) */
+        document.getElementById('frmDatLich').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            let form = this;
+            let btn = document.getElementById('btnSubmitDatLich');
+            let errorBox = document.getElementById('datLichError');
+            let originalText = btn.innerHTML;
+
+            if (errorBox) {
+                errorBox.classList.add('d-none');
+                errorBox.textContent = '';
+            }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
+            btn.disabled = true;
+
+            let formData = new FormData(form);
+
+            fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: formData
+                })
+                .then(async response => {
+                    const data = await response.json().catch(() => ({}));
+                    if (!response.ok) {
+                        throw new Error(data.message || (response.status === 429 ?
+                            'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
+                            'Có lỗi xảy ra, vui lòng kiểm tra lại thông tin.'));
+                    }
+                    return data;
+                })
+                .then(data => {
+                    if (data.status !== 'success') {
+                        throw new Error(data.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại.');
+                    }
+
+                    var myModalEl = document.getElementById('modalDatLich');
+                    var modal = bootstrap.Modal.getInstance(myModalEl);
+                    if (modal) modal.hide();
+
+                    showFlash(data.message || 'Gửi yêu cầu đặt lịch thành công!', 'success');
+
+                    const defaultGhiChu =
+                        'Tôi muốn đặt lịch xem BĐS: ' + {{ json_encode($bds->tieu_de) }};
+                    const ghiChuEl = form.querySelector('[name=ghi_chu]');
+
+                    if (!{{ $customer ? 'true' : 'false' }}) {
+                        form.reset();
+                    }
+                    if (ghiChuEl) {
+                        ghiChuEl.value = defaultGhiChu;
+                    }
+                })
+                .catch(error => {
+                    showFlash(error.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'warning');
+                    if (errorBox) {
+                        errorBox.classList.remove('d-none');
+                        errorBox.textContent = error.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+                    }
+                })
+                .finally(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                });
+        });
+
+        function dangKyCanhBaoGia() {
+            if (typeof openModalDangKy !== 'function') {
+                showFlash('Chưa thể mở form đăng ký nhận tin lúc này.', 'danger');
+                return;
+            }
+
+            openModalDangKy('', {
+                batDongSanId: {{ $bds->id }},
+                batDongSanTitle: {{ json_encode($bds->tieu_de) }},
+                nhuCau: {{ json_encode($bds->nhu_cau) }},
+                khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
+                duAnId: {{ $bds->du_an_id ?? 'null' }},
+                soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
+            });
+        }
+
+        // Ghi nhận thời gian xem (Tracking)
+        (function() {
+            const startTime = Date.now();
+            const bdsId = {{ $bds->id }};
+
+            window.addEventListener('beforeunload', function() {
+                const seconds = Math.floor((Date.now() - startTime) / 1000);
+                if (seconds < 3) return;
+
+                navigator.sendBeacon('{{ route('frontend.bds.track-time') }}',
+                    JSON.stringify({
+                        bds_id: bdsId,
+                        seconds: seconds,
+                        _token: '{{ csrf_token() }}'
+                    })
+                );
+            });
+        })();
+    </script>
+@endpush

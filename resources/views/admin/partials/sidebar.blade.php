@@ -120,11 +120,11 @@
                 </a>
 
                 <div class="nav-submenu">
-                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge(request()->except(['page', 'nhu_cau']), ['nhu_cau' => 'ban'])) }}"
                         class="nav-submenu-link {{ $isBdsMenuOpen && $bdsFilter === 'ban' ? 'active' : '' }}">
                         <i class="fas fa-tag"></i> BĐS Bán
                     </a>
-                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge(request()->except(['page', 'nhu_cau']), ['nhu_cau' => 'thue'])) }}"
                         class="nav-submenu-link {{ $isBdsMenuOpen && $bdsFilter === 'thue' ? 'active' : '' }}">
                         <i class="fas fa-key"></i> BĐS Thuê
                     </a>

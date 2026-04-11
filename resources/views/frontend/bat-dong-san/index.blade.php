@@ -1531,7 +1531,10 @@
                         @forelse($batDongSans as $bds)
                             @php
                                 $anhBia =
-                                    is_array($bds->album_anh) && count($bds->album_anh) > 0 ? $bds->album_anh[0] : null;
+                                    $bds->hinh_anh ??
+                                    (is_array($bds->album_anh) && count($bds->album_anh) > 0
+                                        ? $bds->album_anh[0]
+                                        : null);
                                 $isNew = $bds->created_at?->diffInDays(now()) <= 7;
                             @endphp
 
@@ -1557,9 +1560,7 @@
                                         @if ($bds->noi_bat)
                                             <span class="bds-badge bds-badge-noibat">⭐ Nổi bật</span>
                                         @endif
-                                        @if ($isNew)
-                                            <span class="bds-badge bds-badge-moi">Mới</span>
-                                        @endif
+
                                     </div>
 
                                     {{-- Actions --}}
@@ -1572,7 +1573,7 @@
                                         </button>
                                         <button type="button" class="bds-action-btn ss-btn"
                                             id="ss-btn-{{ $bds->id }}"
-                                            onclick="themVaSoSanh({{ $bds->id }}, '{{ addslashes(Str::limit($bds->tieu_de, 40)) }}')"
+                                            onclick="themVaSoSanh({{ $bds->id }}, {{ json_encode(Str::limit($bds->tieu_de, 40)) }})"
                                             title="So sánh căn hộ này">
                                             <i class="fas fa-balance-scale"></i>
                                         </button>
@@ -1626,9 +1627,19 @@
                                             <span>Phòng ngủ</span>
                                         </div>
                                         <div class="bds-spec">
-                                            <i class="fas fa-bath"></i>
-                                            <strong>{{ $bds->so_phong_tam ?? '—' }}</strong>
-                                            <span>Toilet</span>
+                                            <i class="fas fa-layer-group"></i>
+                                            <strong>
+                                                @if (!$bds->tang)
+                                                    —
+                                                @elseif ($bds->tang <= 7)
+                                                    Thấp
+                                                @elseif ($bds->tang <= 31)
+                                                    Trung
+                                                @else
+                                                    Cao
+                                                @endif
+                                            </strong>
+                                            <span>Tầng</span>
                                         </div>
                                         <div class="bds-spec">
                                             <i class="fas fa-couch"></i>
