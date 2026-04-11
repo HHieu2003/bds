@@ -6,6 +6,9 @@ use App\Models\DuAn;
 use App\Models\KhuVuc;
 use App\Models\BatDongSan;
 use App\Observers\BatDongSanObserver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
@@ -18,6 +21,34 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Chống spam cho các form công khai: key theo IP để tránh lách bằng sdt/email ảo.
+        RateLimiter::for('anti-spam', function (Request $request) {
+            $routeName = $request->route()?->getName() ?? 'unknown';
+            $ip = (string) $request->ip();
+
+            $response = function (Request $request, array $headers) {
+                $message = 'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.';
+
+                if ($request->expectsJson()) {
+                    return response()->json(['message' => $message], 429, $headers);
+                }
+
+                return back()->withInput()->with('error', $message);
+            };
+
+            return [
+                // Giới hạn theo từng endpoint: cùng IP, đổi sdt/email vẫn bị tính.
+                Limit::perMinutes(2, 4)
+                    ->by('anti-spam|route|' . $routeName . '|' . $ip)
+                    ->response($response),
+
+                // Giới hạn tổng trên tất cả endpoint anti-spam để chặn spam luân phiên form.
+                Limit::perMinutes(2, 12)
+                    ->by('anti-spam|global|' . $ip)
+                    ->response($response),
+            ];
+        });
+
         // ĐỐI TÁC LẬP TRÌNH: Đăng ký Observer theo dõi thay đổi giá Bất động sản
         BatDongSan::observe(BatDongSanObserver::class);
 

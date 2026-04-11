@@ -366,7 +366,7 @@
                                     <i class="fas fa-headset"></i>
                                 </div>
                                 <div>
-                                    <h5 class="fw-bold mb-1">Nhận Bảng Giá & Ưu Đãi</h5>
+                                    <h6 class="fw-bold mb-1">Nhận Bảng Giá & Ưu Đãi</h6>
                                     <p class="small opacity-75 mb-0">Chuyên viên liên hệ trong 5 phút</p>
                                 </div>
                             </div>
@@ -878,7 +878,7 @@
         }
 
         .dact-sidebar-head {
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            background: var(--secondary-dark);
             color: #fff;
             padding: 1.4rem 1.5rem;
             display: flex;

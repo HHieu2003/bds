@@ -568,10 +568,10 @@
 
         .da-card-badges {
             position: absolute;
-            top: 14px;
-            left: 14px;
+            top: 7px;
+            left: 6px;
             display: flex;
-            gap: 6px;
+            gap: 5px;
         }
 
         .da-badge-status {
@@ -605,8 +605,8 @@
 
         .da-card-kv {
             position: absolute;
-            top: 14px;
-            right: 14px;
+            top: 7px;
+            right: 6px;
             background: rgba(15, 23, 42, .7);
             backdrop-filter: blur(6px);
             color: #fff;

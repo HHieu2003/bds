@@ -9,10 +9,9 @@
             <p class="page-header-sub mb-0">Quản lý toàn bộ danh sách bất động sản</p>
         </div>
         @php
-            $createPrefill = array_filter([
-                'du_an_id' => request('du_an_id'),
-                'nhu_cau' => request('nhu_cau'),
-            ], fn($v) => filled($v));
+            $currentFilters = request()->except(['page']);
+            $currentListUrl = url()->full();
+            $createPrefill = array_merge($currentFilters, ['redirect_to' => $currentListUrl]);
         @endphp
         <a href="{{ route('nhanvien.admin.bat-dong-san.create', $createPrefill) }}" class="btn btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Thêm BĐS mới
@@ -83,19 +82,12 @@
     {{-- ══ BỘ LỌC ══ --}}
     <div class="filter-box mb-4 bds-filter-panel">
         <form method="GET" id="filterForm">
-            <div class="row g-2 align-items-center mb-2">
-                <div class="col-12 col-lg-4">
+            <div class="row g-2 align-items-center mb-2 bds-filter-row">
+                <div class="col-12 col-lg-3 filter-cell">
                     <input type="text" name="tukhoa" class="filter-ctrl filter-ctrl-search w-100"
                         value="{{ request('tukhoa') }}" placeholder="Tìm nhanh theo tiêu đề hoặc mã BĐS...">
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
-                    <select name="nhu_cau" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">Nhu cầu</option>
-                        <option value="ban" @selected(request('nhu_cau') == 'ban')>Bán</option>
-                        <option value="thue" @selected(request('nhu_cau') == 'thue')>Cho thuê</option>
-                    </select>
-                </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
                     <select name="loai_hinh" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Loại hình</option>
                         @foreach (['can_ho' => 'Căn hộ', 'nha_pho' => 'Nhà phố', 'biet_thu' => 'Biệt thự', 'dat_nen' => 'Đất nền', 'shophouse' => 'Shophouse'] as $v => $l)
@@ -103,7 +95,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
                     <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Trạng thái</option>
                         @foreach (['con_hang' => 'Còn hàng', 'dat_coc' => 'Đặt cọc', 'da_ban' => 'Đã bán', 'dang_thue' => 'Đang thuê', 'da_thue' => 'Đã thuê', 'tam_an' => 'Tạm ẩn'] as $v => $l)
@@ -111,7 +103,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
                     <select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
                         <option value="gia_tang" @selected(request('sapxep') == 'gia_tang')>Giá tăng dần</option>
@@ -119,7 +111,7 @@
                         <option value="luot_xem" @selected(request('sapxep') == 'luot_xem')>Lượt xem nhiều</option>
                     </select>
                 </div>
-                <div class="col-6 col-md-3 col-lg-2">
+                <div class="col-6 col-md-4 col-lg-2 filter-cell">
                     <select name="khu_vuc_id" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="">Tất cả khu vực</option>
                         @foreach ($khuVucs as $kv)
@@ -129,18 +121,69 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-3 d-flex gap-2 justify-content-end">
-                    <button type="submit" class="btn btn-navy"><i class="fas fa-search me-1"></i> Lọc nhanh</button>
-                    @if (request()->hasAny(['tukhoa', 'nhu_cau', 'loai_hinh', 'trang_thai', 'du_an_id', 'khu_vuc_id', 'sapxep']))
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                    <select name="toa" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">{{ request('du_an_id') ? 'Tất cả tòa' : 'Chọn dự án' }}</option>
+                        @foreach ($toaOptions as $toa)
+                            <option value="{{ $toa }}" @selected((string) request('toa') === (string) $toa)>
+                                {{ $toa }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                    <select name="so_phong_ngu" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Phòng ngủ</option>
+                        @for ($pn = 0; $pn <= 5; $pn++)
+                            <option value="{{ $pn }}" @selected((string) request('so_phong_ngu') === (string) $pn)>
+                                {{ $pn === 0 ? 'Studio' : $pn . ' PN' }}
+                            </option>
+                        @endfor
+                    </select>
+                </div>
+                <div class="col-6 col-md-4 col-lg-1 filter-cell">
+                    <select name="noi_that" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Nội thất</option>
+                        @foreach ($noiThatOptions as $value => $label)
+                            <option value="{{ $value }}" @selected(request('noi_that') === $value)>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-12 col-md-8 col-lg-2 filter-cell">
+                    <div class="price-range-inline">
+                        <input type="number" min="0" step="1000000" name="gia_tu" class="filter-ctrl w-100"
+                            value="{{ request('gia_tu') }}" placeholder="Giá từ">
+                        <input type="number" min="0" step="1000000" name="gia_den" class="filter-ctrl w-100"
+                            value="{{ request('gia_den') }}" placeholder="Giá đến">
+                    </div>
+                </div>
+                <div class="col-12 col-md-4 col-lg-2 d-flex gap-2 justify-content-end filter-actions">
+                    <button type="submit" class="btn btn-navy"><i class="fas fa-search me-0"></i><span
+                            class="btn-label-desktop-hide"> Lọc</span></button>
+                    @if (request()->hasAny([
+                            'tukhoa',
+                            'loai_hinh',
+                            'trang_thai',
+                            'du_an_id',
+                            'khu_vuc_id',
+                            'sapxep',
+                            'toa',
+                            'so_phong_ngu',
+                            'noi_that',
+                            'gia_tu',
+                            'gia_den',
+                        ]))
                         <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="btn btn-danger"><i
-                                class="fas fa-rotate-left me-1"></i> Xóa lọc</a>
+                                class="fas fa-rotate-left me-0"></i><span class="btn-label-desktop-hide"> Xóa</span></a>
                     @endif
                 </div>
             </div>
         </form>
 
         @php
-            $projectQueryBase = request()->except(['du_an_id', 'page']);
+            $projectQueryBase = request()->except(['du_an_id', 'khu_vuc_id', 'toa', 'page']);
         @endphp
         <div class="project-tabs-wrap mt-3">
             <div class="project-tabs-title">
@@ -155,7 +198,7 @@
                     Tất cả dự án
                 </a>
                 @foreach ($duAns as $da)
-                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge($projectQueryBase, ['du_an_id' => $da->id])) }}"
+                    <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge($projectQueryBase, ['du_an_id' => $da->id, 'khu_vuc_id' => $da->khu_vuc_id])) }}"
                         class="project-tab {{ (string) request('du_an_id') === (string) $da->id ? 'active' : '' }}"
                         title="{{ $da->ten_du_an }}">
                         {{ Str::limit($da->ten_du_an, 28) }}
@@ -242,7 +285,7 @@
 
                                     </div>
                                     <div style="min-width: 0; flex: 1;">
-                                        <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
+                                        <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                             class="fw-bold text-navy text-decoration-none mb-1"
                                             style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem;"
                                             title="{{ $bds->tieu_de }}">{{ $bds->tieu_de }}</a>
@@ -347,11 +390,11 @@
                             {{-- Cột 7: Thao tác --}}
                             <td class="text-center">
                                 <div class="btn-actions-group justify-content-center">
-                                    <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
+                                    <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                         class="btn-action btn-action-edit" title="Sửa"><i class="fas fa-pen"></i></a>
                                     <form id="frmDel_{{ $bds->id }}"
-                                        action="{{ route('nhanvien.admin.bat-dong-san.destroy', $bds) }}" method="POST"
-                                        class="d-none">@csrf @method('DELETE')</form>
+                                        action="{{ route('nhanvien.admin.bat-dong-san.destroy', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
+                                        method="POST" class="d-none">@csrf @method('DELETE')</form>
                                     <button type="button" class="btn-action btn-action-delete btn-delete-bds"
                                         data-id="{{ $bds->id }}" data-name="{{ $bds->ma_bat_dong_san }}"
                                         title="Xóa"><i class="fas fa-trash"></i></button>
@@ -392,7 +435,7 @@
                                 <span class="badge"
                                     style="background: {{ $tt['bg'] }}; color: {{ $tt['color'] }}">{{ $tt['label'] }}</span>
                             </div>
-                            <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
+                            <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                 class="fw-bold text-navy text-decoration-none d-block text-truncate mb-1">{{ $bds->tieu_de }}</a>
                         </div>
                     </div>
@@ -722,6 +765,56 @@
             background: linear-gradient(135deg, #1d4ed8, #2563eb);
             border-color: #1d4ed8;
             box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+        }
+
+        @media (min-width: 992px) {
+            .bds-filter-row {
+                flex-wrap: wrap;
+            }
+
+            .bds-filter-row>.filter-cell,
+            .bds-filter-row>.filter-actions {
+                min-width: 0;
+            }
+
+            .bds-filter-panel .filter-ctrl {
+                font-size: 0.82rem;
+                padding-left: 0.55rem;
+                padding-right: 0.55rem;
+            }
+
+            .bds-filter-panel .filter-ctrl-search::placeholder {
+                font-size: 0.8rem;
+            }
+
+            .bds-filter-panel .filter-actions {
+                flex-wrap: nowrap;
+            }
+
+            .bds-filter-panel .price-range-inline {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.35rem;
+            }
+
+            .bds-filter-panel .filter-actions .btn {
+                white-space: nowrap;
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+                font-size: 0.78rem;
+            }
+
+            .bds-filter-panel .btn-label-desktop-hide {
+                display: inline;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .bds-filter-panel .price-range-inline {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
+            }
         }
     </style>
 @endpush

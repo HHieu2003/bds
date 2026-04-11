@@ -15,6 +15,22 @@ use Illuminate\Support\Str;
 
 class BatDongSanController extends Controller
 {
+    private function redirectVeDanhSach(Request $request)
+    {
+        $redirectTo = (string) $request->input('redirect_to', '');
+        $base = rtrim(url('/'), '/');
+
+        if (
+            $redirectTo !== ''
+            && str_starts_with($redirectTo, $base)
+            && str_contains($redirectTo, '/nhan-vien/admin/bat-dong-san')
+        ) {
+            return redirect()->to($redirectTo);
+        }
+
+        return redirect()->route('nhanvien.admin.bat-dong-san.index');
+    }
+
     private function nhanVienDangNhap(): ?NhanVien
     {
         return Auth::guard('nhanvien')->user();
@@ -65,7 +81,6 @@ class BatDongSanController extends Controller
         }
 
         // Lọc theo dropdown
-        if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
 
         $loaiHinh = $request->input('loai_hinh', 'can_ho');
         if (!empty($loaiHinh)) {
@@ -82,6 +97,29 @@ class BatDongSanController extends Controller
             $query->whereHas('duAn', function ($q) use ($request) {
                 $q->where('khu_vuc_id', $request->khu_vuc_id);
             });
+        }
+
+        if ($request->filled('toa')) {
+            $query->where('toa', $request->toa);
+        }
+
+        if ($request->filled('so_phong_ngu') || $request->input('so_phong_ngu') === '0') {
+            $query->where('so_phong_ngu', (int) $request->input('so_phong_ngu'));
+        }
+
+        if ($request->filled('noi_that')) {
+            $query->where('noi_that', $request->noi_that);
+        }
+
+        $giaTu = $request->filled('gia_tu') ? (float) str_replace(',', '', (string) $request->gia_tu) : null;
+        $giaDen = $request->filled('gia_den') ? (float) str_replace(',', '', (string) $request->gia_den) : null;
+
+        if ($giaTu !== null) {
+            $query->whereRaw('COALESCE(gia, gia_thue) >= ?', [$giaTu]);
+        }
+
+        if ($giaDen !== null) {
+            $query->whereRaw('COALESCE(gia, gia_thue) <= ?', [$giaDen]);
         }
 
         // Sắp xếp
@@ -119,7 +157,23 @@ class BatDongSanController extends Controller
             ->orderBy('ten_khu_vuc')
             ->get();
 
-        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns', 'khuVucs'));
+        $toaOptions = collect();
+        if ($request->filled('du_an_id')) {
+            $toaOptions = BatDongSan::query()
+                ->where('du_an_id', $request->du_an_id)
+                ->whereNotNull('toa')
+                ->where('toa', '!=', '')
+                ->pluck('toa')
+                ->map(fn($toa) => trim((string) $toa))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->values();
+        }
+
+        $noiThatOptions = $this->getConstants()['noi_that'];
+
+        return view('admin.bat-dong-san.index', compact('batDongSans', 'thongKe', 'duAns', 'khuVucs', 'toaOptions', 'noiThatOptions'));
     }
 
     // ── FORM TẠO MỚI ──
@@ -185,7 +239,7 @@ class BatDongSanController extends Controller
 
         BatDongSan::create($data);
 
-        return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã thêm Bất động sản mới!');
+        return $this->redirectVeDanhSach($request)->with('success', '✅ Đã thêm Bất động sản mới!');
     }
 
     // ── FORM CHỈNH SỬA ──
@@ -212,7 +266,7 @@ class BatDongSanController extends Controller
             $data['slug'] = Str::slug($data['tieu_de']) . '-' . $batDongSan->id;
             $batDongSan->update($data);
 
-            return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
+            return $this->redirectVeDanhSach($request)->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
         }
 
         $data = $this->validateData($request);
@@ -255,11 +309,11 @@ class BatDongSanController extends Controller
 
         $batDongSan->update($data);
 
-        return redirect()->route('nhanvien.admin.bat-dong-san.index')->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
+        return $this->redirectVeDanhSach($request)->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
     }
 
     // ── XÓA BẤT ĐỘNG SẢN ──
-    public function destroy(BatDongSan $batDongSan)
+    public function destroy(Request $request, BatDongSan $batDongSan)
     {
         $this->chongSaleQuanLyTonKho();
 
@@ -278,7 +332,7 @@ class BatDongSanController extends Controller
 
         $batDongSan->delete();
 
-        return redirect()->back()->with('success', '🗑️ Đã xóa Bất động sản khỏi hệ thống!');
+        return $this->redirectVeDanhSach($request)->with('success', '🗑️ Đã xóa Bất động sản khỏi hệ thống!');
     }
 
     // ════ CÁC HÀM AJAX ════

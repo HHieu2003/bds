@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                   TRANG CHI TIẾT BĐS — Global Styles
-                ═══════════════════════════════════════ */
+                       TRANG CHI TIẾT BĐS — Global Styles
+                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1411,13 +1411,24 @@
                             bat_dong_san_id: {{ $bds->id }}
                         })
                     })
-                    .then(r => r.json())
-                    .then(data => {
+                    .then(async r => {
+                        let data = {};
+                        try {
+                            data = await r.json();
+                        } catch (_) {}
+
+                        if (!r.ok) {
+                            throw new Error(data.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+                        }
+
+                        return data;
+                    })
+                    .then(() => {
                         showFlash('Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
                         form.reset();
                         form.querySelector('textarea').value = 'Tôi quan tâm đến BĐS: {{ addslashes($bds->tieu_de) }}';
                     })
-                    .catch(() => showFlash('Có lỗi xảy ra, vui lòng thử lại.', 'error'))
+                    .catch((err) => showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error'))
                     .finally(() => {
                         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
                         btn.disabled = false;

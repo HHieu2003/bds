@@ -56,7 +56,7 @@ Route::prefix('')->name('frontend.')->group(function () {
 
     Route::prefix('ky-gui')->name('ky-gui.')->group(function () {
         Route::get('/',           [FrontendKyGuiController::class, 'create'])->name('create');
-        Route::post('/',          [FrontendKyGuiController::class, 'store'])->name('store');
+        Route::post('/',          [FrontendKyGuiController::class, 'store'])->middleware('throttle:anti-spam')->name('store');
         Route::get('/thanh-cong', [FrontendKyGuiController::class, 'success'])->name('success');
         Route::middleware('auth:customer')->group(function () {
             Route::get('/cua-toi', [FrontendKyGuiController::class, 'myKyGui'])->name('cua-toi');
@@ -64,7 +64,9 @@ Route::prefix('')->name('frontend.')->group(function () {
         });
     });
 
-    Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])->name('dang-ky-nhan-tin.store');
+    Route::post('/dang-ky-nhan-tin', [DangKyNhanTinController::class, 'store'])
+        ->middleware('throttle:anti-spam')
+        ->name('dang-ky-nhan-tin.store');
 
     Route::delete('/dang-ky-nhan-tin/{id}', [DangKyNhanTinController::class, 'destroy'])->name('dang-ky-nhan-tin.destroy');
     Route::get('/tim-kiem', [TimKiemController::class, 'index'])->name('tim-kiem.index');
@@ -80,7 +82,7 @@ Route::prefix('')->name('frontend.')->group(function () {
 
     Route::prefix('lien-he')->name('lien-he.')->group(function () {
         Route::get('/',  [FrontendLienHeController::class, 'index'])->name('index');
-        Route::post('/', [FrontendLienHeController::class, 'store'])->name('store');
+        Route::post('/', [FrontendLienHeController::class, 'store'])->middleware('throttle:anti-spam')->name('store');
     });
     Route::prefix('chat')->name('chat.')->group(function () {
         Route::post('/khoi-tao',        [FeChatController::class, 'khoiTao'])->name('khoi-tao');
@@ -92,25 +94,29 @@ Route::prefix('')->name('frontend.')->group(function () {
     });
 });
 
-Route::post('/dat-lich-xem-nha', [FeLichHenController::class, 'datLich'])->name('frontend.dat-lich');
+Route::post('/dat-lich-xem-nha', [FeLichHenController::class, 'datLich'])
+    ->middleware('throttle:anti-spam')
+    ->name('frontend.dat-lich');
 // ══════════════════════════════════════════════════════════
 // KHÁCH HÀNG — Authentication
 // ══════════════════════════════════════════════════════════
-Route::post('/khach-hang/login', [KhachHangAuthController::class, 'login'])->name('khach-hang.login.post');
+Route::post('/khach-hang/login', [KhachHangAuthController::class, 'login'])
+    ->middleware('throttle:anti-spam')
+    ->name('khach-hang.login.post');
 Route::post('/khach-hang/logout', [KhachHangAuthController::class, 'logout'])->name('khach-hang.logout');
 Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
 
     Route::middleware('guest:customer')->group(function () {
         Route::get('dang-nhap', [KhachHangAuthController::class, 'showLogin'])->name('login');
-        Route::post('dang-nhap', [KhachHangAuthController::class, 'login'])->name('login.post');
+        Route::post('dang-nhap', [KhachHangAuthController::class, 'login'])->middleware('throttle:anti-spam')->name('login.post');
         Route::get('dang-ky', [KhachHangAuthController::class, 'showRegister'])->name('register');
-        Route::post('dang-ky', [KhachHangAuthController::class, 'register'])->name('register.post');
-        Route::post('send-otp', [KhachHangAuthController::class, 'sendOtp'])->name('send-otp');
-        Route::post('verify-otp', [KhachHangAuthController::class, 'verifyOtp'])->name('verify-otp');
+        Route::post('dang-ky', [KhachHangAuthController::class, 'register'])->middleware('throttle:anti-spam')->name('register.post');
+        Route::post('send-otp', [KhachHangAuthController::class, 'sendOtp'])->middleware('throttle:anti-spam')->name('send-otp');
+        Route::post('verify-otp', [KhachHangAuthController::class, 'verifyOtp'])->middleware('throttle:anti-spam')->name('verify-otp');
         Route::get('quen-mat-khau', [KhachHangAuthController::class, 'showForgot'])->name('forgot');
-        Route::post('quen-mat-khau', [KhachHangAuthController::class, 'sendReset'])->name('forgot.post');
+        Route::post('quen-mat-khau', [KhachHangAuthController::class, 'sendReset'])->middleware('throttle:anti-spam')->name('forgot.post');
         Route::get('dat-lai-mat-khau', [KhachHangAuthController::class, 'showReset'])->name('reset');
-        Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->name('reset.post');
+        Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->middleware('throttle:anti-spam')->name('reset.post');
     });
     // Xem danh sách lịch hẹn
     Route::get('lich-hen', [FeLichHenController::class, 'lichHen'])->name('lich-hen');

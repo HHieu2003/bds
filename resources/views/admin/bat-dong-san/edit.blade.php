@@ -43,6 +43,7 @@
     <form action="{{ route('nhanvien.admin.bat-dong-san.update', $batDongSan) }}" method="POST"
         enctype="multipart/form-data" id="bdsForm">
         @csrf @method('PUT')
+        <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
         @include('admin.bat-dong-san._form')
     </form>
 @endsection

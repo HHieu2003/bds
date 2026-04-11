@@ -28,6 +28,7 @@
     <form action="{{ route('nhanvien.admin.bat-dong-san.store') }}" method="POST" enctype="multipart/form-data"
         id="bdsForm">
         @csrf
+        <input type="hidden" name="redirect_to" value="{{ request('redirect_to') }}">
         @php $batDongSan = null; @endphp
         @include('admin.bat-dong-san._form')
     </form>
