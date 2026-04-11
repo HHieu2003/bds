@@ -388,22 +388,29 @@
                                 </div>
                             </div>
                             <div class="dact-sidebar-body">
-                                <form action="#" method="POST">
+                                <form action="{{ route('frontend.lien-he.store') }}" method="POST" id="duAnLienHeForm">
                                     @csrf
+                                    <input type="hidden" name="du_an_id" value="{{ $duAn->id }}">
                                     <div class="mb-3">
-                                        <input type="text" class="form-control dact-input"
+                                        <input type="text" class="form-control dact-input" name="ho_ten"
+                                            value="{{ auth('customer')->user()?->ho_ten ?? '' }}"
                                             placeholder="Họ và tên của bạn *" required>
                                     </div>
                                     <div class="mb-3">
-                                        <input type="tel" class="form-control dact-input"
+                                        <input type="tel" class="form-control dact-input" name="so_dien_thoai"
+                                            value="{{ auth('customer')->user()?->so_dien_thoai ?? '' }}"
                                             placeholder="Số điện thoại *" required>
                                     </div>
+                                    <input type="hidden" name="email"
+                                        value="{{ auth('customer')->user()?->email ?? '' }}">
                                     <div class="mb-4">
-                                        <textarea class="form-control dact-input" rows="3" placeholder="Nội dung cần tư vấn...">Tôi quan tâm đến dự án {{ $duAn->ten_du_an }}, vui lòng gửi thông tin chi tiết.</textarea>
+                                        <textarea class="form-control dact-input" rows="3" name="noi_dung" placeholder="Nội dung cần tư vấn...">Tôi quan tâm đến dự án {{ $duAn->ten_du_an }}, vui lòng gửi thông tin chi tiết.</textarea>
                                     </div>
-                                    <button type="submit" class="btn btn-primary-brand w-100 py-3 fw-bold rounded-3">
+                                    <button type="submit" class="btn btn-primary-brand w-100 py-3 fw-bold rounded-3"
+                                        id="duAnLienHeSubmitBtn">
                                         <i class="fas fa-paper-plane me-2"></i>Gửi Yêu Cầu Tư Vấn
                                     </button>
+                                    <div class="mt-3 small fw-semibold d-none" id="duAnLienHeError"></div>
                                 </form>
 
                                 <div class="dact-hotline">
@@ -1080,5 +1087,70 @@
             }
         }
     </style>
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('duAnLienHeForm');
+                const btn = document.getElementById('duAnLienHeSubmitBtn');
+                const errorBox = document.getElementById('duAnLienHeError');
+                if (!form || !btn || !errorBox) return;
+
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+
+                    const oldHtml = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Đang gửi...';
+
+                    errorBox.classList.add('d-none');
+                    errorBox.classList.remove('text-danger', 'text-success');
+                    errorBox.textContent = '';
+
+                    try {
+                        const res = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                            },
+                            body: new FormData(form),
+                        });
+
+                        const data = await res.json().catch(() => ({}));
+
+                        if (!res.ok) {
+                            const msg = data.message || (res.status === 429 ?
+                                'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
+                                'Gửi yêu cầu thất bại, vui lòng thử lại.');
+                            throw new Error(msg);
+                        }
+
+                        if (typeof showFlash === 'function') {
+                            showFlash(data.message || 'Yêu cầu đã gửi thành công!', 'success');
+                        }
+
+                        errorBox.classList.remove('d-none');
+                        errorBox.classList.add('text-success');
+                        errorBox.textContent = data.message || 'Yêu cầu đã gửi thành công!';
+
+                        const defaultNoiDung =
+                            'Tôi quan tâm đến dự án {{ addslashes($duAn->ten_du_an) }}, vui lòng gửi thông tin chi tiết.';
+                        form.querySelector('[name="noi_dung"]').value = defaultNoiDung;
+                    } catch (err) {
+                        if (typeof showFlash === 'function') {
+                            showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'danger');
+                        }
+                        errorBox.classList.remove('d-none');
+                        errorBox.classList.add('text-danger');
+                        errorBox.textContent = err.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = oldHtml;
+                    }
+                });
+            });
+        </script>
+    @endpush
 
 @endsection

@@ -205,19 +205,7 @@
                                                 </span>
                                             @endif
                                         </div>
-                                        <div class="d-flex align-items-center gap-1 mt-1"
-                                            style="font-size:.71rem;color:var(--text-muted)">
-                                            <i class="fas fa-link" style="font-size:.6rem"></i>
-                                            <span
-                                                style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">
-                                                /{{ $bv->slug }}
-                                            </span>
-                                            <button type="button" class="btn-action btn-action-view"
-                                                style="width:20px;height:20px;font-size:.6rem" data-tip="Sao chép slug"
-                                                onclick="copyToClipboard('{{ $bv->slug }}','Đã sao chép slug!')">
-                                                <i class="fas fa-copy"></i>
-                                            </button>
-                                        </div>
+
                                         @if ($bv->tacGia)
                                             <div class="d-flex align-items-center gap-1 mt-1"
                                                 style="font-size:.71rem;color:var(--text-sub)">

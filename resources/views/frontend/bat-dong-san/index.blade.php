@@ -1079,11 +1079,11 @@
                     <div class="bds-nhu-cau-tabs">
                         <a href="{{ route('frontend.bat-dong-san.index', array_merge(request()->except(['nhu_cau', 'page']), ['nhu_cau' => 'ban'])) }}"
                             class="bds-nhu-cau-tab {{ $isBan ? 'active' : '' }}">
-                            <i class="fas fa-tag"></i> Mua
+                            Mua
                         </a>
                         <a href="{{ route('frontend.bat-dong-san.index', array_merge(request()->except(['nhu_cau', 'page']), ['nhu_cau' => 'thue'])) }}"
                             class="bds-nhu-cau-tab thue {{ !$isBan ? 'active thue' : '' }}">
-                            <i class="fas fa-key"></i> Thuê
+                            Thuê
                         </a>
                     </div>
 
@@ -1098,7 +1098,7 @@
                     <div class="bds-filter-pills">
                         <select name="khu_vuc" class="bds-qs {{ request('khu_vuc') ? 'has-value' : '' }}"
                             onchange="filterDuAnByKhuVuc(this.value, 'qs'); this.form.submit()" id="qsKhuVuc">
-                            <option value="">🏘 Khu vực</option>
+                            <option value="">Khu vực</option>
                             @foreach ($khuVucs ?? [] as $kv)
                                 <option value="{{ $kv->id }}" {{ request('khu_vuc') == $kv->id ? 'selected' : '' }}>
                                     {{ $kv->ten_khu_vuc }}
@@ -1108,7 +1108,7 @@
 
                         <select name="du_an" class="bds-qs {{ request('du_an') ? 'has-value' : '' }}"
                             onchange="handleTopbarDuAnChange(this.value)" id="qsDuAn">
-                            <option value="">🏢 Dự án</option>
+                            <option value="">Dự án</option>
                             @foreach ($duAns ?? [] as $da)
                                 <option value="{{ $da->id }}" data-khu-vuc="{{ $da->khu_vuc_id ?? '' }}"
                                     {{ request('du_an') == $da->id ? 'selected' : '' }}>
@@ -1119,7 +1119,7 @@
 
                         <select name="toa" class="bds-qs {{ request('toa') ? 'has-value' : '' }}" id="qsToa"
                             onchange="this.form.submit()" style="{{ !request('du_an') ? 'display:none' : '' }}">
-                            <option value="">🏬 Tất cả tòa</option>
+                            <option value="">Tất cả tòa</option>
                             @foreach ($toaList ?? [] as $toa)
                                 <option value="{{ $toa }}" {{ request('toa') == $toa ? 'selected' : '' }}>
                                     Tòa {{ $toa }}
@@ -1129,7 +1129,7 @@
 
                         <select name="sophongngu" class="bds-qs {{ request('sophongngu') ? 'has-value' : '' }}"
                             onchange="this.form.submit()">
-                            <option value="">🛏 Phòng ngủ</option>
+                            <option value="">Phòng ngủ</option>
                             <option value="studio" {{ request('sophongngu') == 'studio' ? 'selected' : '' }}>Studio
                             </option>
                             <option value="1" {{ request('sophongngu') == '1' ? 'selected' : '' }}>1 PN</option>
@@ -1139,7 +1139,7 @@
 
                         <select name="muc_gia" class="bds-qs {{ request('muc_gia') ? 'has-value' : '' }}"
                             onchange="this.form.submit()">
-                            <option value="">💰 Mức giá</option>
+                            <option value="">Mức giá</option>
                             @if ($isBan)
                                 <option value="duoi2ty" {{ request('muc_gia') == 'duoi2ty' ? 'selected' : '' }}>Dưới 2 tỷ
                                 </option>
@@ -1202,14 +1202,14 @@
 
                         @if (request('timkiem'))
                             <span class="bds-filter-chip">
-                                🔍 "{{ Str::limit(request('timkiem'), 20) }}"
+                                "{{ Str::limit(request('timkiem'), 20) }}"
                                 <button type="button" onclick="removeFilter('timkiem')"><i
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
                         @if (request('khu_vuc'))
                             <span class="bds-filter-chip">
-                                🏘
+
                                 {{ ($khuVucs ?? collect())->firstWhere('id', request('khu_vuc'))?->ten_khu_vuc ?? 'Khu vực' }}
                                 <button type="button" onclick="removeFilter('khu_vuc')"><i
                                         class="fas fa-times"></i></button>
@@ -1217,7 +1217,7 @@
                         @endif
                         @if (request('du_an'))
                             <span class="bds-filter-chip">
-                                🏢
+
                                 {{ Str::limit(($duAns ?? collect())->firstWhere('id', request('du_an'))?->ten_du_an ?? 'Dự án', 20) }}
                                 <button type="button" onclick="removeFilter('du_an', true)"><i
                                         class="fas fa-times"></i></button>
@@ -1225,21 +1225,21 @@
                         @endif
                         @if (request('toa'))
                             <span class="bds-filter-chip">
-                                🏬 Tòa {{ request('toa') }}
+                                Tòa {{ request('toa') }}
                                 <button type="button" onclick="removeFilter('toa')"><i
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
                         @if (request('sophongngu'))
                             <span class="bds-filter-chip">
-                                🛏 {{ request('sophongngu') == 'studio' ? 'Studio' : request('sophongngu') . ' PN' }}
+                                {{ request('sophongngu') == 'studio' ? 'Studio' : request('sophongngu') . ' PN' }}
                                 <button type="button" onclick="removeFilter('sophongngu')"><i
                                         class="fas fa-times"></i></button>
                             </span>
                         @endif
                         @if (request('muc_gia'))
                             <span class="bds-filter-chip">
-                                💰 Đã chọn mức giá
+                                Đã chọn mức giá
                                 <button type="button" onclick="removeFilter('muc_gia')"><i
                                         class="fas fa-times"></i></button>
                             </span>
@@ -1374,7 +1374,7 @@
                             {{-- Phòng ngủ --}}
                             <div class="sidebar-card">
                                 <div class="sidebar-card-header">
-                                    <span><i class="fas fa-bed label-icon"></i> Phòng ngủ</span>
+                                    <span>Phòng ngủ</span>
                                     <i class="fas fa-chevron-down toggle-icon"></i>
                                 </div>
                                 <div class="sidebar-card-body">
@@ -1558,7 +1558,7 @@
                                             <span class="bds-badge bds-badge-noibat">⭐ Nổi bật</span>
                                         @endif
                                         @if ($isNew)
-                                            <span class="bds-badge bds-badge-moi">🆕 Mới</span>
+                                            <span class="bds-badge bds-badge-moi">Mới</span>
                                         @endif
                                     </div>
 
@@ -1677,8 +1677,40 @@
 @push('scripts')
     <script>
         const ALL_DU_ANS = @json($duAns ?? []);
+        const ALL_KHU_VUCS = @json(($khuVucs ?? collect())->map(fn($kv) => ['id' => $kv->id, 'cha_id' => $kv->khu_vuc_cha_id])->values());
         const ALL_TOA = @json($toaList ?? []);
         const NHU_CAU_HIEN_TAI = @json($nhuCau);
+
+        function getDescendantAreaIds(rootId) {
+            if (!rootId) return [];
+
+            const normalizedRoot = String(rootId);
+            const childrenMap = new Map();
+
+            (ALL_KHU_VUCS || []).forEach(item => {
+                const parentId = item?.cha_id == null ? '' : String(item.cha_id);
+                const currentId = item?.id == null ? '' : String(item.id);
+                if (!parentId || !currentId) return;
+                if (!childrenMap.has(parentId)) childrenMap.set(parentId, []);
+                childrenMap.get(parentId).push(currentId);
+            });
+
+            const result = new Set([normalizedRoot]);
+            const queue = [normalizedRoot];
+
+            while (queue.length > 0) {
+                const current = queue.shift();
+                const children = childrenMap.get(current) || [];
+                children.forEach(childId => {
+                    if (!result.has(childId)) {
+                        result.add(childId);
+                        queue.push(childId);
+                    }
+                });
+            }
+
+            return Array.from(result);
+        }
 
         /* ── View toggle ── */
         function setView(mode) {
@@ -1713,8 +1745,12 @@
             const duAnSelect = source === 'qs' ? document.getElementById('qsDuAn') : document.getElementById('sbDuAn');
             if (!duAnSelect) return;
 
+            const allowedAreaIds = new Set(getDescendantAreaIds(khuVucId));
+
             duAnSelect.querySelectorAll('option:not([value=""])').forEach(opt => {
-                opt.style.display = (!khuVucId || opt.dataset.khuVuc == khuVucId) ? '' : 'none';
+                const projectAreaId = opt.dataset.khuVuc == null ? '' : String(opt.dataset.khuVuc);
+                const isVisible = !khuVucId || allowedAreaIds.has(projectAreaId);
+                opt.style.display = isVisible ? '' : 'none';
             });
 
             const selected = duAnSelect.options[duAnSelect.selectedIndex];
@@ -1785,7 +1821,7 @@
             const sel = document.getElementById('qsToa');
             if (!sel) return;
             if (!duAnId) {
-                sel.innerHTML = '<option value="">🏬 Tất cả tòa</option>';
+                sel.innerHTML = '<option value="">Tất cả tòa</option>';
                 sel.value = '';
                 sel.style.display = 'none';
                 return;
@@ -1794,7 +1830,7 @@
             fetch(`/api/toa-by-du-an/${duAnId}?nhu_cau=${encodeURIComponent(NHU_CAU_HIEN_TAI)}`)
                 .then(r => r.json())
                 .then(data => {
-                    sel.innerHTML = '<option value="">🏬 Tất cả tòa</option>';
+                    sel.innerHTML = '<option value="">Tất cả tòa</option>';
                     (data || []).forEach(toa => {
                         const option = document.createElement('option');
                         option.value = toa;

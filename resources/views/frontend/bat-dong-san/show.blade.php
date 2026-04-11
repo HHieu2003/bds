@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                       TRANG CHI TIẾT BĐS — Global Styles
-                    ═══════════════════════════════════════ */
+                           TRANG CHI TIẾT BĐS — Global Styles
+                        ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -925,6 +925,7 @@
 @section('content')
 
     @php
+        $customer = auth('customer')->user();
         $album = [];
         if (!empty($bds->album_anh)) {
             $raw = is_string($bds->album_anh) ? json_decode($bds->album_anh, true) : $bds->album_anh;
@@ -1194,8 +1195,15 @@
                                 <form id="formCallBack" onsubmit="guiYeuCauGoiLai(event)">
                                     @csrf
                                     <input type="hidden" name="bat_dong_san_id" value="{{ $bds->id }}">
+                                    <input type="hidden" name="email" value="{{ $customer?->email ?? '' }}">
                                     <div style="margin-bottom:.6rem;">
-                                        <input type="tel" class="form-input-custom" name="sodienthoai"
+                                        <input type="text" class="form-input-custom" name="ho_ten"
+                                            value="{{ $customer?->ho_ten ?? '' }}" placeholder="Họ và tên của bạn *"
+                                            required>
+                                    </div>
+                                    <div style="margin-bottom:.6rem;">
+                                        <input type="tel" class="form-input-custom" name="so_dien_thoai"
+                                            value="{{ $customer?->so_dien_thoai ?? '' }}"
                                             placeholder="Số điện thoại của bạn *" required>
                                     </div>
                                     <div style="margin-bottom:.75rem;">
@@ -1205,6 +1213,7 @@
                                     <button type="submit" class="btn-callback" id="btnCallBack">
                                         <i class="fas fa-paper-plane"></i> Gửi Yêu Cầu
                                     </button>
+                                    <div class="mt-2 small fw-semibold d-none" id="callBackError"></div>
                                 </form>
                             </div>
                         </div>
@@ -1318,7 +1327,7 @@
                             <label class="form-label fw-bold" style="font-size: 0.9rem;">Họ và tên <span
                                     class="text-danger">*</span></label>
                             <input type="text" name="ten_khach_hang" class="form-input-custom"
-                                placeholder="Nhập tên của bạn" required>
+                                value="{{ $customer?->ho_ten ?? '' }}" placeholder="Nhập tên của bạn" required>
                         </div>
 
                         <div class="row mb-3 g-3">
@@ -1326,7 +1335,8 @@
                                 <label class="form-label fw-bold" style="font-size: 0.9rem;">Số điện thoại <span
                                         class="text-danger">*</span></label>
                                 <input type="text" name="sdt_khach_hang" class="form-input-custom"
-                                    placeholder="09xx..." required>
+                                    value="{{ $customer?->so_dien_thoai ?? '' }}" placeholder="09xx..." required>
+                                <input type="hidden" name="email_khach_hang" value="{{ $customer?->email ?? '' }}">
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label fw-bold" style="font-size: 0.9rem;">Thời gian xem <span
@@ -1344,6 +1354,7 @@
                     </div>
 
                     <div class="modal-footer bg-light border-0">
+                        <div class="small fw-semibold text-danger me-auto d-none" id="datLichError"></div>
                         <button type="button" class="btn btn-light border fw-bold" data-bs-dismiss="modal"
                             style="border-radius: 10px;">Hủy</button>
                         <button type="submit" class="btn btn-success fw-bold" id="btnSubmitDatLich"
@@ -1383,10 +1394,23 @@
                 e.preventDefault();
                 var btn = document.getElementById('btnCallBack');
                 var form = document.getElementById('formCallBack');
-                var sdt = form.querySelector('[name=sodienthoai]').value.trim();
+                var sdt = form.querySelector('[name=so_dien_thoai]').value.trim();
+                var hoTen = form.querySelector('[name=ho_ten]').value.trim();
+                var errorBox = document.getElementById('callBackError');
+
+                if (errorBox) {
+                    errorBox.classList.add('d-none');
+                    errorBox.classList.remove('text-danger', 'text-success');
+                    errorBox.textContent = '';
+                }
 
                 if (!sdt) {
                     showFlash('Vui lòng nhập số điện thoại.', 'warning');
+                    return;
+                }
+
+                if (!hoTen) {
+                    showFlash('Vui lòng nhập họ tên.', 'warning');
                     return;
                 }
 
@@ -1396,20 +1420,13 @@
                 fetch('{{ route('frontend.lien-he.store') }}', {
                         method: 'POST',
                         headers: (window.getCsrfHeaders ? window.getCsrfHeaders({
-                            'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         }) : {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
                         }),
                         credentials: 'same-origin',
-                        body: JSON.stringify({
-                            ho_ten: 'Khách hàng',
-                            so_dien_thoai: sdt,
-                            noi_dung: form.querySelector('[name=noi_dung]').value,
-                            bat_dong_san_id: {{ $bds->id }}
-                        })
+                        body: new FormData(form)
                     })
                     .then(async r => {
                         let data = {};
@@ -1418,17 +1435,37 @@
                         } catch (_) {}
 
                         if (!r.ok) {
-                            throw new Error(data.message || 'Có lỗi xảy ra, vui lòng thử lại.');
+                            throw new Error(data.message || (r.status === 429 ?
+                                'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
+                                'Có lỗi xảy ra, vui lòng thử lại.'));
                         }
 
                         return data;
                     })
-                    .then(() => {
-                        showFlash('Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
-                        form.reset();
-                        form.querySelector('textarea').value = 'Tôi quan tâm đến BĐS: {{ addslashes($bds->tieu_de) }}';
+                    .then((data) => {
+                        showFlash(data.message || 'Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
+                        var defaultNoiDung = 'Tôi quan tâm đến BĐS: {{ addslashes($bds->tieu_de) }}';
+                        var noiDungEl = form.querySelector('[name=noi_dung]');
+                        if (noiDungEl) noiDungEl.value = defaultNoiDung;
+                        if (!{{ $customer ? 'true' : 'false' }}) {
+                            form.reset();
+                            if (noiDungEl) noiDungEl.value = defaultNoiDung;
+                        }
+
+                        if (errorBox) {
+                            errorBox.classList.remove('d-none');
+                            errorBox.classList.add('text-success');
+                            errorBox.textContent = data.message || 'Yêu cầu đã được gửi thành công.';
+                        }
                     })
-                    .catch((err) => showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error'))
+                    .catch((err) => {
+                        showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
+                        if (errorBox) {
+                            errorBox.classList.remove('d-none');
+                            errorBox.classList.add('text-danger');
+                            errorBox.textContent = err.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+                        }
+                    })
                     .finally(() => {
                         btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
                         btn.disabled = false;
@@ -1441,7 +1478,13 @@
 
                 let form = this;
                 let btn = document.getElementById('btnSubmitDatLich');
+                let errorBox = document.getElementById('datLichError');
                 let originalText = btn.innerHTML;
+
+                if (errorBox) {
+                    errorBox.classList.add('d-none');
+                    errorBox.textContent = '';
+                }
 
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
                 btn.disabled = true;
@@ -1456,25 +1499,43 @@
                         },
                         body: formData
                     })
-                    .then(response => response.json())
+                    .then(async response => {
+                        const data = await response.json().catch(() => ({}));
+                        if (!response.ok) {
+                            throw new Error(data.message || (response.status === 429 ?
+                                'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
+                                'Có lỗi xảy ra, vui lòng kiểm tra lại thông tin.'));
+                        }
+                        return data;
+                    })
                     .then(data => {
-                        if (data.status === 'success') {
-                            // Ẩn modal
-                            var myModalEl = document.getElementById('modalDatLich');
-                            var modal = bootstrap.Modal.getInstance(myModalEl);
-                            modal.hide();
+                        if (data.status !== 'success') {
+                            throw new Error(data.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại.');
+                        }
 
-                            // Hiển thị thông báo bằng showFlash có sẵn
-                            showFlash(data.message, 'success');
+                        var myModalEl = document.getElementById('modalDatLich');
+                        var modal = bootstrap.Modal.getInstance(myModalEl);
+                        if (modal) modal.hide();
 
+                        showFlash(data.message || 'Gửi yêu cầu đặt lịch thành công!', 'success');
+
+                        const defaultGhiChu =
+                            'Tôi muốn đặt lịch xem BĐS: {{ addslashes($bds->tieu_de) }}';
+                        const ghiChuEl = form.querySelector('[name=ghi_chu]');
+
+                        if (!{{ $customer ? 'true' : 'false' }}) {
                             form.reset();
-                        } else {
-                            showFlash('Có lỗi xảy ra, vui lòng kiểm tra lại.', 'error');
+                        }
+                        if (ghiChuEl) {
+                            ghiChuEl.value = defaultGhiChu;
                         }
                     })
                     .catch(error => {
-                        showFlash('Vui lòng kiểm tra lại ngày giờ hẹn (Phải lớn hơn thời gian hiện tại).',
-                            'warning');
+                        showFlash(error.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'warning');
+                        if (errorBox) {
+                            errorBox.classList.remove('d-none');
+                            errorBox.textContent = error.message || 'Có lỗi xảy ra, vui lòng thử lại.';
+                        }
                     })
                     .finally(() => {
                         btn.innerHTML = originalText;

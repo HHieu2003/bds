@@ -68,13 +68,11 @@
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban']) }}"
-                                    class="dropdown-all"><span><i class="fas fa-th-large"></i> Tất cả khu vực
-                                        bán</span></a>
+
                                 @forelse($khuVucMenu ?? [] as $kv)
                                     @if ($loop->iteration <= 5)
                                         <a
-                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc_id' => $kv->id]) }}">
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'ban', 'khu_vuc' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
                                             <small class="badge-pn">{{ $kv->so_du_an ?? 0 }} dự án</small>
                                         </a>
@@ -128,13 +126,11 @@
                         <div class="can-ho-mega-inner">
                             <div class="can-ho-col">
                                 <div class="can-ho-col-title"><i class="fas fa-map-marked-alt"></i> Theo khu vực</div>
-                                <a href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue']) }}"
-                                    class="dropdown-all dropdown-all-blue"><span><i class="fas fa-th-large"></i> Tất cả
-                                        khu vực thuê</span></a>
+
                                 @forelse($khuVucMenu ?? [] as $kv)
                                     @if ($loop->iteration <= 4)
                                         <a
-                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc_id' => $kv->id]) }}">
+                                            href="{{ route('frontend.bat-dong-san.index', ['nhu_cau' => 'thue', 'khu_vuc' => $kv->id]) }}">
                                             <span><i class="fas fa-map-marker-alt"></i> {{ $kv->ten_khu_vuc }}</span>
                                             <small class="badge-pn badge-pn-blue">{{ $kv->so_du_an ?? 0 }} dự
                                                 án</small>
