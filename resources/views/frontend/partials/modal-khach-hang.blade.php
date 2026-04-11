@@ -53,7 +53,7 @@
                             <div class="kh-field">
                                 <label class="kh-field-label"><i class="fas fa-envelope"></i>Email liên hệ</label>
                                 <input type="email" id="f_email" value="{{ $kh->email }}" class="kh-field-input"
-                                    placeholder="email@example.com">
+                                    placeholder="email@example.com" readonly>
                                 <div class="kh-field-err" id="err_email"></div>
                             </div>
                         </div>

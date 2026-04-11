@@ -16,19 +16,18 @@ class LienHeController extends Controller
         $nhanVienAuth = Auth::guard('nhanvien')->user();
 
         $query = YeuCauLienHe::with(['batDongSan', 'nhanVienPhuTrach', 'khachHang'])
-            ->latest('thoi_diem_lien_he');
+            ->latest('thoi_diem_lien_he')
+            ->latest('created_at');
 
-        // Phân quyền: Sale chỉ xem lead của mình hoặc lead chưa có ai nhận
+        // Sale chỉ xem được Lead của mình hoặc Lead mới chưa ai nhận
         if ($nhanVienAuth->isSale()) {
-            $query->where(function($q) use ($nhanVienAuth) {
+            $query->where(function ($q) use ($nhanVienAuth) {
                 $q->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)
-                  ->orWhereNull('nhan_vien_phu_trach_id');
+                    ->orWhereNull('nhan_vien_phu_trach_id');
             });
         }
 
-        // Bộ lọc
         if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
-        if ($request->filled('nguon')) $query->where('nguon_lien_he', $request->nguon);
         if ($request->filled('nhan_vien') && !$nhanVienAuth->isSale()) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien);
         if ($request->filled('search')) {
             $s = $request->search;
@@ -40,8 +39,7 @@ class LienHeController extends Controller
         $lienHes  = $query->paginate(20)->withQueryString();
         $nhanViens = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', true)->orderBy('ho_ten')->get();
 
-        // Thống kê nhanh (Dựa theo query hiện tại để đếm chính xác quyền của Sale)
-        $thongKe = collect(array_keys(YeuCauLienHe::TRANG_THAI))->mapWithKeys(function($tt) use ($nhanVienAuth) {
+        $thongKe = collect(array_keys(YeuCauLienHe::TRANG_THAI))->mapWithKeys(function ($tt) use ($nhanVienAuth) {
             $q = YeuCauLienHe::where('trang_thai', $tt);
             if ($nhanVienAuth->isSale()) {
                 $q->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
@@ -53,7 +51,10 @@ class LienHeController extends Controller
         if ($nhanVienAuth->isSale()) $qTatCa->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
         $thongKe['tat_ca'] = $qTatCa->count();
 
-        return view('admin.lien-he.index', compact('lienHes', 'nhanViens', 'thongKe', 'nhanVienAuth'));
+        // Đếm Lead chưa nhận
+        $leadChuaNhan = YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
+
+        return view('admin.lien-he.index', compact('lienHes', 'nhanViens', 'thongKe', 'nhanVienAuth', 'leadChuaNhan'));
     }
 
     public function show(YeuCauLienHe $lienHe)
@@ -63,8 +64,29 @@ class LienHeController extends Controller
         return view('admin.lien-he.show', compact('lienHe', 'nhanViens'));
     }
 
+    public function nhanLead(YeuCauLienHe $lienHe)
+    {
+        if ($lienHe->nhan_vien_phu_trach_id) {
+            return back()->with('error', 'Rất tiếc, Lead này đã có người khác nhận!');
+        }
+        $lienHe->update([
+            'nhan_vien_phu_trach_id' => Auth::guard('nhanvien')->id(),
+            'trang_thai' => 'da_lien_he'
+        ]);
+        return back()->with('success', 'Bạn đã nhận xử lý Lead này thành công! Hãy gọi điện cho khách ngay nhé.');
+    }
+
     public function update(Request $request, YeuCauLienHe $lienHe)
     {
+        if ($request->has('is_quick_update')) {
+            $request->validate(['ghi_chu_moi' => 'required|string|max:1000']);
+            $oldGhiChu = $lienHe->ghi_chu_admin ? $lienHe->ghi_chu_admin . "\n" : "";
+            $newGhiChu = $oldGhiChu . "- [" . now()->format('d/m/Y H:i') . "] " . $request->ghi_chu_moi;
+
+            $lienHe->update(['ghi_chu_admin' => $newGhiChu]);
+            return back()->with('success', 'Đã lưu lại lịch sử chăm sóc Lead!');
+        }
+
         $request->validate([
             'trang_thai'             => 'required|in:' . implode(',', array_keys(YeuCauLienHe::TRANG_THAI)),
             'ghi_chu_admin'          => 'nullable|string|max:2000',
@@ -76,33 +98,19 @@ class LienHeController extends Controller
         return redirect()->route('nhanvien.admin.lien-he.show', $lienHe)->with('success', 'Cập nhật thành công!');
     }
 
-    // TÍNH NĂNG CRM: Cập nhật nhanh trực tiếp trên Bảng (AJAX)
     public function capNhatNhanh(Request $request, YeuCauLienHe $lienHe)
     {
         $request->validate(['trang_thai' => 'required|in:' . implode(',', array_keys(YeuCauLienHe::TRANG_THAI))]);
-
-        $dataUpdate = ['trang_thai' => $request->trang_thai];
-
-        // CRM Logic: Nếu Sale đổi trạng thái từ "Mới" sang trạng thái khác mà Lead chưa có ai nhận, tự động gán cho Sale đó.
-        if ($request->trang_thai !== 'moi' && is_null($lienHe->nhan_vien_phu_trach_id)) {
-            $dataUpdate['nhan_vien_phu_trach_id'] = Auth::guard('nhanvien')->id();
-        }
-
-        $lienHe->update($dataUpdate);
-
+        $lienHe->update(['trang_thai' => $request->trang_thai]);
         return response()->json([
             'success' => true,
             'info'    => YeuCauLienHe::TRANG_THAI[$request->trang_thai],
-            'nguoi_nhan' => $lienHe->nhanVienPhuTrach->ho_ten ?? 'Chưa có'
         ]);
     }
 
-    // TÍNH NĂNG CRM: CHUYỂN ĐỔI LEAD -> KHÁCH HÀNG CHÍNH THỨC
     public function chuyenKhachHang(Request $request, YeuCauLienHe $lienHe)
     {
         $nhanVien = Auth::guard('nhanvien')->user();
-
-        // Kiểm tra xem SĐT này đã có trong danh bạ Khách hàng chưa
         $kh = KhachHang::where('so_dien_thoai', $lienHe->so_dien_thoai)->first();
 
         if (!$kh) {
@@ -117,11 +125,8 @@ class LienHeController extends Controller
                 'ghi_chu_noi_bo'         => $ghiChu,
             ]);
         }
-
-        // Đóng Lead này lại
-        $lienHe->update(['trang_thai' => 'hoan_thanh', 'nhan_vien_phu_trach_id' => $nhanVien->id]);
-
-        return back()->with('success', 'Đã chuyển đổi thành công Khách Hàng vào Danh bạ CRM!');
+        $lienHe->update(['trang_thai' => 'da_chot', 'nhan_vien_phu_trach_id' => $nhanVien->id]);
+        return back()->with('success', 'Đã chốt Lead và tạo Khách hàng vào CRM!');
     }
 
     public function destroy(YeuCauLienHe $lienHe)

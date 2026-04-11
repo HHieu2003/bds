@@ -10,14 +10,22 @@
             <h1 class="fw-black mb-1" style="font-size:1.3rem;color:var(--navy)">
                 <i class="fas fa-newspaper me-2" style="color:var(--primary)"></i>Quản lý bài viết
             </h1>
-            <div class="d-flex align-items-center gap-2 flex-wrap" style="font-size:.78rem;color:var(--text-sub)">
-                <span>{{ $thongKe['tong'] }} bài viết</span>
-                <span
-                    style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
-                <span style="color:var(--green)">{{ $thongKe['hien_thi'] }} hiển thị</span>
-                <span
-                    style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
-                <span style="color:var(--text-muted)">{{ $thongKe['an'] }} đã ẩn</span>
+            <div style="font-size:.78rem;color:var(--text-sub)">
+                {{-- Dòng 1: Thông tin bài viết --}}
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                    <span>{{ $thongKe['tong'] }} bài viết</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--green)">{{ $thongKe['hien_thi'] }} hiển thị</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--text-muted)">{{ $thongKe['an'] }} đã ẩn</span>
+
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--navy);font-weight:700">{{ number_format($thongKe['tong_luot_xem'] ?? 0) }}
+                        tổng lượt xem</span>
+                </div>
             </div>
         </div>
         <a href="{{ route('nhanvien.admin.bai-viet.create') }}"
@@ -25,47 +33,6 @@
             <i class="fas fa-plus"></i>
             <span class="d-none d-sm-inline">Viết bài mới</span>
         </a>
-    </div>
-
-    {{-- ── STAT CARDS ── --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-sm-3">
-            <div class="stat-card">
-                <div class="stat-icon navy"><i class="fas fa-newspaper"></i></div>
-                <div>
-                    <div class="stat-num">{{ $thongKe['tong'] }}</div>
-                    <div class="stat-label">Tổng bài viết</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-sm-3">
-            <div class="stat-card">
-                <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-                <div>
-                    <div class="stat-num">{{ $thongKe['hien_thi'] }}</div>
-                    <div class="stat-label">Hiển thị</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-sm-3">
-            <div class="stat-card">
-                <div class="stat-icon yellow"><i class="fas fa-eye-slash"></i></div>
-                <div>
-                    <div class="stat-num">{{ $thongKe['an'] }}</div>
-                    <div class="stat-label">Đã ẩn</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-6 col-sm-3">
-            <div class="stat-card">
-                <div class="stat-icon yellow"><i class="fas fa-eye"></i></div>
-                <div>
-                    <div class="stat-num">{{ number_format($thongKe['tong_luot_xem'] ?? 0) }}</div>
-                    <div class="stat-label">Tổng lượt xem</div>
-                </div>
-            </div>
-        </div>
     </div>
 
     {{-- ── FILTER ── --}}
@@ -184,8 +151,7 @@
                                         @else
                                             <div class="table-thumb d-flex align-items-center justify-content-center"
                                                 style="width:64px;height:48px;background:var(--bg)">
-                                                <i class="fas fa-image"
-                                                    style="color:var(--text-muted);font-size:.9rem"></i>
+                                                <i class="fas fa-image" style="color:var(--text-muted);font-size:.9rem"></i>
                                             </div>
                                         @endif
                                     </div>

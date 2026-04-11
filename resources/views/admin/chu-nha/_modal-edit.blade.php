@@ -16,41 +16,63 @@
                         <label class="form-label fw-medium">Họ và tên <span class="text-danger">*</span></label>
                         <input type="text" id="edit_ho_ten" name="ho_ten"
                             class="form-control @error('ho_ten') is-invalid @enderror"
-                            value="{{ old('_form_mode') === 'edit' ? old('ho_ten') : '' }}">
+                            value="{{ old('_form_mode') === 'edit' ? old('ho_ten') : '' }}"
+                            oninvalid="this.setCustomValidity('Vui lòng nhập họ tên chủ nhà!')"
+                            oninput="this.setCustomValidity('')" required>
                         @error('ho_ten')
                             @if (old('_form_mode') === 'edit')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @endif
                         @enderror
                     </div>
+
+                    {{-- XÁC MINH SỐ ĐIỆN THOẠI TRỰC TIẾP --}}
                     <div class="col-md-6">
                         <label class="form-label fw-medium">Số điện thoại <span class="text-danger">*</span></label>
-                        <input type="text" id="edit_so_dien_thoai" name="so_dien_thoai"
+                        <input type="tel" id="edit_so_dien_thoai" name="so_dien_thoai"
                             class="form-control @error('so_dien_thoai') is-invalid @enderror"
-                            value="{{ old('_form_mode') === 'edit' ? old('so_dien_thoai') : '' }}">
+                            value="{{ old('_form_mode') === 'edit' ? old('so_dien_thoai') : '' }}" minlength="9"
+                            maxlength="11" pattern="[0-9]{9,11}"
+                            oninvalid="if(this.value === ''){ this.setCustomValidity('Vui lòng nhập số điện thoại!'); } else { this.setCustomValidity('Số điện thoại không hợp lệ (Phải từ 9 đến 11 chữ số)!'); }"
+                            oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '');"
+                            required>
                         @error('so_dien_thoai')
                             @if (old('_form_mode') === 'edit')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @endif
                         @enderror
                     </div>
+
+                    {{-- XÁC MINH EMAIL --}}
                     <div class="col-md-6">
                         <label class="form-label fw-medium">Email</label>
-                        <input type="email" id="edit_email" name="email" class="form-control"
-                            value="{{ old('_form_mode') === 'edit' ? old('email') : '' }}">
+                        <input type="email" id="edit_email" name="email"
+                            class="form-control @error('email') is-invalid @enderror"
+                            value="{{ old('_form_mode') === 'edit' ? old('email') : '' }}" placeholder="vidu@gmail.com"
+                            oninvalid="this.setCustomValidity('Vui lòng nhập đúng định dạng Email (có chứa ký tự @)!')"
+                            oninput="this.setCustomValidity('')">
+                        @error('email')
+                            @if (old('_form_mode') === 'edit')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @endif
+                        @enderror
                     </div>
+
                     <div class="col-md-6">
                         <label class="form-label fw-medium">CCCD/CMND</label>
                         <input type="text" id="edit_cccd" name="cccd" class="form-control"
-                            value="{{ old('_form_mode') === 'edit' ? old('cccd') : '' }}">
+                            value="{{ old('_form_mode') === 'edit' ? old('cccd') : '' }}" maxlength="12" minlength="9"
+                            pattern="[0-9]{9,12}"
+                            oninvalid="if(this.value !== ''){ this.setCustomValidity('CCCD/CMND phải là số từ 9 đến 12 ký tự!'); }"
+                            oninput="this.setCustomValidity(''); this.value = this.value.replace(/[^0-9]/g, '');">
                     </div>
+
                     <div class="col-12">
                         <label class="form-label fw-medium">Địa chỉ</label>
                         <input type="text" id="edit_dia_chi" name="dia_chi" class="form-control"
                             value="{{ old('_form_mode') === 'edit' ? old('dia_chi') : '' }}">
                     </div>
 
-                    {{-- CHỈNH SỬA BẤT ĐỘNG SẢN BẰNG GIAO DIỆN TÌM KIẾM --}}
                     <div class="col-md-12">
                         <label class="form-label fw-medium text-primary"><i class="fas fa-building me-1"></i> Quản lý
                             Căn hộ (BĐS) của chủ nhà này</label>

@@ -243,13 +243,17 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             // ── Admin + Sale ───────────────────
             Route::middleware('check.role:admin,sale')->group(function () {
+                // MỚI: Route Nhận Lead (phải đặt TRƯỚC resource để tránh bị nhầm với {lienHe})
+                Route::post('lien-he/{lienHe}/nhan-lead', [AdminLienHeController::class, 'nhanLead'])
+                    ->name('lien-he.nhan-lead');
+
                 Route::resource('lien-he', AdminLienHeController::class);
 
                 // Route cập nhật nhanh trạng thái
                 Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])
                     ->name('lien-he.cap-nhat-nhanh');
 
-                // Route chuyển đổi Lead thành Khách hàng + alias tương thích route cũ
+                // Route chuyển đổi Lead thành Khách hàng + alias
                 Route::post('lien-he/{lienHe}/chuyen-khach', [AdminLienHeController::class, 'chuyenKhachHang'])
                     ->name('lien-he.chuyen-khach');
                 Route::post('lien-he/{lienHe}/chuyen-khach-hang', [AdminLienHeController::class, 'chuyenKhachHang'])

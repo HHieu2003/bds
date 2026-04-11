@@ -36,17 +36,29 @@ class DuAnController extends Controller
         }
 
         if ($request->filled('khu_vuc_id')) {
-            $query->where('khu_vuc_id', $request->khu_vuc_id);
+            $selectedKhuVuc = KhuVuc::find($request->khu_vuc_id);
+            if ($selectedKhuVuc) {
+                $descendantIds = $selectedKhuVuc->getAllDescendantIds();
+                $query->whereIn('khu_vuc_id', $descendantIds);
+            }
         }
 
         if ($request->filled('hien_thi')) {
             $query->where('hien_thi', $request->hien_thi);
         }
 
+        // Tính thống kê theo filter (trước khi paginate)
+        $thongKe = [
+            'tong' => (clone $query)->count(),
+            'hien_thi' => (clone $query)->where('hien_thi', 1)->count(),
+            'can_ban' => (clone $query)->withCount(['batDongSans as ban_count' => fn($q) => $q->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')])->get()->sum('ban_count'),
+            'can_thue' => (clone $query)->withCount(['batDongSans as thue_count' => fn($q) => $q->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')])->get()->sum('thue_count'),
+        ];
+
         $duAns   = $query->orderBy('thu_tu_hien_thi')->paginate(10)->withQueryString();
         $khuVucs = KhuVuc::whereNull('deleted_at')->orderBy('ten_khu_vuc')->get();
 
-        return view('admin.du-an.index', compact('duAns', 'khuVucs'));
+        return view('admin.du-an.index', compact('duAns', 'khuVucs', 'thongKe'));
     }
 
     public function create()

@@ -22,7 +22,7 @@ class ChuNhaController extends Controller
             'batDongSans.duAn:id,ten_du_an'
         ])->withCount('batDongSans');
 
-        // 1. Lọc theo từ khóa (Bao gồm cả Mã Căn và Tên Dự Án)
+        // Lọc theo từ khóa
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
             $query->where(function ($q) use ($kw) {
@@ -38,7 +38,6 @@ class ChuNhaController extends Controller
             });
         }
 
-        // 2. Lọc theo nhân viên phụ trách
         if ($request->filled('nhan_vien_phu_trach_id')) {
             if ($request->nhan_vien_phu_trach_id === 'none') {
                 $query->whereNull('nhan_vien_phu_trach_id');
@@ -47,21 +46,25 @@ class ChuNhaController extends Controller
             }
         }
 
-        // 3. Lọc theo Dự án
         if ($request->filled('du_an_id')) {
             $query->whereHas('batDongSans', function ($q) use ($request) {
                 $q->where('du_an_id', $request->du_an_id);
             });
         }
 
-        // 4. Lọc theo Tòa
         if ($request->filled('toa')) {
             $query->whereHas('batDongSans', function ($q) use ($request) {
                 $q->where('toa', 'like', '%' . $request->toa . '%');
             });
         }
 
-        $chuNhas = $query->latest()->paginate(15)->withQueryString();
+        if ($request->filled('sort_date') && $request->sort_date === 'oldest') {
+            $query->oldest('updated_at');
+        } else {
+            $query->latest('updated_at');
+        }
+
+        $chuNhas = $query->paginate(15)->withQueryString();
 
         $nhanViens = NhanVien::where('kich_hoat', true)
             ->whereIn('vai_tro', ['admin', 'nguon_hang', 'sale'])
@@ -69,14 +72,12 @@ class ChuNhaController extends Controller
 
         $duAns = DuAn::where('hien_thi', true)->orderBy('ten_du_an')->get(['id', 'ten_du_an']);
 
-        // 5. Lấy danh sách Tòa (CHỈ HIỂN THỊ TÒA CỦA DỰ ÁN ĐƯỢC CHỌN)
         $toasQuery = BatDongSan::whereNotNull('toa')->where('toa', '!=', '');
         if ($request->filled('du_an_id')) {
             $toasQuery->where('du_an_id', $request->du_an_id);
         }
         $toas = $toasQuery->distinct()->orderBy('toa')->pluck('toa');
 
-        // Dữ liệu dùng cho Select Chọn căn hộ ở Modal
         $allBdsList = BatDongSan::with('duAn:id,ten_du_an')
             ->select('id', 'ma_can', 'toa', 'du_an_id', 'chu_nha_id')
             ->orderBy('id', 'desc')
@@ -85,18 +86,31 @@ class ChuNhaController extends Controller
         return view('admin.chu-nha.index', compact('chuNhas', 'nhanViens', 'duAns', 'toas', 'allBdsList'));
     }
 
+    // Thiết lập các câu thông báo lỗi Tiếng Việt
+    private function getValidationMessages()
+    {
+        return [
+            'ho_ten.required' => 'Vui lòng nhập họ tên chủ nhà.',
+            'so_dien_thoai.required' => 'Vui lòng nhập số điện thoại.',
+            'so_dien_thoai.regex' => 'Số điện thoại không hợp lệ (Chỉ nhập số, từ 9-11 ký tự).',
+            'so_dien_thoai.unique' => 'Số điện thoại này đã tồn tại trong hệ thống.',
+            'email.email' => 'Định dạng email không hợp lệ.',
+        ];
+    }
+
     public function store(Request $request)
     {
         $data = $request->validate([
             'ho_ten' => 'required|string|max:100',
-            'so_dien_thoai' => 'required|string|max:20|unique:chu_nha,so_dien_thoai',
+            // Dùng Regex để ép buộc số điện thoại chỉ được chứa chữ số và độ dài 9-11
+            'so_dien_thoai' => ['required', 'string', 'regex:/^[0-9]{9,11}$/', 'unique:chu_nha,so_dien_thoai'],
             'email' => 'nullable|email|max:100',
             'cccd' => 'nullable|string|max:20',
             'dia_chi' => 'nullable|string|max:255',
             'ghi_chu' => 'nullable|string|max:1000',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
             'bat_dong_san_ids' => 'nullable|array',
-        ]);
+        ], $this->getValidationMessages());
 
         $chuNha = ChuNha::create($data);
 
@@ -109,16 +123,31 @@ class ChuNhaController extends Controller
 
     public function update(Request $request, ChuNha $chuNha)
     {
+        if ($request->has('is_quick_update')) {
+            $request->validate(['ghi_chu_moi' => 'nullable|string|max:1000']);
+
+            if ($request->filled('ghi_chu_moi')) {
+                $oldGhiChu = $chuNha->ghi_chu ? $chuNha->ghi_chu . "\n" : "";
+                $newGhiChu = $oldGhiChu . "- [" . now()->format('d/m/Y H:i') . "] " . $request->ghi_chu_moi;
+                $chuNha->ghi_chu = $newGhiChu;
+            }
+
+            $chuNha->touch();
+            $chuNha->save();
+
+            return back()->with('success', 'Đã cập nhật tương tác với chủ nhà!');
+        }
+
         $data = $request->validate([
             'ho_ten' => 'required|string|max:100',
-            'so_dien_thoai' => 'required|string|max:20|unique:chu_nha,so_dien_thoai,' . $chuNha->id,
+            'so_dien_thoai' => ['required', 'string', 'regex:/^[0-9]{9,11}$/', 'unique:chu_nha,so_dien_thoai,' . $chuNha->id],
             'email' => 'nullable|email|max:100',
             'cccd' => 'nullable|string|max:20',
             'dia_chi' => 'nullable|string|max:255',
             'ghi_chu' => 'nullable|string|max:1000',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id',
             'bat_dong_san_ids' => 'nullable|array',
-        ]);
+        ], $this->getValidationMessages());
 
         $chuNha->update($data);
 
@@ -134,9 +163,10 @@ class ChuNhaController extends Controller
     public function destroy(ChuNha $chuNha)
     {
         if ($chuNha->batDongSans()->count() > 0) {
-            return back()->with('error', 'Không thể xóa vì chủ nhà này đang có Bất động sản trong hệ thống!');
+            BatDongSan::where('chu_nha_id', $chuNha->id)->update(['chu_nha_id' => null]);
         }
+
         $chuNha->delete();
-        return redirect()->route('nhanvien.admin.chu-nha.index')->with('success', 'Đã xóa chủ nhà!');
+        return redirect()->route('nhanvien.admin.chu-nha.index')->with('success', 'Đã xóa chủ nhà và gỡ liên kết các BĐS liên quan!');
     }
 }

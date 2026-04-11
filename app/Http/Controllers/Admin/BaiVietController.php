@@ -67,12 +67,19 @@ class BaiVietController extends Controller
         $baiViets = $query->paginate(15)->withQueryString();
 
         // Thống kê
+        $today = now()->startOfDay();
+        $weekStart = now()->startOfWeek();
+        $monthStart = now()->startOfMonth();
+
         $thongKe = [
             'tong'       => BaiViet::count(),
             'hien_thi'   => BaiViet::where('hien_thi', true)->count(),
             'an'         => BaiViet::where('hien_thi', false)->count(),
             'noi_bat'    => BaiViet::where('noi_bat', true)->count(),
             'tong_luot_xem' => (int) BaiViet::sum('luot_xem'),
+            'luot_xem_hom_nay' => (int) BaiViet::where('created_at', '>=', $today)->sum('luot_xem'),
+            'luot_xem_tuan_nay' => (int) BaiViet::where('created_at', '>=', $weekStart)->sum('luot_xem'),
+            'luot_xem_thang_nay' => (int) BaiViet::where('created_at', '>=', $monthStart)->sum('luot_xem'),
             'tin_tuc'    => BaiViet::where('loai_bai_viet', 'tin_tuc')->count(),
             'kien_thuc'  => BaiViet::where('loai_bai_viet', 'kien_thuc')->count(),
         ];

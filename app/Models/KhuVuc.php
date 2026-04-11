@@ -64,6 +64,19 @@ class KhuVuc extends Model
         return $query->where('cap_khu_vuc', $cap);
     }
 
+    // ── Methods ──
+    /**
+     * Lấy tất cả ID khu vực con (bao gồm con, cháu, ...)
+     */
+    public function getAllDescendantIds(): array
+    {
+        $ids = [$this->id];
+        foreach ($this->con as $child) {
+            $ids = array_merge($ids, $child->getAllDescendantIds());
+        }
+        return $ids;
+    }
+
     // ── Accessors ──
     public function getCapInfoAttribute(): array
     {

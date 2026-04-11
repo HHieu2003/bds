@@ -6,7 +6,23 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="page-header-title mb-1"><i class="fas fa-city"></i> Quản lý Dự án</h1>
-            <p class="page-header-sub mb-0">Toàn bộ dự án bất động sản trên hệ thống</p>
+            <div style="font-size:.78rem;color:var(--text-sub)">
+                {{-- Dòng 1: Thông tin dự án --}}
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ $thongKe['tong'] }}</strong> dự án</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--green)"><strong>{{ $thongKe['hien_thi'] }}</strong> đang hiển thị</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--primary)"><strong>{{ number_format($thongKe['can_ban']) }}</strong> căn
+                        bán</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--navy)"><strong>{{ number_format($thongKe['can_thue']) }}</strong> căn
+                        thuê</span>
+                </div>
+            </div>
         </div>
         <a href="{{ route('nhanvien.admin.du-an.create') }}" class="btn btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Thêm dự án mới
@@ -26,51 +42,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
-    {{-- ══ THỐNG KÊ ══ --}}
-    @php
-        $tongHienThi = \App\Models\DuAn::whereNull('deleted_at')->where('hien_thi', 1)->count();
-        $tongCanBan = $duAns->getCollection()->sum('so_can_ban');
-        $tongCanThue = $duAns->getCollection()->sum('so_can_thue');
-    @endphp
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3">
-            <div class="stat-card p-3">
-                <div class="stat-icon orange bg-opacity-10"><i class="fas fa-city"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ $duAns->total() }}</div>
-                    <div class="stat-label">Tổng dự án</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card p-3">
-                <div class="stat-icon green bg-opacity-10"><i class="fas fa-eye"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ $tongHienThi }}</div>
-                    <div class="stat-label">Đang hiển thị</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card p-3">
-                <div class="stat-icon blue bg-opacity-10"><i class="fas fa-tag"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($tongCanBan) }}</div>
-                    <div class="stat-label">Căn đang bán</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3">
-            <div class="stat-card p-3">
-                <div class="stat-icon purple bg-opacity-10"><i class="fas fa-key"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($tongCanThue) }}</div>
-                    <div class="stat-label">Căn đang thuê</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- ══ BỘ LỌC ══ --}}
     <div class="filter-box mb-4">
@@ -168,8 +139,8 @@
                                         title="Xem danh sách BĐS thuê của dự án">Thuê: {{ $da->so_can_thue }}</a>
                                 </div>
                             </td>
-                            <td class="text-center"><span
-                                    class="text-muted fw-bold">{{ $da->thu_tu_hien_thi ?? 0 }}</span></td>
+                            <td class="text-center"><span class="text-muted fw-bold">{{ $da->thu_tu_hien_thi ?? 0 }}</span>
+                            </td>
                             <td class="text-center">
                                 <label class="toggle-sw">
                                     <input type="checkbox"

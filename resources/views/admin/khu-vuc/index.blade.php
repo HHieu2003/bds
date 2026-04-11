@@ -6,8 +6,21 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="page-header-title mb-1"><i class="fas fa-map-marked-alt"></i> Khu vực</h1>
-            <p class="page-header-sub mb-0">Quản lý danh mục địa lý Tỉnh <span class="dot"></span> Quận <span
-                    class="dot"></span> Phường</p>
+            <div style="font-size:.78rem;color:var(--text-sub)">
+                {{-- Dòng 1: Thông tin khu vực --}}
+                <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                    <span><strong>{{ $thongKe['tong'] }}</strong> khu vực</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--green)"><strong>{{ $thongKe['hien_thi'] }}</strong> đang hiển thị</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--navy)"><strong>{{ $thongKe['tinh_thanh'] }}</strong> tỉnh/thành</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:var(--primary)"><strong>{{ $thongKe['quan_huyen'] }}</strong> quận/huyện</span>
+                </div>
+            </div>
         </div>
         <a href="{{ route('nhanvien.admin.khu-vuc.create') }}" class="btn btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Thêm khu vực
@@ -27,46 +40,6 @@
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     @endif
-
-    {{-- ══ THỐNG KÊ (Dùng Bootstrap Grid + stat-card từ admin.css) ══ --}}
-    <div class="row g-3 mb-4 align-items-stretch">
-        <div class="col-6 col-md-6 col-xl-3">
-            <div class="stat-card p-3 h-100">
-                <div class="stat-icon navy bg-opacity-10"><i class="fas fa-map"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['tong']) }}</div>
-                    <div class="stat-label">Tổng số</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-6 col-xl-3">
-            <div class="stat-card p-3 h-100">
-                <div class="stat-icon red bg-opacity-10"><i class="fas fa-city"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['tinh_thanh']) }}</div>
-                    <div class="stat-label">Tỉnh / Thành</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-6 col-xl-3">
-            <div class="stat-card p-3 h-100">
-                <div class="stat-icon blue bg-opacity-10"><i class="fas fa-map-marked-alt"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['quan_huyen']) }}</div>
-                    <div class="stat-label">Quận / Huyện</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-6 col-xl-3">
-            <div class="stat-card p-3 h-100">
-                <div class="stat-icon orange bg-opacity-10"><i class="fas fa-eye"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['hien_thi']) }}</div>
-                    <div class="stat-label">Đang hiển thị</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- ══ BỘ LỌC (Dùng filter-box từ admin.css) ══ --}}
     <div class="filter-box mb-4">
