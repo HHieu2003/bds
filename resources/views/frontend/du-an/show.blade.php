@@ -158,6 +158,23 @@
                         </div>
                     </div>
 
+                    {{-- Bản Đồ Vị Trí --}}
+                    @if ($duAn->map_url)
+                        <div class="dact-card mb-4" data-aos="fade-up" data-aos-duration="500" data-aos-delay="75">
+                            <div class="dact-card-title">
+                                <span></span>Vị Trí Trên Bản Đồ
+                            </div>
+                            <div class="dact-map-container mt-3">
+                                {{-- Giả định map_url lưu trữ thẻ <iframe...> --}}
+                                {!! $duAn->map_url !!}
+                            </div>
+                            <div class="dact-map-address mt-3 d-flex align-items-center gap-2 text-muted">
+                                <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i>
+                                <span class="fw-medium">{{ $duAn->dia_chi ?? 'Đang cập nhật địa chỉ' }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     {{-- Quỹ căn --}}
                     <div id="quy-can" data-aos="fade-up" data-aos-duration="500" data-aos-delay="100">
 
@@ -177,8 +194,8 @@
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link" id="p-thue-tab" data-bs-toggle="tab" data-bs-target="#p-thue"
-                                        type="button" role="tab">
+                                    <button class="nav-link" id="p-thue-tab" data-bs-toggle="tab"
+                                        data-bs-target="#p-thue" type="button" role="tab">
                                         <i class="fas fa-key me-1"></i>Cho Thuê
                                         <span class="dact-tab-count">{{ $bdsThue->count() }}</span>
                                     </button>
@@ -759,6 +776,36 @@
             border-left: 3px solid var(--primary);
         }
 
+        /* ── Bản Đồ Map Container ── */
+        .dact-map-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%;
+            /* Tỉ lệ chuẩn 16:9 cho iframe */
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05);
+            background-color: var(--bg-alt);
+        }
+
+        .dact-map-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100% !important;
+            height: 100% !important;
+            border: 0;
+        }
+
+        .dact-map-address {
+            font-size: 0.9rem;
+            padding: 0.8rem 1rem;
+            background: var(--bg-alt);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
         /* ── Tab pills ── */
         .dact-tab-pills {
             background: #fff;
@@ -878,7 +925,7 @@
         }
 
         .dact-sidebar-head {
-            background: var(--secondary-dark);
+            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
             color: #fff;
             padding: 1.4rem 1.5rem;
             display: flex;

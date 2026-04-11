@@ -125,11 +125,15 @@
                             data-bs-target="#editNganHangModal{{ $nganHang->id }}">
                             <i class="fas fa-edit"></i> Sửa đổi
                         </button>
-                        <form action="{{ route('nhanvien.admin.ngan-hang.destroy', $nganHang->id) }}" method="POST"
-                            class="d-inline" onsubmit="return confirm('Bạn có chắc chắn muốn xóa ngân hàng này?');">
+                        <form id="deleteNganHangForm{{ $nganHang->id }}"
+                            action="{{ route('nhanvien.admin.ngan-hang.destroy', $nganHang->id) }}" method="POST"
+                            class="d-inline">
                             @csrf @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger px-3"><i
-                                    class="fas fa-trash-alt"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-danger px-3 btn-delete-ngan-hang"
+                                data-form-id="deleteNganHangForm{{ $nganHang->id }}"
+                                data-ten-ngan-hang="{{ $nganHang->ten_ngan_hang }}">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </form>
                     </div>
                 </div>
@@ -281,7 +285,57 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="deleteNganHangConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-danger text-white border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-triangle-exclamation me-2"></i>Xác nhận xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <p class="mb-2">Bạn có chắc chắn muốn xóa ngân hàng sau?</p>
+                    <div class="fw-bold text-dark" id="deleteNganHangName"></div>
+                    <p class="text-muted mt-3 mb-0" style="font-size: 0.9rem;">Hành động này không thể hoàn tác.</p>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="btnConfirmDeleteNganHang">
+                        <i class="fas fa-trash-alt me-1"></i> Xóa ngân hàng
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalEl = document.getElementById('deleteNganHangConfirmModal');
+            const nameEl = document.getElementById('deleteNganHangName');
+            const confirmBtn = document.getElementById('btnConfirmDeleteNganHang');
+            const modal = new bootstrap.Modal(modalEl);
+            let targetForm = null;
+
+            document.querySelectorAll('.btn-delete-ngan-hang').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const formId = this.dataset.formId;
+                    targetForm = document.getElementById(formId);
+                    nameEl.textContent = this.dataset.tenNganHang || 'Ngân hàng đã chọn';
+                    modal.show();
+                });
+            });
+
+            confirmBtn.addEventListener('click', function() {
+                if (!targetForm) return;
+                this.disabled = true;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang xóa...';
+                targetForm.submit();
+            });
+        });
+    </script>
+@endpush
 
 @push('styles')
     <style>
