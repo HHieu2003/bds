@@ -64,6 +64,12 @@ class ChuNhaController extends Controller
             $query->latest('updated_at');
         }
 
+        // Tính thống kê theo filter (trước khi paginate)
+        $thongKe = [
+            'tong' => (clone $query)->count(),
+            'new_thang_nay' => (clone $query)->where('created_at', '>=', now()->startOfMonth())->count(),
+        ];
+
         $chuNhas = $query->paginate(15)->withQueryString();
 
         $nhanViens = NhanVien::where('kich_hoat', true)
@@ -83,7 +89,7 @@ class ChuNhaController extends Controller
             ->orderBy('id', 'desc')
             ->get();
 
-        return view('admin.chu-nha.index', compact('chuNhas', 'nhanViens', 'duAns', 'toas', 'allBdsList'));
+        return view('admin.chu-nha.index', compact('chuNhas', 'nhanViens', 'duAns', 'toas', 'allBdsList', 'thongKe'));
     }
 
     // Thiết lập các câu thông báo lỗi Tiếng Việt

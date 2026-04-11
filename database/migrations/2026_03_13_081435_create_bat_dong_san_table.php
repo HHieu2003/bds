@@ -49,7 +49,8 @@ return new class extends Migration
             $table->string('huong_ban_cong')->nullable();
 
             $table->decimal('dien_tich', 10, 2);
-            $table->unsignedSmallInteger('so_phong_ngu')->default(0);
+
+            $table->string('so_phong_ngu', 20)->nullable()->default(null);
 
             // co_ban | full | cao_cap | nguyen_ban
             $table->string('noi_that')->nullable();

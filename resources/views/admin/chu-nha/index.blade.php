@@ -60,9 +60,10 @@
 
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
-            <h1 class="page-header-title mb-1"><i class="fas fa-user-tie text-primary me-2"></i>Quản lý Nguồn hàng / Chủ nhà
+            <h1 class="page-header-title mb-1"><i class="fas fa-user-tie text-primary me-2"></i>Quản lý Chủ nhà
             </h1>
-            <p class="page-header-sub mb-0 text-muted">Lưu trữ, tra cứu thông tin và quản lý tài sản chủ nhà</p>
+            <p class="page-header-sub mb-0 text-muted">{{ $thongKe['tong'] }} chủ nhà • {{ $thongKe['new_thang_nay'] }} mới
+                trong tháng</p>
         </div>
         <button type="button" class="btn btn-primary shadow-sm px-4" data-bs-toggle="modal"
             data-bs-target="#modalCreateChuNha">

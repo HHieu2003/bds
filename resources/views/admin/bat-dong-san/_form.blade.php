@@ -3,7 +3,7 @@
     $prefillNhuCau = $prefillNhuCau ?? null;
     $prefillDuAnId = $prefillDuAnId ?? null;
     $oldLoaiHinh = old('loai_hinh', $isEdit ? $batDongSan->loai_hinh : 'can_ho');
-    $oldNhuCau = old('nhu_cau', $isEdit ? $batDongSan->nhu_cau : ($prefillNhuCau ?? ''));
+    $oldNhuCau = old('nhu_cau', $isEdit ? $batDongSan->nhu_cau : $prefillNhuCau ?? '');
     $oldTrangThai = old('trang_thai', $isEdit ? $batDongSan->trang_thai : 'con_hang');
     $defaultNhanVienPhuTrachId = $defaultNhanVienPhuTrachId ?? '';
     $huongs = ['Đông', 'Tây', 'Nam', 'Bắc', 'Đông Nam', 'Đông Bắc', 'Tây Nam', 'Tây Bắc'];
@@ -83,10 +83,10 @@
                     <div class="col-md-4">
                         <label class="form-label">Thuộc dự án <span class="text-muted fw-normal">(Tùy
                                 chọn)</span></label>
-                        <select name="du_an_id" class="form-select">
+                        <select name="du_an_id" id="sel_du_an" class="form-select">
                             <option value="">-- Không thuộc dự án --</option>
                             @foreach ($duAns as $da)
-                                <option value="{{ $da->id }}" @selected(old('du_an_id', $isEdit ? $batDongSan->du_an_id : ($prefillDuAnId ?? '')) == $da->id)>{{ $da->ten_du_an }}
+                                <option value="{{ $da->id }}" @selected(old('du_an_id', $isEdit ? $batDongSan->du_an_id : $prefillDuAnId ?? '') == $da->id)>{{ $da->ten_du_an }}
                                 </option>
                             @endforeach
                         </select>
@@ -94,7 +94,7 @@
                     <div class="col-md-4">
                         <label class="form-label">Chủ sở hữu <span class="text-muted fw-normal">(Nguồn
                                 hàng)</span></label>
-                        <select name="chu_nha_id" class="form-select border-success border-opacity-50">
+                        <select name="chu_nha_id" id="sel_chu_nha" class="form-select border-success border-opacity-50">
                             <option value="">-- Chưa gán chủ nhà --</option>
                             @foreach ($chuNhas as $cn)
                                 <option value="{{ $cn->id }}" @selected(old('chu_nha_id', $isEdit ? $batDongSan->chu_nha_id : '') == $cn->id)>{{ $cn->ho_ten }} -
@@ -147,15 +147,9 @@
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Số phòng ngủ</label>
-                        <select name="so_phong_ngu" class="form-select">
-                            @php $curPN = old('so_phong_ngu', $isEdit ? $batDongSan->so_phong_ngu : 0); @endphp
-                            <option value="0" @selected($curPN == 0)>Studio</option>
-                            @for ($i = 1; $i <= 6; $i++)
-                                <option value="{{ $i }}" @selected($curPN == $i)>{{ $i }}
-                                    phòng ngủ</option>
-                            @endfor
-                            <option value="7" @selected($curPN >= 7)>7+ phòng ngủ</option>
-                        </select>
+                        <input type="text" name="so_phong_ngu" class="form-control"
+                            value="{{ old('so_phong_ngu', $isEdit ? $batDongSan->so_phong_ngu : '') }}"
+                            placeholder="VD: 2, 3, Studio, 2+1, Penthouse, v.v...">
                     </div>
                 </div>
 
@@ -197,10 +191,11 @@
                         <label class="form-label">Pháp lý</label>
                         <select name="phap_ly" class="form-select">
                             <option value="">-- Không xác định --</option>
-                            @foreach ($constants['phap_ly'] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == $v)>{{ $l }}
-                                </option>
-                            @endforeach
+                            <option value="so_hong" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'so_hong')>Sổ hồng</option>
+                            <option value="hop_dong_mua_ban" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'hop_dong_mua_ban')>Hợp đồng mua bán</option>
+                            <option value="hop_dong_50_nam" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'hop_dong_50_nam')>Hợp đồng mua bán 50 năm
+                            </option>
+                            <option value="so_50_nam" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'so_50_nam')>Sổ 50 năm</option>
                         </select>
                     </div>
                 </div>
@@ -476,8 +471,13 @@
     </div>
 </div>
 
+@push('styles')
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+@endpush
+
 @push('scripts')
     <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const CSRF = document.querySelector('meta[name=csrf-token]').content;
@@ -607,6 +607,23 @@
                 inpGia.addEventListener('input', updateGiaHint);
                 updateGiaHint();
             }
+
+            // 7. Khởi tạo TomSelect cho dự án và chủ nhà
+            new TomSelect('#sel_du_an', {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
+
+            new TomSelect('#sel_chu_nha', {
+                create: false,
+                sortField: {
+                    field: "text",
+                    direction: "asc"
+                }
+            });
         });
     </script>
 @endpush

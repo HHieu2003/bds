@@ -194,7 +194,8 @@
                             $ttInfo = $lh->trang_thai_info ?? \App\Models\YeuCauLienHe::TRANG_THAI['moi'];
                             $isUnassigned = is_null($lh->nhan_vien_phu_trach_id);
                         @endphp
-                        <tr class="{{ $isUnassigned ? 'lead-row-new' : '' }}">
+                        <tr class="{{ $isUnassigned ? 'lead-row-new' : '' }}" data-lead-id="{{ $lh->id }}"
+                            style="cursor: pointer;" onclick="showLeadDetail({{ $lh->id }})">
                             {{-- CỘT 1: KHÁCH HÀNG --}}
                             <td>
                                 <div class="d-flex align-items-center gap-2 mb-1">
@@ -426,6 +427,84 @@
         @endif
     </div>
 
+    {{-- MODAL CHI TIẾT LEAD --}}
+    <div class="modal fade" id="modalLeadDetail" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 12px;">
+                <div class="modal-header bg-light border-0">
+                    <h5 class="modal-title fw-bold"><i class="fas fa-id-card text-primary me-2"></i>Chi tiết Lead</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="spinner-border text-primary" role="status" id="leadDetailSpinner">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="leadDetailContent" style="display: none;">
+                        {{-- Thông tin khách hàng --}}
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user me-2"></i>Thông tin Khách hàng</h6>
+                        <div class="row g-3 mb-4 bg-light p-3 rounded">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Tên khách hàng</label>
+                                <div class="fw-bold text-dark" id="ld_ho_ten"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Mã yêu cầu</label>
+                                <div class="fw-bold text-dark" id="ld_ma_yeu_cau"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Số điện thoại</label>
+                                <div class="fw-bold text-success" id="ld_so_dien_thoai"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Email</label>
+                                <div class="text-dark" id="ld_email"></div>
+                            </div>
+                        </div>
+
+                        {{-- Thông tin tư vấn --}}
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-comment-dots me-2"></i>Nhu cầu tư vấn</h6>
+                        <div class="bg-light p-3 rounded mb-4">
+                            <div class="mb-2" id="ld_bds_info"></div>
+                            <div class="fst-italic" id="ld_noi_dung" style="color: #666;"></div>
+                        </div>
+
+                        {{-- Trạng thái --}}
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-tasks me-2"></i>Trạng thái xử lý</h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Trạng thái Lead</label>
+                                <div id="ld_trang_thai"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Người phụ trách</label>
+                                <div class="fw-bold text-dark" id="ld_nhan_vien"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Đánh giá tiềm năng</label>
+                                <div class="fw-bold text-dark" id="ld_muc_do"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="text-muted small fw-bold">Thời gian nhận</label>
+                                <div class="text-dark" id="ld_thoi_gian"></div>
+                            </div>
+                        </div>
+
+                        {{-- Ghi chú --}}
+                        <h6 class="fw-bold text-primary mb-3"><i class="fas fa-history me-2"></i>Lịch sử chăm sóc</h6>
+                        <div class="bg-light p-3 rounded" id="ld_ghi_chu"
+                            style="max-height: 200px; overflow-y: auto; font-size: 0.85rem;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light border-0">
+                    <a href="#" class="btn btn-primary" id="ld_btn_detail" target="_blank">
+                        <i class="fas fa-external-link-alt me-1"></i> Xem chi tiết đầy đủ
+                    </a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {{-- MODAL GHI CHÚ NHANH --}}
     <div class="modal fade" id="modalNote" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
@@ -507,5 +586,73 @@
                 document.querySelector('textarea[name="ghi_chu_moi"]').value = '';
             });
         });
+
+        // Hiển thị chi tiết Lead trong Modal
+        function showLeadDetail(leadId) {
+            const modal = new bootstrap.Modal(document.getElementById('modalLeadDetail'));
+            const spinner = document.getElementById('leadDetailSpinner');
+            const content = document.getElementById('leadDetailContent');
+
+            // Hiển thị spinner
+            spinner.style.display = 'block';
+            content.style.display = 'none';
+            modal.show();
+
+            // Fetch dữ liệu
+            fetch(`/nhan-vien/admin/lien-he/${leadId}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(r => r.json())
+                .then(data => {
+                    // Điền dữ liệu vào modal
+                    document.getElementById('ld_ho_ten').textContent = data.ho_ten || '—';
+                    document.getElementById('ld_ma_yeu_cau').textContent = data.ma_yeu_cau || '—';
+                    document.getElementById('ld_so_dien_thoai').innerHTML =
+                        `<a href="tel:${data.so_dien_thoai}" class="text-decoration-none">${data.so_dien_thoai}</a>`;
+                    document.getElementById('ld_email').textContent = data.email || '—';
+
+                    // Thông tin tư vấn
+                    if (data.bat_dong_san) {
+                        document.getElementById('ld_bds_info').innerHTML =
+                            `<span class="badge bg-success-subtle text-success me-1">Hỏi mua BĐS</span><a href="${data.bat_dong_san.url}" target="_blank" class="text-decoration-none fw-bold">${data.bat_dong_san.ten}</a>`;
+                    } else {
+                        document.getElementById('ld_bds_info').innerHTML =
+                            '<span class="badge bg-secondary-subtle text-secondary">Hỏi đáp chung</span>';
+                    }
+                    document.getElementById('ld_noi_dung').textContent = data.noi_dung || 'Không có nội dung';
+
+                    // Trạng thái
+                    document.getElementById('ld_trang_thai').innerHTML =
+                        `<span class="badge" style="background-color: ${data.trang_thai_info.bg}; color: ${data.trang_thai_info.color};">${data.trang_thai_info.label}</span>`;
+                    document.getElementById('ld_nhan_vien').textContent = data.nhan_vien || 'Chưa gán';
+                    document.getElementById('ld_muc_do').textContent = data.muc_do || '—';
+                    document.getElementById('ld_thoi_gian').textContent = data.thoi_gian_nhan || '—';
+
+                    // Ghi chú
+                    const ghiChuEl = document.getElementById('ld_ghi_chu');
+                    if (data.ghi_chu_admin) {
+                        ghiChuEl.innerHTML = data.ghi_chu_admin.replace(/\n/g, '<br>');
+                    } else {
+                        ghiChuEl.innerHTML = '<span class="text-muted fst-italic">Chưa có ghi chú</span>';
+                    }
+
+                    // Link xem chi tiết
+                    document.getElementById('ld_btn_detail').href = data.detail_url;
+
+                    // Ẩn spinner, hiển thị content
+                    spinner.style.display = 'none';
+                    content.style.display = 'block';
+                })
+                .catch(err => {
+                    spinner.style.display = 'none';
+                    content.style.display = 'block';
+                    document.getElementById('leadDetailContent').innerHTML =
+                        '<div class="alert alert-danger">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>';
+                    showAdminToast('Lỗi khi tải chi tiết lead', 'error');
+                });
+        }
     </script>
 @endpush

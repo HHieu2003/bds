@@ -18,83 +18,68 @@ class LichHenController extends Controller
      */
     public function index(Request $request)
     {
-        $nhanVien = $this->currentNhanVien();
-        $stats = $this->_stats($nhanVien);
+        $user = Auth::guard('nhanvien')->user();
 
-        // ========================================================
-        // 1. XÂY DỰNG DATA CHO TAB "DANH SÁCH TOÀN BỘ" (CHUNG CHO MỌI ROLE)
-        // ========================================================
-        $queryList = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang']);
+        // 1. Eager Loading tối ưu truy vấn
+        $query = LichHen::with([
+            'khachHang',
+            'batDongSan.chuNha.nhanVienPhuTrach',
+            'nhanVienSale'
+        ]);
 
-        // Phân quyền nhìn thấy trên Danh sách
-        if ($nhanVien->isSale()) {
-            $queryList->where(function ($q) use ($nhanVien) {
-                $q->where('nhan_vien_sale_id', $nhanVien->id)
-                    ->orWhere('trang_thai', 'moi_dat')
-                    ->orWhere(function ($qWeb) {
-                        $qWeb->where('nguon_dat_lich', 'website')
-                            ->whereNull('nhan_vien_sale_id')
-                            ->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh']);
-                    });
-            });
-        } elseif ($nhanVien->isNguonHang()) {
-            $queryList->where('nhan_vien_nguon_hang_id', $nhanVien->id);
-        }
-        // Nếu là Admin thì queryList lấy tất cả
-
-        // Bộ lọc tìm kiếm cho Tab Danh sách
-        if ($request->filled('tim_kiem')) {
-            $kw = '%' . $request->tim_kiem . '%';
-            $queryList->where(function ($q) use ($kw) {
-                $q->where('ten_khach_hang', 'like', $kw)
-                    ->orWhere('sdt_khach_hang', 'like', $kw)
-                    ->orWhereHas('batDongSan', function ($qBds) use ($kw) {
-                        $qBds->where('tieu_de', 'like', $kw)->orWhere('ma_can', 'like', $kw);
-                    });
+        // 2. PHÂN QUYỀN GIAO DIỆN
+        if ($user->isSale()) {
+            $query->where('nhan_vien_sale_id', $user->id);
+        } elseif ($user->isNguonHang()) {
+            $query->whereHas('batDongSan', function ($q) use ($user) {
+                $q->where('nhan_vien_phu_trach_id', $user->id);
             });
         }
+
+        // 3. TÍNH TOÁN THỐNG KÊ (Tính trước khi áp dụng bộ lọc tìm kiếm để Badge luôn chính xác)
+        $thongKe = [
+            'cho_xac_nhan' => (clone $query)->whereIn('trang_thai', ['cho_xac_nhan', 'bao_lai_gio', 'sale_doi_gio'])->count(),
+            // Dùng \Carbon\Carbon tuyệt đối để không bao giờ bị lỗi Not Found nữa
+            'hom_nay' => (clone $query)->whereDate('thoi_gian_hen', \Carbon\Carbon::today())->whereNotIn('trang_thai', ['huy', 'tu_choi', 'hoan_thanh'])->count()
+        ];
+
+        // 4. ÁP DỤNG CÁC BỘ LỌC
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $query->where(function ($q) use ($s) {
+                $q->where('ho_ten_khach', 'like', "%$s%")
+                    ->orWhere('sdt_khach', 'like', "%$s%")
+                    ->orWhereHas('batDongSan', function ($bdsQuery) use ($s) {
+                        $bdsQuery->where('ma_can', 'like', "%$s%")->orWhere('ten_bat_dong_san', 'like', "%$s%");
+                    });
+            });
+        }
+
         if ($request->filled('trang_thai')) {
-            $queryList->where('trang_thai', $request->trang_thai);
-        }
-        if ($request->filled('tu_ngay')) {
-            $queryList->whereDate('thoi_gian_hen', '>=', $request->tu_ngay);
-        }
-        if ($request->filled('den_ngay')) {
-            $queryList->whereDate('thoi_gian_hen', '<=', $request->den_ngay);
+            $query->where('trang_thai', $request->trang_thai);
         }
 
-        // Lấy dữ liệu phân trang
-        $lichHensList = $queryList->orderBy('thoi_gian_hen', 'desc')->paginate(15)->withQueryString();
-
-        // ========================================================
-        // 2. TRẢ VỀ VIEW TƯƠNG ỨNG VỚI ROLE (KÈM DỮ LIỆU LIST VÀ TAB)
-        // ========================================================
-        if ($nhanVien->isNguonHang()) {
-            // Data riêng cho Tab "Cần xử lý" của Nguồn hàng
-            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale'])
-                ->where('nhan_vien_nguon_hang_id', $nhanVien->id)
-                ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
-                ->orderBy('thoi_gian_hen', 'asc')
-                ->get();
-
-            return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats'));
+        if ($request->filled('ngay')) {
+            $today = \Carbon\Carbon::today();
+            match ($request->ngay) {
+                'hom_nay' => $query->whereDate('thoi_gian_hen', $today),
+                'ngay_mai' => $query->whereDate('thoi_gian_hen', $today->copy()->addDay()),
+                'tuan_nay' => $query->whereBetween('thoi_gian_hen', [$today->startOfWeek(), $today->endOfWeek()]),
+                'thang_nay' => $query->whereMonth('thoi_gian_hen', $today->month)->whereYear('thoi_gian_hen', $today->year),
+                default => null
+            };
         }
 
-        // Admin có thể vào cả 2 giao diện: Calendar/List và To-do của Nguồn hàng.
-        if ($nhanVien->isAdmin() && $request->get('giao_dien') === 'nguon_hang') {
-            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang'])
-                ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
-                ->orderBy('thoi_gian_hen', 'asc')
-                ->get();
+        // 5. TRUY VẤN VÀ XUẤT DỮ LIỆU
+        $lichHens = $query->orderByRaw("FIELD(trang_thai, 'cho_xac_nhan', 'bao_lai_gio', 'sale_doi_gio', 'da_xac_nhan', 'moi_dat', 'hoan_thanh', 'huy', 'tu_choi')")
+            ->orderBy('thoi_gian_hen', 'asc')
+            ->paginate(15)
+            ->withQueryString();
 
-            $adminMode = true;
-            return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats', 'adminMode'));
-        }
-
-        // Data riêng cho Modal/Tab Calendar của Sale & Admin
-        $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
-        return view('admin.lich-hen.index', compact('stats', 'dsNguonHang', 'nhanVien', 'lichHensList'));
+        return view('admin.lich-hen.index', compact('lichHens', 'thongKe', 'user'));
     }
+
+    // Các hàm thao tác (xác nhận, hủy, đổi giờ...) bạn giữ nguyên như cũ.
     /**
      * API TRẢ VỀ DỮ LIỆU CHO FULLCALENDAR (Dành cho Sale/Admin)
      */

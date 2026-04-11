@@ -6,7 +6,24 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="page-header-title mb-1"><i class="fas fa-file-signature text-primary"></i> Quản lý Ký gửi</h1>
-            <p class="page-header-sub mb-0">Nghiệp vụ Nguồn hàng: Tiếp nhận & Thẩm định BĐS</p>
+            <div style="font-size:.78rem;color:var(--text-sub)">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ number_format($thongKe['tong']) }}</strong> tổng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#FF9800"><strong>{{ number_format($thongKe['cho_duyet']) }}</strong> mới gửi</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#9C27B0"><strong>{{ number_format($thongKe['dang_tham_dinh']) }}</strong> đang thẩm
+                        định</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#4CAF50"><strong>{{ number_format($thongKe['da_duyet']) }}</strong> đã duyệt</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#F44336"><strong>{{ number_format($thongKe['tu_choi']) }}</strong> từ chối</span>
+                </div>
+            </div>
         </div>
         <a href="{{ route('nhanvien.admin.ky-gui.create') }}" class="btn btn-primary shadow-sm">
             <i class="fas fa-plus me-1"></i> Tạo yêu cầu mới
@@ -24,55 +41,6 @@
                 class="fas fa-exclamation-circle me-1"></i> {!! session('error') !!}<button type="button" class="btn-close"
                 data-bs-dismiss="alert"></button></div>
     @endif
-
-    {{-- THỐNG KÊ --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon blue bg-opacity-10"><i class="fas fa-inbox"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['tong']) }}</div>
-                    <div class="stat-label">Tổng số</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon orange bg-opacity-10"><i class="fas fa-clock"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['cho_duyet']) }}</div>
-                    <div class="stat-label">Mới gửi</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon purple bg-opacity-10"><i class="fas fa-search"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['dang_tham_dinh']) }}</div>
-                    <div class="stat-label">Đang thẩm định</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-6 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon green bg-opacity-10"><i class="fas fa-check-circle"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['da_duyet']) }}</div>
-                    <div class="stat-label">Đã duyệt</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon red bg-opacity-10"><i class="fas fa-times-circle"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['tu_choi']) }}</div>
-                    <div class="stat-label">Từ chối</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- BỘ LỌC --}}
     <div class="filter-box mb-4">

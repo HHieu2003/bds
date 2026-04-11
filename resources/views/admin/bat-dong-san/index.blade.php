@@ -6,7 +6,23 @@
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
         <div>
             <h1 class="page-header-title mb-1"><i class="fas fa-building text-primary"></i> Bất động sản</h1>
-            <p class="page-header-sub mb-0">Quản lý toàn bộ danh sách bất động sản</p>
+            <div style="font-size:.78rem;color:var(--text-sub)">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ number_format($thongKe['tong']) }}</strong> tổng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#4CAF50"><strong>{{ number_format($thongKe['con_hang']) }}</strong> còn hàng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#2d6a9f"><strong>{{ number_format($thongKe['dang_thue']) }}</strong> đang thuê</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#FF9800"><strong>{{ number_format($thongKe['dat_coc']) }}</strong> đặt cọc</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#F44336"><strong>{{ number_format($thongKe['da_ban']) }}</strong> đã bán</span>
+                </div>
+            </div>
         </div>
         @php
             $currentFilters = request()->except(['page']);
@@ -29,55 +45,6 @@
                 class="fas fa-exclamation-circle me-1"></i> {!! session('error') !!}<button type="button" class="btn-close"
                 data-bs-dismiss="alert"></button></div>
     @endif
-
-    {{-- ══ THỐNG KÊ ══ --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon blue bg-opacity-10"><i class="fas fa-building"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['tong']) }}</div>
-                    <div class="stat-label">Tổng BĐS</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon green bg-opacity-10"><i class="fas fa-check-circle"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['con_hang']) }}</div>
-                    <div class="stat-label">Còn hàng</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-4 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon navy bg-opacity-10"><i class="fas fa-key"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['dang_thue']) }}</div>
-                    <div class="stat-label">Đang cho thuê</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-6 col-md-6 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon orange bg-opacity-10"><i class="fas fa-handshake"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['dat_coc']) }}</div>
-                    <div class="stat-label">Đặt cọc</div>
-                </div>
-            </div>
-        </div>
-        <div class="col-12 col-md-6 col-xl">
-            <div class="stat-card p-3">
-                <div class="stat-icon red bg-opacity-10"><i class="fas fa-times-circle"></i></div>
-                <div>
-                    <div class="stat-num fs-4">{{ number_format($thongKe['da_ban']) }}</div>
-                    <div class="stat-label">Đã giao dịch</div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     {{-- ══ BỘ LỌC ══ --}}
     <div class="filter-box mb-4 bds-filter-panel">

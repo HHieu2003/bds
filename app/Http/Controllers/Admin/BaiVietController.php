@@ -110,7 +110,12 @@ class BaiVietController extends Controller
         $data['seo_title'] = $request->input('seo_title', $request->input('meta_title'));
         $data['seo_description'] = $request->input('seo_description', $request->input('meta_description'));
 
-        $data['slug']          = $this->taoSlugDuyNhat($request->tieu_de);
+        // Nếu slug được cung cấp từ form, dùng nó; nếu không, tự động tạo từ tiêu đề
+        if ($request->filled('slug')) {
+            $data['slug'] = $this->taoSlugDuyNhat($request->slug);
+        } else {
+            $data['slug'] = $this->taoSlugDuyNhat($request->tieu_de);
+        }
         $data['nhan_vien_id']  = auth('nhanvien')->id();
         $data['noi_bat']       = $request->boolean('noi_bat');
 
@@ -174,9 +179,13 @@ class BaiVietController extends Controller
         $data['seo_title'] = $request->input('seo_title', $request->input('meta_title'));
         $data['seo_description'] = $request->input('seo_description', $request->input('meta_description'));
 
-        // Cập nhật slug nếu tiêu đề thay đổi
-        if ($request->tieu_de !== $baiViet->tieu_de) {
-            $data['slug'] = $this->taoSlugDuyNhat($request->tieu_de, $baiViet->id);
+        // Cập nhật slug nếu tiêu đề hoặc slug thay đổi
+        if ($request->tieu_de !== $baiViet->tieu_de || $request->slug !== $baiViet->slug) {
+            if ($request->filled('slug')) {
+                $data['slug'] = $this->taoSlugDuyNhat($request->slug, $baiViet->id);
+            } else {
+                $data['slug'] = $this->taoSlugDuyNhat($request->tieu_de, $baiViet->id);
+            }
         }
 
         $data['noi_bat'] = $request->boolean('noi_bat');
@@ -327,6 +336,7 @@ class BaiVietController extends Controller
     {
         $rules = [
             'tieu_de'        => 'required|string|max:255',
+            'slug'           => 'nullable|string|max:255|regex:/^[a-z0-9\-]+$/',
             'mo_ta_ngan'     => 'nullable|string|max:300',
             'noi_dung'       => 'required|string',
             'loai_bai_viet'  => 'nullable|in:tin_tuc,phong_thuy,tuyen_dung,kien_thuc',
@@ -360,10 +370,12 @@ class BaiVietController extends Controller
             'array' => ':attribute phải là danh sách hợp lệ.',
             'boolean' => ':attribute chỉ nhận giá trị đúng/sai.',
             'exists' => ':attribute không tồn tại trong hệ thống.',
+            'regex' => ':attribute chỉ được chứa chữ thường, số và dấu gạch ngang (-).',
         ];
 
         $attributes = [
             'tieu_de' => 'Tiêu đề bài viết',
+            'slug' => 'Slug (Đường dẫn)',
             'mo_ta_ngan' => 'Mô tả ngắn',
             'noi_dung' => 'Nội dung',
             'loai_bai_viet' => 'Loại bài viết',

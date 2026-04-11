@@ -61,6 +61,28 @@ class LienHeController extends Controller
     {
         $lienHe->load(['batDongSan', 'nhanVienPhuTrach', 'khachHang']);
         $nhanViens = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', true)->orderBy('ho_ten')->get();
+
+        // Nếu là AJAX request, trả về JSON
+        if (request()->expectsJson()) {
+            return response()->json([
+                'ho_ten' => $lienHe->ho_ten,
+                'ma_yeu_cau' => $lienHe->ma_yeu_cau,
+                'so_dien_thoai' => $lienHe->so_dien_thoai,
+                'email' => $lienHe->email ?: 'Không cập nhật',
+                'noi_dung' => $lienHe->noi_dung,
+                'trang_thai_info' => YeuCauLienHe::TRANG_THAI[$lienHe->trang_thai] ?? [],
+                'nhan_vien' => $lienHe->nhanVienPhuTrach?->ho_ten,
+                'muc_do' => $lienHe->muc_do_quan_tam ? YeuCauLienHe::MUC_DO[$lienHe->muc_do_quan_tam]['label'] : '—',
+                'thoi_gian_nhan' => $lienHe->updated_at?->format('d/m/Y H:i') ?: '—',
+                'ghi_chu_admin' => $lienHe->ghi_chu_admin,
+                'bat_dong_san' => $lienHe->batDongSan ? [
+                    'ten' => $lienHe->batDongSan->ten_bat_dong_san,
+                    'url' => route('frontend.bat-dong-san.show', $lienHe->batDongSan->slug)
+                ] : null,
+                'detail_url' => route('nhanvien.admin.lien-he.show', $lienHe),
+            ]);
+        }
+
         return view('admin.lien-he.show', compact('lienHe', 'nhanViens'));
     }
 

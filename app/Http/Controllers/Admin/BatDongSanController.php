@@ -51,7 +51,6 @@ class BatDongSanController extends Controller
             'loai_hinh' => ['can_ho' => 'Căn hộ chung cư', 'nha_pho' => 'Nhà phố', 'biet_thu' => 'Biệt thự', 'dat_nen' => 'Đất nền', 'shophouse' => 'Shophouse'],
             'nhu_cau'   => ['ban' => 'Bán', 'thue' => 'Cho thuê'],
             'noi_that'  => ['nguyen_ban' => 'Nguyên bản', 'co_ban' => 'Cơ bản', 'full' => 'Full nội thất', 'cao_cap' => 'Cao cấp'],
-            'phap_ly'   => ['so_hong' => 'Sổ hồng', 'so_do' => 'Sổ đỏ', 'hop_dong' => 'Hợp đồng mua bán', 'chua_co' => 'Chưa có sổ'],
             'trang_thai' => [
                 'con_hang'  => ['label' => '✅ Còn hàng'],
                 'dat_coc'   => ['label' => '🤝 Đặt cọc'],
@@ -134,16 +133,16 @@ class BatDongSanController extends Controller
             $query->orderByDesc('luot_xem');
         }
 
-        $batDongSans = $query->paginate(15)->withQueryString();
-
-        // Thống kê nhanh trên đầu trang
+        // Tính thống kê theo filter (trước khi paginate)
         $thongKe = [
-            'tong'      => BatDongSan::count(),
-            'con_hang'  => BatDongSan::where('trang_thai', 'con_hang')->count(),
-            'dang_thue' => BatDongSan::where('trang_thai', 'dang_thue')->count(),
-            'dat_coc'   => BatDongSan::where('trang_thai', 'dat_coc')->count(),
-            'da_ban'    => BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
+            'tong'      => (clone $query)->count(),
+            'con_hang'  => (clone $query)->where('trang_thai', 'con_hang')->count(),
+            'dang_thue' => (clone $query)->where('trang_thai', 'dang_thue')->count(),
+            'dat_coc'   => (clone $query)->where('trang_thai', 'dat_coc')->count(),
+            'da_ban'    => (clone $query)->whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
         ];
+
+        $batDongSans = $query->paginate(15)->withQueryString();
 
         $duAns = DuAn::query()
             ->when($request->filled('khu_vuc_id'), function ($q) use ($request) {
@@ -426,7 +425,7 @@ class BatDongSanController extends Controller
             'tang'                   => 'nullable|string|max:50',
             'ma_can'                 => 'nullable|string|max:50',
             'dien_tich'              => 'required|numeric|min:1',
-            'so_phong_ngu'           => 'nullable|integer|min:0',
+            'so_phong_ngu'           => 'nullable|string|max:100',
             'so_phong_tam'           => 'nullable|integer|min:0',
             'huong_cua'              => 'nullable|string',
             'huong_ban_cong'         => 'nullable|string',

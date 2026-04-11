@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                           TRANG CHI TIẾT BĐS — Global Styles
-                        ═══════════════════════════════════════ */
+                                       TRANG CHI TIẾT BĐS — Global Styles
+                                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -412,7 +412,7 @@
         }
 
         .mo-ta-preview {
-            max-height: 200px;
+            max-height: 400px;
             overflow: hidden;
             position: relative;
         }
@@ -1097,7 +1097,17 @@
                                 <div class="info-item-icon"><i class="fas fa-layer-group"></i></div>
                                 <div class="info-item-text">
                                     <span class="lbl">Tầng số</span>
-                                    <span class="val">{{ $bds->tang ?? 'Đang cập nhật' }}</span>
+                                    <span class="val">
+                                        @if (!$bds->tang)
+                                            Đang cập nhật
+                                        @elseif ($bds->tang <= 7)
+                                            Tầng thấp
+                                        @elseif ($bds->tang <= 30)
+                                            Tầng trung
+                                        @else
+                                            Tầng cao
+                                        @endif
+                                    </span>
                                 </div>
                             </div>
                             @if ($bds->duAn)
