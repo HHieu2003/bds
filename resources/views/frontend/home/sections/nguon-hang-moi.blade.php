@@ -59,9 +59,8 @@
                                         <span title="Diện tích"><i class="fas fa-expand me-1 icon-muted"></i>
                                             {{ $bds->dien_tich }} m²</span>
                                         <span title="Phòng ngủ"><i class="fas fa-bed me-1 icon-muted"></i>
-                                            {{ $bds->so_phong_ngu }} PN</span>
-                                        <span title="Phòng tắm/WC"><i class="fas fa-bath me-1 icon-muted"></i>
-                                            {{ $bds->so_phong_tam }} WC</span>
+                                            {{ $bds->so_phong_ngu }}</span>
+
                                     </div>
                                 </div>
                             </div>
@@ -111,9 +110,8 @@
                                         <span title="Diện tích"><i class="fas fa-expand me-1 icon-muted"></i>
                                             {{ $bds->dien_tich }} m²</span>
                                         <span title="Phòng ngủ"><i class="fas fa-bed me-1 icon-muted"></i>
-                                            {{ $bds->so_phong_ngu }} PN</span>
-                                        <span title="Phòng tắm/WC"><i class="fas fa-bath me-1 icon-muted"></i>
-                                            {{ $bds->so_phong_tam }} WC</span>
+                                            {{ $bds->so_phong_ngu }}</span>
+
                                     </div>
                                 </div>
                             </div>

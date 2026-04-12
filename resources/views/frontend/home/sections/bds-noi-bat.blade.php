@@ -22,7 +22,7 @@
                                 class="card-img-top h-100 w-100 bds-img" alt="{{ $bds->tieu_de }}">
                         </a>
 
-                        <div class="card-body p-4">
+                        <div class="card-body">
                             {{-- Sử dụng class giá tiền --}}
                             <h4 class="price-text mb-2">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</h4>
 
@@ -42,8 +42,7 @@
                             <div class="d-flex justify-content-between text-muted small fw-semibold">
                                 {{-- Dùng icon-muted cho biểu tượng --}}
                                 <span><i class="fas fa-expand me-1 icon-muted"></i> {{ $bds->dien_tich }} m²</span>
-                                <span><i class="fas fa-bed me-1 icon-muted"></i> {{ $bds->so_phong_ngu }} PN</span>
-                                <span><i class="fas fa-bath me-1 icon-muted"></i> {{ $bds->so_phong_tam }} WC</span>
+                                <span><i class="fas fa-bed me-1 icon-muted"></i> {{ $bds->so_phong_ngu }}</span>
                             </div>
                         </div>
                     </div>

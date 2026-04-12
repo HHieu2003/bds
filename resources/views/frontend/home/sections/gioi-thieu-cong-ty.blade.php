@@ -25,7 +25,7 @@
 
                 {{-- Badge nổi: Năm kinh nghiệm --}}
                 <div class="ve-cty-badge-float ve-cty-badge-years" data-aos="zoom-in" data-aos-delay="300">
-                    <div class="ve-cty-badge-num">10<span>+</span></div>
+                    <div class="ve-cty-badge-num">5<span>+</span></div>
                     <div class="ve-cty-badge-label">Năm<br>Uy Tín</div>
                 </div>
 
@@ -155,8 +155,8 @@
 @push('styles')
     <style>
         /* ══════════════════════════════════════════
-                                   SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
-                                ══════════════════════════════════════════ */
+                                       SECTION VỀ CÔNG TY — THÀNH CÔNG LAND
+                                    ══════════════════════════════════════════ */
 
         .ve-cty-section {
             position: relative;
@@ -197,8 +197,8 @@
         }
 
         /* ═══════════════════
-                                   CỘT TRÁI: VISUAL
-                                ═══════════════════ */
+                                       CỘT TRÁI: VISUAL
+                                    ═══════════════════ */
         .ve-cty-visual {
             position: relative;
         }
@@ -343,8 +343,8 @@
         }
 
         /* ══════════════════
-                                   CỘT PHẢI: NỘI DUNG
-                                ══════════════════ */
+                                       CỘT PHẢI: NỘI DUNG
+                                    ══════════════════ */
         .ve-cty-content {
             display: flex;
             flex-direction: column;
@@ -537,8 +537,8 @@
         }
 
         /* ══════════════════
-                                   THANH THỐNG KÊ
-                                ══════════════════ */
+                                       THANH THỐNG KÊ
+                                    ══════════════════ */
         .ve-cty-stats {
             display: flex;
             align-items: center;

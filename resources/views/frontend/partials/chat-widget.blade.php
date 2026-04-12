@@ -206,10 +206,9 @@
             <div class="chat-transfer-card">
                 <div class="chat-transfer-copy">
                     <strong><i class="fas fa-user-tie" style="color:#1976d2"></i> Cần hỗ trợ sâu hơn?</strong>
-                    <small>Chuyển hội thoại cho nhân viên kinh doanh chuyên biệt</small>
                 </div>
                 <button type="button" class="btn btn-outline-theme" onclick="transferToAgent()">
-                    <i class="fas fa-arrow-right me-1"></i> Chuyển NV
+                    Chuyển nhân viên tư vấn
                 </button>
                 <button type="button" class="btn btn-outline-secondary" id="chatBackToBotBtn"
                     onclick="transferBackToBot()" style="display:none;">
@@ -247,3 +246,25 @@
     </div>
 
 </div>
+
+@push('scripts')
+    <script>
+        function transferToAgent() {
+            const transferWrap = document.getElementById('chatTransferWrap');
+            if (transferWrap) {
+                transferWrap.style.display = 'none';
+            }
+            // Gọi các handler khác liên quan đến transfer nếu có
+            console.log('Chuyển sang nhân viên tư vấn');
+        }
+
+        function transferBackToBot() {
+            const transferWrap = document.getElementById('chatTransferWrap');
+            if (transferWrap) {
+                transferWrap.style.display = 'block';
+            }
+            // Gọi các handler khác liên quan đến transfer nếu có
+            console.log('Chuyển lại AI');
+        }
+    </script>
+@endpush

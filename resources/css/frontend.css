@@ -348,7 +348,6 @@ ol {
     gap: 0.4rem;
 }
 .topbar-left i {
-    color: var(--primary);
     font-size: 0.75rem;
 }
 .topbar-phone {
@@ -1427,11 +1426,7 @@ ol {
    6. FOOTER & NEWSLETTER (LUXURY THEME)
 ========================================================= */
 .footer-newsletter {
-    background: linear-gradient(
-        135deg,
-        var(--secondary) 0%,
-        var(--secondary-dark) 100%
-    );
+    background: linear-gradient(135deg, #0d2b63 0%, var(--secondary-dark) 100%);
     padding: 2.5rem 0;
 }
 .newsletter-inner {
@@ -1535,10 +1530,10 @@ ol {
     padding-top: 0;
 }
 .footer-top-border {
-    height: 4px;
+    height: 2px;
     background: linear-gradient(
         90deg,
-        var(--secondary) 0%,
+        #144481 0%,
         var(--primary) 40%,
         var(--primary-light) 60%,
         var(--secondary) 100%

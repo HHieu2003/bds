@@ -1,8 +1,8 @@
-<section class="py-3 position-relative"
-    style="background: linear-gradient(135deg, var(--secondary), var(--primary-dark)); color: white;">
+<section class="position-relative"
+    style="background: linear-gradient(135deg, #a77508 0%, var(--primary-dark) 100%); color: white;">
     <div class="container text-center py-5" data-aos="zoom-in">
         <h2 class="display-6 fw-bold serif-font mb-3 text-light">Bạn Có Bất Động Sản Cần Bán Hoặc Cho Thuê?</h2>
-        <p class="fs-5 mb-5 opacity-75 mx-auto" style="max-width: 700px; color: #f3f4f6;">
+        <p class="fs-5 mb-5 opacity-75 mx-auto" style="max-width: 750px; color: #f3f4f6;">
             Hơn 5000+ khách hàng đang tìm kiếm nhà mỗi ngày tại Thành Công Land. Hãy ký gửi ngay hôm nay để chốt giao
             dịch nhanh chóng và được định giá miễn phí!
         </p>

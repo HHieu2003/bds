@@ -1088,8 +1088,11 @@ function updateTransferButtonsByState(trangThai, dangBotXuLy) {
 
     const isClosed = trangThai === "da_dong";
     const isBotMode = Boolean(dangBotXuLy) || trangThai === "dang_bot";
+    const isWaitingForAgent = trangThai === "dang_cho";
 
-    transferWrap.style.display = isClosed ? "none" : "block";
+    // Ẩn transfer card nếu đã đóng, hoặc đang chờ/đã chuyển sang agent
+    transferWrap.style.display =
+        isClosed || isWaitingForAgent ? "none" : "block";
     if (toAgentBtn)
         toAgentBtn.style.display = isBotMode ? "inline-flex" : "none";
     if (backToBotBtn)
