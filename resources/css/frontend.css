@@ -419,7 +419,7 @@ ol {
 }
 .nav-item {
     position: relative;
-    margin: 0 5px;
+    margin: 0 2px;
     padding: 3px;
 }
 .nav-link {
@@ -1091,7 +1091,7 @@ ol {
         background: #fff;
         flex-direction: column;
         align-items: flex-start;
-        padding: 0 0 2rem;
+        padding: 0 0 0.2rem;
         gap: 0;
         overflow-y: auto;
         z-index: 999;
@@ -1136,7 +1136,7 @@ ol {
         animation: none !important;
         background: var(--bg-alt);
         border-left: 3px solid var(--primary-light) !important;
-        margin: 0 0 0 1rem;
+
         min-width: auto;
     }
     .can-ho-mega-inner {
@@ -1178,7 +1178,7 @@ ol {
     }
 
     .nav-menu {
-        width: min(300px, 88vw);
+        width: min(286px, 88vw);
     }
 
     /* Ẩn icon yêu thích khi màn hình quá nhỏ để tránh tràn */
@@ -1607,7 +1607,16 @@ ol {
     transition: all var(--transition);
     box-shadow: var(--shadow-sm);
 }
-.social-btn:hover {
+
+/* ── Brand item trong menu mobile ── */
+.nav-mobile-brand-img {
+    object-fit: contain;
+    flex-shrink: 0;
+    height: auto;
+    width: 71%;
+    margin: auto;
+}
+.btn:hover {
     background: var(--primary);
     border-color: var(--primary);
     color: #fff;

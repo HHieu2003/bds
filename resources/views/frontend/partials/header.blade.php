@@ -45,11 +45,13 @@
 
             {{-- ── Menu chính (desktop) ── --}}
             <ul class="nav-menu" id="navMenu">
-                {{-- Nút đóng menu trên mobile --}}
-                <li class="nav-close-item">
-                    <button class="nav-close-btn" id="navClose" aria-label="Đóng menu">
-                        <i class="fas fa-times"></i>
-                    </button>
+                {{-- Logo mini trong menu mobile --}}
+                <li class="nav-item nav-mobile-brand-item d-xl-none">
+                    <a href="{{ route('frontend.home') }}"
+                        class="nav-link nav-mobile-brand-link {{ request()->routeIs('frontend.home') ? ' ' : '' }}">
+                        <img src="{{ asset('images/logo.png') }}" alt="Thành Công Land" class="nav-mobile-brand-img">
+
+                    </a>
                 </li>
 
                 <li class="nav-item">
