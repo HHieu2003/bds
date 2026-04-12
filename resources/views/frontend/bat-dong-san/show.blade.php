@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                                                                                                       TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                                                                                                    ═══════════════════════════════════════ */
+                                                                                                                                                                                                                                           TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                                                        ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -60,8 +60,33 @@
             margin-bottom: 2rem;
         }
 
+        .bds-gallery.count-1 {
+            grid-template-columns: 1fr;
+            grid-template-rows: 460px;
+        }
+
+        .bds-gallery.count-2 {
+            grid-template-columns: 2fr 1fr;
+            grid-template-rows: 227px 227px;
+        }
+
         .bds-gallery .gal-main {
             grid-column: 1 / 3;
+            grid-row: 1 / 3;
+        }
+
+        .bds-gallery.count-1 .gal-main {
+            grid-column: 1 / -1;
+            grid-row: 1 / -1;
+        }
+
+        .bds-gallery.count-2 .gal-main {
+            grid-column: 1 / 2;
+            grid-row: 1 / 3;
+        }
+
+        .bds-gallery.count-2 .gal-sub-2 {
+            grid-column: 2 / 3;
             grid-row: 1 / 3;
         }
 
@@ -69,6 +94,11 @@
             position: relative;
             overflow: hidden;
             cursor: pointer;
+            border: 0;
+            padding: 0;
+            background: transparent;
+            width: 100%;
+            display: block;
         }
 
         .bds-gallery .gal-item img {
@@ -161,9 +191,25 @@
                 grid-template-rows: 220px 120px;
             }
 
+            .bds-gallery.count-1,
+            .bds-gallery.count-2 {
+                grid-template-columns: 1fr;
+                grid-template-rows: 260px;
+            }
+
             .bds-gallery .gal-main {
                 grid-column: 1/3;
                 grid-row: 1/2;
+            }
+
+            .bds-gallery.count-1 .gal-main,
+            .bds-gallery.count-2 .gal-main {
+                grid-column: 1/-1;
+                grid-row: 1/-1;
+            }
+
+            .bds-gallery.count-2 .gal-sub-2 {
+                display: none;
             }
 
             .bds-gallery .gal-sub-3,
@@ -891,6 +937,11 @@
         .bds-lq-footer i {
             color: #FF8C42;
         }
+
+        .lb-data .lb-caption {
+            font-size: .82rem;
+            font-weight: 600;
+        }
     </style>
 @endpush
 
@@ -905,10 +956,12 @@
         }
         $default = asset('images/default-bds.jpg');
         $anhChinh = count($album) > 0 ? asset('storage/' . $album[0]) : $default;
-        $anh2 = count($album) > 1 ? asset('storage/' . $album[1]) : $default;
-        $anh3 = count($album) > 2 ? asset('storage/' . $album[2]) : $default;
-        $anh4 = count($album) > 3 ? asset('storage/' . $album[3]) : $default;
+        $anh2 = count($album) > 1 ? asset('storage/' . $album[1]) : null;
+        $anh3 = count($album) > 2 ? asset('storage/' . $album[2]) : null;
+        $anh4 = count($album) > 3 ? asset('storage/' . $album[3]) : null;
+        $galleryCount = max(1, min(4, count($album)));
         $extraCount = max(0, count($album) - 4);
+        $galleryImages = count($album) > 0 ? array_map(fn($img) => asset('storage/' . $img), $album) : [$default];
     @endphp
 
     <div class="bds-detail-page">
@@ -942,43 +995,53 @@
 
             {{-- ═══════ GALLERY ═══════ --}}
             <div class="position-relative">
-                <div class="bds-gallery">
+                <div class="bds-gallery count-{{ $galleryCount }}">
                     {{-- Ảnh chính --}}
-                    <a href="{{ $anhChinh }}" data-lightbox="bds-gallery" class="gal-item gal-main">
+                    <a href="{{ $anhChinh }}" data-lightbox="bds-gallery" class="gal-item gal-main"
+                        aria-label="Xem ảnh chính">
                         <img src="{{ $anhChinh }}" alt="{{ $bds->tieu_de }}" loading="eager">
                         <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
                     </a>
 
                     {{-- Ảnh phụ 2 --}}
-                    <a href="{{ $anh2 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-2">
-                        <img src="{{ $anh2 }}" alt="Ảnh 2" loading="lazy">
-                        <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                    </a>
+                    @if ($anh2)
+                        <a href="{{ $anh2 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-2"
+                            aria-label="Xem ảnh 2">
+                            <img src="{{ $anh2 }}" alt="Ảnh 2" loading="lazy">
+                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                        </a>
+                    @endif
 
                     {{-- Ảnh phụ 3 --}}
-                    <a href="{{ $anh3 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-3">
-                        <img src="{{ $anh3 }}" alt="Ảnh 3" loading="lazy">
-                        <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                    </a>
+                    @if ($anh3)
+                        <a href="{{ $anh3 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-3"
+                            aria-label="Xem ảnh 3">
+                            <img src="{{ $anh3 }}" alt="Ảnh 3" loading="lazy">
+                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                        </a>
+                    @endif
 
                     {{-- Ảnh phụ 4 — overlay "+N" --}}
-                    <a href="{{ $anh4 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-4">
-                        <img src="{{ $anh4 }}" alt="Ảnh 4" loading="lazy">
-                        @if ($extraCount > 0)
-                            <div class="gal-more-overlay">
-                                <span>+{{ $extraCount }}</span>
-                                <small>XEM THÊM</small>
-                            </div>
-                        @else
-                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                        @endif
-                    </a>
+                    @if ($anh4)
+                        <a href="{{ $anh4 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-4"
+                            aria-label="Xem ảnh 4">
+                            <img src="{{ $anh4 }}" alt="Ảnh 4" loading="lazy">
+                            @if ($extraCount > 0)
+                                <div class="gal-more-overlay">
+                                    <span>+{{ $extraCount }}</span>
+                                    <small>XEM THÊM</small>
+                                </div>
+                            @else
+                                <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                            @endif
+                        </a>
+                    @endif
                 </div>
 
-                {{-- Ảnh ẩn cho lightbox --}}
                 @if (count($album) > 4)
                     @for ($i = 4; $i < count($album); $i++)
-                        <a href="{{ asset('storage/' . $album[$i]) }}" data-lightbox="bds-gallery" class="d-none"></a>
+                        <a href="{{ asset('storage/' . $album[$i]) }}" data-lightbox="bds-gallery" class="d-none"
+                            aria-hidden="true"></a>
                     @endfor
                 @endif
 
@@ -1392,203 +1455,30 @@
 
 @endsection
 @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
     <script>
-        /* Lightbox config */
         if (typeof lightbox !== 'undefined') {
             lightbox.option({
-                resizeDuration: 200,
+                resizeDuration: 180,
                 wrapAround: true,
                 albumLabel: 'Ảnh %1 / %2'
             });
         }
 
-        /* Gửi yêu cầu gọi lại */
-        function guiYeuCauGoiLai(e) {
-            e.preventDefault();
-            var btn = document.getElementById('btnCallBack');
-            var form = document.getElementById('formCallBack');
-            var sdt = form.querySelector('[name=so_dien_thoai]').value.trim();
-            var hoTen = form.querySelector('[name=ho_ten]').value.trim();
-            var errorBox = document.getElementById('callBackError');
-
-            if (errorBox) {
-                errorBox.classList.add('d-none');
-                errorBox.classList.remove('text-danger', 'text-success');
-                errorBox.textContent = '';
+        window.BDS_SHOW = {
+            bdsId: {{ $bds->id }},
+            title: @json($bds->tieu_de),
+            nhuCau: @json($bds->nhu_cau),
+            khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
+            duAnId: {{ $bds->du_an_id ?? 'null' }},
+            soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
+            csrfToken: @json(csrf_token()),
+            isCustomerLoggedIn: {{ $customer ? 'true' : 'false' }},
+            routes: {
+                lienHeStore: @json(route('frontend.lien-he.store')),
+                trackTime: @json(route('frontend.bds.track-time'))
             }
-
-            if (!sdt) {
-                showFlash('Vui lòng nhập số điện thoại.', 'warning');
-                return;
-            }
-
-            if (!hoTen) {
-                showFlash('Vui lòng nhập họ tên.', 'warning');
-                return;
-            }
-
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang gửi...';
-            btn.disabled = true;
-
-            fetch('{{ route('frontend.lien-he.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': window.APP?.csrfToken || ''
-                    },
-                    credentials: 'same-origin',
-                    body: new FormData(form)
-                })
-                .then(async r => {
-                    let data = {};
-                    try {
-                        data = await r.json();
-                    } catch (_) {}
-
-                    if (!r.ok) {
-                        throw new Error(data.message || (r.status === 429 ?
-                            'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
-                            'Có lỗi xảy ra, vui lòng thử lại.'));
-                    }
-
-                    return data;
-                })
-                .then((data) => {
-                    showFlash(data.message || 'Yêu cầu đã gửi! Chúng tôi sẽ liên hệ sớm.', 'success');
-                    var defaultNoiDung = 'Tôi quan tâm đến BĐS: ' + @json($bds->tieu_de);
-                    var noiDungEl = form.querySelector('[name=noi_dung]');
-                    if (noiDungEl) noiDungEl.value = defaultNoiDung;
-                    if (!{{ $customer ? 'true' : 'false' }}) {
-                        form.reset();
-                        if (noiDungEl) noiDungEl.value = defaultNoiDung;
-                    }
-
-                    if (errorBox) {
-                        errorBox.classList.remove('d-none');
-                        errorBox.classList.add('text-success');
-                        errorBox.textContent = data.message || 'Yêu cầu đã được gửi thành công.';
-                    }
-                })
-                .catch((err) => {
-                    showFlash(err.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'error');
-                    if (errorBox) {
-                        errorBox.classList.remove('d-none');
-                        errorBox.classList.add('text-danger');
-                        errorBox.textContent = err.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-                    }
-                })
-                .finally(() => {
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Yêu Cầu';
-                    btn.disabled = false;
-                });
-        }
-
-        /* XỬ LÝ AJAX FORM ĐẶT LỊCH XEM NHÀ (MỚI) */
-        document.getElementById('frmDatLich').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            let form = this;
-            let btn = document.getElementById('btnSubmitDatLich');
-            let errorBox = document.getElementById('datLichError');
-            let originalText = btn.innerHTML;
-
-            if (errorBox) {
-                errorBox.classList.add('d-none');
-                errorBox.textContent = '';
-            }
-
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
-            btn.disabled = true;
-
-            let formData = new FormData(form);
-
-            fetch(form.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json',
-                    },
-                    body: formData
-                })
-                .then(async response => {
-                    const data = await response.json().catch(() => ({}));
-                    if (!response.ok) {
-                        throw new Error(data.message || (response.status === 429 ?
-                            'Bạn thao tác quá nhanh. Vui lòng thử lại sau 2 phút.' :
-                            'Có lỗi xảy ra, vui lòng kiểm tra lại thông tin.'));
-                    }
-                    return data;
-                })
-                .then(data => {
-                    if (data.status !== 'success') {
-                        throw new Error(data.message || 'Có lỗi xảy ra, vui lòng kiểm tra lại.');
-                    }
-
-                    var myModalEl = document.getElementById('modalDatLich');
-                    var modal = bootstrap.Modal.getInstance(myModalEl);
-                    if (modal) modal.hide();
-
-                    showFlash(data.message || 'Gửi yêu cầu đặt lịch thành công!', 'success');
-
-                    const defaultGhiChu =
-                        'Tôi muốn đặt lịch xem BĐS: ' + @json($bds->tieu_de);
-                    const ghiChuEl = form.querySelector('[name=ghi_chu]');
-
-                    if (!{{ $customer ? 'true' : 'false' }}) {
-                        form.reset();
-                    }
-                    if (ghiChuEl) {
-                        ghiChuEl.value = defaultGhiChu;
-                    }
-                })
-                .catch(error => {
-                    showFlash(error.message || 'Có lỗi xảy ra, vui lòng thử lại.', 'warning');
-                    if (errorBox) {
-                        errorBox.classList.remove('d-none');
-                        errorBox.textContent = error.message || 'Có lỗi xảy ra, vui lòng thử lại.';
-                    }
-                })
-                .finally(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                });
-        });
-
-        function dangKyCanhBaoGia() {
-            if (typeof openModalDangKy !== 'function') {
-                showFlash('Chưa thể mở form đăng ký nhận tin lúc này.', 'danger');
-                return;
-            }
-
-            openModalDangKy('', {
-                batDongSanId: {{ $bds->id }},
-                batDongSanTitle: @json($bds->tieu_de),
-                nhuCau: @json($bds->nhu_cau),
-                khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
-                duAnId: {{ $bds->du_an_id ?? 'null' }},
-                soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
-            });
-        }
-
-        // Ghi nhận thời gian xem (Tracking)
-        (function() {
-            const startTime = Date.now();
-            const bdsId = {{ $bds->id }};
-
-            window.addEventListener('beforeunload', function() {
-                const seconds = Math.floor((Date.now() - startTime) / 1000);
-                if (seconds < 3) return;
-
-                navigator.sendBeacon('{{ route('frontend.bds.track-time') }}',
-                    JSON.stringify({
-                        bds_id: bdsId,
-                        seconds: seconds,
-                        _token: '{{ csrf_token() }}'
-                    })
-                );
-            });
-        })();
+        };
     </script>
+    @vite('resources/js/pages/bds-show.js')
 @endpush

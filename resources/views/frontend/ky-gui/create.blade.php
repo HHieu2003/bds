@@ -215,9 +215,9 @@
                             <div class="kg-fe-row3">
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Giá bán mong muốn (VNĐ)</label>
-                                    <input type="text" inputmode="decimal" name="gia_ban_mong_muon"
+                                    <input type="text" inputmode="numeric" name="gia_ban_mong_muon"
                                         class="kg-fe-fi js-price" value="{{ old('gia_ban_mong_muon') }}"
-                                        placeholder="3.500.000.000 hoặc 3.500.000.000,5">
+                                        placeholder="3.500.000.000">
                                     <div class="kg-fe-price-hint" id="giaHienThi"></div>
                                 </div>
                                 <div class="kg-fe-fg">
@@ -842,6 +842,16 @@
             return intPart + sep + decimalPart;
         }
 
+        function sanitizeIntegerTyping(value) {
+            return (value || '').replace(/\D+/g, '');
+        }
+
+        function formatInteger(value) {
+            const cleaned = (value || '').replace(/\D+/g, '');
+            if (!cleaned) return '';
+            return cleaned.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
         function normalizeLocalizedNumber(value) {
             if (value === null || value === undefined) return null;
             let raw = String(value).trim();
@@ -858,6 +868,12 @@
 
             if (!/^\d+(\.\d+)?$/.test(raw)) return null;
             return raw;
+        }
+
+        function normalizeInteger(value) {
+            if (value === null || value === undefined) return null;
+            const raw = String(value).trim().replace(/\D+/g, '');
+            return raw || null;
         }
 
         function formatViNumber(value) {
@@ -914,7 +930,7 @@
             const phoneInput = form?.querySelector('[name="so_dien_thoai"]');
             const areaInput = form?.querySelector('[name="dien_tich"]');
             const priceInputs = form ? Array.from(form.querySelectorAll('.js-price')) : [];
-            const decimalInputs = form ? Array.from(form.querySelectorAll('.js-decimal, .js-price')) : [];
+            const decimalInputs = form ? Array.from(form.querySelectorAll('.js-decimal')) : [];
 
             if (phoneInput) {
                 phoneInput.addEventListener('input', () => {
@@ -939,8 +955,21 @@
             });
 
             priceInputs.forEach((input) => {
+                input.addEventListener('input', () => {
+                    input.value = sanitizeIntegerTyping(input.value);
+                    clearFieldError(input);
+                });
+
+                input.addEventListener('blur', () => {
+                    if (!input.value) return;
+                    const formatted = formatInteger(input.value);
+                    if (formatted) {
+                        input.value = formatted;
+                    }
+                });
+
                 if (input.value) {
-                    const formatted = formatViNumber(input.value);
+                    const formatted = formatInteger(input.value);
                     if (formatted) input.value = formatted;
                 }
             });
@@ -1000,13 +1029,13 @@
                         'Diện tích phải là số lớn hơn 0 (có thể có phần thập phân).');
                 }
 
-                const normalizedGiaBan = normalizeLocalizedNumber(giaBanInput?.value || '');
+                const normalizedGiaBan = normalizeInteger(giaBanInput?.value || '');
                 const normalizedGiaThue = normalizeLocalizedNumber(giaThueInput?.value || '');
 
                 if (giaBanInput?.value && !normalizedGiaBan) {
                     e.preventDefault();
                     return setFieldError(giaBanInput,
-                        'Giá bán chỉ được nhập số, có thể có phần thập phân.');
+                        'Giá bán chỉ được nhập số nguyên (không có phần thập phân).');
                 }
 
                 if (giaThueInput?.value && !normalizedGiaThue) {

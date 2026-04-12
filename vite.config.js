@@ -8,6 +8,7 @@ export default defineConfig({
             input: [
                 "resources/css/frontend.css",
                 "resources/js/frontend.js",
+                "resources/js/pages/bds-show.js",
                 "resources/css/admin.css",
                 "resources/js/admin.js",
             ],
