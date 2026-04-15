@@ -102,6 +102,18 @@
                                                     {{ $kyGui->dien_tich }} m2
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td style="padding:3px 0;color:#7a7a7a;">So phong ngu</td>
+                                                <td style="padding:3px 0;font-weight:700;color:#222222;">
+                                                    {{ $kyGui->so_phong_ngu ?? 'Dang cap nhat' }}
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:3px 0;color:#7a7a7a;">Tang</td>
+                                                <td style="padding:3px 0;font-weight:700;color:#222222;">
+                                                    {{ $kyGui->tang ?? 'Dang cap nhat' }}
+                                                </td>
+                                            </tr>
 
                                             @if ($kyGui->nhu_cau === 'ban' && $kyGui->gia_ban_mong_muon)
                                                 <tr>

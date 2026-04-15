@@ -11,7 +11,7 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: var(--secondary-dark);
+            background: #416987f2;
             color: #fff;
             padding: .8rem 1.5rem;
             z-index: 9999;
@@ -151,7 +151,7 @@
 
         /* Modal header & badge */
         #soSanhModal .modal-header {
-            background: var(--secondary);
+            background: var(--primary);
         }
 
         #soSanhModal .modal-header .badge {
@@ -200,9 +200,8 @@
         <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 rounded-4" style="box-shadow: 0 24px 60px rgba(0,0,0,.18)">
 
-                <div class="modal-header border-0 p-3">
+                <div class="modal-header border-0 p-3 d-flex justify-content-between">
                     <h5 class="modal-title fw-bold mb-0 text-white">
-                        <i class="fas fa-balance-scale me-2" style="color: var(--primary)"></i>
                         Bảng So Sánh Chi Tiết
                         <span class="badge ms-2" id="soSanhModalCount"></span>
                     </h5>

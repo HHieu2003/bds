@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                                                                                                                                           TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                                                                                                                                        ═══════════════════════════════════════ */
+                                                                                                                                                                                                                                                   TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                                                                ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -959,8 +959,10 @@
         $anh2 = count($album) > 1 ? asset('storage/' . $album[1]) : null;
         $anh3 = count($album) > 2 ? asset('storage/' . $album[2]) : null;
         $anh4 = count($album) > 3 ? asset('storage/' . $album[3]) : null;
-        $galleryCount = max(1, min(4, count($album)));
-        $extraCount = max(0, count($album) - 4);
+        $anh5 = count($album) > 4 ? asset('storage/' . $album[4]) : null;
+
+        $galleryCount = max(1, min(5, count($album)));
+        $extraCount = max(0, count($album) - 5);
         $galleryImages = count($album) > 0 ? array_map(fn($img) => asset('storage/' . $img), $album) : [$default];
     @endphp
 
@@ -1020,12 +1022,18 @@
                             <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
                         </a>
                     @endif
-
-                    {{-- Ảnh phụ 4 — overlay "+N" --}}
                     @if ($anh4)
                         <a href="{{ $anh4 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-4"
                             aria-label="Xem ảnh 4">
                             <img src="{{ $anh4 }}" alt="Ảnh 4" loading="lazy">
+                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                        </a>
+                    @endif
+                    {{-- Ảnh phụ 4 — overlay "+N" --}}
+                    @if ($anh5)
+                        <a href="{{ $anh5 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-5"
+                            aria-label="Xem ảnh 5">
+                            <img src="{{ $anh5 }}" alt="Ảnh 5" loading="lazy">
                             @if ($extraCount > 0)
                                 <div class="gal-more-overlay">
                                     <span>+{{ $extraCount }}</span>
@@ -1038,8 +1046,8 @@
                     @endif
                 </div>
 
-                @if (count($album) > 4)
-                    @for ($i = 4; $i < count($album); $i++)
+                @if (count($album) > 5)
+                    @for ($i = 5; $i < count($album); $i++)
                         <a href="{{ asset('storage/' . $album[$i]) }}" data-lightbox="bds-gallery" class="d-none"
                             aria-hidden="true"></a>
                     @endfor

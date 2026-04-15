@@ -200,13 +200,13 @@
             </div>
 
 
-
+            {{-- 
             <div class="nav-item">
                 <a class="nav-link-item" href="#" data-tooltip="Cài đặt chung">
                     <i class="fas fa-cog nav-icon"></i>
                     <span class="nav-link-text">Cài đặt chung</span>
                 </a>
-            </div>
+            </div> --}}
         @endif
 
     </nav>

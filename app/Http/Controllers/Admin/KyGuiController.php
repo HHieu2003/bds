@@ -17,38 +17,62 @@ class KyGuiController extends Controller
 {
     public function index(Request $request)
     {
-        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach'])->withCount([]);
+        $currentTab = $request->get('tab', 'can_xu_ly');
+        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach']);
 
-        if ($request->filled('tim_kiem')) {
-            $kw = '%' . $request->tim_kiem . '%';
-            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)->orWhere('so_dien_thoai', 'like', $kw)->orWhere('dia_chi', 'like', $kw));
+        // 1. Logic phân loại Tab
+        if ($currentTab === 'can_xu_ly') {
+            // Tab cần xử lý: Mới gửi hoặc đang thẩm định
+            $query->whereIn('trang_thai', ['cho_duyet', 'dang_tham_dinh']);
         }
 
-        if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
+        // 2. Các bộ lọc tìm kiếm
+        if ($request->filled('tim_kiem')) {
+            $kw = '%' . $request->tim_kiem . '%';
+            $query->where(function ($q) use ($kw) {
+                $q->where('ho_ten_chu_nha', 'like', $kw)
+                    ->orWhere('so_dien_thoai', 'like', $kw)
+                    ->orWhere('dia_chi', 'like', $kw)
+                    ->orWhere('ma_ky_gui', 'like', $kw);
+            });
+        }
+
+        if ($request->filled('trang_thai') && $currentTab === 'tat_ca') {
+            $query->where('trang_thai', $request->trang_thai);
+        }
+
         if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
         if ($request->filled('nhan_vien_id')) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
 
         $sapXep = $request->get('sapxep', 'moi_nhat');
-        if ($sapXep === 'cu_nhat') {
-            $query->oldest();
-        } else {
-            $query->latest();
-        }
+        if ($sapXep == 'moi_nhat') $query->latest();
+        else $query->oldest();
 
         $kyGuis = $query->paginate(15)->withQueryString();
 
+        // 3. Thống kê số lượng cho Badge Tabs
+        $countCanXuLy = KyGui::whereIn('trang_thai', ['cho_duyet', 'dang_tham_dinh'])->count();
+        $countTatCa = KyGui::count();
+
+        // Thống kê trạng thái (cho bộ lọc)
         $thongKe = [
-            'tong'           => KyGui::count(),
-            'cho_duyet'      => KyGui::where('trang_thai', 'cho_duyet')->count(),
+            'tong' => $countTatCa,
+            'cho_duyet' => KyGui::where('trang_thai', 'cho_duyet')->count(),
             'dang_tham_dinh' => KyGui::where('trang_thai', 'dang_tham_dinh')->count(),
-            'da_duyet'       => KyGui::where('trang_thai', 'da_duyet')->count(),
-            'tu_choi'        => KyGui::where('trang_thai', 'tu_choi')->count(),
+            'da_duyet' => KyGui::where('trang_thai', 'da_duyet')->count(),
+            'bi_tu_choi' => KyGui::where('trang_thai', 'bi_tu_choi')->count(),
         ];
 
-        // Chỉ lấy nhân sự Nguồn hàng (và admin) để xử lý ký gửi
-        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->orderBy('ho_ten')->get();
+        $nhanViens = NhanVien::where('kich_hoat', 1)->get();
 
-        return view('admin.ky-gui.index', compact('kyGuis', 'thongKe', 'nhanViens'));
+        return view('admin.ky-gui.index', compact(
+            'kyGuis',
+            'thongKe',
+            'nhanViens',
+            'currentTab',
+            'countCanXuLy',
+            'countTatCa'
+        ));
     }
 
     public function show(KyGui $kyGui)
@@ -144,9 +168,8 @@ class KyGuiController extends Controller
             'nhu_cau'                => 'required|in:ban,thue',
             'dia_chi'                => 'nullable|string|max:255',
             'dien_tich'              => 'required|numeric|min:1',
-            'huong_nha'              => 'nullable|string',
-            'so_phong_ngu'           => 'nullable|integer|min:0|max:20',
-            'so_phong_tam'           => 'nullable|integer|min:0|max:20',
+            'tang'                   => 'nullable|string|max:100',
+            'so_phong_ngu'           => 'nullable|string|max:20',
             'noi_that'               => 'nullable|string',
             'gia_ban_mong_muon'      => 'nullable|numeric|min:0',
             'phap_ly'                => 'nullable|string',
@@ -193,6 +216,8 @@ class KyGuiController extends Controller
             'nhu_cau'        => 'required|in:ban,thue',
             'loai_hinh'      => 'required|string',
             'dien_tich'      => 'required|numeric',
+            'so_phong_ngu'   => 'nullable|string|max:20',
+            'tang'           => 'nullable|string|max:100',
         ]);
 
         $nhanVienHienTai = Auth::guard('nhanvien')->id();
@@ -221,12 +246,11 @@ class KyGuiController extends Controller
             'loai_hinh'    => $request->loai_hinh,
             'nhu_cau'      => $request->nhu_cau,
             'dien_tich'    => $request->dien_tich,
+            'tang'         => $request->tang,
             'gia'          => $request->nhu_cau == 'ban' ? $request->gia : null,
             'gia_thue'     => $request->nhu_cau == 'thue' ? $request->gia_thue : null,
             'mo_ta'        => $request->mo_ta,
-            'huong_nha'    => $request->huong_nha,
             'so_phong_ngu' => $request->so_phong_ngu,
-            'so_phong_tam' => $request->so_phong_tam,
             'noi_that'     => $request->noi_that,
             'phap_ly'      => $request->phap_ly,
 

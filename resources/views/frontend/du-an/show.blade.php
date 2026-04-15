@@ -248,9 +248,8 @@
                                                         <span><i class="fas fa-expand me-1"></i>{{ $bds->dien_tich }}
                                                             m²</span>
                                                         <span><i class="fas fa-bed me-1"></i>{{ $bds->so_phong_ngu }}
-                                                            PN</span>
-                                                        <span><i class="fas fa-bath me-1"></i>{{ $bds->so_phong_tam }}
-                                                            WC</span>
+                                                        </span>
+
                                                     </div>
                                                 </div>
                                             </div>
@@ -309,9 +308,8 @@
                                                         <span><i class="fas fa-expand me-1"></i>{{ $bds->dien_tich }}
                                                             m²</span>
                                                         <span><i class="fas fa-bed me-1"></i>{{ $bds->so_phong_ngu }}
-                                                            PN</span>
-                                                        <span><i class="fas fa-bath me-1"></i>{{ $bds->so_phong_tam }}
-                                                            WC</span>
+                                                            </span>
+                                                  
                                                     </div>
                                                 </div>
                                             </div>
@@ -932,12 +930,16 @@
         }
 
         .dact-sidebar-head {
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             color: #fff;
             padding: 1.4rem 1.5rem;
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+
+        .dact-sidebar-head h6 {
+            color: #fff
         }
 
         .dact-sidebar-head-icon {
@@ -950,7 +952,6 @@
             align-items: center;
             justify-content: center;
             font-size: 1.3rem;
-            color: var(--primary);
             flex-shrink: 0;
         }
 

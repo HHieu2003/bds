@@ -147,6 +147,14 @@
                                 @enderror
                             </div>
                             <div class="kg-fe-fg">
+                                <label class="kg-fe-lbl">Tầng</label>
+                                <input type="text" name="tang" class="kg-fe-fi @error('tang') err @enderror"
+                                    value="{{ old('tang') }}" placeholder="VD: 12 hoặc Penthouse">
+                                @error('tang')
+                                    <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="kg-fe-fg">
                                 <label class="kg-fe-lbl req">Mã căn</label>
                                 <input type="text" name="ma_can" class="kg-fe-fi @error('ma_can') err @enderror"
                                     value="{{ old('ma_can') }}" placeholder="VD: S2.03-1212">
@@ -154,6 +162,7 @@
                                     <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
                                 @enderror
                             </div>
+
                         </div>
 
                         <div class="kg-fe-row3">
@@ -166,16 +175,7 @@
                                     <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="kg-fe-fg">
-                                <label class="kg-fe-lbl">Hướng nhà</label>
-                                <select name="huong_nha" class="kg-fe-fi kg-fe-sel">
-                                    <option value="">— Chọn hướng —</option>
-                                    @foreach (['dong' => 'Đông', 'tay' => 'Tây', 'nam' => 'Nam', 'bac' => 'Bắc', 'dong_nam' => 'Đông Nam', 'dong_bac' => 'Đông Bắc', 'tay_nam' => 'Tây Nam', 'tay_bac' => 'Tây Bắc'] as $v => $l)
-                                        <option value="{{ $v }}" @selected(old('huong_nha') == $v)>
-                                            {{ $l }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+
                             <div class="kg-fe-fg">
                                 <label class="kg-fe-lbl">Nội thất</label>
                                 <select name="noi_that" class="kg-fe-fi kg-fe-sel">
@@ -188,24 +188,12 @@
                             </div>
                             <div class="kg-fe-fg">
                                 <label class="kg-fe-lbl">Số phòng ngủ</label>
-                                <select name="so_phong_ngu" class="kg-fe-fi kg-fe-sel">
-                                    <option value="0">Studio / Không có</option>
-                                    @for ($i = 1; $i <= 6; $i++)
-                                        <option value="{{ $i }}" @selected(old('so_phong_ngu') == $i)>
-                                            {{ $i }} phòng</option>
-                                    @endfor
-                                    <option value="7" @selected(old('so_phong_ngu') >= 7)>7+ phòng</option>
-                                </select>
-                            </div>
-                            <div class="kg-fe-fg">
-                                <label class="kg-fe-lbl">Số phòng tắm/WC</label>
-                                <select name="so_phong_tam" class="kg-fe-fi kg-fe-sel">
-                                    <option value="0">Không có</option>
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <option value="{{ $i }}" @selected(old('so_phong_tam') == $i)>
-                                            {{ $i }} WC</option>
-                                    @endfor
-                                </select>
+                                <input type="text" name="so_phong_ngu"
+                                    class="kg-fe-fi @error('so_phong_ngu') err @enderror"
+                                    value="{{ old('so_phong_ngu') }}" placeholder="VD: 2PN hoặc 3PN+1">
+                                @error('so_phong_ngu')
+                                    <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
@@ -239,9 +227,10 @@
                             <div class="kg-fe-row3">
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Giá thuê/tháng (VNĐ)</label>
-                                    <input type="text" inputmode="decimal" name="gia_thue_mong_muon"
+                                    <input type="text" inputmode="numeric" name="gia_thue_mong_muon"
                                         class="kg-fe-fi js-price" value="{{ old('gia_thue_mong_muon') }}"
-                                        placeholder="15.000.000 hoặc 15.000.000,25">
+                                        placeholder="15.000.000">
+                                    <div class="kg-fe-price-hint" id="giaThueHienThi"></div>
                                 </div>
                                 <div class="kg-fe-fg">
                                     <label class="kg-fe-lbl">Hình thức thanh toán</label>
@@ -320,7 +309,7 @@
 
         /* ── Hero ── */
         .kg-fe-hero {
-            background: linear-gradient(135deg, var(--secondary), var(--secondary-dark));
+            background: linear-gradient(135deg, var(--primary-dark), var(--secondary-dark));
             padding: 30px 20px 55px;
             text-align: center;
             color: #fff;
@@ -931,6 +920,7 @@
             const areaInput = form?.querySelector('[name="dien_tich"]');
             const priceInputs = form ? Array.from(form.querySelectorAll('.js-price')) : [];
             const decimalInputs = form ? Array.from(form.querySelectorAll('.js-decimal')) : [];
+            const integerInputs = form ? Array.from(form.querySelectorAll('.js-integer')) : [];
 
             if (phoneInput) {
                 phoneInput.addEventListener('input', () => {
@@ -948,6 +938,21 @@
                 input.addEventListener('blur', () => {
                     if (!input.value) return;
                     const formatted = formatViNumber(input.value);
+                    if (formatted) {
+                        input.value = formatted;
+                    }
+                });
+            });
+
+            integerInputs.forEach((input) => {
+                input.addEventListener('input', () => {
+                    input.value = sanitizeIntegerTyping(input.value);
+                    clearFieldError(input);
+                });
+
+                input.addEventListener('blur', () => {
+                    if (!input.value) return;
+                    const formatted = formatInteger(input.value);
                     if (formatted) {
                         input.value = formatted;
                     }
@@ -1030,7 +1035,7 @@
                 }
 
                 const normalizedGiaBan = normalizeInteger(giaBanInput?.value || '');
-                const normalizedGiaThue = normalizeLocalizedNumber(giaThueInput?.value || '');
+                const normalizedGiaThue = normalizeInteger(giaThueInput?.value || '');
 
                 if (giaBanInput?.value && !normalizedGiaBan) {
                     e.preventDefault();
@@ -1041,7 +1046,7 @@
                 if (giaThueInput?.value && !normalizedGiaThue) {
                     e.preventDefault();
                     return setFieldError(giaThueInput,
-                        'Giá thuê chỉ được nhập số, có thể có phần thập phân.');
+                        'Giá thuê chỉ được nhập số.');
                 }
 
                 if (nhuCauInput?.value === 'ban' && normalizedGiaBan !== null && Number(normalizedGiaBan) <
@@ -1112,6 +1117,21 @@
                     return;
                 }
                 giaHienThi.textContent = formatMoneyHint(v);
+            });
+        }
+
+        /* ── Hiển thị giá thuê dạng triệu ── */
+        const giaThueInput = document.querySelector('[name="gia_thue_mong_muon"]');
+        const giaThueHienThi = document.getElementById('giaThueHienThi');
+        if (giaThueInput && giaThueHienThi) {
+            giaThueInput.addEventListener('input', function() {
+                const normalized = normalizeLocalizedNumber(this.value);
+                const v = normalized ? parseFloat(normalized) : null;
+                if (!v) {
+                    giaThueHienThi.textContent = '';
+                    return;
+                }
+                giaThueHienThi.textContent = formatMoneyHint(v);
             });
         }
 

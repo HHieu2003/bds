@@ -8,27 +8,42 @@ use Illuminate\Http\Request;
 
 class SoSanhController extends Controller
 {
+    private function parseIds(?string $ids): array
+    {
+        if (!$ids) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', explode(',', $ids)), fn($id) => $id > 0));
+    }
+
+    private function getSoSanhQuery(array $ids)
+    {
+        return BatDongSan::with(['duAn', 'khuVuc'])
+            ->whereIn('id', $ids)
+            ->where('hien_thi', 1)
+            ->orderByRaw('FIELD(id,' . implode(',', $ids) . ')');
+    }
+
     public function index(Request $request)
     {
         $danhSachBds = collect();
 
         // Đọc từ ?ids= trên URL (từ localStorage client)
         if ($request->filled('ids')) {
-            $idArray = explode(',', $request->query('ids'));
+            $idArray = $this->parseIds($request->query('ids'));
 
-            $danhSachBds = BatDongSan::with(['duAn', 'khuVuc'])
-                ->whereIn('id', $idArray)
-                ->where('hien_thi', 1)   // ← đúng tên cột gốc của bạn
-                ->get();
+            if (!empty($idArray)) {
+                $danhSachBds = $this->getSoSanhQuery($idArray)->get();
+            }
         }
         // Giữ tương thích ngược với session cũ
         elseif (session()->has('so_sanh')) {
-            $idArray = session('so_sanh', []);
+            $idArray = array_values(array_filter(array_map('intval', session('so_sanh', [])), fn($id) => $id > 0));
 
-            $danhSachBds = BatDongSan::with(['duAn', 'khuVuc'])
-                ->whereIn('id', $idArray)
-                ->where('hien_thi', 1)
-                ->get();
+            if (!empty($idArray)) {
+                $danhSachBds = $this->getSoSanhQuery($idArray)->get();
+            }
         }
 
         return view('frontend.so-sanh.index', compact('danhSachBds'));
@@ -36,15 +51,11 @@ class SoSanhController extends Controller
 
     public function loadModal(Request $request)
     {
-        $ids = $request->query('ids');
+        $ids = $this->parseIds($request->query('ids'));
         $danhSachBds = collect();
 
-        if ($ids) {
-            $idArray = explode(',', $ids);
-            $danhSachBds = BatDongSan::with(['duAn', 'khuVuc'])
-                ->whereIn('id', $idArray)
-                ->where('hien_thi', 1)
-                ->get();
+        if (!empty($ids)) {
+            $danhSachBds = $this->getSoSanhQuery($ids)->get();
         }
 
         // Trả về view chỉ chứa duy nhất HTML của cái Bảng (Table)
@@ -54,15 +65,9 @@ class SoSanhController extends Controller
     {
         $danhSachBds = collect();
 
-        if ($request->filled('ids')) {
-            $ids = array_filter(
-                array_map('intval', explode(',', $request->ids))
-            );
-            if (!empty($ids)) {
-                $danhSachBds = \App\Models\BatDongSan::with(['khuVuc', 'duAn'])
-                    ->whereIn('id', $ids)
-                    ->get();
-            }
+        $ids = $this->parseIds($request->query('ids'));
+        if (!empty($ids)) {
+            $danhSachBds = $this->getSoSanhQuery($ids)->get();
         }
 
         return view('frontend.so-sanh._table', compact('danhSachBds'));

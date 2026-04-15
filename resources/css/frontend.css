@@ -7,8 +7,8 @@
     --primary-dark: #e89f22; /* Bronze đậm - Khi hover CTA */
     --primary-light: rgba(192, 102, 42, 0.1); /* Bronze siêu nhạt cho nền phụ */
 
-    --secondary: #060d16; /* Navy Blue - Trust, Nút phụ, Footer, Topbar (10%) */
-    --secondary-dark: #12284b; /* Navy đậm - Khi hover nút phụ */
+    --secondary: #060d16; /*  - Trust */
+    --secondary-dark: #143364; /* Navy đậm - Khi hover nút phụ */
 
     /* --- Tông màu Nền (Backgrounds - 60%) --- */
     --bg-main: #fff; /* Trắng - Nền toàn trang, không gian thoáng */
@@ -195,7 +195,7 @@ ol {
 
 /* Nút Tin cậy / Phụ (Màu Navy - Tư vấn miễn phí, Đăng ký) */
 .btn-secondary-theme {
-    background: var(--secondary);
+    background: var(--primary);
     color: var(--text-light) !important;
     border: none;
     border-radius: 8px;

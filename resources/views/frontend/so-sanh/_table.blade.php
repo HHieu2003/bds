@@ -1,13 +1,32 @@
 {{-- AJAX partial — trả về bởi SoSanhController@modal --}}
 
+@php
+    $formatNoiThat = function ($value) {
+        if (!$value) {
+            return '<em class="text-muted small">Chưa cập nhật</em>';
+        }
+
+        return ucwords(str_replace('_', ' ', $value));
+    };
+
+    $formatHuongBanCong = function ($bds) {
+        $huong = $bds->huong_ban_cong ?? null;
+        if (!$huong) {
+            return '<em class="text-muted small">Chưa cập nhật</em>';
+        }
+
+        return ucwords(str_replace('_', ' ', $huong));
+    };
+@endphp
+
 <div class="table-responsive ss-table-wrapper">
-    <table class="table align-middle mb-0 ss-table border">
+    <table class="table align-middle mb-0 ss-table border-0" style="max-height:90%">
 
         {{-- ── HEADER: Ảnh + Tên + Giá + Nút Xóa ── --}}
         <thead>
-            <tr class="bg-alt-section">
+            <tr class="ss-head-row">
                 <th class="ss-th-label text-muted text-uppercase text-center align-middle"
-                    style="width: 140px; border-right: 1px solid var(--border);">
+                    style="width: 160px; border-right: 1px solid var(--border);">
                     <i class="fas fa-list-ul mb-1 d-block fs-5 text-primary-brand"></i>
                     Tiêu chí
                 </th>
@@ -21,7 +40,8 @@
 
                         {{-- Nút xóa (Góc phải trên) --}}
                         <div class="text-end mb-2">
-                            <button onclick="removeSoSanh({{ $bds->id }})"
+                            <button
+                                onclick="(typeof xoaVaTaiLai === 'function' ? xoaVaTaiLai({{ $bds->id }}) : removeSoSanh({{ $bds->id }}))"
                                 class="btn btn-sm btn-outline-danger rounded-pill px-3 py-1 ss-btn-remove"
                                 title="Xóa khỏi so sánh">
                                 <i class="fas fa-times me-1"></i> Xóa
@@ -46,7 +66,7 @@
                         </a>
 
                         {{-- Giá tiền --}}
-                        <div class="price-text">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</div>
+                        <div class="ss-price-text">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</div>
                     </th>
                 @endforeach
             </tr>
@@ -81,6 +101,13 @@
                         ),
                     ],
                     [
+                        'label' => 'Giá',
+                        'icon' => 'fa-coins',
+                        'values' => $danhSachBds->map(
+                            fn($b) => '<span class="ss-price-text">' . ($b->gia_hien_thi ?? 'Thỏa thuận') . '</span>',
+                        ),
+                    ],
+                    [
                         'label' => 'Tòa / Phân khu',
                         'icon' => 'fa-building',
                         'values' => $danhSachBds->map(
@@ -102,37 +129,26 @@
                         'label' => 'Phòng ngủ',
                         'icon' => 'fa-bed',
                         'values' => $danhSachBds->map(
-                            fn($b) => $b->so_phong_ngu ? $b->so_phong_ngu . ' PN' : '<em class="text-muted">—</em>',
-                        ),
-                    ],
-                    [
-                        'label' => 'Phòng tắm',
-                        'icon' => 'fa-bath',
-                        'values' => $danhSachBds->map(
-                            fn($b) => $b->so_phong_tam ? $b->so_phong_tam . ' WC' : '<em class="text-muted">—</em>',
+                            fn($b) => $b->so_phong_ngu ? $b->so_phong_ngu : '<em class="text-muted">—</em>',
                         ),
                     ],
                     [
                         'label' => 'Nội thất',
                         'icon' => 'fa-couch',
-                        'values' => $danhSachBds->map(
-                            fn($b) => $b->noi_that ?? '<em class="text-muted small">Chưa cập nhật</em>',
-                        ),
+                        'values' => $danhSachBds->map(fn($b) => $formatNoiThat($b->noi_that)),
                     ],
                     [
-                        'label' => 'Hướng nhà',
+                        'label' => 'Hướng ban công',
                         'icon' => 'fa-compass',
-                        'values' => $danhSachBds->map(
-                            fn($b) => $b->huong
-                                ? '<span class="fw-semibold">' . $b->huong . '</span>'
-                                : '<em class="text-muted small">Chưa cập nhật</em>',
-                        ),
+                        'values' => $danhSachBds->map(fn($b) => $formatHuongBanCong($b)),
                     ],
                     [
                         'label' => 'Pháp lý',
                         'icon' => 'fa-file-contract',
                         'values' => $danhSachBds->map(
-                            fn($b) => $b->phap_ly ?? '<em class="text-muted small">Chưa cập nhật</em>',
+                            fn($b) => $b->nhu_cau === 'thue'
+                                ? '<em class="text-muted small">Không áp dụng</em>'
+                                : $b->phap_ly ?? '<em class="text-muted small">Chưa cập nhật</em>',
                         ),
                     ],
                 ];
@@ -140,7 +156,7 @@
 
             @foreach ($rows as $i => $row)
                 {{-- Xen kẽ màu nền để dễ đọc (Zebra striping) --}}
-                <tr class="{{ $i % 2 === 0 ? 'bg-white' : 'bg-alt-section' }}">
+                <tr class="{{ $i % 2 === 0 ? 'ss-row-even' : 'ss-row-odd' }}">
                     <td class="ss-td-label fw-bold text-muted p-3"
                         style="border-right: 1px solid var(--border); font-size: 0.85rem;">
                         <i class="fas {{ $row['icon'] }} text-primary-brand me-2"
@@ -157,7 +173,7 @@
             @endforeach
 
             {{-- ── HÀNG CUỐI: Nút Xem Chi Tiết ── --}}
-            <tr class="bg-alt-section border-top" style="border-top-width: 2px !important;">
+            <tr class="ss-row-odd border-top" style="border-top-width: 2px !important;">
                 <td class="ss-td-label fw-bold text-muted p-3 text-center align-middle"
                     style="border-right: 1px solid var(--border);">
                     <i class="fas fa-link text-primary-brand d-block fs-5 mb-1"></i> Chi tiết
@@ -178,14 +194,55 @@
 {{-- CSS Bổ sung cho bảng AJAX --}}
 <style>
     .ss-table-wrapper {
-        border-radius: 12px;
+        border-radius: 14px;
         overflow: hidden;
+        border: 1px solid var(--border);
+        background: #fff;
+    }
+
+    .ss-head-row {
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
     }
 
     .ss-table th,
     .ss-table td {
         border-bottom: 1px solid var(--border);
         vertical-align: middle;
+    }
+
+    .ss-th-label {
+        background: #f8fafc;
+        color: #64748b !important;
+        letter-spacing: 0.04em;
+        font-size: 0.76rem;
+    }
+
+    .ss-th-item {
+        background: #fff;
+    }
+
+    .ss-row-even {
+        background: #ffffff;
+    }
+
+    .ss-row-odd {
+        background: #f8fafc;
+    }
+
+    .ss-td-label {
+        background: #f8fafc;
+        font-size: 0.82rem;
+        white-space: nowrap;
+    }
+
+    .ss-td-value {
+        font-weight: 500;
+    }
+
+    .ss-price-text {
+        color: var(--primary);
+        font-weight: 800;
+        font-size: 1.04rem;
     }
 
     .ss-item-img {
@@ -208,5 +265,16 @@
     .ss-btn-remove:hover {
         background-color: var(--status-danger);
         color: #fff !important;
+    }
+
+    @media (max-width: 768px) {
+        .ss-th-item {
+            min-width: 220px !important;
+        }
+
+        .ss-item-img,
+        .ss-item-img-placeholder {
+            height: 130px;
+        }
     }
 </style>

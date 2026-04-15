@@ -24,9 +24,8 @@ class KyGui extends Model
         'ma_can',
         'dia_chi',
         'dien_tich',
-        'huong_nha',
+        'tang',
         'so_phong_ngu',
-        'so_phong_tam',
         'noi_that',
         'gia_ban_mong_muon',
         'phap_ly',
@@ -44,7 +43,7 @@ class KyGui extends Model
         'hinh_anh_tham_khao' => 'array',
         'thoi_diem_xu_ly'    => 'datetime',
         'dien_tich'          => 'decimal:2',
-        'gia_ban_mong_muon'  => 'decimal:2',
+        'gia_ban_mong_muon'  => 'decimal:0',
         'gia_thue_mong_muon' => 'decimal:2',
     ];
 
@@ -83,8 +82,6 @@ class KyGui extends Model
         'theo_quy'      => 'Thanh toán theo quý',
         'theo_nam'      => 'Thanh toán theo năm',
     ];
-
-    const HUONG_NHA = ['dong', 'tay', 'nam', 'bac', 'dong_nam', 'dong_bac', 'tay_nam', 'tay_bac'];
 
     const NOI_THAT = [
         'nguyen_ban' => 'Nguyên bản',

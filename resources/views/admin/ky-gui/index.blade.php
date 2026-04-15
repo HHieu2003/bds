@@ -139,9 +139,9 @@
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
                             data-kg-loai-hinh="{{ $lhInfo['label'] }}" data-kg-nhu-cau="{{ $ncInfo['label'] }}"
                             data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
-                            data-kg-phong-tam="{{ $kg->so_phong_tam }}" data-kg-huong="{{ $kg->huong_nha }}"
-                            data-kg-noi-that="{{ $kg->noi_that }}" data-kg-phap-ly="{{ $kg->phap_ly }}"
-                            data-kg-gia="{{ $kg->gia_hien_thi }}" data-kg-trang-thai="{{ $ttInfo['label'] }}"
+                            data-kg-tang="{{ $kg->tang }}" data-kg-noi-that="{{ $kg->noi_that }}"
+                            data-kg-phap-ly="{{ $kg->phap_ly }}" data-kg-gia="{{ $kg->gia_hien_thi }}"
+                            data-kg-trang-thai="{{ $ttInfo['label'] }}"
                             data-kg-created="{{ $kg->created_at->format('d/m/Y H:i') }}"
                             data-kg-ghi-chu="{{ $kg->ghi_chu }}"
                             data-kg-nv="{{ optional($kg->nhanVienPhuTrach)->ho_ten }}">
@@ -176,7 +176,7 @@
                                 <div class="text-muted" style="font-size: 0.8rem">
                                     <i class="fas fa-vector-square me-1"></i>{{ (float) $kg->dien_tich }}m²
                                     @if ($kg->so_phong_ngu)
-                                        | {{ $kg->so_phong_ngu }} PN
+                                        | {{ $kg->so_phong_ngu }}
                                     @endif
                                 </div>
                             </td>
@@ -269,9 +269,9 @@
                             data-kg-loai-hinh="{{ \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh]['label'] ?? $kg->loai_hinh }}"
                             data-kg-nhu-cau="{{ \App\Models\KyGui::NHU_CAU[$kg->nhu_cau]['label'] ?? $kg->nhu_cau }}"
                             data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
-                            data-kg-phong-tam="{{ $kg->so_phong_tam }}" data-kg-huong="{{ $kg->huong_nha }}"
-                            data-kg-noi-that="{{ $kg->noi_that }}" data-kg-phap-ly="{{ $kg->phap_ly }}"
-                            data-kg-gia="{{ $kg->gia_hien_thi }}" data-kg-trang-thai="{{ $ttInfo['label'] }}"
+                            data-kg-tang="{{ $kg->tang }}" data-kg-noi-that="{{ $kg->noi_that }}"
+                            data-kg-phap-ly="{{ $kg->phap_ly }}" data-kg-gia="{{ $kg->gia_hien_thi }}"
+                            data-kg-trang-thai="{{ $ttInfo['label'] }}"
                             data-kg-created="{{ $kg->created_at->format('d/m/Y H:i') }}"
                             data-kg-ghi-chu="{{ $kg->ghi_chu }}"
                             data-kg-nv="{{ optional($kg->nhanVienPhuTrach)->ho_ten }}">
@@ -283,9 +283,8 @@
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
                             data-kg-loai-hinh="{{ \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh]['label'] ?? $kg->loai_hinh }}"
                             data-kg-nhu-cau="{{ \App\Models\KyGui::NHU_CAU[$kg->nhu_cau]['label'] ?? $kg->nhu_cau }}"
-                            data-kg-dien-tich="{{ (float) $kg->dien_tich }}"
-                            data-kg-phong-ngu="{{ $kg->so_phong_ngu }}" data-kg-phong-tam="{{ $kg->so_phong_tam }}"
-                            data-kg-huong="{{ $kg->huong_nha }}" data-kg-noi-that="{{ $kg->noi_that }}"
+                            data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
+                            data-kg-tang="{{ $kg->tang }}" data-kg-noi-that="{{ $kg->noi_that }}"
                             data-kg-phap-ly="{{ $kg->phap_ly }}" data-kg-gia="{{ $kg->gia_hien_thi }}"
                             data-kg-trang-thai="{{ $ttInfo['label'] }}"
                             data-kg-created="{{ $kg->created_at->format('d/m/Y H:i') }}"
@@ -375,16 +374,12 @@
                             <strong id="kgd_dien_tich" class="text-dark"></strong>
                         </div>
                         <div class="col-md-3 mt-3">
-                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Hướng nhà</span>
-                            <strong id="kgd_huong" class="text-dark"></strong>
-                        </div>
-                        <div class="col-md-3 mt-3">
                             <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Phòng ngủ</span>
                             <strong id="kgd_phong_ngu" class="text-dark"></strong>
                         </div>
                         <div class="col-md-3 mt-3">
-                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Phòng tắm (WC)</span>
-                            <strong id="kgd_phong_tam" class="text-dark"></strong>
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Tầng</span>
+                            <strong id="kgd_tang" class="text-dark"></strong>
                         </div>
                         <div class="col-md-6 mt-3">
                             <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Pháp lý</span>
@@ -524,8 +519,7 @@
                 setText('kgd_dia_chi', dataset.kgDiaChi, 'Chưa cập nhật');
                 setText('kgd_dien_tich', dataset.kgDienTich ? dataset.kgDienTich + ' m²' : '—');
                 setText('kgd_phong_ngu', dataset.kgPhongNgu);
-                setText('kgd_phong_tam', dataset.kgPhongTam);
-                setText('kgd_huong', dataset.kgHuong);
+                setText('kgd_tang', dataset.kgTang);
                 setText('kgd_noi_that', dataset.kgNoiThat);
                 setText('kgd_phap_ly', dataset.kgPhapLy);
                 setText('kgd_gia', dataset.kgGia);

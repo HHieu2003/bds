@@ -90,8 +90,11 @@
                                         <span><i class="fas fa-ruler-combined icon-muted me-1"></i> {{ $kg->dien_tich }}
                                             m²</span>
                                         @if ($kg->so_phong_ngu)
-                                            <span><i class="fas fa-bed icon-muted me-1"></i> {{ $kg->so_phong_ngu }}
-                                                PN</span>
+                                            <span><i class="fas fa-bed icon-muted me-1"></i> {{ $kg->so_phong_ngu }}</span>
+                                        @endif
+                                        @if ($kg->tang)
+                                            <span><i class="fas fa-layer-group icon-muted me-1"></i>
+                                                {{ $kg->tang }}</span>
                                         @endif
                                         <span><i class="far fa-calendar-alt icon-muted me-1"></i>
                                             {{ $kg->created_at->format('d/m/Y') }}</span>

@@ -45,9 +45,9 @@ return new class extends Migration
             $table->string('dia_chi')->nullable();
 
             $table->decimal('dien_tich', 10, 2);
-            $table->string('huong_nha')->nullable();
-            $table->unsignedSmallInteger('so_phong_ngu')->default(0);
-            $table->unsignedSmallInteger('so_phong_tam')->default(0);
+            $table->string('tang')->nullable();
+            $table->string('so_phong_ngu', 20)->nullable()->default(null);
+
             // co_ban | full | cao_cap | nguyen_ban
             $table->string('noi_that')->nullable();
 
@@ -55,7 +55,7 @@ return new class extends Migration
             // GIA BAN
             // (NULL khi nhu_cau = 'thue')
             // =============================================
-            $table->decimal('gia_ban_mong_muon', 15, 2)->nullable();
+            $table->decimal('gia_ban_mong_muon', 15, 0)->nullable();
             // so_hong | so_do | hop_dong | chua_co
             $table->string('phap_ly')->nullable();
 

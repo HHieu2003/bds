@@ -208,7 +208,7 @@
             position: relative;
             padding: 4rem 0 3rem;
             background:
-                linear-gradient(rgba(28, 18, 9, 0.82), rgba(28, 18, 9, 0.82)),
+                linear-gradient(rgb(153 145 138 / 69%), rgb(93 90 87 / 73%)),
                 url('{{ $baiViet->hinh_anh ? asset('storage/' . $baiViet->hinh_anh) : asset('images/default-news.jpg') }}') center / cover fixed;
             overflow: hidden;
         }

@@ -11,7 +11,7 @@
         .ts-control {
             border-radius: 8px;
             border: 1px solid #dee2e6;
-            padding: 0.65rem 0.9rem;
+
         }
 
         /* Tối ưu hóa UI Mobile */
@@ -87,7 +87,7 @@
         <div class="card-body p-3">
             <form id="frmFilter" method="GET" action="{{ route('nhanvien.admin.chu-nha.index') }}">
                 <div class="row g-2 align-items-end">
-                    <div class="col-12 col-md-3">
+                    <div class="col-12 col-md-2">
                         <label class="form-label small text-muted fw-bold mb-1">Tìm Kiếm Chung</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0"><i
@@ -98,10 +98,10 @@
                         </div>
                     </div>
 
-                    <div class="col-12 col-md-2">
+                    <div class="col-12 col-md-3">
                         <label class="form-label small text-muted fw-bold mb-1">Dự án</label>
                         <select name="du_an_id" id="filter_du_an" class="form-select">
-                            <option value="">-- Tất cả Dự án --</option>
+                            <option value="">Tất cả Dự án</option>
                             @foreach ($duAns as $da)
                                 <option value="{{ $da->id }}" {{ request('du_an_id') == $da->id ? 'selected' : '' }}>
                                     {{ $da->ten_du_an }}</option>
@@ -112,7 +112,7 @@
                     <div class="col-6 col-md-2">
                         <label class="form-label small text-muted fw-bold mb-1">Tòa</label>
                         <select name="toa" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Tất cả --</option>
+                            <option value="">Tất cả </option>
                             @foreach ($toas as $toa)
                                 <option value="{{ $toa }}" {{ request('toa') == $toa ? 'selected' : '' }}>Tòa
                                     {{ $toa }}</option>
@@ -133,7 +133,7 @@
                     <div class="col-12 col-md-2">
                         <label class="form-label small text-muted fw-bold mb-1">Phụ trách</label>
                         <select name="nhan_vien_phu_trach_id" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Tất cả --</option>
+                            <option value=""> Tất cả </option>
                             <option value="none" {{ request('nhan_vien_phu_trach_id') === 'none' ? 'selected' : '' }}>🌐
                                 Chung</option>
                             @foreach ($nhanViens as $nv)

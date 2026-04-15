@@ -75,13 +75,11 @@
                         </div>
 
                         <div class="row g-3 mb-4 bg-light p-3 rounded">
-                            <div class="col-md-3"><label class="form-label">Phòng ngủ</label><input type="number"
+                            <div class="col-md-4"><label class="form-label">Phòng ngủ</label><input type="text"
                                     name="so_phong_ngu" class="form-control" value="{{ $kyGui->so_phong_ngu }}"></div>
-                            <div class="col-md-3"><label class="form-label">Phòng tắm</label><input type="number"
-                                    name="so_phong_tam" class="form-control" value="{{ $kyGui->so_phong_tam }}"></div>
-                            <div class="col-md-3"><label class="form-label">Hướng nhà</label><input type="text"
-                                    name="huong_nha" class="form-control" value="{{ $kyGui->huong_nha }}"></div>
-                            <div class="col-md-3"><label class="form-label">Pháp lý</label><input type="text"
+                            <div class="col-md-4"><label class="form-label">Tầng</label><input type="text" name="tang"
+                                    class="form-control" value="{{ $kyGui->tang }}"></div>
+                            <div class="col-md-4"><label class="form-label">Pháp lý</label><input type="text"
                                     name="phap_ly" class="form-control" value="{{ $kyGui->phap_ly }}"></div>
                         </div>
 

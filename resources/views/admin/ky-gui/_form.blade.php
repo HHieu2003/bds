@@ -106,30 +106,20 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Phòng ngủ</label>
-                        <input type="number" name="so_phong_ngu" class="form-control"
-                            value="{{ old('so_phong_ngu', $isEdit ? $kyGui->so_phong_ngu : 0) }}" min="0"
-                            max="20">
+                        <input type="text" name="so_phong_ngu" class="form-control"
+                            value="{{ old('so_phong_ngu', $isEdit ? $kyGui->so_phong_ngu : '') }}"
+                            placeholder="VD: 2PN hoặc 3PN+1">
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label">Phòng tắm (WC)</label>
-                        <input type="number" name="so_phong_tam" class="form-control"
-                            value="{{ old('so_phong_tam', $isEdit ? $kyGui->so_phong_tam : 0) }}" min="0"
-                            max="20">
+                        <label class="form-label">Tầng</label>
+                        <input type="text" name="tang" class="form-control"
+                            value="{{ old('tang', $isEdit ? $kyGui->tang : '') }}"
+                            placeholder="VD: 12 hoặc Penthouse">
                     </div>
                 </div>
 
                 <div class="row g-3 mb-0">
-                    <div class="col-md-6">
-                        <label class="form-label">Hướng nhà</label>
-                        <select name="huong_nha" class="form-select">
-                            <option value="">— Chọn —</option>
-                            @foreach (['dong' => 'Đông', 'tay' => 'Tây', 'nam' => 'Nam', 'bac' => 'Bắc', 'dong_nam' => 'Đông Nam', 'dong_bac' => 'Đông Bắc', 'tay_nam' => 'Tây Nam', 'tay_bac' => 'Tây Bắc'] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('huong_nha', $isEdit ? $kyGui->huong_nha : '') == $v)>{{ $l }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="col-md-6">
+                    <div class="col-md-12">
                         <label class="form-label">Nội thất</label>
                         <select name="noi_that" class="form-select">
                             <option value="">— Chọn —</option>
