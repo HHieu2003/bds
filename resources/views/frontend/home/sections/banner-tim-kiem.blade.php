@@ -5,8 +5,6 @@
             position: relative;
             min-height: 72vh;
             /* ← Giảm từ 90vh xuống 72vh */
-            max-height: 820px;
-            /* ← Giới hạn tối đa */
             display: flex;
             align-items: center;
             justify-content: center;

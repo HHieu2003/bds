@@ -97,6 +97,7 @@ Route::prefix('')->name('frontend.')->group(function () {
 Route::post('/dat-lich-xem-nha', [FeLichHenController::class, 'datLich'])
     ->middleware('throttle:anti-spam')
     ->name('frontend.dat-lich');
+
 // ══════════════════════════════════════════════════════════
 // KHÁCH HÀNG — Authentication
 // ══════════════════════════════════════════════════════════
@@ -118,11 +119,13 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::get('dat-lai-mat-khau', [KhachHangAuthController::class, 'showReset'])->name('reset');
         Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->middleware('throttle:anti-spam')->name('reset.post');
     });
+
     // Xem danh sách lịch hẹn
     Route::get('lich-hen', [FeLichHenController::class, 'lichHen'])->name('lich-hen');
 
     // Khách hàng chủ động hủy lịch
     Route::post('lich-hen/{id}/huy', [FeLichHenController::class, 'huyLichHen'])->name('lich-hen.huy');
+
     Route::middleware('auth:customer')->group(function () {
         Route::post('dang-xuat', [KhachHangAuthController::class, 'logout'])->name('logout');
         Route::get('ho-so', [KhachHangAuthController::class, 'profile'])->name('profile');
@@ -133,6 +136,7 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::get('lich-hen-cua-toi', [KhachHangAuthController::class, 'lichHenCuaToi'])->name('lich-hen-cua-toi');
     });
 });
+
 // ══════════════════════════════════════════════════════════
 // NHÂN VIÊN — Authentication + Admin Panel
 // ══════════════════════════════════════════════════════════
@@ -147,10 +151,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
 
-        Route::post('cap-nhat-thong-tin', [AdminAuthController::class, 'updateProfile'])
-            ->name('update-profile');
-        Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])
-            ->name('change-password');
+        Route::post('cap-nhat-thong-tin', [AdminAuthController::class, 'updateProfile'])->name('update-profile');
+        Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])->name('change-password');
 
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
@@ -160,10 +162,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
         Route::prefix('admin')->name('admin.')->group(function () {
 
             // ── Chỉ Admin ──────────────────────
-
             Route::middleware('check.role:admin')->group(function () {
-                Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])
-                    ->name('nhanvien.edit-data');
+                Route::get('nhan-vien/{nhanVien}/edit-data', [NhanVienController::class, 'editData'])->name('nhanvien.edit-data');
                 Route::prefix('nhan-vien')->name('nhan-vien.')->group(function () {
                     Route::get('/',                          [NhanVienController::class, 'index'])->name('index');
                     Route::post('/',                         [NhanVienController::class, 'store'])->name('store');
@@ -175,19 +175,23 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 });
             });
 
+            // ── LỊCH HẸN DÙNG CHUNG ADMIN / SALE / NGUỒN
             Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::resource('ngan-hang', NganHangController::class)->except(['create', 'edit']);
 
-                // Lịch hẹn dùng chung cho Admin/Sale/Nguồn hàng.
-                // Quyền thao tác chi tiết tiếp tục được kiểm soát trong controller.
                 Route::prefix('lich-hen')->name('lich-hen.')->group(function () {
                     Route::get('/',                    [LichHenController::class, 'index'])->name('index');
                     Route::get('/thong-ke',            [LichHenController::class, 'thongKe'])->name('thong-ke');
                     Route::get('/api/hom-nay',         [LichHenController::class, 'apiLichHenHomNay'])->name('api.hom-nay');
                     Route::get('/create',              [LichHenController::class, 'create'])->name('create');
                     Route::post('/',                   [LichHenController::class, 'store'])->name('store');
-                    Route::get('/api-events',          [LichHenController::class, 'apiEvents'])->name('api-events');
+
+                    // FIX LỖI TÊN ROUTE API LỊCH HẸN Ở ĐÂY
+                    Route::get('/api-events',          [LichHenController::class, 'apiEvents'])->name('api.events');
+
                     Route::get('/{lichHen}',           [LichHenController::class, 'show'])->name('show');
+                    Route::delete('/{lichHen}',        [LichHenController::class, 'destroy'])->name('destroy'); // ĐÃ BỔ SUNG ROUTE XÓA LỊCH HẸN
+
                     Route::patch('/{lichHen}/tiep-nhan', [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
                     Route::post('/{lichHen}/doi-gio-nhanh', [LichHenController::class, 'doiGioNhanh'])->name('doi-gio-nhanh');
                     Route::post('/{lichHen}/xac-nhan-doi-gio', [LichHenController::class, 'xacNhanDoiGio'])->name('xac-nhan-doi-gio');
@@ -203,32 +207,18 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             // ── Admin + Nguồn hàng ─────────────
             Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::resource('du-an', DuAnController::class);
-                Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])
-                    ->name('du-an.toggle');
+                Route::patch('du-an/{duAn}/toggle', [DuAnController::class, 'toggleHienThi'])->name('du-an.toggle');
             });
 
             Route::middleware('check.role:admin,nguon_hang')->group(function () {
-                Route::resource('chu-nha', ChuNhaController::class)
-                    ->except(['create', 'edit']);
-                Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])
-                    ->name('bat-dong-san.destroy');
+                Route::resource('chu-nha', ChuNhaController::class)->except(['create', 'edit']);
+                Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])->name('bat-dong-san.destroy');
 
-
-                // Route Ký Gửi
-                // Màn hình Form Chuyển đổi (Duyệt Ký gửi)
                 Route::get('ky-gui/{kyGui}/duyet', [AdminKyGuiController::class, 'duyetForm'])->name('ky-gui.duyet');
-
-                // Action Lưu Form Chuyển đổi
                 Route::post('ky-gui/{kyGui}/duyet', [AdminKyGuiController::class, 'duyetSubmit']);
-
-                // Route resource gốc của Ký Gửi
                 Route::resource('ky-gui', AdminKyGuiController::class);
-
-                // Bổ sung route xử lý AJAX cập nhật trạng thái nếu chưa có
-                Route::match(['post', 'patch'], 'ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])
-                    ->name('ky-gui.xu-ly');
-                Route::post('ky-gui/{kyGui}/phan-cong', [AdminKyGuiController::class, 'phanCong'])
-                    ->name('ky-gui.phan-cong');
+                Route::match(['post', 'patch'], 'ky-gui/{kyGui}/xu-ly', [AdminKyGuiController::class, 'xuLy'])->name('ky-gui.xu-ly');
+                Route::post('ky-gui/{kyGui}/phan-cong', [AdminKyGuiController::class, 'phanCong'])->name('ky-gui.phan-cong');
             });
 
             // ── Admin + Sale + Nguồn hàng (BĐS) ───────
@@ -247,21 +237,11 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             // ── Admin + Sale ───────────────────
             Route::middleware('check.role:admin,sale')->group(function () {
-                // MỚI: Route Nhận Lead (phải đặt TRƯỚC resource để tránh bị nhầm với {lienHe})
-                Route::post('lien-he/{lienHe}/nhan-lead', [AdminLienHeController::class, 'nhanLead'])
-                    ->name('lien-he.nhan-lead');
-
+                Route::post('lien-he/{lienHe}/nhan-lead', [AdminLienHeController::class, 'nhanLead'])->name('lien-he.nhan-lead');
                 Route::resource('lien-he', AdminLienHeController::class);
-
-                // Route cập nhật nhanh trạng thái
-                Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])
-                    ->name('lien-he.cap-nhat-nhanh');
-
-                // Route chuyển đổi Lead thành Khách hàng + alias
-                Route::post('lien-he/{lienHe}/chuyen-khach', [AdminLienHeController::class, 'chuyenKhachHang'])
-                    ->name('lien-he.chuyen-khach');
-                Route::post('lien-he/{lienHe}/chuyen-khach-hang', [AdminLienHeController::class, 'chuyenKhachHang'])
-                    ->name('lien-he.convert');
+                Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])->name('lien-he.cap-nhat-nhanh');
+                Route::post('lien-he/{lienHe}/chuyen-khach', [AdminLienHeController::class, 'chuyenKhachHang'])->name('lien-he.chuyen-khach');
+                Route::post('lien-he/{lienHe}/chuyen-khach-hang', [AdminLienHeController::class, 'chuyenKhachHang'])->name('lien-he.convert');
 
                 Route::prefix('khach-hang')->name('khach-hang.')->group(function () {
                     Route::get('/',                           [KhachHangController::class, 'index'])->name('index');
@@ -281,12 +261,9 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             // ── Tất cả nhân viên ──────────────
             Route::resource('bai-viet', BaiVietController::class);
-            Route::patch('bai-viet/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])
-                ->name('bai-viet.toggle-hien-thi');
-            Route::patch('bai-viet/{baiViet}/noi-bat', [BaiVietController::class, 'toggleNoiBat'])
-                ->name('bai-viet.toggle-noi-bat');
-            Route::post('bai-viet/bulk-action', [BaiVietController::class, 'bulkAction'])
-                ->name('bai-viet.bulk-action');
+            Route::patch('bai-viet/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])->name('bai-viet.toggle-hien-thi');
+            Route::patch('bai-viet/{baiViet}/noi-bat', [BaiVietController::class, 'toggleNoiBat'])->name('bai-viet.toggle-noi-bat');
+            Route::post('bai-viet/bulk-action', [BaiVietController::class, 'bulkAction'])->name('bai-viet.bulk-action');
 
             Route::prefix('khu-vuc')->name('khu-vuc.')->group(function () {
                 Route::get('/',                   [KhuVucController::class, 'index'])->name('index');
@@ -300,16 +277,16 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::patch('/{khuVuc}/toggle',  [KhuVucController::class, 'toggleHienThi'])->name('toggle');
             });
 
+            // ROUTE QUẢN LÝ CHAT
             Route::middleware('check.role:admin,sale')->group(function () {
                 Route::prefix('chat')->name('chat.')->group(function () {
                     Route::get('/',              [AdminChatController::class, 'index'])->name('index');
                     Route::get('/{id}',          [AdminChatController::class, 'show'])->name('show');
                     Route::post('/{id}/tra-loi', [AdminChatController::class, 'traLoi'])->name('tra-loi');
-
                     Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
                     Route::post('/{id}/dong',      [AdminChatController::class, 'dongPhien'])->name('dong');
                     Route::get('/{id}/long-poll',  [AdminChatController::class, 'longPoll'])->name('long-poll');
-                    Route::delete('/{id}',         [AdminChatController::class, 'destroy'])->name('destroy');
+                    Route::delete('/{id}',         [AdminChatController::class, 'destroy'])->name('destroy'); // ĐÃ BỔ SUNG ROUTE XÓA CHAT
                 });
             });
         });

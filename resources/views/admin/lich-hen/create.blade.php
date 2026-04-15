@@ -5,6 +5,7 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
         rel="stylesheet" />
+
     <style>
         .card-header-custom {
             background-color: #f8f9fa;
@@ -20,10 +21,15 @@
             border-radius: 50%;
         }
 
+        /* Chỉnh lại chiều cao của ô chọn Select2 cho đồng bộ Bootstrap 5 */
         .select2-container .select2-selection--single {
             height: 42px;
             display: flex;
             align-items: center;
+        }
+
+        .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+            padding-top: 4px;
         }
     </style>
 @endpush
@@ -43,6 +49,7 @@
         <div class="row g-4">
 
             <div class="col-12 col-xl-7">
+                {{-- KHỐI CHỌN BĐS --}}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header card-header-custom py-3 d-flex align-items-center">
                         <div class="icon-circle bg-primary bg-opacity-10 text-primary me-2"><i class="fas fa-building"></i>
@@ -53,11 +60,14 @@
                         <div class="mb-0">
                             <label class="form-label fw-bold">Chọn Căn hộ / Nhà đất <span
                                     class="text-danger">*</span></label>
-                            <select name="bat_dong_san_id"
+
+                            {{-- Class select2-bds dùng để bắt sự kiện search --}}
+                            <select name="bat_dong_san_id" id="bds_select"
                                 class="form-select select2-bds @error('bat_dong_san_id') is-invalid @enderror" required>
-                                <option value="">— Gõ để tìm mã căn hoặc tiêu đề BĐS —</option>
+                                <option value="">— Gõ chữ để tìm mã căn hoặc tiêu đề BĐS —</option>
                                 @foreach ($dsBds as $bds)
-                                    <option value="{{ $bds->id }}"
+                                    {{-- data-nguon: Lưu ID của Nguồn quản lý để JS đọc --}}
+                                    <option value="{{ $bds->id }}" data-nguon="{{ $bds->nhan_vien_phu_trach_id }}"
                                         {{ old('bat_dong_san_id', $batDongSanId) == $bds->id ? 'selected' : '' }}>
                                         [{{ $bds->ma_bat_dong_san }}] - {{ $bds->tieu_de }}
                                     </option>
@@ -70,6 +80,7 @@
                     </div>
                 </div>
 
+                {{-- KHỐI THÔNG TIN KHÁCH HÀNG --}}
                 <div class="card border-0 shadow-sm">
                     <div class="card-header card-header-custom py-3 d-flex align-items-center border-success">
                         <div class="icon-circle bg-success bg-opacity-10 text-success me-2"><i class="fas fa-user-tie"></i>
@@ -84,9 +95,11 @@
 
                         <div class="mb-4">
                             <label class="form-label fw-bold">Tìm trong Data Khách hàng (Không bắt buộc)</label>
+
+                            {{-- Class select2-khach --}}
                             <select name="khach_hang_id" class="form-select select2-khach" id="selectKhachHang"
                                 onchange="autoFillKhach(this)">
-                                <option value="">— Khách vãng lai / Nhập tay —</option>
+                                <option value="">— Gõ tên hoặc SĐT để tìm khách —</option>
                                 @foreach ($dsKhachHang as $kh)
                                     <option value="{{ $kh->id }}" data-ten="{{ $kh->ho_ten }}"
                                         data-sdt="{{ $kh->so_dien_thoai }}" data-email="{{ $kh->email }}"
@@ -155,6 +168,7 @@
                     </div>
                 </div>
 
+                {{-- KHỐI YÊU CẦU NGUỒN HÀNG --}}
                 <div class="card border-0 shadow-sm mb-4">
                     <div class="card-header card-header-custom py-3 d-flex align-items-center border-warning">
                         <div class="icon-circle bg-warning bg-opacity-10 text-dark me-2"><i
@@ -165,9 +179,12 @@
                         <div class="mb-4">
                             <label class="form-label fw-bold">Chuyển cho Nhân sự Nguồn <span
                                     class="text-danger">*</span></label>
-                            <select name="nhan_vien_nguon_hang_id"
-                                class="form-select @error('nhan_vien_nguon_hang_id') is-invalid @enderror" required>
-                                <option value="">— Ai đang giữ chìa khóa / nắm chủ nhà? —</option>
+
+                            {{-- Class select2-nguon --}}
+                            <select name="nhan_vien_nguon_hang_id" id="nguon_select"
+                                class="form-select select2-nguon @error('nhan_vien_nguon_hang_id') is-invalid @enderror"
+                                required>
+                                <option value="">— Gõ tên Nguồn để tìm (nếu muốn đổi người) —</option>
                                 @foreach ($dsNguonHang as $nv)
                                     <option value="{{ $nv->id }}"
                                         {{ old('nhan_vien_nguon_hang_id') == $nv->id ? 'selected' : '' }}>
@@ -175,6 +192,10 @@
                                     </option>
                                 @endforeach
                             </select>
+
+                            <div id="nguon-hint" class="small mt-2 text-muted">Hệ thống sẽ tự gán Nguồn khi bạn chọn BĐS.
+                                Bạn vẫn có thể đổi thủ công.</div>
+
                             @error('nhan_vien_nguon_hang_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -182,7 +203,7 @@
 
                         <div class="mb-0">
                             <label class="form-label fw-bold">Ghi chú cho Nguồn hàng</label>
-                            <textarea name="ghi_chu_sale" class="form-control bg-warning bg-opacity-10" rows="4"
+                            <textarea name="ghi_chu_sale" class="form-control bg-warning bg-opacity-10 border-warning" rows="4"
                                 placeholder="Ví dụ: Nguồn xin chủ nhà bớt giá chút đỉnh nhé, khách rất nét...">{{ old('ghi_chu_sale') }}</textarea>
                         </div>
                     </div>
@@ -200,24 +221,62 @@
 @endsection
 
 @push('scripts')
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <script>
         $(document).ready(function() {
-            // Khởi tạo Select2 cho ô chọn BĐS và Khách hàng
+
+            // 1. Khởi tạo Select2 cho ô chọn BĐS
             $('.select2-bds').select2({
                 theme: 'bootstrap-5',
                 placeholder: "— Gõ để tìm mã căn hoặc tiêu đề BĐS —",
                 allowClear: true
             });
 
+            // 2. Khởi tạo Select2 cho ô chọn Khách hàng
             $('.select2-khach').select2({
                 theme: 'bootstrap-5',
-                placeholder: "— Khách vãng lai / Nhập tay —",
+                placeholder: "— Gõ tên hoặc SĐT để tìm khách —",
                 allowClear: true
+            });
+
+            // 3. Khởi tạo Select2 cho ô chọn Nguồn Hàng
+            $('.select2-nguon').select2({
+                theme: 'bootstrap-5',
+                placeholder: "— Ai đang giữ chìa khóa / nắm chủ nhà? —",
+                allowClear: true
+            });
+
+            // ==========================================
+            // LOGIC: TỰ ĐỘNG CHỌN NGUỒN THEO BĐS ĐÃ CHỌN
+            // ==========================================
+            $('#bds_select').on('select2:select', function(e) {
+                // Lấy data-nguon từ thẻ <option> vừa được chọn
+                let nguonId = $(this).find(':selected').data('nguon');
+                let $nguonSelect = $('#nguon_select');
+
+                if (nguonId && $nguonSelect.find("option[value='" + nguonId + "']").length > 0) {
+                    // Nếu BĐS có Nguồn và Nguồn đó tồn tại trong danh sách -> Auto Select
+                    $nguonSelect.val(nguonId).trigger('change');
+
+                    // Hiển thị thông báo nhấp nháy cho người dùng biết
+                    $('#nguon-hint').html(
+                        '<span class="text-success fw-bold"><i class="fas fa-magic"></i> Đã tự động chọn Nguồn phụ trách căn này.</span>'
+                        );
+                } else {
+                    // Nếu BĐS không có người phụ trách (Nhà ngoài / Bị lỗi data) -> Reset ô Nguồn
+                    $nguonSelect.val('').trigger('change');
+                    $('#nguon-hint').html(
+                        '<span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle"></i> BĐS này chưa có người phụ trách, vui lòng tự chọn Nguồn!</span>'
+                        );
+                }
             });
         });
 
-        // Hàm tự động điền thông tin khách hàng nếu chọn từ Data có sẵn
+        // ==========================================
+        // LOGIC: TỰ ĐỘNG ĐIỀN DATA KHÁCH HÀNG
+        // ==========================================
         function autoFillKhach(sel) {
             const opt = sel.options[sel.selectedIndex];
 
@@ -230,13 +289,13 @@
                 sdtInput.value = opt.dataset.sdt || '';
                 emailInput.value = opt.dataset.email || '';
 
-                // Highlight các ô vừa được điền để người dùng nhận biết
-                tenInput.classList.add('bg-success', 'bg-opacity-10');
-                sdtInput.classList.add('bg-success', 'bg-opacity-10');
+                // Thêm viền xanh/nền xanh nhẹ để báo hiệu vừa auto-fill
+                tenInput.classList.add('bg-success', 'bg-opacity-10', 'border-success');
+                sdtInput.classList.add('bg-success', 'bg-opacity-10', 'border-success');
 
                 setTimeout(() => {
-                    tenInput.classList.remove('bg-success', 'bg-opacity-10');
-                    sdtInput.classList.remove('bg-success', 'bg-opacity-10');
+                    tenInput.classList.remove('bg-success', 'bg-opacity-10', 'border-success');
+                    sdtInput.classList.remove('bg-success', 'bg-opacity-10', 'border-success');
                 }, 1500);
             } else {
                 tenInput.value = '';

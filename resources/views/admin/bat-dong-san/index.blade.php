@@ -334,10 +334,6 @@
                                         data-toggle-url="/nhan-vien/admin/bat-dong-san/{{ $bds->id }}/toggle"
                                         {{ $bds->hien_thi ? 'checked' : '' }}><span class="toggle-sw-track"><span
                                             class="toggle-sw-thumb"></span></span></label>
-                                <div class="mt-1" style="font-size: 0.68rem">
-                                    <span class="js-display-label {{ $bds->hien_thi ? 'text-success' : 'text-muted' }}"
-                                        data-display-id="{{ $bds->id }}">{{ $bds->hien_thi ? 'Đang hiện' : 'Đang ẩn' }}</span>
-                                </div>
                                 <div class="text-muted" style="font-size: 0.68rem" title="Lượt xem"><i
                                         class="fas fa-eye"></i>
                                     {{ number_format($bds->luot_xem) }}</div>
@@ -753,51 +749,6 @@
                 });
             }
 
-            // ══ TOGGLE CHECKBOX HANDLER ══
-            function bindToggleCheckboxes() {
-                document.querySelectorAll('input[type="checkbox"][data-toggle-url]').forEach(cb => {
-                    cb.addEventListener('change', function() {
-                        const checkbox = this;
-                        const oldState = !checkbox.checked;
-                        checkbox.disabled = true;
-
-                        fetch(checkbox.dataset.toggleUrl, {
-                            method: 'PATCH',
-                            headers: {
-                                'X-CSRF-TOKEN': CSRF,
-                                'Accept': 'application/json'
-                            }
-                        }).then(r => r.json()).then(data => {
-                            const ok = data.ok === true || typeof data.hien_thi !==
-                                'undefined';
-                            if (!ok) {
-                                checkbox.checked = oldState;
-                                showAdminToast('Không thể cập nhật hiển thị', 'error');
-                                return;
-                            }
-
-                            const isVisible = typeof data.hien_thi === 'boolean' ? data
-                                .hien_thi : checkbox.checked;
-                            checkbox.checked = isVisible;
-                            const label = document.querySelector(
-                                `.js-display-label[data-display-id="${checkbox.dataset.displayId}"]`
-                            );
-                            if (label) {
-                                label.textContent = isVisible ? 'Đang hiện' : 'Đang ẩn';
-                                label.classList.toggle('text-success', isVisible);
-                                label.classList.toggle('text-muted', !isVisible);
-                            }
-                            showAdminToast('Đã cập nhật hiển thị', 'success');
-                        }).catch(() => {
-                            checkbox.checked = oldState;
-                            showAdminToast('Lỗi kết nối', 'error');
-                        }).finally(() => {
-                            checkbox.disabled = false;
-                        });
-                    });
-                });
-            }
-
             // ══ CHỦ NHÀ MODAL HANDLER ══
             function bindChuNhaButtons() {
                 document.querySelectorAll('.btn-view-chunha').forEach(btn => {
@@ -834,7 +785,6 @@
             bindPaginationLinks();
             bindDeleteButtons();
             bindStatusButtons();
-            bindToggleCheckboxes();
             bindChuNhaButtons();
         });
     </script>

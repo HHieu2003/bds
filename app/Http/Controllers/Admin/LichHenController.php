@@ -95,7 +95,7 @@ class LichHenController extends Controller
         // Data riêng cho Modal/Tab Calendar của Sale & Admin
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
 
-        // Data cho tab "Yêu cầu liên hệ" trong màn hình lịch hẹn (Sale/Admin)
+        // Data cho tab "Yêu cầu liên hệ"
         $lienHeQuery = YeuCauLienHe::with(['batDongSan', 'nhanVienPhuTrach'])
             ->latest('thoi_diem_lien_he')
             ->latest('created_at');
@@ -107,32 +107,13 @@ class LichHenController extends Controller
             });
         }
 
-        if ($request->filled('lh_search')) {
-            $kw = '%' . trim($request->lh_search) . '%';
-            $lienHeQuery->where(function ($q) use ($kw) {
-                $q->where('ho_ten', 'like', $kw)
-                    ->orWhere('so_dien_thoai', 'like', $kw)
-                    ->orWhere('email', 'like', $kw)
-                    ->orWhereHas('batDongSan', function ($qBds) use ($kw) {
-                        $qBds->where('tieu_de', 'like', $kw);
-                    });
-            });
-        }
-
-        if ($request->filled('lh_trang_thai')) {
-            $lienHeQuery->where('trang_thai', $request->lh_trang_thai);
-        }
-
-        $lienHeItems = $lienHeQuery
-            ->paginate(12, ['*'], 'lh_page')
-            ->withQueryString();
+        $lienHeItems = $lienHeQuery->paginate(12, ['*'], 'lh_page')->withQueryString();
 
         $lienHeThongKe = collect(array_keys(YeuCauLienHe::TRANG_THAI))->mapWithKeys(function ($tt) use ($nhanVien) {
             $q = YeuCauLienHe::query()->where('trang_thai', $tt);
             if ($nhanVien->isSale()) {
                 $q->where(function ($sq) use ($nhanVien) {
-                    $sq->where('nhan_vien_phu_trach_id', $nhanVien->id)
-                        ->orWhereNull('nhan_vien_phu_trach_id');
+                    $sq->where('nhan_vien_phu_trach_id', $nhanVien->id)->orWhereNull('nhan_vien_phu_trach_id');
                 });
             }
             return [$tt => $q->count()];
@@ -141,8 +122,7 @@ class LichHenController extends Controller
         $qTongLienHe = YeuCauLienHe::query();
         if ($nhanVien->isSale()) {
             $qTongLienHe->where(function ($sq) use ($nhanVien) {
-                $sq->where('nhan_vien_phu_trach_id', $nhanVien->id)
-                    ->orWhereNull('nhan_vien_phu_trach_id');
+                $sq->where('nhan_vien_phu_trach_id', $nhanVien->id)->orWhereNull('nhan_vien_phu_trach_id');
             });
         }
         $lienHeThongKe['tat_ca'] = $qTongLienHe->count();
@@ -156,6 +136,7 @@ class LichHenController extends Controller
             'lienHeThongKe'
         ));
     }
+
     /**
      * API TRẢ VỀ DỮ LIỆU CHO FULLCALENDAR (Dành cho Sale/Admin)
      */
@@ -165,10 +146,6 @@ class LichHenController extends Controller
         $query = LichHen::with(['khachHang', 'batDongSan']);
 
         if ($nhanVien->isSale()) {
-            // Sale thấy:
-            // 1) Lịch của chính mình
-            // 2) Lịch mới khách đặt (moi_dat)
-            // 3) Lịch từ website chưa có sale phụ trách để tránh sót kèo khách
             $query->where(function ($q) use ($nhanVien) {
                 $q->where('nhan_vien_sale_id', $nhanVien->id)
                     ->orWhere('trang_thai', 'moi_dat')
@@ -194,18 +171,20 @@ class LichHenController extends Controller
 
         foreach ($lichHens as $lh) {
             $tenBds = $lh->batDongSan ? $lh->batDongSan->tieu_de : 'Nhà lẻ / Chưa xác định';
+
+            // Lấy ID Nguồn hàng phụ trách căn BĐS đó để gán mặc định
+            $nguonPhuTrachId = optional($lh->batDongSan)->nhan_vien_phu_trach_id;
+
             $noteSale = mb_strtolower((string) $lh->ghi_chu_sale);
             $noteNguon = mb_strtolower((string) $lh->ghi_chu_nguon_hang);
             $isDoiGio = str_contains((string) $lh->ghi_chu_sale, '[DOI_GIO]')
                 || str_contains((string) $lh->ghi_chu_nguon_hang, '[DOI_GIO]')
                 || str_contains($noteSale, 'doi gio')
-                || str_contains($noteSale, 'dời')
-                || str_contains($noteNguon, 'doi gio')
-                || str_contains($noteNguon, 'dời');
+                || str_contains($noteNguon, 'doi gio');
 
             $events[] = [
                 'id' => $lh->id,
-                'title' => ($isDoiGio ? '[DOI GIO] ' : '') . date('H:i', strtotime($lh->thoi_gian_hen)) . ' - ' . $lh->ten_khach_hang,
+                'title' => ($isDoiGio ? '[DỜI] ' : '') . date('H:i', strtotime($lh->thoi_gian_hen)) . ' - ' . $lh->ten_khach_hang,
                 'start' => $lh->thoi_gian_hen,
                 'backgroundColor' => $colorMap[$lh->trang_thai] ?? '#000',
                 'borderColor' => $colorMap[$lh->trang_thai] ?? '#000',
@@ -218,6 +197,7 @@ class LichHenController extends Controller
                     'sale_id'    => $lh->nhan_vien_sale_id,
                     'ghi_chu'    => $lh->ghi_chu_sale,
                     'is_doi_gio' => $isDoiGio,
+                    'nguon_phu_trach_id' => $nguonPhuTrachId, // Dữ liệu quan trọng để select mặc định
                     'ly_do_huy'  => $lh->trang_thai == 'tu_choi' ? $lh->ly_do_tu_choi : ($lh->trang_thai == 'hoan_thanh' ? $lh->ghi_chu_sale : null),
                 ]
             ];
@@ -231,20 +211,17 @@ class LichHenController extends Controller
     public function create(Request $request)
     {
         $nhanVien    = $this->currentNhanVien();
-        $dsBds       = BatDongSan::where('hien_thi', 1)->select('id', 'ma_bat_dong_san', 'tieu_de')->get();
+
+        // CHÚ Ý: Lấy thêm nhan_vien_phu_trach_id để JS tự động chọn Nguồn
+        $dsBds       = BatDongSan::where('hien_thi', 1)->select('id', 'ma_bat_dong_san', 'tieu_de', 'nhan_vien_phu_trach_id')->get();
+
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
         $dsKhachHang = KhachHang::select('id', 'ho_ten', 'so_dien_thoai', 'email')->get();
 
         $batDongSanId = $request->bat_dong_san_id;
         $khachHangId  = $request->khach_hang_id;
 
-        return view('admin.lich-hen.create', compact(
-            'dsBds',
-            'dsNguonHang',
-            'dsKhachHang',
-            'batDongSanId',
-            'khachHangId'
-        ));
+        return view('admin.lich-hen.create', compact('dsBds', 'dsNguonHang', 'dsKhachHang', 'batDongSanId', 'khachHangId'));
     }
 
     /**
@@ -276,7 +253,7 @@ class LichHenController extends Controller
             'ghi_chu_sale'            => $request->ghi_chu_sale,
             'khach_hang_id'           => $request->khach_hang_id ?: null,
             'nhan_vien_sale_id'       => $nhanVien->id,
-            'trang_thai'              => 'cho_xac_nhan', // Tạo xong là chờ Nguồn duyệt luôn
+            'trang_thai'              => 'cho_xac_nhan',
             'nguon_dat_lich'          => 'sale',
         ]);
 
@@ -329,6 +306,18 @@ class LichHenController extends Controller
 
         $this->_thongBaoNguonHang($lichHen, 'Có lịch hẹn mới cần lấy chìa khóa', 'Sale ' . $nhanVien->ho_ten . ' vừa yêu cầu xác nhận lịch.');
         return back()->with('success', 'Bạn đã nhận lịch thành công! Đang chờ Nguồn hàng xác nhận với Chủ nhà.');
+    }
+
+    /**
+     * XÓA LỊCH HẸN (DÀNH CHO ADMIN)
+     */
+    public function destroy(LichHen $lichHen)
+    {
+        $nhanVien = $this->currentNhanVien();
+        abort_unless($nhanVien->hasRole('admin'), 403, 'Chỉ Admin mới có quyền xóa lịch hẹn.');
+
+        $lichHen->delete();
+        return back()->with('success', 'Đã xóa lịch hẹn thành công khỏi hệ thống!');
     }
 
     /**
@@ -485,9 +474,6 @@ class LichHenController extends Controller
     // PRIVATE HELPERS
     // ============================================================
 
-    /**
-     * Lấy đúng user nhân viên đang đăng nhập (guard nhanvien) với kiểu dữ liệu rõ ràng.
-     */
     private function currentNhanVien(): NhanVien
     {
         $user = Auth::guard('nhanvien')->user();
