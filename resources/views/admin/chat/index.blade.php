@@ -4,11 +4,11 @@
 @push('styles')
     <style>
         /* ═══════════════════════════════════════════════════
-                               Override padding layout cha cho trang chat
-                            ═══════════════════════════════════════════════════ */
+                                               Override padding layout cha cho trang chat
+                                            ═══════════════════════════════════════════════════ */
         .main-content-wrapper,
         .page-content,
-        #main-content {
+        .main-content {
             padding: 0 !important;
             overflow: hidden;
         }
@@ -98,7 +98,7 @@
         .zl-filter-tabs {
             display: flex;
             gap: 4px;
-            padding: 8px 12px 0;
+            padding: 4px 0px 0;
             flex-shrink: 0;
             border-bottom: 1px solid #e4e6ea;
             overflow-x: auto;
@@ -797,7 +797,7 @@
     <div class="zl-shell" id="zlShell">
 
         {{-- ══════════════ CỘT TRÁI ══════════════ --}}
-        <aside class="zl-left" id="zlLeft">
+        <aside class="zl-left {{ request()->routeIs('*.chat.show') ? 'mobile-hidden' : '' }}" id="zlLeft">
             <div class="zl-left-head">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <h6>Hộp thư
@@ -929,14 +929,27 @@
                         </div>
                     </div>
                     <div class="zl-thread-actions">
+
+                        {{-- NÚT XEM THÔNG TIN CHỈ HIỆN TRÊN MOBILE --}}
+                        <button class="btn btn-outline-info btn-sm d-lg-none" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#mobileChatInfo" title="Xem thông tin">
+                            <i class="fas fa-info-circle"></i>
+                        </button>
+
                         @if ($status === 'dang_cho')
                             <button class="btn btn-primary btn-sm" onclick="tiepNhan({{ $firstChat->id }})">
                                 <i class="fas fa-user-check me-1"></i>Tiếp nhận
                             </button>
                         @endif
                         @if (!$isDone)
-                            <button class="btn btn-outline-danger btn-sm" onclick="dongPhien({{ $firstChat->id }})">
+                            <button class="btn btn-outline-warning btn-sm" onclick="dongPhien({{ $firstChat->id }})">
                                 <i class="fas fa-lock me-1"></i>Đóng
+                            </button>
+                        @endif
+                        {{-- NÚT XÓA CHỈ HIỆN KHI LÀ ADMIN --}}
+                        @if (auth('nhanvien')->check() && auth('nhanvien')->user()->vai_tro == 'admin')
+                            <button class="btn btn-outline-danger btn-sm" onclick="xoaPhienChat({{ $firstChat->id }})">
+                                <i class="fas fa-trash me-1"></i>Xóa
                             </button>
                         @endif
                     </div>
@@ -1035,7 +1048,7 @@
         </section>
 
 
-        {{-- ══════════════ CỘT PHẢI ══════════════ --}}
+        {{-- ══════════════ CỘT PHẢI (MÁY TÍNH) ══════════════ --}}
         <aside class="zl-right" id="zlRight">
             <div class="zl-info-head"><i class="fas fa-info-circle me-1"></i>Thông tin</div>
             @if ($firstChat)
@@ -1085,7 +1098,7 @@
                         Khách vãng lai – chưa đăng ký. Lịch sử có thể bị xóa theo hạn.
                     </div>
                 @else
-                    <div class="zl-info-section">
+                    <div class="zl-info-section border-bottom-0">
                         <a href="#"
                             onclick="openKhachHangProfileModal('{{ route('nhanvien.admin.khach-hang.show', $firstChat->khach_hang_id) }}', '{{ addslashes($firstChat->ten_hien_thi) }}'); return false;"
                             class="btn btn-outline-primary btn-sm w-100">
@@ -1101,6 +1114,76 @@
         </aside>
 
     </div>
+
+    {{-- =========================================================
+         THÊM MỚI: OFFCANVAS THÔNG TIN CHAT DÀNH CHO MOBILE
+         ========================================================= --}}
+    @if ($firstChat)
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="mobileChatInfo" aria-labelledby="mobileChatInfoLabel"
+            style="width: 320px;">
+            <div class="offcanvas-header border-bottom bg-light">
+                <h6 class="offcanvas-title fw-bold text-dark" id="mobileChatInfoLabel"><i
+                        class="fas fa-info-circle me-2 text-primary"></i>Thông tin Khách hàng</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-0">
+                <div class="zl-info-section">
+                    <div class="zl-info-label">Khách hàng</div>
+                    <div class="zl-info-val fw-bold">{{ $firstChat->ten_hien_thi }}</div>
+                </div>
+                <div class="zl-info-section">
+                    <div class="zl-info-label">Số điện thoại</div>
+                    <div class="zl-info-val">
+                        @if ($firstChat->khachHang?->so_dien_thoai)
+                            <a
+                                href="tel:{{ $firstChat->khachHang->so_dien_thoai }}">{{ $firstChat->khachHang->so_dien_thoai }}</a>
+                        @else
+                            {{ $firstChat->sdt_khach_vang_lai ?? '–' }}
+                        @endif
+                    </div>
+                </div>
+                <div class="zl-info-section">
+                    <div class="zl-info-label">Email</div>
+                    <div class="zl-info-val">
+                        {{ $firstChat->khachHang?->email ?? ($firstChat->email_khach_vang_lai ?? '–') }}
+                    </div>
+                </div>
+                <div class="zl-info-section">
+                    <div class="zl-info-label">Ngữ cảnh</div>
+                    <div class="zl-info-val">{{ $firstChat->ten_ngu_canh ?? '–' }}</div>
+                </div>
+                @if ($firstChat->url_ngu_canh)
+                    <div class="zl-info-section">
+                        <div class="zl-info-label">URL trang</div>
+                        <div class="zl-info-val">
+                            <a href="{{ $firstChat->url_ngu_canh }}" target="_blank" rel="noopener"
+                                style="font-size:.77rem;word-break:break-all;">
+                                {{ Str::limit($firstChat->url_ngu_canh, 40) }}
+                            </a>
+                        </div>
+                    </div>
+                @endif
+                <div class="zl-info-section">
+                    <div class="zl-info-label">Mở lúc</div>
+                    <div class="zl-info-val">{{ optional($firstChat->created_at)->format('H:i d/m/Y') }}</div>
+                </div>
+                @if (!$firstChat->khach_hang_id)
+                    <div class="zl-warning">
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        Khách vãng lai – chưa đăng ký. Lịch sử có thể bị xóa theo hạn.
+                    </div>
+                @else
+                    <div class="zl-info-section border-bottom-0">
+                        <a href="#" data-bs-dismiss="offcanvas"
+                            onclick="openKhachHangProfileModal('{{ route('nhanvien.admin.khach-hang.show', $firstChat->khach_hang_id) }}', '{{ addslashes($firstChat->ten_hien_thi) }}'); return false;"
+                            class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-id-card me-1"></i>Hồ sơ 360°
+                        </a>
+                    </div>
+                @endif
+            </div>
+        </div>
+    @endif
 
     {{-- MODAL XEM HỒ SƠ KH --}}
     <div class="modal fade" id="modalKhachHangProfile" tabindex="-1" aria-hidden="true">
@@ -1128,6 +1211,33 @@
     <div class="modal fade" id="modalKhachHangEditBridge" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow" id="modalKhachHangEditBridgeContent"></div>
+        </div>
+    </div>
+
+    {{-- MODAL XÓA CHAT CHUYÊN NGHIỆP --}}
+    <div class="modal fade" id="modalDeleteChat" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-body p-5 text-center">
+                    <div class="mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-danger bg-opacity-10 text-danger"
+                            style="width: 80px; height: 80px;">
+                            <i class="fas fa-trash-alt fs-1"></i>
+                        </div>
+                    </div>
+                    <h4 class="fw-bold mb-3">Xóa phiên chat này?</h4>
+                    <p class="text-muted mb-4" style="font-size: 0.95rem;">
+                        Hành động này sẽ <strong>XÓA VĨNH VIỄN</strong> toàn bộ lịch sử tin nhắn của cuộc trò chuyện này. Sẽ
+                        không có cách nào khôi phục lại!
+                    </p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="button" class="btn btn-light border px-4" data-bs-dismiss="modal">Hủy bỏ</button>
+                        <button type="button" id="btnConfirmDeleteChat" class="btn btn-danger px-4 fw-bold">
+                            <i class="fas fa-check me-1"></i> Xóa Vĩnh Viễn
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 @endsection
@@ -1275,6 +1385,7 @@
                         inp?.focus();
                     });
             };
+
             window.tiepNhan = id => fetch(fn('tiepNhan', id), {
                 method: 'POST',
                 headers: {
@@ -1282,6 +1393,7 @@
                     'Accept': 'application/json'
                 }
             }).then(() => location.reload());
+
             window.dongPhien = id => {
                 if (!confirm('Đóng phiên chat này?')) return;
                 fetch(fn('dong', id), {
@@ -1292,6 +1404,43 @@
                     }
                 }).then(() => location.reload());
             };
+
+            // Hàm xóa phiên chat MỚI SỬ DỤNG MODAL
+            let deleteChatId = null;
+            window.xoaPhienChat = id => {
+                deleteChatId = id;
+                const modal = new bootstrap.Modal(document.getElementById('modalDeleteChat'));
+                modal.show();
+            };
+
+            // Xử lý khi nhấn nút "Xóa Vĩnh Viễn" trong Modal
+            document.getElementById('btnConfirmDeleteChat')?.addEventListener('click', function() {
+                if (!deleteChatId) return;
+
+                const originalText = this.innerHTML;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Đang xóa...';
+                this.classList.add('disabled');
+
+                fetch(`{{ url('nhan-vien/admin/chat') }}/${deleteChatId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRF-TOKEN': CSRF,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                }).then(r => r.json()).then(d => {
+                    if (d.success) {
+                        window.location.href = '{{ route('nhanvien.admin.chat.index') }}';
+                    } else {
+                        alert(d.message || 'Lỗi không thể xóa!');
+                        this.innerHTML = originalText;
+                        this.classList.remove('disabled');
+                    }
+                }).catch(() => {
+                    window.location.href = '{{ route('nhanvien.admin.chat.index') }}';
+                });
+            });
+
             window.chonTepTraLoi = () => {
                 if (fileInput && !fileInput.disabled) fileInput.click();
             };
@@ -1348,13 +1497,19 @@
                 b.classList.add('active');
                 applyFilter();
             });
-            // Mobile back
-            document.getElementById('zlBackBtn')?.addEventListener('click', () => document.getElementById('zlLeft')?.classList
-                .remove('mobile-hidden'));
-            document.getElementById('chatListBody')?.addEventListener('click', e => {
-                if (e.target.closest('.zl-session') && window.innerWidth < 768) document.getElementById('zlLeft')
-                    ?.classList.add('mobile-hidden');
+
+            // GIAO DIỆN MOBILE - Tự động cập nhật url / tải trang mượt hơn và nút BACK
+            document.getElementById('zlBackBtn')?.addEventListener('click', () => {
+                document.getElementById('zlLeft')?.classList.remove('mobile-hidden');
+                window.location.href = '{{ route('nhanvien.admin.chat.index') }}';
             });
+
+            document.getElementById('chatListBody')?.addEventListener('click', e => {
+                if (e.target.closest('.zl-session') && window.innerWidth < 768) {
+                    document.getElementById('zlLeft')?.classList.add('mobile-hidden');
+                }
+            });
+
             if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
         </script>
     @endif
@@ -1407,19 +1562,28 @@
             try {
                 const res = await fetch(url, {
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'text/html'
-                    },
-                    credentials: 'same-origin'
+                    }
                 });
 
                 if (!res.ok) {
-                    throw new Error('Không thể tải hồ sơ khách hàng.');
+                    throw new Error(`HTTP Lỗi: ${res.status}`);
                 }
 
                 const html = await res.text();
                 const doc = new DOMParser().parseFromString(html, 'text/html');
-                const mainContent = doc.querySelector('#main-wrapper .main-content');
+
+                let mainContent = null;
+                const khTab = doc.querySelector('#khTab');
+
+                if (khTab) {
+                    mainContent = khTab.closest('.container-fluid');
+                }
+
+                if (!mainContent) {
+                    mainContent = doc.querySelector('.page-content') || doc.querySelector('#main-content') || doc.body;
+                }
+
                 const editModalContent = doc.querySelector('#modalEditKhachHang .modal-content');
                 khEmbeddedEditModalHtml = editModalContent ? editModalContent.innerHTML : '';
 
@@ -1428,7 +1592,7 @@
                     `<style data-embed-style="${idx}">${s.textContent || ''}</style>`).join('');
 
                 contentEl.innerHTML = mainContent ? mainContent.innerHTML :
-                    '<div class="alert alert-warning m-3">Không tìm thấy nội dung hồ sơ để hiển thị.</div>';
+                    '<div class="alert alert-warning m-3">Không tìm thấy nội dung hồ sơ.</div>';
 
                 const embeddedModal = contentEl.querySelector('#modalEditKhachHang');
                 if (embeddedModal) embeddedModal.remove();
@@ -1442,8 +1606,13 @@
                     });
                 });
             } catch (error) {
+                console.error("Lỗi khi tải Hồ sơ 360:", error);
                 contentEl.innerHTML =
-                    '<div class="alert alert-danger m-3">Tải hồ sơ thất bại. Vui lòng thử lại.</div>';
+                    `<div class="alert alert-danger m-4">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Tải hồ sơ thất bại (${error.message}). 
+                        <br><br>
+                        <a href="${url}" target="_blank" class="btn btn-sm btn-danger">Mở hồ sơ ở tab mới</a>
+                    </div>`;
             }
         }
 

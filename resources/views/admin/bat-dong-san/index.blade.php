@@ -221,7 +221,7 @@
                                     <div class="position-relative d-flex flex-column flex-shrink-0">
                                         @if ($bds->hinh_anh)
                                             <img src="{{ asset('storage/' . $bds->hinh_anh) }}" class="rounded border"
-                                                style="width: auto; height: 45px; object-fit: cover;" alt="">
+                                                style="min-width: 90px; height: 45px; object-fit: cover;" alt="">
                                         @else
                                             <div class="rounded border bg-light text-muted d-flex align-items-center justify-content-center"
                                                 style="width: 55px; height: 45px;"><i class="fas fa-image"></i></div>
@@ -239,12 +239,12 @@
                                             class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle fw-normal">#{{ $bds->ma_bat_dong_san }}</span>
                                         <div style="font-size: 0.7rem; color: #666; margin-top: 2px;">
                                             @if ($bds->toa)
-                                                <div>Căn: <strong>{{ $bds->toa }}</strong> - @if ($bds->ma_can)
+                                                <div><strong>{{ $bds->toa }}</strong> - @if ($bds->ma_can)
                                                         <strong>{{ $bds->ma_can }}</strong>
                                                     @endif
                                                 </div>
                                             @elseif ($bds->ma_can)
-                                                <div>Căn: <strong>{{ $bds->ma_can }}</strong></div>
+                                                <div><strong>{{ $bds->ma_can }}</strong></div>
                                             @endif
                                         </div>
                                     </div>

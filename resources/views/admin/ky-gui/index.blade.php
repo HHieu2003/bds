@@ -42,22 +42,53 @@
                 data-bs-dismiss="alert"></button></div>
     @endif
 
+    {{-- TABS ĐIỀU HƯỚNG --}}
+    <ul class="nav nav-tabs mb-4 border-bottom-0" style="gap: 5px;">
+        <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'can_xu_ly' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
+                href="{{ route('nhanvien.admin.ky-gui.index', array_merge(request()->query(), ['tab' => 'can_xu_ly', 'page' => 1])) }}"
+                style="{{ $activeTab == 'can_xu_ly' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
+                <i class="fas fa-inbox me-1"></i> Cần xử lý
+                @php $soLuongCanXuLy = $thongKe['cho_duyet'] + $thongKe['dang_tham_dinh']; @endphp
+                @if ($soLuongCanXuLy > 0)
+                    <span class="badge bg-danger ms-1 rounded-pill">{{ $soLuongCanXuLy }}</span>
+                @endif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'tat_ca' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
+                href="{{ route('nhanvien.admin.ky-gui.index', array_merge(request()->query(), ['tab' => 'tat_ca', 'page' => 1])) }}"
+                style="{{ $activeTab == 'tat_ca' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
+                <i class="fas fa-list me-1"></i> Tất cả yêu cầu
+                <span class="badge bg-secondary ms-1 rounded-pill">{{ $thongKe['tong'] }}</span>
+            </a>
+        </li>
+    </ul>
+
     {{-- BỘ LỌC --}}
     <div class="filter-box mb-4">
         <form method="GET" id="filterForm">
+            <input type="hidden" name="tab" value="{{ $activeTab }}">
+
             <div class="row g-2 align-items-center">
                 <div class="col-12 col-md-3">
                     <input type="text" name="tim_kiem" class="filter-ctrl filter-ctrl-search w-100"
                         value="{{ request('tim_kiem') }}" placeholder="🔍 Tìm tên, SĐT chủ nhà...">
                 </div>
-                <div class="col-6 col-md-2">
-                    <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
-                        <option value="">Trạng thái</option>
-                        @foreach (\App\Models\KyGui::TRANG_THAI as $v => $info)
-                            <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $info['label'] }}</option>
-                        @endforeach
-                    </select>
-                </div>
+
+                {{-- Chỉ hiển thị ô lọc Trạng thái nếu đang ở tab "Tất cả" --}}
+                @if ($activeTab == 'tat_ca')
+                    <div class="col-6 col-md-2">
+                        <select name="trang_thai" class="filter-ctrl w-100 filter-auto-submit">
+                            <option value="">Trạng thái</option>
+                            @foreach (\App\Models\KyGui::TRANG_THAI as $v => $info)
+                                <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $info['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
                 <div class="col-6 col-md-2">
                     <select name="sapxep" class="filter-ctrl w-100 filter-auto-submit">
                         <option value="moi_nhat" @selected(request('sapxep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
@@ -72,13 +103,13 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-6 col-md-2">
+                <div class="col-6 col-md-1">
                     <button type="submit" class="btn btn-navy btn-sm px-3 w-100 h-100"><i class="fas fa-search"></i>
                         Lọc</button>
                 </div>
                 <div class="col-6 col-md-1">
                     @if (request()->hasAny(['tim_kiem', 'trang_thai', 'nhan_vien_id', 'sapxep']))
-                        <a href="{{ route('nhanvien.admin.ky-gui.index') }}"
+                        <a href="{{ route('nhanvien.admin.ky-gui.index', ['tab' => $activeTab]) }}"
                             class="btn btn-danger btn-sm px-3 w-100 h-100 d-flex align-items-center justify-content-center"><i
                                 class="fas fa-times"></i></a>
                     @endif
@@ -95,7 +126,7 @@
                     Hiển thị <strong>{{ $kyGuis->firstItem() }}–{{ $kyGuis->lastItem() }}</strong> /
                     <strong>{{ number_format($kyGuis->total()) }}</strong> yêu cầu
                 @else
-                    Không có kết quả nào
+                    Không có kết quả nào trong mục này
                 @endif
             </span>
         </div>
@@ -228,7 +259,7 @@
                         <tr>
                             <td colspan="7">
                                 <div class="empty-state"><i class="fas fa-inbox text-muted mb-3"></i>
-                                    <p class="text-muted mb-2">Chưa có yêu cầu ký gửi nào</p>
+                                    <p class="text-muted mb-2">Chưa có yêu cầu ký gửi nào trong mục này</p>
                                 </div>
                             </td>
                         </tr>
@@ -283,10 +314,10 @@
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
                             data-kg-loai-hinh="{{ \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh]['label'] ?? $kg->loai_hinh }}"
                             data-kg-nhu-cau="{{ \App\Models\KyGui::NHU_CAU[$kg->nhu_cau]['label'] ?? $kg->nhu_cau }}"
-                            data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
-                            data-kg-tang="{{ $kg->tang }}" data-kg-noi-that="{{ $kg->noi_that }}"
-                            data-kg-phap-ly="{{ $kg->phap_ly }}" data-kg-gia="{{ $kg->gia_hien_thi }}"
-                            data-kg-trang-thai="{{ $ttInfo['label'] }}"
+                            data-kg-dien-tich="{{ (float) $kg->dien_tich }}"
+                            data-kg-phong-ngu="{{ $kg->so_phong_ngu }}" data-kg-tang="{{ $kg->tang }}"
+                            data-kg-noi-that="{{ $kg->noi_that }}" data-kg-phap-ly="{{ $kg->phap_ly }}"
+                            data-kg-gia="{{ $kg->gia_hien_thi }}" data-kg-trang-thai="{{ $ttInfo['label'] }}"
                             data-kg-created="{{ $kg->created_at->format('d/m/Y H:i') }}"
                             data-kg-ghi-chu="{{ $kg->ghi_chu }}"
                             data-kg-nv="{{ optional($kg->nhanVienPhuTrach)->ho_ten }}">

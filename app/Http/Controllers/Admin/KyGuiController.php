@@ -17,27 +17,27 @@ class KyGuiController extends Controller
 {
     public function index(Request $request)
     {
-        $currentTab = $request->get('tab', 'can_xu_ly');
-        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach']);
+        $query = KyGui::with(['khachHang', 'nhanVienPhuTrach'])->withCount([]);
 
-        // 1. Logic phân loại Tab
-        if ($currentTab === 'can_xu_ly') {
-            // Tab cần xử lý: Mới gửi hoặc đang thẩm định
+        // Lấy tab hiện tại (mặc định là 'can_xu_ly')
+        $activeTab = $request->get('tab', 'can_xu_ly');
+
+        // Xử lý logic lọc theo Tab
+        if ($activeTab === 'can_xu_ly') {
             $query->whereIn('trang_thai', ['cho_duyet', 'dang_tham_dinh']);
         }
 
-        // 2. Các bộ lọc tìm kiếm
+        // Xử lý các bộ lọc tìm kiếm
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
-            $query->where(function ($q) use ($kw) {
-                $q->where('ho_ten_chu_nha', 'like', $kw)
-                    ->orWhere('so_dien_thoai', 'like', $kw)
-                    ->orWhere('dia_chi', 'like', $kw)
-                    ->orWhere('ma_ky_gui', 'like', $kw);
-            });
+            $query->where(fn($q) => $q->where('ho_ten_chu_nha', 'like', $kw)
+                ->orWhere('so_dien_thoai', 'like', $kw)
+                ->orWhere('dia_chi', 'like', $kw));
         }
 
-        if ($request->filled('trang_thai') && $currentTab === 'tat_ca') {
+        // Nếu ở tab "Tất cả" thì mới áp dụng lọc trạng thái (nếu có chọn)
+        // Nếu ở tab "Cần xử lý" thì bỏ qua lọc trạng thái từ form để tránh xung đột
+        if ($activeTab === 'tat_ca' && $request->filled('trang_thai')) {
             $query->where('trang_thai', $request->trang_thai);
         }
 
@@ -45,34 +45,26 @@ class KyGuiController extends Controller
         if ($request->filled('nhan_vien_id')) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
 
         $sapXep = $request->get('sapxep', 'moi_nhat');
-        if ($sapXep == 'moi_nhat') $query->latest();
-        else $query->oldest();
+        if ($sapXep === 'cu_nhat') {
+            $query->oldest();
+        } else {
+            $query->latest();
+        }
 
         $kyGuis = $query->paginate(15)->withQueryString();
 
-        // 3. Thống kê số lượng cho Badge Tabs
-        $countCanXuLy = KyGui::whereIn('trang_thai', ['cho_duyet', 'dang_tham_dinh'])->count();
-        $countTatCa = KyGui::count();
-
-        // Thống kê trạng thái (cho bộ lọc)
         $thongKe = [
-            'tong' => $countTatCa,
-            'cho_duyet' => KyGui::where('trang_thai', 'cho_duyet')->count(),
+            'tong'           => KyGui::count(),
+            'cho_duyet'      => KyGui::where('trang_thai', 'cho_duyet')->count(),
             'dang_tham_dinh' => KyGui::where('trang_thai', 'dang_tham_dinh')->count(),
-            'da_duyet' => KyGui::where('trang_thai', 'da_duyet')->count(),
-            'bi_tu_choi' => KyGui::where('trang_thai', 'bi_tu_choi')->count(),
+            'da_duyet'       => KyGui::where('trang_thai', 'da_duyet')->count(),
+            'tu_choi'        => KyGui::where('trang_thai', 'tu_choi')->count(),
         ];
 
-        $nhanViens = NhanVien::where('kich_hoat', 1)->get();
+        // Chỉ lấy nhân sự Nguồn hàng (và admin) để xử lý ký gửi
+        $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->orderBy('ho_ten')->get();
 
-        return view('admin.ky-gui.index', compact(
-            'kyGuis',
-            'thongKe',
-            'nhanViens',
-            'currentTab',
-            'countCanXuLy',
-            'countTatCa'
-        ));
+        return view('admin.ky-gui.index', compact('kyGuis', 'thongKe', 'nhanViens', 'activeTab'));
     }
 
     public function show(KyGui $kyGui)

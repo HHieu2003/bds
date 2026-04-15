@@ -146,30 +146,78 @@
 
     @include('frontend.partials.flash-messages')
 
+    {{-- TABS ĐIỀU HƯỚNG --}}
+    <ul class="nav nav-tabs mb-4 border-bottom-0" style="gap: 5px;">
+        <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'can_xu_ly' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
+                href="{{ route('nhanvien.admin.lien-he.index', array_merge(request()->query(), ['tab' => 'can_xu_ly', 'page' => 1])) }}"
+                style="{{ $activeTab == 'can_xu_ly' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
+                <i class="fas fa-inbox me-1"></i> Cần xử lý
+                @if ($thongKe['can_xu_ly'] > 0)
+                    <span class="badge bg-danger ms-1 rounded-pill">{{ $thongKe['can_xu_ly'] }}</span>
+                @endif
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'tat_ca' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
+                href="{{ route('nhanvien.admin.lien-he.index', array_merge(request()->query(), ['tab' => 'tat_ca', 'page' => 1])) }}"
+                style="{{ $activeTab == 'tat_ca' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
+                <i class="fas fa-list me-1"></i> Tất cả yêu cầu
+                <span class="badge bg-secondary ms-1 rounded-pill">{{ $thongKe['tat_ca'] }}</span>
+            </a>
+        </li>
+    </ul>
 
     {{-- BỘ LỌC --}}
     <div class="card border-0 shadow-sm mb-3">
         <div class="card-body p-3">
             <form method="GET" class="row g-2 align-items-center">
-                <div class="col-12 col-md-4">
+                <input type="hidden" name="tab" value="{{ $activeTab }}">
+
+                {{-- Cụm Nhập Text & Khoảng Ngày --}}
+                <div class="col-12 col-md-4 col-lg-3">
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" name="search" class="form-control border-start-0 ps-0"
-                            value="{{ request('search') }}" placeholder="Tìm SĐT, Tên khách hàng...">
+                            value="{{ request('search') }}" placeholder="Tìm SĐT, Tên khách...">
                     </div>
                 </div>
-                <div class="col-6 col-md-3">
-                    <select name="trang_thai" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Tất cả trạng thái --</option>
-                        @foreach (\App\Models\YeuCauLienHe::TRANG_THAI as $v => $info)
-                            <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $info['label'] }}</option>
-                        @endforeach
-                    </select>
+
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted" title="Từ ngày"><i
+                                class="far fa-calendar-alt"></i></span>
+                        <input type="date" name="tu_ngay" class="form-control" value="{{ request('tu_ngay') }}"
+                            title="Từ ngày">
+                    </div>
                 </div>
+
+                <div class="col-6 col-md-4 col-lg-2">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light text-muted" title="Đến ngày"><i
+                                class="fas fa-arrow-right"></i></span>
+                        <input type="date" name="den_ngay" class="form-control" value="{{ request('den_ngay') }}"
+                            title="Đến ngày">
+                    </div>
+                </div>
+
+                {{-- Cụm Dropdown Filter (Trạng thái / Nhóm phụ trách) --}}
+                @if ($activeTab === 'tat_ca')
+                    <div class="col-6 col-md-4 col-lg-2">
+                        <select name="trang_thai" class="form-select" onchange="this.form.submit()">
+                            <option value="">Trạng thái</option>
+                            @foreach (\App\Models\YeuCauLienHe::TRANG_THAI as $v => $info)
+                                <option value="{{ $v }}" @selected(request('trang_thai') == $v)>{{ $info['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                @endif
+
                 @if (!$nhanVienAuth->isSale())
-                    <div class="col-6 col-md-3">
+                    <div class="col-6 col-md-4 col-lg-2">
                         <select name="nhan_vien" class="form-select" onchange="this.form.submit()">
-                            <option value="">-- Tất cả Sale --</option>
+                            <option value="">Nhân sự Sale</option>
                             @foreach ($nhanViens as $nv)
                                 <option value="{{ $nv->id }}" @selected(request('nhan_vien') == $nv->id)>{{ $nv->ho_ten }}
                                 </option>
@@ -177,12 +225,31 @@
                         </select>
                     </div>
                 @endif
-                <div class="col-12 col-md-2 d-flex gap-2">
-                    @if (request()->anyFilled(['search', 'trang_thai', 'nhan_vien']))
-                        <a href="{{ route('nhanvien.admin.lien-he.index') }}"
-                            class="btn btn-light border w-100 text-danger"><i class="fas fa-times me-1"></i> Xóa lọc</a>
-                    @else
-                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i></button>
+
+                {{-- Sắp xếp --}}
+                <div class="col-6 col-md-4 col-lg-2">
+                    <select name="sap_xep" class="form-select" onchange="this.form.submit()">
+                        <option value="moi_nhat" @selected(request('sap_xep', 'moi_nhat') == 'moi_nhat')>Mới nhất</option>
+                        <option value="cu_nhat" @selected(request('sap_xep') == 'cu_nhat')>Cũ nhất</option>
+                    </select>
+                </div>
+
+                {{-- Nút bấm submit --}}
+                <div class="col-12 col-lg-auto ms-auto d-flex gap-2 mt-2 mt-lg-0">
+                    <button type="submit" class="btn btn-primary flex-grow-1 px-4"><i class="fas fa-filter"></i>
+                        Lọc</button>
+
+                    @php
+                        $hasFilters =
+                            request()->anyFilled(['search', 'trang_thai', 'nhan_vien', 'tu_ngay', 'den_ngay']) ||
+                            request('sap_xep', 'moi_nhat') !== 'moi_nhat';
+                    @endphp
+
+                    @if ($hasFilters)
+                        <a href="{{ route('nhanvien.admin.lien-he.index', ['tab' => $activeTab]) }}"
+                            class="btn btn-light border text-danger" title="Xóa toàn bộ bộ lọc">
+                            <i class="fas fa-times"></i>
+                        </a>
                     @endif
                 </div>
             </form>
@@ -439,7 +506,7 @@
         @endif
     </div>
 
-    {{-- MODAL CHI TIẾT LEAD (REDESIGNED) --}}
+    {{-- MODAL CHI TIẾT LEAD --}}
     <div class="modal fade" id="modalLeadDetail" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-md">
             <div class="modal-content border-0 shadow" style="border-radius: 12px; overflow: hidden;">

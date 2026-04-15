@@ -15,9 +15,15 @@ class LienHeController extends Controller
     {
         $nhanVienAuth = Auth::guard('nhanvien')->user();
 
-        $query = YeuCauLienHe::with(['batDongSan', 'nhanVienPhuTrach', 'khachHang'])
-            ->latest('thoi_diem_lien_he')
-            ->latest('created_at');
+        $query = YeuCauLienHe::with(['batDongSan', 'nhanVienPhuTrach', 'khachHang']);
+
+        // Xử lý sắp xếp
+        $sapXep = $request->get('sap_xep', 'moi_nhat');
+        if ($sapXep === 'cu_nhat') {
+            $query->oldest('thoi_diem_lien_he')->oldest('created_at');
+        } else {
+            $query->latest('thoi_diem_lien_he')->latest('created_at');
+        }
 
         // Sale chỉ xem được Lead của mình hoặc Lead mới chưa ai nhận
         if ($nhanVienAuth->isSale()) {
@@ -27,18 +33,46 @@ class LienHeController extends Controller
             });
         }
 
-        if ($request->filled('trang_thai')) $query->where('trang_thai', $request->trang_thai);
-        if ($request->filled('nhan_vien') && !$nhanVienAuth->isSale()) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien);
+        // Lấy tab hiện tại (mặc định là 'can_xu_ly')
+        $activeTab = $request->get('tab', 'can_xu_ly');
+
+        // Logic Tab "Cần xử lý"
+        if ($activeTab === 'can_xu_ly') {
+            $query->whereNotIn('trang_thai', ['da_chot', 'hoan_thanh', 'huy']);
+        }
+
+        // Nếu ở tab "Tất cả" thì mới áp dụng lọc trạng thái từ form (nếu có chọn)
+        if ($activeTab === 'tat_ca' && $request->filled('trang_thai')) {
+            $query->where('trang_thai', $request->trang_thai);
+        }
+
+        // Lọc theo Nhân viên
+        if ($request->filled('nhan_vien') && !$nhanVienAuth->isSale()) {
+            $query->where('nhan_vien_phu_trach_id', $request->nhan_vien);
+        }
+
+        // Lọc theo khoảng ngày (dựa trên ngày tạo lead)
+        if ($request->filled('tu_ngay')) {
+            $query->whereDate('created_at', '>=', $request->tu_ngay);
+        }
+        if ($request->filled('den_ngay')) {
+            $query->whereDate('created_at', '<=', $request->den_ngay);
+        }
+
+        // Lọc theo từ khóa tìm kiếm
         if ($request->filled('search')) {
             $s = $request->search;
             $query->where(function ($q) use ($s) {
-                $q->where('ho_ten', 'like', "%$s%")->orWhere('so_dien_thoai', 'like', "%$s%")->orWhere('email', 'like', "%$s%");
+                $q->where('ho_ten', 'like', "%$s%")
+                    ->orWhere('so_dien_thoai', 'like', "%$s%")
+                    ->orWhere('email', 'like', "%$s%");
             });
         }
 
         $lienHes  = $query->paginate(20)->withQueryString();
         $nhanViens = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', true)->orderBy('ho_ten')->get();
 
+        // Khối tạo thống kê
         $thongKe = collect(array_keys(YeuCauLienHe::TRANG_THAI))->mapWithKeys(function ($tt) use ($nhanVienAuth) {
             $q = YeuCauLienHe::where('trang_thai', $tt);
             if ($nhanVienAuth->isSale()) {
@@ -47,14 +81,24 @@ class LienHeController extends Controller
             return [$tt => $q->count()];
         });
 
+        // Tổng tất cả
         $qTatCa = YeuCauLienHe::query();
-        if ($nhanVienAuth->isSale()) $qTatCa->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
+        if ($nhanVienAuth->isSale()) {
+            $qTatCa->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
+        }
         $thongKe['tat_ca'] = $qTatCa->count();
+
+        // Tổng cần xử lý (loại trừ đã chốt, hoàn thành, hủy)
+        $qCanXuLy = YeuCauLienHe::whereNotIn('trang_thai', ['da_chot', 'hoan_thanh', 'huy']);
+        if ($nhanVienAuth->isSale()) {
+            $qCanXuLy->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
+        }
+        $thongKe['can_xu_ly'] = $qCanXuLy->count();
 
         // Đếm Lead chưa nhận
         $leadChuaNhan = YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
 
-        return view('admin.lien-he.index', compact('lienHes', 'nhanViens', 'thongKe', 'nhanVienAuth', 'leadChuaNhan'));
+        return view('admin.lien-he.index', compact('lienHes', 'nhanViens', 'thongKe', 'nhanVienAuth', 'leadChuaNhan', 'activeTab'));
     }
 
     public function show(YeuCauLienHe $lienHe)
