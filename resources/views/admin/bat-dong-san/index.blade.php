@@ -175,6 +175,18 @@
             'dat_nen' => 'Đất nền',
             'shophouse' => 'Shophouse',
         ];
+        $thoiGianVaoThueMap = [
+            'ngay_lap_tuc' => 'Vào ở ngay',
+            'sau_1_tuan' => 'Sau 1 tuần',
+            'sau_1_thang' => 'Sau 1 tháng',
+            'thoa_thuan' => 'Thỏa thuận',
+        ];
+        $hinhThucThanhToanMap = [
+            'thang_1' => 'Thanh toán 1 tháng/lần',
+            'thang_3' => 'Thanh toán 3 tháng/lần',
+            'thang_6' => 'Thanh toán 6 tháng/lần',
+            'nam_1' => 'Thanh toán 1 năm/lần',
+        ];
         $nhanVienDangNhap = auth('nhanvien')->user();
         $isSaleView = ($nhanVienDangNhap?->vai_tro ?? null) === 'sale';
     @endphp
@@ -211,7 +223,24 @@
                 </thead>
                 <tbody>
                     @forelse($batDongSans as $i => $bds)
-                        @php $tt = $ttMap[$bds->trang_thai] ?? ['label' => $bds->trang_thai, 'color' => '#999', 'bg' => '#f5f5f5', 'icon' => '']; @endphp
+                        @php
+                            $tt = $ttMap[$bds->trang_thai] ?? [
+                                'label' => $bds->trang_thai,
+                                'color' => '#999',
+                                'bg' => '#f5f5f5',
+                                'icon' => '',
+                            ];
+                            $giaHienThi =
+                                $bds->nhu_cau == 'ban'
+                                    ? ($bds->gia
+                                        ? number_format($bds->gia, 0, ',', '.') . ' VNĐ'
+                                        : 'Thỏa thuận')
+                                    : ($bds->gia_thue
+                                        ? number_format($bds->gia_thue, 0, ',', '.') . ' VNĐ/tháng'
+                                        : 'Thỏa thuận');
+                            $hinhAnhBds = $bds->hinh_anh ? asset('storage/' . $bds->hinh_anh) : '';
+                            $moTaText = trim(strip_tags((string) $bds->mo_ta));
+                        @endphp
                         <tr>
                             <td class="text-center text-muted">{{ $batDongSans->firstItem() + $i }}</td>
 
@@ -249,10 +278,33 @@
                                         </div>
                                     </div>
                                     <div style="min-width: 0; flex: 1;">
-                                        <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
-                                            class="fw-bold text-navy text-decoration-none mb-1"
+                                        <button type="button"
+                                            class="btn btn-link p-0 fw-bold text-navy text-decoration-none mb-1 text-start btn-view-bds"
+                                            data-bs-toggle="modal" data-bs-target="#modalViewBds"
+                                            data-id="{{ $bds->id }}" data-ma="{{ $bds->ma_bat_dong_san }}"
+                                            data-tieu-de="{{ $bds->tieu_de }}"
+                                            data-nhu-cau="{{ $bds->nhu_cau == 'ban' ? 'Bán' : 'Thuê' }}"
+                                            data-loai-hinh="{{ $loaiMap[$bds->loai_hinh] ?? $bds->loai_hinh }}"
+                                            data-gia="{{ $giaHienThi }}"
+                                            data-dien-tich="{{ (float) $bds->dien_tich }} m²"
+                                            data-phong-ngu="{{ $bds->so_phong_ngu === null ? '—' : ($bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu) }}"
+                                            data-toa="{{ $bds->toa ?: '—' }}" data-tang="{{ $bds->tang ?: '—' }}"
+                                            data-ma-can="{{ $bds->ma_can ?: '—' }}"
+                                            data-noi-that="{{ $bds->noi_that ?: '—' }}"
+                                            data-phap-ly="{{ $bds->phap_ly ?: '—' }}"
+                                            data-thoi-gian-vao-thue="{{ $thoiGianVaoThueMap[$bds->thoi_gian_vao_thue] ?? '—' }}"
+                                            data-hinh-thuc-thanh-toan="{{ $hinhThucThanhToanMap[$bds->hinh_thuc_thanh_toan] ?? '—' }}"
+                                            data-trang-thai="{{ $tt['label'] }}"
+                                            data-hien-thi="{{ $bds->hien_thi ? 'Đang bật' : 'Đang tắt' }}"
+                                            data-luot-xem="{{ number_format($bds->luot_xem) }}"
+                                            data-du-an="{{ $bds->duAn?->ten_du_an ?: '—' }}"
+                                            data-nv-phu-trach="{{ $bds->nhanVienPhuTrach?->ho_ten ?: '—' }}"
+                                            data-ngay-dang="{{ $bds->thoi_diem_dang?->format('d/m/Y H:i') ?: '—' }}"
+                                            data-cap-nhat="{{ $bds->updated_at?->format('d/m/Y H:i') ?: '—' }}"
+                                            data-ghi-chu="{{ $bds->ghi_chu_noi_bo ?: '' }}"
+                                            data-image="{{ $hinhAnhBds }}"
                                             style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem;"
-                                            title="{{ $bds->tieu_de }}">{{ $bds->tieu_de }}</a>
+                                            title="Xem nhanh thông tin BĐS">{{ $bds->tieu_de }}</button>
                                         <div class="d-flex flex-wrap gap-1 align-items-center" style="font-size: 0.7rem">
                                             @if ($bds->duAn)
                                                 <span class="text-muted text-truncate" style="max-width: 130px;"
@@ -263,6 +315,11 @@
                                                 <span class="text-muted ms-1"><i
                                                         class="fas fa-user-tie me-1"></i>{{ $bds->nhanVienPhuTrach->ho_ten }}</span>
                                             @endif
+                                        </div>
+                                        <div class="text-muted mt-1" style="font-size: 0.68rem;">
+                                            <i class="far fa-clock me-1"></i>Cập nhật:
+                                            <strong
+                                                class="text-dark">{{ $bds->updated_at?->format('d/m/Y H:i') }}</strong>
                                         </div>
                                     </div>
                                 </div>
@@ -343,14 +400,33 @@
                             {{-- Cột 7: Thao tác --}}
                             <td class="text-center">
                                 <div class="btn-actions-group justify-content-center">
+                                    @unless ($isSaleView)
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-success btn-action btn-quick-update-bds"
+                                            data-bs-toggle="modal" data-bs-target="#modalQuickUpdateBds"
+                                            data-id="{{ $bds->id }}" data-code="{{ $bds->ma_bat_dong_san }}"
+                                            data-name="{{ $bds->tieu_de }}" data-nhu-cau="{{ $bds->nhu_cau }}"
+                                            data-gia="{{ $bds->gia ?? '' }}" data-gia-thue="{{ $bds->gia_thue ?? '' }}"
+                                            title="Cập nhật nhanh (Làm mới ngày)">
+                                            <i class="fas fa-headset"></i>
+                                        </button>
+                                    @endunless
                                     <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                         class="btn-action btn-action-edit" title="Sửa"><i class="fas fa-pen"></i></a>
-                                    <form id="frmDel_{{ $bds->id }}"
-                                        action="{{ route('nhanvien.admin.bat-dong-san.destroy', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
-                                        method="POST" class="d-none">@csrf @method('DELETE')</form>
-                                    <button type="button" class="btn-action btn-action-delete btn-delete-bds"
-                                        data-id="{{ $bds->id }}" data-name="{{ $bds->ma_bat_dong_san }}"
-                                        title="Xóa"><i class="fas fa-trash"></i></button>
+                                    @unless ($isSaleView)
+                                        <form id="frmDel_{{ $bds->id }}"
+                                            action="{{ route('nhanvien.admin.bat-dong-san.destroy', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
+                                            method="POST" class="d-none">@csrf @method('DELETE')</form>
+                                        <button type="button" class="btn-action btn-action-delete btn-delete-bds"
+                                            data-id="{{ $bds->id }}" data-name="{{ $bds->ma_bat_dong_san }}"
+                                            title="Xóa"><i class="fas fa-trash"></i></button>
+                                    @else
+                                        <button type="button" class="btn-action btn-action-delete btn-delete-bds"
+                                            data-no-permission="1" data-name="{{ $bds->ma_bat_dong_san }}"
+                                            title="Bạn không có quyền xóa">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    @endunless
                                 </div>
                             </td>
                         </tr>
@@ -370,7 +446,22 @@
         {{-- MOBILE CARD (Cập nhật hiển thị chủ nhà) --}}
         <div class="mobile-card-list">
             @foreach ($batDongSans as $bds)
-                @php $tt = $ttMap[$bds->trang_thai] ?? ['label' => $bds->trang_thai, 'color' => '#999', 'bg' => '#f5f5f5']; @endphp
+                @php
+                    $tt = $ttMap[$bds->trang_thai] ?? [
+                        'label' => $bds->trang_thai,
+                        'color' => '#999',
+                        'bg' => '#f5f5f5',
+                    ];
+                    $giaHienThi =
+                        $bds->nhu_cau == 'ban'
+                            ? ($bds->gia
+                                ? number_format($bds->gia, 0, ',', '.') . ' VNĐ'
+                                : 'Thỏa thuận')
+                            : ($bds->gia_thue
+                                ? number_format($bds->gia_thue, 0, ',', '.') . ' VNĐ/tháng'
+                                : 'Thỏa thuận');
+                    $hinhAnhBds = $bds->hinh_anh ? asset('storage/' . $bds->hinh_anh) : '';
+                @endphp
                 <div class="mobile-card">
                     <div class="mobile-card-top align-items-start">
                         @if ($bds->hinh_anh)
@@ -388,8 +479,28 @@
                                 <span class="badge"
                                     style="background: {{ $tt['bg'] }}; color: {{ $tt['color'] }}">{{ $tt['label'] }}</span>
                             </div>
-                            <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
-                                class="fw-bold text-navy text-decoration-none d-block text-truncate mb-1">{{ $bds->tieu_de }}</a>
+                            <button type="button"
+                                class="btn btn-link p-0 fw-bold text-navy text-decoration-none d-block text-truncate mb-1 text-start btn-view-bds"
+                                data-bs-toggle="modal" data-bs-target="#modalViewBds" data-id="{{ $bds->id }}"
+                                data-ma="{{ $bds->ma_bat_dong_san }}" data-tieu-de="{{ $bds->tieu_de }}"
+                                data-nhu-cau="{{ $bds->nhu_cau == 'ban' ? 'Bán' : 'Thuê' }}"
+                                data-loai-hinh="{{ $loaiMap[$bds->loai_hinh] ?? $bds->loai_hinh }}"
+                                data-gia="{{ $giaHienThi }}" data-dien-tich="{{ (float) $bds->dien_tich }} m²"
+                                data-phong-ngu="{{ $bds->so_phong_ngu === null ? '—' : ($bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu) }}"
+                                data-toa="{{ $bds->toa ?: '—' }}" data-tang="{{ $bds->tang ?: '—' }}"
+                                data-ma-can="{{ $bds->ma_can ?: '—' }}" data-noi-that="{{ $bds->noi_that ?: '—' }}"
+                                data-phap-ly="{{ $bds->phap_ly ?: '—' }}"
+                                data-thoi-gian-vao-thue="{{ $thoiGianVaoThueMap[$bds->thoi_gian_vao_thue] ?? '—' }}"
+                                data-hinh-thuc-thanh-toan="{{ $hinhThucThanhToanMap[$bds->hinh_thuc_thanh_toan] ?? '—' }}"
+                                data-trang-thai="{{ $tt['label'] }}"
+                                data-hien-thi="{{ $bds->hien_thi ? 'Đang bật' : 'Đang tắt' }}"
+                                data-luot-xem="{{ number_format($bds->luot_xem) }}"
+                                data-du-an="{{ $bds->duAn?->ten_du_an ?: '—' }}"
+                                data-nv-phu-trach="{{ $bds->nhanVienPhuTrach?->ho_ten ?: '—' }}"
+                                data-ngay-dang="{{ $bds->thoi_diem_dang?->format('d/m/Y H:i') ?: '—' }}"
+                                data-cap-nhat="{{ $bds->updated_at?->format('d/m/Y H:i') ?: '—' }}"
+                                data-ghi-chu="{{ $bds->ghi_chu_noi_bo ?: '' }}" data-image="{{ $hinhAnhBds }}"
+                                title="Xem nhanh thông tin BĐS">{{ $bds->tieu_de }}</button>
                         </div>
                     </div>
 
@@ -422,6 +533,7 @@
                             <div><i class="fas fa-bed text-muted"></i>
                                 {{ $bds->so_phong_ngu == 0 ? 'Studio' : $bds->so_phong_ngu }}</div>
                         @endif
+                        <div><i class="far fa-clock text-muted"></i> {{ $bds->updated_at?->format('d/m H:i') }}</div>
                     </div>
                     <div class="mobile-card-foot">
                         <label class="toggle-sw"><input type="checkbox" data-display-id="{{ $bds->id }}"
@@ -430,11 +542,27 @@
                                 {{ $bds->trang_thai !== 'con_hang' ? 'disabled' : '' }}><span
                                 class="toggle-sw-track"><span class="toggle-sw-thumb"></span></span></label>
                         <div class="btn-actions-group">
+                            @unless ($isSaleView)
+                                <button type="button" class="btn btn-sm btn-outline-success btn-action btn-quick-update-bds"
+                                    data-bs-toggle="modal" data-bs-target="#modalQuickUpdateBds"
+                                    data-id="{{ $bds->id }}" data-code="{{ $bds->ma_bat_dong_san }}"
+                                    data-name="{{ $bds->tieu_de }}" data-nhu-cau="{{ $bds->nhu_cau }}"
+                                    data-gia="{{ $bds->gia ?? '' }}" data-gia-thue="{{ $bds->gia_thue ?? '' }}"
+                                    title="Cập nhật nhanh (Làm mới ngày)">
+                                    <i class="fas fa-headset"></i>
+                                </button>
+                            @endunless
                             <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
                                 class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
-                            <button type="button" class="btn-action btn-action-delete btn-delete-bds"
-                                data-id="{{ $bds->id }}" data-name="{{ $bds->ma_bat_dong_san }}"><i
-                                    class="fas fa-trash"></i></button>
+                            @unless ($isSaleView)
+                                <button type="button" class="btn-action btn-action-delete btn-delete-bds"
+                                    data-id="{{ $bds->id }}" data-name="{{ $bds->ma_bat_dong_san }}"><i
+                                        class="fas fa-trash"></i></button>
+                            @else
+                                <button type="button" class="btn-action btn-action-delete btn-delete-bds"
+                                    data-no-permission="1" data-name="{{ $bds->ma_bat_dong_san }}"><i
+                                        class="fas fa-trash"></i></button>
+                            @endunless
                         </div>
                     </div>
                 </div>
@@ -515,6 +643,133 @@
             </div>
         </div>
     </div>
+
+    {{-- ============================================================ --}}
+    {{-- MODAL CẬP NHẬT NHANH BẤT ĐỘNG SẢN                           --}}
+    {{-- ============================================================ --}}
+    <div class="modal fade" id="modalQuickUpdateBds" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <form id="quickUpdateBdsForm" class="modal-content border-0 shadow" method="POST" action="#">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="is_quick_update" value="1">
+
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold">
+                        <i class="fas fa-headset text-success me-2"></i>Cập nhật nhanh BĐS
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <div class="alert alert-info border-0 bg-info bg-opacity-10 mb-4" style="font-size:0.85rem">
+                        <div>
+                            Mã BĐS: <strong id="qu_bds_code" class="text-primary">-</strong>
+                        </div>
+                        <div class="mt-1">
+                            Tiêu đề: <strong id="qu_bds_name" class="text-dark">-</strong>
+                        </div>
+                        <small class="d-block mt-2">
+                            Lưu ở đây sẽ làm mới ngày cập nhật của BĐS để dễ theo dõi BĐS vừa chăm sóc.
+                        </small>
+                    </div>
+
+                    <div class="mb-3" id="qu_gia_ban_wrap">
+                        <label class="form-label fw-medium">Giá bán mới (VNĐ)</label>
+                        <input type="number" min="0" step="1000000" class="form-control" name="gia_moi"
+                            id="qu_gia_moi" placeholder="Ví dụ: 3500000000">
+                    </div>
+
+                    <div class="mb-3" id="qu_gia_thue_wrap">
+                        <label class="form-label fw-medium">Giá thuê mới (VNĐ/tháng)</label>
+                        <input type="number" min="0" step="100000" class="form-control" name="gia_thue_moi"
+                            id="qu_gia_thue_moi" placeholder="Ví dụ: 15000000">
+                    </div>
+
+                    <div class="mb-0">
+                        <label class="form-label fw-medium">Ghi chú chăm sóc</label>
+                        <textarea id="qu_ghi_chu_moi" name="ghi_chu_moi" class="form-control" rows="4"
+                            placeholder="Ví dụ: Chủ nhà vừa báo điều chỉnh giá, cần ưu tiên tư vấn khách phù hợp..."></textarea>
+                        <div class="form-text text-muted">Nếu nhập ghi chú, hệ thống sẽ tự động đóng dấu thời gian và lưu
+                            vào ghi chú nội bộ.</div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-secondary bg-white text-dark border"
+                        data-bs-dismiss="modal">Đóng</button>
+                    <button type="submit" class="btn btn-success px-4"><i class="fas fa-save me-2"></i>Lưu cập
+                        nhật</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {{-- ============================================================ --}}
+    {{-- MODAL XEM NHANH THÔNG TIN BẤT ĐỘNG SẢN                      --}}
+    {{-- ============================================================ --}}
+    <div class="modal fade" id="modalViewBds" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold text-navy">
+                        <i class="fas fa-building text-primary me-2"></i><span id="vb_tieu_de">Thông tin BĐS</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body pt-3">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4">
+                            <img id="vb_image" src="" alt="Ảnh BĐS" class="img-fluid rounded border d-none"
+                                style="width:100%;height:180px;object-fit:cover;">
+                            <div id="vb_image_placeholder"
+                                class="rounded border bg-light text-muted d-flex align-items-center justify-content-center"
+                                style="height:180px;">
+                                <i class="fas fa-image me-2"></i>Không có ảnh
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-8">
+                            <div class="row g-2" style="font-size:.84rem;">
+                                <div class="col-6"><strong>Mã BĐS:</strong> <span id="vb_ma"></span></div>
+                                <div class="col-6"><strong>Trạng thái:</strong> <span id="vb_trang_thai"></span></div>
+                                <div class="col-6"><strong>Nhu cầu:</strong> <span id="vb_nhu_cau"></span></div>
+                                <div class="col-6"><strong>Loại hình:</strong> <span id="vb_loai_hinh"></span></div>
+                                <div class="col-6"><strong>Giá:</strong> <span id="vb_gia"></span></div>
+                                <div class="col-6"><strong>Diện tích:</strong> <span id="vb_dien_tich"></span></div>
+                                <div class="col-6"><strong>Phòng ngủ:</strong> <span id="vb_phong_ngu"></span></div>
+                                <div class="col-6"><strong>Hiển thị:</strong> <span id="vb_hien_thi"></span></div>
+                                <div class="col-6"><strong>Tòa/Tầng:</strong> <span id="vb_toa_tang"></span></div>
+                                <div class="col-6"><strong>Mã căn:</strong> <span id="vb_ma_can"></span></div>
+                                <div class="col-6"><strong>Nội thất:</strong> <span id="vb_noi_that"></span></div>
+                                <div class="col-6" id="vb_phap_ly_wrap"><strong>Pháp lý:</strong> <span
+                                        id="vb_phap_ly"></span></div>
+                                <div class="col-6 d-none" id="vb_tgvt_wrap"><strong>Thời gian vào thuê:</strong> <span
+                                        id="vb_tgvt"></span></div>
+                                <div class="col-6 d-none" id="vb_httt_wrap"><strong>Hình thức thanh toán:</strong> <span
+                                        id="vb_httt"></span></div>
+                                <div class="col-6"><strong>Dự án:</strong> <span id="vb_du_an"></span></div>
+                                <div class="col-6"><strong>NV phụ trách:</strong> <span id="vb_nv_pt"></span></div>
+                                <div class="col-6"><strong>Lượt xem:</strong> <span id="vb_luot_xem"></span></div>
+                                <div class="col-6"><strong>Ngày đăng:</strong> <span id="vb_ngay_dang"></span></div>
+                                <div class="col-6"><strong>Cập nhật:</strong> <span id="vb_cap_nhat"></span></div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="text-muted d-block mb-1" style="font-size:0.75rem;">Ghi chú nội bộ</label>
+                            <div id="vb_ghi_chu" class="bg-warning bg-opacity-10 border rounded p-2"
+                                style="font-size:0.85rem;min-height:50px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
@@ -523,6 +778,7 @@
             const CSRF = document.querySelector('meta[name=csrf-token]').content;
             const filterForm = document.getElementById('filterForm');
             const searchInput = filterForm?.querySelector('input[name="tukhoa"]');
+            const quickUpdateForm = document.getElementById('quickUpdateBdsForm');
 
             // ══ AJAX PAGINATION ══
             function bindPaginationLinks() {
@@ -582,6 +838,8 @@
                         bindStatusButtons();
                         bindToggleCheckboxes();
                         bindChuNhaButtons();
+                        bindQuickUpdateButtons();
+                        bindViewBdsButtons();
 
                         // Scroll to top of table
                         document.querySelector('table').scrollIntoView({
@@ -628,6 +886,11 @@
             function bindDeleteButtons() {
                 document.querySelectorAll('.btn-delete-bds').forEach(btn => {
                     btn.addEventListener('click', function() {
+                        if (this.dataset.noPermission === '1') {
+                            showAdminToast('Bạn không có quyền xóa bất động sản này', 'error');
+                            return;
+                        }
+
                         const name = this.dataset.name,
                             id = this.dataset.id;
                         confirmDelete('bất động sản #' + name, function() {
@@ -671,7 +934,14 @@
                                         showAdminToast('Đã xóa bất động sản',
                                             'success');
                                     } else {
-                                        showAdminToast('Có lỗi khi xóa', 'error');
+                                        if (response.status === 403) {
+                                            showAdminToast(
+                                                'Bạn không có quyền xóa bất động sản này',
+                                                'error');
+                                        } else {
+                                            showAdminToast('Có lỗi khi xóa',
+                                                'error');
+                                        }
                                     }
                                 }).catch(err => {
                                     console.error('Delete error:', err);
@@ -830,12 +1100,140 @@
                 });
             }
 
+            // ══ CẬP NHẬT NHANH BĐS HANDLER ══
+            function bindQuickUpdateButtons() {
+                document.querySelectorAll('.btn-quick-update-bds').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const id = this.dataset.id;
+                        const nhuCau = this.dataset.nhuCau;
+
+                        if (!quickUpdateForm) return;
+
+                        quickUpdateForm.action =
+                            `{{ route('nhanvien.admin.bat-dong-san.update', ['batDongSan' => '__ID__']) }}`
+                            .replace('__ID__', id);
+
+                        document.getElementById('qu_bds_code').textContent = this.dataset.code ||
+                            '-';
+                        document.getElementById('qu_bds_name').textContent = this.dataset.name ||
+                            '-';
+
+                        const giaBanWrap = document.getElementById('qu_gia_ban_wrap');
+                        const giaThueWrap = document.getElementById('qu_gia_thue_wrap');
+                        const giaMoiInput = document.getElementById('qu_gia_moi');
+                        const giaThueMoiInput = document.getElementById('qu_gia_thue_moi');
+
+                        if (giaMoiInput) {
+                            giaMoiInput.value = this.dataset.gia ? Math.round(Number(this.dataset
+                                .gia)) : '';
+                        }
+                        if (giaThueMoiInput) {
+                            giaThueMoiInput.value = this.dataset.giaThue ? Math.round(Number(this
+                                    .dataset.giaThue)) :
+                                '';
+                        }
+
+                        if (nhuCau === 'ban') {
+                            if (giaBanWrap) giaBanWrap.classList.remove('d-none');
+                            if (giaThueWrap) giaThueWrap.classList.add('d-none');
+                        } else {
+                            if (giaBanWrap) giaBanWrap.classList.add('d-none');
+                            if (giaThueWrap) giaThueWrap.classList.remove('d-none');
+                        }
+
+                        const ghiChuInput = document.getElementById('qu_ghi_chu_moi');
+                        if (ghiChuInput) ghiChuInput.value = '';
+                    });
+                });
+            }
+
+            // ══ XEM NHANH THÔNG TIN BĐS ══
+            function bindViewBdsButtons() {
+                const escapeHtml = (str) => String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+
+                document.querySelectorAll('.btn-view-bds').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const setTxt = (id, val) => {
+                            const el = document.getElementById(id);
+                            if (el) el.textContent = val || '—';
+                        };
+
+                        setTxt('vb_tieu_de', this.dataset.tieuDe || 'Thông tin BĐS');
+                        setTxt('vb_ma', this.dataset.ma || '—');
+                        setTxt('vb_trang_thai', this.dataset.trangThai || '—');
+                        setTxt('vb_nhu_cau', this.dataset.nhuCau || '—');
+                        setTxt('vb_loai_hinh', this.dataset.loaiHinh || '—');
+                        setTxt('vb_gia', this.dataset.gia || '—');
+                        setTxt('vb_dien_tich', this.dataset.dienTich || '—');
+                        setTxt('vb_phong_ngu', this.dataset.phongNgu || '—');
+                        setTxt('vb_hien_thi', this.dataset.hienThi || '—');
+                        setTxt('vb_toa_tang',
+                            `${this.dataset.toa || '—'} / ${this.dataset.tang || '—'}`);
+                        setTxt('vb_ma_can', this.dataset.maCan || '—');
+                        setTxt('vb_noi_that', this.dataset.noiThat || '—');
+                        setTxt('vb_phap_ly', this.dataset.phapLy || '—');
+                        setTxt('vb_tgvt', this.dataset.thoiGianVaoThue || '—');
+                        setTxt('vb_httt', this.dataset.hinhThucThanhToan || '—');
+                        setTxt('vb_du_an', this.dataset.duAn || '—');
+                        setTxt('vb_nv_pt', this.dataset.nvPhuTrach || '—');
+                        setTxt('vb_luot_xem', this.dataset.luotXem || '0');
+                        setTxt('vb_ngay_dang', this.dataset.ngayDang || '—');
+                        setTxt('vb_cap_nhat', this.dataset.capNhat || '—');
+
+                        const laThue = (this.dataset.nhuCau || '').toLowerCase() === 'thuê';
+                        const phapLyWrap = document.getElementById('vb_phap_ly_wrap');
+                        const tgvtWrap = document.getElementById('vb_tgvt_wrap');
+                        const htttWrap = document.getElementById('vb_httt_wrap');
+                        if (phapLyWrap && tgvtWrap && htttWrap) {
+                            if (laThue) {
+                                phapLyWrap.classList.add('d-none');
+                                tgvtWrap.classList.remove('d-none');
+                                htttWrap.classList.remove('d-none');
+                            } else {
+                                phapLyWrap.classList.remove('d-none');
+                                tgvtWrap.classList.add('d-none');
+                                htttWrap.classList.add('d-none');
+                            }
+                        }
+
+                        const ghiChuEl = document.getElementById('vb_ghi_chu');
+                        if (ghiChuEl) {
+                            const ghiChu = this.dataset.ghiChu || '';
+                            ghiChuEl.innerHTML = ghiChu.trim() !== '' ?
+                                escapeHtml(ghiChu).replace(/\n/g, '<br>') :
+                                '<span class="text-muted fst-italic">Không có ghi chú nội bộ</span>';
+                        }
+
+                        const img = document.getElementById('vb_image');
+                        const ph = document.getElementById('vb_image_placeholder');
+                        if (img && ph) {
+                            if (this.dataset.image) {
+                                img.src = this.dataset.image;
+                                img.classList.remove('d-none');
+                                ph.classList.add('d-none');
+                            } else {
+                                img.src = '';
+                                img.classList.add('d-none');
+                                ph.classList.remove('d-none');
+                            }
+                        }
+                    });
+                });
+            }
+
             // Initial bindings
             bindPaginationLinks();
             bindDeleteButtons();
             bindStatusButtons();
             bindToggleCheckboxes();
             bindChuNhaButtons();
+            bindQuickUpdateButtons();
+            bindViewBdsButtons();
         });
     </script>
 @endpush

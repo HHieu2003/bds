@@ -297,6 +297,39 @@ class BatDongSanController extends Controller
     // ── CẬP NHẬT DỮ LIỆU ──
     public function update(Request $request, BatDongSan $batDongSan)
     {
+        if ($request->boolean('is_quick_update')) {
+            $this->chongSaleQuanLyTonKho();
+
+            $data = $request->validate([
+                'ghi_chu_moi' => 'nullable|string|max:2000',
+                'gia_moi' => 'nullable|numeric|min:0',
+                'gia_thue_moi' => 'nullable|numeric|min:0',
+            ]);
+
+            $payload = [];
+            if ($request->filled('gia_moi')) {
+                $payload['gia'] = (float) $data['gia_moi'];
+            }
+
+            if ($request->filled('gia_thue_moi')) {
+                $payload['gia_thue'] = (float) $data['gia_thue_moi'];
+            }
+
+            if ($request->filled('ghi_chu_moi')) {
+                $oldGhiChu = trim((string) $batDongSan->ghi_chu_noi_bo);
+                $newLine = '- [' . now()->format('d/m/Y H:i') . '] ' . trim((string) $data['ghi_chu_moi']);
+                $payload['ghi_chu_noi_bo'] = $oldGhiChu !== '' ? $oldGhiChu . "\n" . $newLine : $newLine;
+            }
+
+            if (!empty($payload)) {
+                $batDongSan->update($payload);
+            } else {
+                $batDongSan->touch();
+            }
+
+            return back()->with('success', '✅ Đã cập nhật nhanh bất động sản!');
+        }
+
         $nhanVien = $this->nhanVienDangNhap();
         if ($nhanVien && $nhanVien->isSale()) {
             $data = $request->validate([
@@ -508,6 +541,7 @@ class BatDongSanController extends Controller
             'thoi_gian_vao_thue'     => 'nullable|string',
             'hinh_thuc_thanh_toan'   => 'nullable|string',
             'mo_ta'                  => 'nullable|string',
+            'ghi_chu_noi_bo'         => 'nullable|string|max:10000',
             'seo_title'              => 'nullable|string|max:255',
             'seo_description'        => 'nullable|string|max:500',
             'seo_keywords'           => 'nullable|string|max:255',

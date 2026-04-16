@@ -189,7 +189,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::patch('/{lichHen}/tiep-nhan', [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
                     Route::patch('/{lichHen}/sale-tu-choi', [LichHenController::class, 'saleTuChoi'])->name('sale-tu-choi');
                     Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
-
+                    Route::post('/{lichHen}/xac-nhan-doi-gio', [LichHenController::class, 'xacNhanDoiGio'])->name('xac-nhan-doi-gio');
                     Route::post('/{lichHen}/doi-gio-nhanh', [LichHenController::class, 'doiGioNhanh'])->name('doi-gio-nhanh');
                     Route::post('/{lichHen}/xac-nhan-doi-gio', [LichHenController::class, 'xacNhanDoiGio'])->name('xac-nhan-doi-gio');
                     Route::patch('/{lichHen}/huy',     [LichHenController::class, 'huy'])->name('huy');

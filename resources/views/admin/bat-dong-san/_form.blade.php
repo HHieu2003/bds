@@ -278,6 +278,20 @@
             </div>
         </div>
 
+        {{-- GHI CHÚ NỘI BỘ --}}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3"><i class="fas fa-sticky-note text-warning me-2"></i>Ghi chú nội bộ
+            </div>
+            <div class="card-body">
+                <textarea name="ghi_chu_noi_bo" class="form-control @error('ghi_chu_noi_bo') is-invalid @enderror" rows="4"
+                    placeholder="Ghi chú chỉ nội bộ nhìn thấy: lịch sử trao đổi, lưu ý đặc biệt, mức giá chốt nhanh...">{{ old('ghi_chu_noi_bo', $isEdit ? $batDongSan->ghi_chu_noi_bo : '') }}</textarea>
+                <div class="form-text">Phần này không hiển thị ra website khách hàng.</div>
+                @error('ghi_chu_noi_bo')
+                    <div class="invalid-feedback">{{ $message }}</div>
+                @enderror
+            </div>
+        </div>
+
         {{-- ALBUM ẢNH --}}
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">

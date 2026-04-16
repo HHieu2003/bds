@@ -742,9 +742,9 @@
             document.getElementById('nvPwReqStar').style.display = 'none';
             document.getElementById('nvPwConfStar').style.display = 'none';
             document.getElementById('nvPw1').placeholder = 'Để trống nếu không đổi';
-            document.getElementById('nvEmail').readOnly = true;
-            document.getElementById('nvEmail').style.background = 'var(--bg-alt)';
-            document.getElementById('nvEmailHint').classList.remove('d-none');
+            document.getElementById('nvEmail').readOnly = false;
+            document.getElementById('nvEmail').style.background = '';
+            document.getElementById('nvEmailHint').classList.add('d-none');
             document.getElementById('nvFormMethod').value = 'PUT';
 
             const btn = document.getElementById('nvSubmitBtn');

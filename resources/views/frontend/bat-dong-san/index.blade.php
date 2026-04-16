@@ -853,9 +853,9 @@
             display: inline-flex;
             align-items: center;
             gap: 4px;
-            padding: 3px 8px;
+            padding: 3px 5px;
             border-radius: 6px;
-            font-size: .68rem;
+            font-size: .65rem;
             font-weight: 700;
         }
 
@@ -1600,7 +1600,7 @@
                                     <div class="bds-card-tags">
                                         @if ($bds->duAn)
                                             <span class="bds-card-tag du-an">
-                                                <i class="fas fa-city" style="font-size:.65rem"></i>
+
                                                 {{ Str::limit($bds->duAn->ten_du_an, 18) }}
                                             </span>
                                         @endif
