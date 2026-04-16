@@ -25,6 +25,7 @@
     }
 
     $chatCount = \App\Models\PhienChat::where('trang_thai', 'dang_cho')->count();
+    $lienHeCanXuLyCount = \App\Models\YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
     $soKhuVuc = $nhanVien->isAdmin() ? \App\Models\KhuVuc::count() : 0;
     $bdsFilter = request('nhu_cau');
     $isBdsMenuOpen = str_starts_with($routeName, 'nhanvien.admin.bat-dong-san');
@@ -66,6 +67,9 @@
                     href="{{ route('nhanvien.admin.lien-he.index') }}" data-tooltip="Leads / Liên hệ">
                     <i class="fas fa-bullhorn nav-icon"></i>
                     <span class="nav-link-text">Leads / Yêu cầu</span>
+                    @if ($lienHeCanXuLyCount > 0)
+                        <span class="nav-badge">{{ $lienHeCanXuLyCount }}</span>
+                    @endif
                 </a>
             </div>
 

@@ -310,15 +310,11 @@
                                         <td class="text-end">
                                             @if ($lh->trang_thai == 'cho_xac_nhan')
                                                 <div class="d-inline-flex gap-2 flex-wrap justify-content-end">
-                                                    <form
-                                                        action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lh->id) }}"
-                                                        method="POST" class="m-0">
-                                                        @csrf @method('PATCH')
-                                                        <button type="submit" class="btn btn-sm btn-confirm-action"
-                                                            onclick="return confirm('Bạn đã liên hệ Chủ nhà và chốt lịch đi xem?')">
-                                                            <i class="fas fa-check-circle me-1"></i> Xác nhận
-                                                        </button>
-                                                    </form>
+                                                    <button type="button" class="btn btn-sm btn-confirm-action"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalXacNhan{{ $lh->id }}">
+                                                        <i class="fas fa-check-circle me-1"></i> Xác nhận
+                                                    </button>
                                                     <button type="button" class="btn btn-sm btn-reschedule-action"
                                                         data-bs-toggle="modal"
                                                         data-bs-target="#modalBaoLai{{ $lh->id }}">
@@ -338,6 +334,47 @@
                                                         data-bs-target="#modalHuyNguon{{ $lh->id }}">
                                                         <i class="fas fa-times me-1"></i> Hủy
                                                     </button>
+                                                </div>
+                                            @endif
+
+                                            {{-- MODAL XÁC NHẬN (LIST VIEW) --}}
+                                            @if ($lh->trang_thai == 'cho_xac_nhan')
+                                                <div class="modal fade" id="modalXacNhan{{ $lh->id }}"
+                                                    tabindex="-1" aria-hidden="true">
+                                                    <div class="modal-dialog modal-dialog-centered">
+                                                        <form
+                                                            action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lh->id) }}"
+                                                            method="POST" class="modal-content border-0 shadow">
+                                                            @csrf @method('PATCH')
+                                                            <div class="modal-header bg-success">
+                                                                <h5 class="modal-title fw-bold text-white"><i
+                                                                        class="fas fa-check-circle me-2"></i> Xác nhận lịch
+                                                                    hẹn
+                                                                </h5>
+                                                                <button type="button" class="btn-close btn-close-white"
+                                                                    data-bs-dismiss="modal"></button>
+                                                            </div>
+                                                            <div class="modal-body p-4">
+                                                                <div
+                                                                    class="alert alert-success bg-success bg-opacity-10 border border-success text-success">
+                                                                    <i class="fas fa-shield-check me-2"></i>
+                                                                    <strong>Bạn đã liên hệ Chủ nhà?</strong>
+                                                                    <p class="mb-0 mt-2">Xác nhận rằng bạn đã liên hệ với
+                                                                        chủ nhà
+                                                                        và chốt được lịch đi xem vào lúc
+                                                                        <strong>{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i d/m/Y') }}</strong>
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer bg-light">
+                                                                <button type="button" class="btn btn-secondary"
+                                                                    data-bs-dismiss="modal">Quay lại</button>
+                                                                <button type="submit" class="btn btn-success fw-bold"><i
+                                                                        class="fas fa-check-circle me-1"></i> Xác nhận lịch
+                                                                    hẹn</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
                                                 </div>
                                             @endif
                                         </td>
@@ -419,14 +456,11 @@
                                     <div class="col-12 col-md-3 text-md-end">
                                         @if ($lh->trang_thai == 'cho_xac_nhan')
                                             <div class="d-flex flex-md-column gap-2 justify-content-end">
-                                                <form action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lh->id) }}"
-                                                    method="POST" class="w-100 m-0">
-                                                    @csrf @method('PATCH')
-                                                    <button type="submit" class="btn btn-confirm-action w-100"
-                                                        onclick="return confirm('Bạn đã liên hệ Chủ nhà và chốt lịch đi xem?')">
-                                                        <i class="fas fa-check-circle me-1"></i> Xác nhận ngay
-                                                    </button>
-                                                </form>
+                                                <button type="button" class="btn btn-confirm-action w-100"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalXacNhan{{ $lh->id }}">
+                                                    <i class="fas fa-check-circle me-1"></i> Xác nhận ngay
+                                                </button>
                                                 <button type="button" class="btn btn-reschedule-action w-100"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalBaoLai{{ $lh->id }}">
@@ -528,6 +562,42 @@
                                                 <button type="submit" class="btn btn-dark fw-bold"><i
                                                         class="fas fa-paper-plane me-1"></i> Gửi thông báo cho
                                                     Sale</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            @endif
+
+                            {{-- MODAL XÁC NHẬN (CARD VIEW) --}}
+                            @if ($lh->trang_thai == 'cho_xac_nhan')
+                                <div class="modal fade" id="modalXacNhan{{ $lh->id }}" tabindex="-1"
+                                    aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <form action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lh->id) }}"
+                                            method="POST" class="modal-content border-0 shadow">
+                                            @csrf @method('PATCH')
+                                            <div class="modal-header bg-success">
+                                                <h5 class="modal-title fw-bold text-white"><i
+                                                        class="fas fa-check-circle me-2"></i> Xác nhận lịch hẹn</h5>
+                                                <button type="button" class="btn-close btn-close-white"
+                                                    data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body p-4">
+                                                <div
+                                                    class="alert alert-success bg-success bg-opacity-10 border border-success text-success">
+                                                    <i class="fas fa-shield-check me-2"></i>
+                                                    <strong>Bạn đã liên hệ Chủ nhà?</strong>
+                                                    <p class="mb-0 mt-2">Xác nhận rằng bạn đã liên hệ với chủ nhà và chốt
+                                                        được lịch đi xem vào lúc
+                                                        <strong>{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i d/m/Y') }}</strong>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer bg-light">
+                                                <button type="button" class="btn btn-secondary"
+                                                    data-bs-dismiss="modal">Quay lại</button>
+                                                <button type="submit" class="btn btn-success fw-bold"><i
+                                                        class="fas fa-check-circle me-1"></i> Xác nhận lịch hẹn</button>
                                             </div>
                                         </form>
                                     </div>

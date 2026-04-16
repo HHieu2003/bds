@@ -14,6 +14,9 @@ class LienHeController extends Controller
     public function index(Request $request)
     {
         $nhanVienAuth = Auth::guard('nhanvien')->user();
+        if (!($nhanVienAuth instanceof NhanVien)) {
+            abort(403, 'Không xác thực được tài khoản nhân viên.');
+        }
 
         $query = YeuCauLienHe::with(['batDongSan', 'nhanVienPhuTrach', 'khachHang']);
 
@@ -36,9 +39,15 @@ class LienHeController extends Controller
         // Lấy tab hiện tại (mặc định là 'can_xu_ly')
         $activeTab = $request->get('tab', 'can_xu_ly');
 
-        // Logic Tab "Cần xử lý"
+        // Logic Tab "Cần xử lý": chỉ hiển thị lead chưa ai tiếp nhận
         if ($activeTab === 'can_xu_ly') {
-            $query->whereNotIn('trang_thai', ['da_chot', 'hoan_thanh', 'huy']);
+            $query->whereNull('nhan_vien_phu_trach_id');
+        }
+
+        // Logic Tab "Đang tư vấn": lead đã có người nhận và đang theo dõi
+        if ($activeTab === 'dang_tu_van') {
+            $query->whereNotNull('nhan_vien_phu_trach_id')
+                ->whereIn('trang_thai', ['dang_tu_van', 'da_lien_he']);
         }
 
         // Nếu ở tab "Tất cả" thì mới áp dụng lọc trạng thái từ form (nếu có chọn)
@@ -88,12 +97,20 @@ class LienHeController extends Controller
         }
         $thongKe['tat_ca'] = $qTatCa->count();
 
-        // Tổng cần xử lý (loại trừ đã chốt, hoàn thành, hủy)
-        $qCanXuLy = YeuCauLienHe::whereNotIn('trang_thai', ['da_chot', 'hoan_thanh', 'huy']);
+        // Tổng cần xử lý: chỉ lead chưa ai tiếp nhận
+        $qCanXuLy = YeuCauLienHe::whereNull('nhan_vien_phu_trach_id');
         if ($nhanVienAuth->isSale()) {
             $qCanXuLy->where(fn($sq) => $sq->where('nhan_vien_phu_trach_id', $nhanVienAuth->id)->orWhereNull('nhan_vien_phu_trach_id'));
         }
         $thongKe['can_xu_ly'] = $qCanXuLy->count();
+
+        // Tổng đang tư vấn: đã có người phụ trách và đang ở luồng chăm sóc
+        $qDangTuVan = YeuCauLienHe::whereNotNull('nhan_vien_phu_trach_id')
+            ->whereIn('trang_thai', ['dang_tu_van', 'da_lien_he']);
+        if ($nhanVienAuth->isSale()) {
+            $qDangTuVan->where('nhan_vien_phu_trach_id', $nhanVienAuth->id);
+        }
+        $thongKe['dang_tu_van_tab'] = $qDangTuVan->count();
 
         // Đếm Lead chưa nhận
         $leadChuaNhan = YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
@@ -137,7 +154,7 @@ class LienHeController extends Controller
         }
         $lienHe->update([
             'nhan_vien_phu_trach_id' => Auth::guard('nhanvien')->id(),
-            'trang_thai' => 'da_lien_he'
+            'trang_thai' => 'dang_tu_van'
         ]);
         return back()->with('success', 'Bạn đã nhận xử lý Lead này thành công! Hãy gọi điện cho khách ngay nhé.');
     }
@@ -177,6 +194,9 @@ class LienHeController extends Controller
     public function chuyenKhachHang(Request $request, YeuCauLienHe $lienHe)
     {
         $nhanVien = Auth::guard('nhanvien')->user();
+        if (!($nhanVien instanceof NhanVien)) {
+            abort(403, 'Không xác thực được tài khoản nhân viên.');
+        }
         $kh = KhachHang::where('so_dien_thoai', $lienHe->so_dien_thoai)->first();
 
         if (!$kh) {

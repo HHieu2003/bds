@@ -159,10 +159,20 @@
             </a>
         </li>
         <li class="nav-item">
+            <a class="nav-link {{ $activeTab == 'dang_tu_van' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
+                href="{{ route('nhanvien.admin.lien-he.index', array_merge(request()->query(), ['tab' => 'dang_tu_van', 'page' => 1])) }}"
+                style="{{ $activeTab == 'dang_tu_van' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
+                <i class="fas fa-comments me-1"></i> Đang tư vấn
+                @if (($thongKe['dang_tu_van_tab'] ?? 0) > 0)
+                    <span class="badge bg-info ms-1 rounded-pill">{{ $thongKe['dang_tu_van_tab'] }}</span>
+                @endif
+            </a>
+        </li>
+        <li class="nav-item">
             <a class="nav-link {{ $activeTab == 'tat_ca' ? 'active border-primary border-bottom-0 fw-bold text-primary shadow-sm' : 'text-muted border-0 bg-light' }}"
                 href="{{ route('nhanvien.admin.lien-he.index', array_merge(request()->query(), ['tab' => 'tat_ca', 'page' => 1])) }}"
                 style="{{ $activeTab == 'tat_ca' ? 'border-top: 3px solid var(--bs-primary); border-radius: 6px 6px 0 0;' : 'border-radius: 6px 6px 0 0;' }}">
-                <i class="fas fa-list me-1"></i> Tất cả yêu cầu
+                <i class="fas fa-list me-1"></i> Tất cả
                 <span class="badge bg-secondary ms-1 rounded-pill">{{ $thongKe['tat_ca'] }}</span>
             </a>
         </li>
@@ -175,7 +185,7 @@
                 <input type="hidden" name="tab" value="{{ $activeTab }}">
 
                 {{-- Cụm Nhập Text & Khoảng Ngày --}}
-                <div class="col-12 col-md-4 col-lg-3">
+                <div class="col-12 col-md-4 col-lg-2">
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fas fa-search text-muted"></i></span>
                         <input type="text" name="search" class="form-control border-start-0 ps-0"
@@ -237,7 +247,7 @@
                 {{-- Nút bấm submit --}}
                 <div class="col-12 col-lg-auto ms-auto d-flex gap-2 mt-2 mt-lg-0">
                     <button type="submit" class="btn btn-primary flex-grow-1 px-4"><i class="fas fa-filter"></i>
-                        Lọc</button>
+                    </button>
 
                     @php
                         $hasFilters =
@@ -326,6 +336,7 @@
                                                 style="background-color: {{ $ttInfo['bg'] }}; color: {{ $ttInfo['color'] }};"
                                                 onchange="capNhatNhanh({{ $lh->id }}, this)">
                                                 @foreach (\App\Models\YeuCauLienHe::TRANG_THAI as $v => $info)
+                                                    @continue($v === 'da_lien_he')
                                                     <option value="{{ $v }}" @selected($lh->trang_thai == $v)
                                                         data-bg="{{ $info['bg'] }}" data-color="{{ $info['color'] }}">
                                                         {{ $info['label'] }}
@@ -475,6 +486,7 @@
                                         style="background-color: {{ $ttInfo['bg'] }}; color: {{ $ttInfo['color'] }};"
                                         onchange="capNhatNhanh({{ $lh->id }}, this)">
                                         @foreach (\App\Models\YeuCauLienHe::TRANG_THAI as $v => $info)
+                                            @continue($v === 'da_lien_he')
                                             <option value="{{ $v }}" @selected($lh->trang_thai == $v)
                                                 data-bg="{{ $info['bg'] }}" data-color="{{ $info['color'] }}">
                                                 {{ $info['label'] }}</option>
