@@ -20,6 +20,9 @@
 
     @php
         $isListTab = request('tab') == 'list';
+        // Biến kiểm soát chế độ xem (mặc định là card)
+        $todoView = request('todo_view', 'card');
+
         $todoCollection = collect($lichHensTodo ?? []);
         $todayDate = now()->toDateString();
 
@@ -36,18 +39,52 @@
         $isDoiGio = static function ($lh) {
             return $lh->trang_thai === 'cho_sale_xac_nhan_doi_gio';
         };
+
+        // Lấy URL hiện tại để append tham số query
+        $queryBase = request()->query();
+        $todoCardUrl = route(
+            'nhanvien.admin.lich-hen.index',
+            array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'card']),
+        );
+        $todoListUrl = route(
+            'nhanvien.admin.lich-hen.index',
+            array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'list']),
+        );
+
+        // URL chuyển tab giữ nguyên view
+        $tabTodoUrl = route('nhanvien.admin.lich-hen.index', array_merge($queryBase, ['tab' => 'todo']));
+        $tabListUrl = route('nhanvien.admin.lich-hen.index', array_merge($queryBase, ['tab' => 'list']));
+        if (isset($adminMode) && $adminMode) {
+            $tabTodoUrl = route(
+                'nhanvien.admin.lich-hen.index',
+                array_merge($queryBase, ['tab' => 'todo', 'giao_dien' => 'nguon_hang']),
+            );
+            $tabListUrl = route(
+                'nhanvien.admin.lich-hen.index',
+                array_merge($queryBase, ['tab' => 'list', 'giao_dien' => 'nguon_hang']),
+            );
+            $todoCardUrl = route(
+                'nhanvien.admin.lich-hen.index',
+                array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'card', 'giao_dien' => 'nguon_hang']),
+            );
+            $todoListUrl = route(
+                'nhanvien.admin.lich-hen.index',
+                array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'list', 'giao_dien' => 'nguon_hang']),
+            );
+        }
+
     @endphp
 
     <ul class="nav nav-tabs mb-4 border-bottom-2" role="tablist">
         <li class="nav-item">
-            <a href="{{ route('nhanvien.admin.lich-hen.index', ['giao_dien' => 'nguon_hang']) }}"
+            <a href="{{ $tabTodoUrl }}"
                 class="nav-link px-4 {{ !$isListTab ? 'active fw-bold text-success border-success border-bottom-0' : 'text-muted' }}">
                 <i class="fas fa-bell me-1"></i> Cần Xử Lý <span
                     class="badge bg-{{ !$isListTab ? 'success' : 'secondary' }} ms-1">{{ $todoMetrics['all'] }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'list', 'giao_dien' => 'nguon_hang']) }}"
+            <a href="{{ $tabListUrl }}"
                 class="nav-link px-4 {{ $isListTab ? 'active fw-bold text-success border-success border-bottom-0' : 'text-muted' }}">
                 <i class="fas fa-history me-1"></i> Lịch Sử Nhiệm Vụ
             </a>
@@ -60,6 +97,17 @@
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0 text-dark fw-bold">Danh sách công việc</h5>
+                {{-- NÚT CHUYỂN ĐỔI GIAO DIỆN (CARD / LIST) --}}
+                <div class="btn-group bg-white shadow-sm rounded-3 p-1 border">
+                    <a href="{{ $todoCardUrl }}"
+                        class="btn btn-sm rounded-2 {{ $todoView === 'card' ? 'btn-success fw-bold' : 'btn-light border-0 text-muted' }}">
+                        <i class="fas fa-grip me-1"></i> Thẻ
+                    </a>
+                    <a href="{{ $todoListUrl }}"
+                        class="btn btn-sm rounded-2 {{ $todoView === 'list' ? 'btn-success fw-bold' : 'btn-light border-0 text-muted' }}">
+                        <i class="fas fa-list me-1"></i> Danh sách
+                    </a>
+                </div>
             </div>
 
             @if ($todoCollection->isEmpty())
@@ -69,111 +117,219 @@
                     <p class="text-muted">Không có nhiệm vụ nào đang chờ xử lý.</p>
                 </div>
             @else
-                <div class="row g-3">
-                    @foreach ($todoCollection as $lh)
-                        <div class="col-12 col-xxl-6">
-                            <div
-                                class="card border-0 shadow-sm h-100 transition-hover {{ $lh->trang_thai == 'cho_xac_nhan' ? 'border-start border-4 border-info' : ($isDoiGio($lh) ? 'border-start border-4 border-warning' : 'border-start border-4 border-success') }}">
-                                <div class="card-body p-3 p-md-4">
-                                    <div class="d-flex flex-column flex-md-row gap-3">
+                {{-- ================= GIAO DIỆN DẠNG BẢNG (LIST VIEW) ================= --}}
+                @if ($todoView === 'list')
+                    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="py-3 px-3">Thời gian</th>
+                                        <th class="py-3">Bất động sản</th>
+                                        <th class="py-3">Chủ nhà</th>
+                                        <th class="py-3">Trạng thái</th>
+                                        <th class="py-3 text-end px-4">Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($todoCollection as $lh)
+                                        <tr
+                                            class="{{ $lh->trang_thai == 'cho_xac_nhan' ? 'table-info table-active' : '' }}">
+                                            {{-- Cột Thời gian --}}
+                                            <td class="px-3">
+                                                <div class="fw-bold text-danger fs-6">
+                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
+                                                <div class="small text-muted fw-medium">
+                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
+                                            </td>
 
-                                        {{-- THỜI GIAN --}}
-                                        <div class="text-center bg-light rounded p-3" style="min-width: 140px;">
-                                            <div class="text-danger display-6 fw-bold" style="line-height: 1;">
-                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
-                                            <div class="small fw-bold text-muted mt-2">
-                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
-                                            <hr class="my-2 border-secondary">
-                                            @if ($isDoiGio($lh))
-                                                <span class="badge w-100 py-2 bg-warning text-dark"><i
-                                                        class="fas fa-spinner fa-spin me-1"></i>CHỜ SALE CHỐT</span>
-                                            @elseif ($lh->trang_thai == 'cho_xac_nhan')
-                                                <span class="badge w-100 py-2 bg-info text-dark">CẦN CHỐT CHỦ</span>
-                                            @else
-                                                <span class="badge w-100 py-2 bg-success">ĐÃ BÁO CÓ CHÌA</span>
-                                            @endif
-                                        </div>
+                                            {{-- Cột BĐS & Sale --}}
+                                            <td>
+                                                <div class="fw-bold text-primary mb-1">
+                                                    {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}</div>
+                                                <div class="small text-muted">
+                                                    Sale hẹn: <strong>{{ $lh->nhanVienSale->ho_ten ?? '---' }}</strong>
+                                                    @if ($lh->ghi_chu_sale)
+                                                        <br><span class="text-warning-emphasis"><i
+                                                                class="fas fa-comment-dots"></i>
+                                                            {{ Str::limit($lh->ghi_chu_sale, 40) }}</span>
+                                                    @endif
+                                                </div>
+                                            </td>
 
-                                        {{-- THÔNG TIN --}}
-                                        <div class="flex-fill">
-                                            <div class="fw-bold text-primary fs-5 mb-1">
-                                                {{ $lh->batDongSan->tieu_de ?? 'BĐS Ngoài' }}</div>
-                                            <div class="text-muted small mb-2"><i
-                                                    class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($lh->batDongSan)->khuVuc?->ten_khu_vuc ?? '---' }}
+                                            {{-- Cột Chủ nhà --}}
+                                            <td>
+                                                @if ($lh->batDongSan && $lh->batDongSan->chuNha)
+                                                    <div class="fw-bold text-dark">{{ $lh->batDongSan->chuNha->ho_ten }}
+                                                    </div>
+                                                    <a href="tel:{{ $lh->batDongSan->chuNha->so_dien_thoai }}"
+                                                        class="small fw-bold text-success text-decoration-none">
+                                                        <i
+                                                            class="fas fa-phone-alt me-1"></i>{{ $lh->batDongSan->chuNha->so_dien_thoai }}
+                                                    </a>
+                                                @else
+                                                    <span class="badge bg-secondary">Chưa có data</span>
+                                                @endif
+                                            </td>
+
+                                            {{-- Cột Trạng thái --}}
+                                            <td>
+                                                @if ($isDoiGio($lh))
+                                                    <span class="badge bg-warning text-dark"><i
+                                                            class="fas fa-spinner fa-spin me-1"></i> Chờ Sale chốt</span>
+                                                @elseif ($lh->trang_thai == 'cho_xac_nhan')
+                                                    <span class="badge bg-info text-dark">Cần chốt chủ</span>
+                                                @else
+                                                    <span class="badge bg-success">Đã báo có chìa</span>
+                                                @endif
+                                            </td>
+
+                                            {{-- Cột Thao tác --}}
+                                            <td class="text-end px-3">
+                                                @if ($lh->trang_thai == 'cho_xac_nhan')
+                                                    <button class="btn btn-sm btn-success fw-bold mb-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalXacNhan{{ $lh->id }}"><i
+                                                            class="fas fa-check"></i> Chốt chìa</button>
+                                                    <button class="btn btn-sm btn-warning text-dark fw-bold mb-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalBaoLai{{ $lh->id }}">Dời</button>
+                                                    <button class="btn btn-sm btn-outline-danger fw-bold"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalTuChoi{{ $lh->id }}"><i
+                                                            class="fas fa-times"></i></button>
+                                                @elseif ($isDoiGio($lh))
+                                                    <button class="btn btn-sm btn-light border text-danger fw-bold"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo Hủy</button>
+                                                @else
+                                                    <button class="btn btn-sm btn-light border text-dark fw-bold mb-1"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalBaoLai{{ $lh->id }}">Dời</button>
+                                                    <button class="btn btn-sm btn-light border text-danger fw-bold"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#modalHuyNguon{{ $lh->id }}">Hủy</button>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {{-- ================= GIAO DIỆN DẠNG THẺ (CARD VIEW) MẶC ĐỊNH ================= --}}
+                @else
+                    <div class="row g-3">
+                        @foreach ($todoCollection as $lh)
+                            <div class="col-12 col-xxl-6">
+                                <div
+                                    class="card border-0 shadow-sm h-100 transition-hover {{ $lh->trang_thai == 'cho_xac_nhan' ? 'border-start border-4 border-info' : ($isDoiGio($lh) ? 'border-start border-4 border-warning' : 'border-start border-4 border-success') }}">
+                                    <div class="card-body p-3 p-md-4">
+                                        <div class="row align-items-center g-4">
+                                            {{-- THỜI GIAN --}}
+                                            <div class="col-12 col-md-3 text-md-center border-md-end">
+                                                <div class="fw-bold text-danger display-6 mb-1">
+                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
+                                                <div class="text-muted small fw-medium mb-3">
+                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
+                                                @if ($isDoiGio($lh))
+                                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2 w-100"><i
+                                                            class="fas fa-spinner fa-spin me-1"></i> CHỜ SALE CHỐT</span>
+                                                @elseif ($lh->trang_thai == 'cho_xac_nhan')
+                                                    <span class="badge rounded-pill bg-info text-dark px-3 py-2 w-100">CẦN
+                                                        CHỐT CHỦ</span>
+                                                @else
+                                                    <span class="badge rounded-pill bg-success px-3 py-2 w-100">ĐÃ BÁO CÓ
+                                                        CHÌA</span>
+                                                @endif
                                             </div>
 
-                                            <div class="row g-2 mb-2">
-                                                <div class="col-sm-6">
-                                                    <div class="p-2 border rounded bg-white h-100">
-                                                        <div class="small text-muted"><i
-                                                                class="fas fa-user-tie me-1"></i>Sale đặt lịch:</div>
-                                                        <div class="fw-bold">{{ $lh->nhanVienSale->ho_ten ?? '---' }}</div>
-                                                    </div>
+                                            {{-- THÔNG TIN --}}
+                                            <div class="col-12 col-md-5">
+                                                <div class="fw-bold text-primary fs-5 mb-1">
+                                                    {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}</div>
+                                                <div class="text-muted small mb-2"><i
+                                                        class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($lh->batDongSan)->khuVuc?->ten_khu_vuc ?? '---' }}
                                                 </div>
-                                                <div class="col-sm-6">
-                                                    <div
-                                                        class="p-2 border rounded bg-success bg-opacity-10 border-success h-100">
-                                                        <div class="small text-success fw-bold"><i
-                                                                class="fas fa-id-card me-1"></i>Chủ nhà:</div>
-                                                        <div class="fw-bold text-dark">
-                                                            {{ optional($lh->batDongSan?->chuNha)->ho_ten ?? 'Chưa rõ' }}
+
+                                                <div class="row g-2 mb-2">
+                                                    <div class="col-sm-6">
+                                                        <div class="p-2 border rounded bg-white h-100">
+                                                            <div class="small text-muted"><i
+                                                                    class="fas fa-user-tie me-1"></i>Sale đặt lịch:</div>
+                                                            <div class="fw-bold">{{ $lh->nhanVienSale->ho_ten ?? '---' }}
+                                                            </div>
                                                         </div>
-                                                        @if ($lh->batDongSan?->chuNha)
-                                                            <a href="tel:{{ $lh->batDongSan->chuNha->so_dien_thoai }}"
-                                                                class="small fw-bold text-success text-decoration-none">{{ $lh->batDongSan->chuNha->so_dien_thoai }}</a>
-                                                        @endif
+                                                    </div>
+                                                    <div class="col-sm-6">
+                                                        <div
+                                                            class="p-2 border rounded bg-success bg-opacity-10 border-success h-100">
+                                                            <div class="small text-success fw-bold"><i
+                                                                    class="fas fa-id-card me-1"></i>Chủ nhà:</div>
+                                                            <div class="fw-bold text-dark">
+                                                                {{ optional($lh->batDongSan?->chuNha)->ho_ten ?? 'Chưa rõ' }}
+                                                            </div>
+                                                            @if ($lh->batDongSan?->chuNha)
+                                                                <a href="tel:{{ $lh->batDongSan->chuNha->so_dien_thoai }}"
+                                                                    class="small fw-bold text-success text-decoration-none">{{ $lh->batDongSan->chuNha->so_dien_thoai }}</a>
+                                                            @endif
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            @if ($lh->ghi_chu_sale)
-                                                <div
-                                                    class="small p-2 bg-warning bg-opacity-10 border border-warning rounded text-dark mt-2">
-                                                    <strong><i class="fas fa-comment-dots me-1"></i>Sale nhắn:</strong>
-                                                    {{ $lh->ghi_chu_sale }}</div>
-                                            @endif
+                                                @if ($lh->ghi_chu_sale)
+                                                    <div
+                                                        class="small p-2 bg-warning bg-opacity-10 border border-warning rounded text-dark mt-2">
+                                                        <strong><i class="fas fa-comment-dots me-1"></i>Sale nhắn:</strong>
+                                                        {{ $lh->ghi_chu_sale }}</div>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {{-- THAO TÁC THEO TRẠNG THÁI --}}
-                                <div class="card-footer bg-white border-top p-3">
-                                    @if ($lh->trang_thai == 'cho_xac_nhan')
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-success fw-bold flex-fill" data-bs-toggle="modal"
-                                                data-bs-target="#modalXacNhan{{ $lh->id }}"><i
-                                                    class="fas fa-key me-1"></i> Có chìa khóa</button>
-                                            <button class="btn btn-warning fw-bold text-dark flex-fill"
-                                                data-bs-toggle="modal" data-bs-target="#modalBaoLai{{ $lh->id }}"><i
-                                                    class="fas fa-clock me-1"></i> Xin dời lịch</button>
-                                            <button class="btn btn-outline-danger fw-bold flex-fill" data-bs-toggle="modal"
-                                                data-bs-target="#modalTuChoi{{ $lh->id }}"><i
-                                                    class="fas fa-times me-1"></i> Từ chối</button>
-                                        </div>
-                                    @elseif ($isDoiGio($lh))
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="small text-muted"><i class="fas fa-info-circle me-1"></i> Đã xin dời
-                                                lịch! Đang chờ Sale hỏi khách...</div>
-                                            <button class="btn btn-light border fw-bold text-danger px-4"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo Hủy</button>
-                                        </div>
-                                    @else
-                                        <div class="d-flex gap-2 justify-content-end">
-                                            <button class="btn btn-light border fw-bold text-dark px-4"
-                                                data-bs-toggle="modal" data-bs-target="#modalBaoLai{{ $lh->id }}"><i
-                                                    class="fas fa-clock text-warning me-1"></i> Dời lịch</button>
-                                            <button class="btn btn-light border fw-bold text-danger px-4"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalHuyNguon{{ $lh->id }}"><i
-                                                    class="fas fa-ban me-1"></i> Hủy lịch</button>
-                                        </div>
-                                    @endif
+                                    {{-- THAO TÁC THEO TRẠNG THÁI --}}
+                                    <div class="card-footer bg-white border-top p-3">
+                                        @if ($lh->trang_thai == 'cho_xac_nhan')
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-success fw-bold flex-fill" data-bs-toggle="modal"
+                                                    data-bs-target="#modalXacNhan{{ $lh->id }}"><i
+                                                        class="fas fa-key me-1"></i> Có chìa khóa</button>
+                                                <button class="btn btn-warning fw-bold text-dark flex-fill"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalBaoLai{{ $lh->id }}"><i
+                                                        class="fas fa-clock me-1"></i> Xin dời lịch</button>
+                                                <button class="btn btn-outline-danger fw-bold flex-fill"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalTuChoi{{ $lh->id }}"><i
+                                                        class="fas fa-times me-1"></i> Từ chối</button>
+                                            </div>
+                                        @elseif ($isDoiGio($lh))
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <div class="small text-muted"><i class="fas fa-info-circle me-1"></i> Đã
+                                                    xin dời lịch! Đang chờ Sale hỏi khách...</div>
+                                                <button class="btn btn-light border fw-bold text-danger px-4"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo Hủy</button>
+                                            </div>
+                                        @else
+                                            <div class="d-flex gap-2 justify-content-end">
+                                                <button class="btn btn-light border fw-bold text-dark px-4"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalBaoLai{{ $lh->id }}"><i
+                                                        class="fas fa-clock text-warning me-1"></i> Dời lịch</button>
+                                                <button class="btn btn-light border fw-bold text-danger px-4"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalHuyNguon{{ $lh->id }}"><i
+                                                        class="fas fa-ban me-1"></i> Hủy lịch</button>
+                                            </div>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    @endforeach
-                </div>
+                        @endforeach
+                    </div>
+                @endif
             @endif
         </div>
 
@@ -225,8 +381,8 @@
                         class="modal-content border-0 shadow-lg">
                         @csrf @method('PATCH')
                         <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i> Báo Sale Dẫn Khách
-                                Qua</h5>
+                            <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i> Chốt Mở Cửa Với Chủ
+                                Nhà</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body p-4 text-center">
@@ -237,7 +393,7 @@
                             </p>
                         </div>
                         <div class="modal-footer bg-light"><button type="submit"
-                                class="btn btn-success fw-bold w-100">Chắc chắn, báo cho Sale</button></div>
+                                class="btn btn-success px-4 fw-bold w-100">Chắc chắn, Gửi Sale</button></div>
                     </form>
                 </div>
             </div>
@@ -277,19 +433,19 @@
                         </div>
                         <div class="modal-body p-4">
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Chủ nhà muốn hẹn lúc:</label>
-                                <input type="datetime-local" name="thoi_gian_hen" class="form-control form-control-lg"
+                                <label class="form-label fw-bold">Giờ mới chủ nhà hẹn:</label>
+                                <input type="datetime-local" name="thoi_gian_hen" class="form-control"
                                     value="{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('Y-m-d\TH:i') }}"
                                     required>
                             </div>
                             <div class="mb-0">
                                 <label class="form-label fw-bold">Lời nhắn cho Sale (Để báo khách):</label>
-                                <textarea name="ghi_chu_nguon_hang" class="form-control" rows="2" placeholder="VD: Cô chủ đi làm 5h mới về..."
-                                    required></textarea>
+                                <textarea name="ghi_chu_nguon_hang" class="form-control" rows="3"
+                                    placeholder="VD: Chủ nhà đi làm 5h mới về..." required></textarea>
                             </div>
                         </div>
-                        <div class="modal-footer bg-light"><button type="submit" class="btn btn-dark fw-bold w-100">Báo
-                                lại cho Sale</button></div>
+                        <div class="modal-footer bg-light"><button type="submit" class="btn btn-dark fw-bold w-100">Gửi
+                                cho Sale chốt lại</button></div>
                     </form>
                 </div>
             </div>
@@ -306,8 +462,7 @@
                         </div>
                         <div class="modal-body p-4">
                             <label class="form-label fw-bold">Lý do Hủy (Bắt buộc):</label>
-                            <textarea name="ly_do" class="form-control" rows="3" required
-                                placeholder="VD: Chủ nhà có việc đột xuất đóng cửa đi vắng..."></textarea>
+                            <textarea name="ly_do" class="form-control" rows="3" required placeholder="VD: Chủ báo hủy bán..."></textarea>
                         </div>
                         <div class="modal-footer bg-light"><button type="submit"
                                 class="btn btn-danger fw-bold w-100">Xác nhận Hủy Lịch</button></div>
@@ -343,6 +498,21 @@
             color: var(--bs-success);
             border-bottom-color: var(--bs-success);
             background: transparent;
+        }
+
+        /* Fix hiển thị border của Cột Table trên Mobile */
+        @media (max-width: 767.98px) {
+            .border-md-end {
+                border-right: none !important;
+                border-bottom: 1px dashed #dee2e6;
+                padding-bottom: 1rem;
+            }
+
+            .border-start-md {
+                border-left: none !important;
+                border-top: 1px dashed #dee2e6;
+                padding-top: 1rem;
+            }
         }
     </style>
 @endpush

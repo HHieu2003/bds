@@ -182,7 +182,7 @@
                                     class="fw-bold text-navy text-decoration-none d-block mb-1">{{ $kg->ho_ten_chu_nha }}</a>
                                 <div class="text-muted" style="font-size: 0.75rem">
                                     <div>
-                                        <i class="fas fa-phone text-success me-1"></i>
+
                                         <span class="copy-phone cursor-pointer" role="button" tabindex="0"
                                             data-phone="{{ $kg->so_dien_thoai }}" title="Bấm để sao chép số điện thoại">
                                             {{ $kg->so_dien_thoai }}

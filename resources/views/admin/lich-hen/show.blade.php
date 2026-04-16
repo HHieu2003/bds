@@ -103,7 +103,6 @@
 
 @section('content')
     @php
-        // LOGIC BẢO MẬT DỮ LIỆU
         $role = $nhanVien->vai_tro;
         $isHoanThanh = $lichHen->trang_thai === 'hoan_thanh';
 
@@ -114,7 +113,6 @@
     <div class="container-fluid py-2">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                {{-- HEADER LỊCH HẸN --}}
                 <div class="card border-0 shadow-sm border-top border-4 border-primary mb-4">
                     <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
@@ -123,17 +121,24 @@
                             <div class="text-muted fw-semibold">Thời gian: <span
                                     class="text-danger">{{ $lichHen->thoi_gian_hen->format('H:i — d/m/Y') }}</span></div>
                         </div>
-                        <div><span
+                        <div>
+                            <span
                                 class="badge bg-dark fs-5 px-3 py-2 text-uppercase">{{ str_replace('_', ' ', $lichHen->trang_thai) }}</span>
+                            @if ($nhanVien->vai_tro == 'admin')
+                                <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lichHen->id) }}" method="POST"
+                                    class="d-inline ms-2">
+                                    @csrf @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i class="fas fa-trash"></i>
+                                        Xóa</button>
+                                </form>
+                            @endif
                         </div>
                     </div>
                 </div>
 
                 <div class="row g-4">
-                    {{-- CỘT THÔNG TIN --}}
                     <div class="col-md-7">
-
-                        {{-- KHÁCH HÀNG --}}
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-light py-3 fw-bold"><i
                                     class="fas fa-user-circle text-primary me-2"></i>Thông tin Khách Hàng</div>
@@ -151,13 +156,12 @@
                                         </div>
                                     </div>
                                 @else
-                                    <div class="alert alert-warning mb-0"><i class="fas fa-user-lock me-2"></i>Thông tin
-                                        Khách hàng được bảo mật và chỉ hiển thị với Nguồn sau khi hoàn tất xem nhà.</div>
+                                    <div class="alert alert-warning mb-0"><i class="fas fa-user-lock me-2"></i>Được bảo mật
+                                        và chỉ hiển thị với Nguồn sau khi hoàn tất.</div>
                                 @endif
                             </div>
                         </div>
 
-                        {{-- BẤT ĐỘNG SẢN & CHỦ NHÀ --}}
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-header bg-light py-3 fw-bold"><i
                                     class="fas fa-building text-success me-2"></i>Bất Động Sản & Chủ Nhà</div>
@@ -185,13 +189,12 @@
                                         </div>
                                     @endif
                                 @else
-                                    <div class="alert alert-warning mb-0"><i class="fas fa-lock me-2"></i>Thông tin Chủ nhà
-                                        được bảo mật và sẽ cấp cho Sale sau khi hoàn tất xem nhà thực tế.</div>
+                                    <div class="alert alert-warning mb-0"><i class="fas fa-lock me-2"></i>Được bảo mật và sẽ
+                                        cấp cho Sale sau khi hoàn tất.</div>
                                 @endif
                             </div>
                         </div>
 
-                        {{-- GHI CHÚ & NHÂN SỰ --}}
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
                                 <div class="row mb-3">
@@ -210,52 +213,36 @@
                         </div>
                     </div>
 
-                    {{-- CỘT THAO TÁC & TIMELINE --}}
                     <div class="col-md-5 d-flex flex-column gap-4">
                         <div class="card border-0 shadow-sm border-top border-4 border-dark">
                             <div class="card-header bg-light py-3 fw-bold"><i class="fas fa-magic text-dark me-2"></i>Bảng
                                 Thao Tác Xử Lý</div>
                             <div class="card-body p-4 d-flex flex-column gap-3">
 
-                                {{-- ACTION: SALE MỚI NHẬN LỊCH -> CHUYỂN NGUỒN --}}
                                 @if ($lichHen->trang_thai === 'sale_da_nhan' && $nhanVien->hasRole(['admin', 'sale']))
                                     <button class="btn btn-primary w-100 fw-bold py-2"
-                                        onclick="new bootstrap.Modal(document.getElementById('modalChuyenNguon')).show();">
-                                        <i class="fas fa-paper-plane me-2"></i>Chuyển cho Nguồn
-                                    </button>
-                                    <button class="btn btn-outline-danger w-100 fw-bold"
-                                        onclick="new bootstrap.Modal(document.getElementById('modalSaleTuChoi')).show();">
-                                        Từ chối (Khách ảo)
-                                    </button>
+                                        onclick="new bootstrap.Modal(document.getElementById('modalChuyenNguon')).show();">Chuyển
+                                        cho Nguồn</button>
                                 @endif
 
-                                {{-- ACTION: NGUỒN XÁC NHẬN --}}
                                 @if ($lichHen->trang_thai === 'cho_xac_nhan' && $nhanVien->hasRole(['admin', 'nguon_hang']))
                                     <form action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lichHen) }}" method="POST"
                                         class="m-0">
                                         @csrf @method('PATCH')
                                         <button type="submit" class="btn btn-success w-100 fw-bold py-2"
-                                            onclick="return confirm('Xác nhận đã có chìa khóa/chủ nhà đã OK?')">
-                                            <i class="fas fa-check-circle me-2"></i>Báo có chìa khóa
-                                        </button>
+                                            onclick="return confirm('Xác nhận đã có chìa khóa/chủ nhà đã OK?')"><i
+                                                class="fas fa-check-circle me-2"></i>Báo có chìa khóa</button>
                                     </form>
                                 @endif
 
-                                {{-- ACTION: NGUỒN DỜI GIỜ -> SALE CHỐT --}}
                                 @if ($lichHen->trang_thai === 'cho_sale_xac_nhan_doi_gio')
                                     @if ($nhanVien->hasRole(['admin', 'sale']))
-                                        <div class="alert alert-warning border-warning">
-                                            <i class="fas fa-exclamation-triangle me-2"></i> <strong>Nguồn xin dời
-                                                giờ:</strong> {{ $lichHen->thoi_gian_hen->format('H:i d/m/Y') }}<br>
-                                            <small>{{ $lichHen->ghi_chu_nguon_hang }}</small>
-                                        </div>
                                         <form action="{{ route('nhanvien.admin.lich-hen.xac-nhan-doi-gio', $lichHen) }}"
                                             method="POST">
                                             @csrf
                                             <button type="submit" class="btn btn-success w-100 fw-bold py-2 mb-2"
-                                                onclick="return confirm('Khách hàng đồng ý giờ mới? Xác nhận chốt!')">
-                                                <i class="fas fa-check-circle me-2"></i>Khách OK - Chốt giờ mới
-                                            </button>
+                                                onclick="return confirm('Khách hàng đồng ý giờ mới? Xác nhận chốt!')"><i
+                                                    class="fas fa-check-circle me-2"></i>Khách OK - Chốt giờ mới</button>
                                         </form>
                                     @else
                                         <div class="alert alert-info"><i class="fas fa-spinner fa-spin me-2"></i> Đang chờ
@@ -263,23 +250,19 @@
                                     @endif
                                 @endif
 
-                                {{-- ACTION: KẾT QUẢ CUỐI --}}
                                 @if ($lichHen->trang_thai === 'da_xac_nhan' && $nhanVien->hasRole(['admin', 'sale']))
                                     <button class="btn btn-secondary btn-lg w-100 fw-bold py-2 shadow-sm"
-                                        onclick="new bootstrap.Modal(document.getElementById('modalHoanThanh')).show();">
-                                        <i class="fas fa-flag-checkered me-2"></i>Cập nhật Kết quả (Chốt/Rớt)
-                                    </button>
+                                        onclick="new bootstrap.Modal(document.getElementById('modalHoanThanh')).show();"><i
+                                            class="fas fa-flag-checkered me-2"></i>Cập nhật Kết quả (Chốt/Rớt)</button>
                                 @endif
 
-                                {{-- NÚT HỦY CHUNG --}}
                                 @if (
                                     !in_array($lichHen->trang_thai, ['hoan_thanh', 'huy', 'tu_choi']) &&
                                         $nhanVien->hasRole(['admin', 'sale', 'nguon_hang']))
                                     <hr class="my-2">
                                     <button class="btn btn-outline-danger w-100 fw-bold"
-                                        onclick="new bootstrap.Modal(document.getElementById('modalHuyShow')).show();">
-                                        <i class="fas fa-ban me-1"></i> Báo Hủy lịch đột xuất
-                                    </button>
+                                        onclick="new bootstrap.Modal(document.getElementById('modalHuyShow')).show();"><i
+                                            class="fas fa-ban me-1"></i> Báo Hủy lịch đột xuất</button>
                                 @endif
 
                                 <a href="{{ route('nhanvien.admin.lich-hen.index') }}"
@@ -287,7 +270,6 @@
                             </div>
                         </div>
 
-                        {{-- TIMELINE QUÁ TRÌNH --}}
                         <div class="card border-0 shadow-sm flex-fill">
                             <div class="card-body p-4">
                                 <div class="timeline">
@@ -296,7 +278,6 @@
                                         <div class="tl-label">Khách gửi yêu cầu</div>
                                         <div class="tl-sub">{{ $lichHen->created_at->format('H:i d/m/Y') }}</div>
                                     </div>
-
                                     @if (in_array($lichHen->trang_thai, [
                                             'sale_da_nhan',
                                             'cho_xac_nhan',
@@ -309,15 +290,12 @@
                                             <div class="tl-label">Sale tiếp nhận xử lý</div>
                                         </div>
                                     @endif
-
                                     @if ($lichHen->trang_thai === 'cho_sale_xac_nhan_doi_gio')
                                         <div class="tl-step">
                                             <div class="tl-dot pend"><i class="fas fa-sync-alt"></i></div>
                                             <div class="tl-label text-warning-emphasis">Nguồn xin dời giờ</div>
-                                            <div class="tl-sub">Đang chờ Sale xác nhận với khách</div>
                                         </div>
                                     @endif
-
                                     @if (in_array($lichHen->trang_thai, ['da_xac_nhan', 'hoan_thanh']))
                                         <div class="tl-step">
                                             <div class="tl-dot done"><i class="fas fa-key"></i></div>
@@ -326,7 +304,6 @@
                                                 {{ optional($lichHen->xac_nhan_at)->format('H:i d/m/Y') }}</div>
                                         </div>
                                     @endif
-
                                     @if ($lichHen->trang_thai === 'hoan_thanh')
                                         <div class="tl-step">
                                             <div class="tl-dot done"><i class="fas fa-flag-checkered"></i></div>
@@ -367,7 +344,6 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Chọn Nguồn hàng phụ trách:</label>
                             <select name="nhan_vien_nguon_hang_id" class="form-select form-select-lg" required>
-                                <option value="">-- Chọn Nguồn --</option>
                                 @foreach ($dsNguonHang as $ng)
                                     <option value="{{ $ng->id }}"
                                         {{ optional($lichHen->batDongSan)->nhan_vien_phu_trach_id == $ng->id ? 'selected' : '' }}>
@@ -381,22 +357,6 @@
                 </form>
             </div>
         </div>
-
-        <div class="modal fade" id="modalSaleTuChoi" tabindex="-1">
-            <div class="modal-dialog modal-dialog-centered">
-                <form action="{{ route('nhanvien.admin.lich-hen.sale-tu-choi', $lichHen) }}" method="POST"
-                    class="modal-content shadow border-0">
-                    @csrf @method('PATCH')
-                    <div class="modal-body p-4">
-                        <h5 class="fw-bold text-danger mb-3">Từ chối Yêu cầu</h5>
-                        <label class="form-label fw-bold">Lý do từ chối (Khách ảo, thuê báo bán...):</label>
-                        <textarea name="ly_do_tu_choi" class="form-control" rows="3" required
-                            placeholder="Ví dụ: Gọi điện không bắt máy..."></textarea>
-                        <button type="submit" class="btn btn-danger w-100 fw-bold mt-4">Từ chối</button>
-                    </div>
-                </form>
-            </div>
-        </div>
     @endif
 
     <div class="modal fade" id="modalHoanThanh" tabindex="-1">
@@ -405,8 +365,8 @@
                 class="modal-content shadow border-0">
                 @csrf @method('PATCH')
                 <div class="modal-header bg-success text-white">
-                    <h5 class="modal-title fw-bold"><i class="fas fa-flag-checkered me-2"></i>Cập nhật Kết quả Xem nhà
-                    </h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold"><i class="fas fa-flag-checkered me-2"></i>Kết quả Xem nhà</h5><button
+                        type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
                     <div class="mb-4">
@@ -416,8 +376,6 @@
                             <option value="chot" class="text-success fw-bold">✅ ĐÃ CHỐT THÀNH CÔNG (Đặt cọc)</option>
                             <option value="khong_chot" class="text-danger fw-bold">❌ KHÔNG CHỐT (Suy nghĩ thêm)</option>
                         </select>
-                        <small class="text-muted d-block mt-2"><i class="fas fa-info-circle me-1"></i>Nếu "Đã chốt", BĐS
-                            sẽ tự động chuyển sang Đã bán.</small>
                     </div>
                     <div class="mb-2">
                         <label class="form-label fw-bold">Ghi chú & Review từ khách:</label>

@@ -71,14 +71,14 @@ class LichHenController extends Controller
         // ========================================================
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
 
-        // Lịch mới hệ thống web đổ về (Tab Yêu cầu mới)
+        // Lịch mới hệ thống web đổ về
         $lichHenMoiItems = LichHen::with(['batDongSan'])
             ->where('trang_thai', 'moi_dat')
             ->whereNull('nhan_vien_sale_id')
             ->orderBy('created_at', 'desc')
             ->paginate(12, ['*'], 'lh_page')->withQueryString();
 
-        // Lịch ĐANG XỬ LÝ của Sale (Tab Đang xử lý)
+        // Lịch ĐANG XỬ LÝ của Sale
         $lichHenDangXuLyItems = LichHen::with(['batDongSan', 'nhanVienNguonHang'])
             ->where('nhan_vien_sale_id', $nhanVien->id)
             ->whereIn('trang_thai', ['sale_da_nhan', 'cho_xac_nhan', 'cho_sale_xac_nhan_doi_gio', 'da_xac_nhan'])
@@ -291,10 +291,13 @@ class LichHenController extends Controller
         return back()->with('success', 'Đã hủy lịch.');
     }
 
+    // THÊM XÓA ADMIN
     public function destroy(LichHen $lichHen)
     {
+        $nhanVien = $this->currentNhanVien();
+        abort_unless($nhanVien->vai_tro === 'admin', 403);
         $lichHen->delete();
-        return back()->with('success', 'Đã xóa!');
+        return back()->with('success', 'Đã xóa lịch hẹn thành công!');
     }
 
     private function currentNhanVien(): NhanVien

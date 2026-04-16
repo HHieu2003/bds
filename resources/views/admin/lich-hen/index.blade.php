@@ -139,12 +139,13 @@
             <li class="nav-item">
                 <button class="nav-link active" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request"
                     type="button">
-                    <i class="fas fa-home me-1"></i> Yêu cầu xem nhà
+                    <i class="fas fa-home me-1"></i> Yêu cầu mới
                     @if (($stats['moi_dat'] ?? 0) > 0)
                         <span class="badge bg-danger rounded-pill ms-1">{{ $stats['moi_dat'] }}</span>
                     @endif
                 </button>
             </li>
+
             <li class="nav-item">
                 <button class="nav-link text-primary" id="processing-tab" data-bs-toggle="tab"
                     data-bs-target="#tab-processing" type="button">
@@ -154,6 +155,7 @@
                     @endif
                 </button>
             </li>
+
             <li class="nav-item"><button class="nav-link" id="calendar-tab" data-bs-toggle="tab"
                     data-bs-target="#tab-calendar" type="button"><i class="fas fa-calendar-day me-1"></i> Lịch của
                     tôi</button></li>
@@ -182,8 +184,7 @@
                                     <tr>
                                         <td>
                                             <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
-                                            <div class="small"><i
-                                                    class="fas fa-phone-alt text-success me-1"></i>{{ $lh->sdt_khach_hang }}
+                                            <div class="small">{{ $lh->sdt_khach_hang }}
                                             </div>
                                         </td>
                                         <td>
@@ -209,8 +210,7 @@
                                                     method="POST">
                                                     @csrf @method('PATCH')
                                                     <button type="submit" class="btn btn-sm btn-danger fw-bold shadow-sm"
-                                                        style="animation: pulse-animation 2s infinite;"><i
-                                                            class="fas fa-hand-paper me-1"></i> NHẬN LỊCH</button>
+                                                        style="animation: pulse-animation 2s infinite;">NHẬN LỊCH</button>
                                                 </form>
                                             </div>
                                         </td>
@@ -227,7 +227,7 @@
                 </div>
             </div>
 
-            {{-- TAB ĐANG XỬ LÝ --}}
+            {{-- TAB ĐANG XỬ LÝ (ACTION TRỰC TIẾP BẰNG MODAL) --}}
             <div class="tab-pane fade" id="tab-processing">
                 <div class="bg-white p-4 rounded-3 border shadow-sm">
                     <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-tasks me-2"></i> Lịch hẹn đang quản lý</h5>
@@ -251,8 +251,7 @@
                                         </td>
                                         <td>
                                             <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
-                                            <div class="small text-success"><i
-                                                    class="fas fa-phone-alt me-1"></i>{{ $lh->sdt_khach_hang }}</div>
+                                            <div class="small text-success">{{ $lh->sdt_khach_hang }}</div>
                                         </td>
                                         <td>
                                             <div class="fw-bold text-primary">
@@ -266,14 +265,19 @@
                                             @if ($lh->trang_thai === 'sale_da_nhan')
                                                 <span class="badge bg-primary d-block mb-2 py-2 w-100">Cần gọi khách xác
                                                     nhận</span>
-                                                <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                                    class="btn btn-sm btn-outline-primary w-100 fw-bold">Vào xem & Chuyển
-                                                    Nguồn</a>
+                                                <button class="btn btn-sm btn-outline-primary w-100 fw-bold mb-1"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalChuyenNguon{{ $lh->id }}">Chuyển cho
+                                                    Nguồn</button>
+                                                <button class="btn btn-sm btn-outline-danger w-100 fw-bold"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalSaleTuChoi{{ $lh->id }}">Từ chối (Khách
+                                                    ảo)</button>
                                             @elseif ($lh->trang_thai === 'cho_xac_nhan')
                                                 <span class="badge bg-warning text-dark d-block mb-2 py-2 w-100">Đang chờ
                                                     Nguồn chốt mở cửa</span>
                                                 <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                                    class="btn btn-sm btn-light border w-100">Xem tiến độ</a>
+                                                    class="btn btn-sm btn-light border w-100">Xem tiến độ chi tiết</a>
                                             @elseif ($lh->trang_thai === 'cho_sale_xac_nhan_doi_gio')
                                                 <div class="alert alert-danger p-2 small text-start mb-2"><i
                                                         class="fas fa-exclamation-circle me-1"></i> <strong>Nguồn xin dời
@@ -287,14 +291,27 @@
                                                         onclick="return confirm('Khách hàng đồng ý giờ mới? Chốt lịch!')">Khách
                                                         OK - Chốt đi xem</button>
                                                 </form>
-                                                <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                                    class="btn btn-sm btn-outline-danger w-100">Khách Hủy / Chi tiết</a>
+                                                <button class="btn btn-sm btn-outline-danger w-100 fw-bold"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalHuyShow{{ $lh->id }}">Khách Hủy (Không đi
+                                                    nữa)</button>
                                             @elseif ($lh->trang_thai === 'da_xac_nhan')
                                                 <span class="badge bg-success d-block mb-2 py-2 w-100">Đã chốt giờ - Xách
                                                     xe đi xem</span>
-                                                <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                                    class="btn btn-sm btn-secondary w-100 fw-bold">Báo kết quả Hoàn
-                                                    Thành</a>
+                                                <button class="btn btn-sm btn-secondary w-100 fw-bold"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalHoanThanh{{ $lh->id }}">Báo kết quả Hoàn
+                                                    Thành</button>
+                                            @endif
+
+                                            @if ($nhanVien->vai_tro == 'admin')
+                                                <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
+                                                    method="POST" class="mt-2 d-inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-bold"
+                                                        onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
+                                                            class="fas fa-trash"></i> Xóa nhanh (Admin)</button>
+                                                </form>
                                             @endif
                                         </td>
                                     </tr>
@@ -347,7 +364,7 @@
                 </div>
             </div>
 
-            {{-- TAB DANH SÁCH --}}
+            {{-- TAB DANH SÁCH TỔNG HỢP --}}
             <div class="tab-pane fade" id="tab-list">
                 <div class="bg-white p-3 rounded-3 border mb-3">
                     <form method="GET" action="{{ route('nhanvien.admin.lich-hen.index') }}">
@@ -416,10 +433,19 @@
                                             {{ optional($lh->nhanVienNguonHang)->ho_ten ?? 'Chưa gán' }}</div>
                                     </td>
                                     <td><span class="badge bg-secondary">{{ $lh->trang_thai }}</span></td>
-                                    <td class="text-center"><a
-                                            href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                            class="btn btn-sm btn-light border"><i
-                                                class="fas fa-external-link-alt"></i></a></td>
+                                    <td class="text-center">
+                                        <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
+                                            class="btn btn-sm btn-light border"><i class="fas fa-eye"></i></a>
+                                        @if ($nhanVien->vai_tro == 'admin')
+                                            <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
+                                                method="POST" class="d-inline">
+                                                @csrf @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger border"
+                                                    onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
+                                                        class="fas fa-trash"></i></button>
+                                            </form>
+                                        @endif
+                                    </td>
                                 </tr>
                             @empty
                                 <tr>
@@ -434,7 +460,7 @@
         </div>
     </div>
 
-    {{-- MODAL XỬ LÝ LỊCH HẸN TỪ TAB CALENDAR HOẶC YÊU CẦU --}}
+    {{-- MODAL XỬ LÝ NHANH CHO TAB YÊU CẦU / CALENDAR --}}
     <div class="modal fade" id="modalLichHen" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
@@ -466,24 +492,138 @@
                             <div class="ticket-data" id="md_trang_thai"></div>
                         </div>
                     </div>
-
                     <form id="frmNhanLich" action="" method="POST" style="display: none;" class="mb-2">
                         @csrf @method('PATCH')
                         <button type="submit" class="btn btn-danger w-100 fw-bold py-2"><i
                                 class="fas fa-hand-paper me-2"></i>NHẬN XỬ LÝ LỊCH NÀY</button>
                     </form>
-
                     <div class="mt-3 text-center"><a href="#" id="btnFullDetail"
                             class="btn btn-outline-primary w-100 fw-bold">Vào trang Xem chi tiết toàn bộ</a></div>
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- VÒNG LẶP MODALS CHO TAB ĐANG XỬ LÝ CỦA TỪNG LỊCH HẸN --}}
+    <div id="modals-container">
+        @foreach ($lichHenDangXuLyItems as $lh)
+            {{-- MODAL CHUYỂN NGUỒN --}}
+            @if ($lh->trang_thai === 'sale_da_nhan' && isset($dsNguonHang))
+                <div class="modal fade" id="modalChuyenNguon{{ $lh->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('nhanvien.admin.lich-hen.tiep-nhan', $lh->id) }}" method="POST"
+                            class="modal-content shadow border-0">
+                            @csrf @method('PATCH')
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title fw-bold">Chuyển cho Nguồn Hàng</h5><button type="button"
+                                    class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Chọn Nguồn hàng phụ trách:</label>
+                                    <select name="nhan_vien_nguon_hang_id" class="form-select form-select-lg" required>
+                                        <option value="">-- Chọn Nguồn --</option>
+                                        @foreach ($dsNguonHang as $ng)
+                                            <option value="{{ $ng->id }}"
+                                                {{ optional($lh->batDongSan)->nhan_vien_phu_trach_id == $ng->id ? 'selected' : '' }}>
+                                                {{ $ng->ho_ten }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold">Ghi chú (Tùy chọn):</label>
+                                    <input type="text" name="ghi_chu_sale" class="form-control"
+                                        placeholder="Để lại lời nhắn cho nguồn...">
+                                </div>
+                            </div>
+                            <div class="modal-footer"><button type="submit" class="btn btn-primary w-100 fw-bold">Xác
+                                    nhận Gửi Nguồn</button></div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- MODAL SALE TỪ CHỐI --}}
+                <div class="modal fade" id="modalSaleTuChoi{{ $lh->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('nhanvien.admin.lich-hen.sale-tu-choi', $lh->id) }}" method="POST"
+                            class="modal-content shadow border-0">
+                            @csrf @method('PATCH')
+                            <div class="modal-body p-4">
+                                <h5 class="fw-bold text-danger mb-3">Từ chối Yêu cầu</h5>
+                                <label class="form-label fw-bold">Lý do từ chối:</label>
+                                <textarea name="ly_do_tu_choi" class="form-control" rows="3" required
+                                    placeholder="Khách ảo, gọi không nghe máy..."></textarea>
+                                <button type="submit" class="btn btn-danger w-100 fw-bold mt-4">Xác nhận Từ chối</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
+            {{-- MODAL HOÀN THÀNH --}}
+            @if ($lh->trang_thai === 'da_xac_nhan')
+                <div class="modal fade" id="modalHoanThanh{{ $lh->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('nhanvien.admin.lich-hen.hoan-thanh', $lh->id) }}" method="POST"
+                            class="modal-content shadow border-0">
+                            @csrf @method('PATCH')
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-flag-checkered me-2"></i>Cập nhật Kết quả
+                                    Xem nhà</h5><button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold fs-6">Khách hàng quyết định như thế nào?</label>
+                                    <select name="ket_qua" class="form-select form-select-lg" required>
+                                        <option value="">-- Chọn kết quả --</option>
+                                        <option value="chot" class="text-success fw-bold">✅ ĐÃ CHỐT THÀNH CÔNG (Đặt cọc)
+                                        </option>
+                                        <option value="khong_chot" class="text-danger fw-bold">❌ KHÔNG CHỐT (Suy nghĩ
+                                            thêm)</option>
+                                    </select>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold">Ghi chú & Review từ khách:</label>
+                                    <textarea name="ghi_chu_sale" class="form-control" rows="3" placeholder="Khách chê nhà, giá cao..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-0"><button type="submit"
+                                    class="btn btn-success btn-lg fw-bold w-100">Lưu kết quả & Đóng lịch</button></div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
+            {{-- MODAL HỦY --}}
+            @if (!in_array($lh->trang_thai, ['hoan_thanh', 'huy', 'tu_choi']))
+                <div class="modal fade" id="modalHuyShow{{ $lh->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('nhanvien.admin.lich-hen.huy', $lh->id) }}" method="POST"
+                            class="modal-content shadow border-0">
+                            @csrf @method('PATCH')
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-ban me-2"></i> Hủy lịch xem nhà</h5>
+                                <button type="button" class="btn-close btn-close-white"
+                                    data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <label class="form-label fw-bold">Nguyên nhân hủy:</label>
+                                <textarea name="ly_do" class="form-control" required placeholder="Khách bận đột xuất, chủ nhà đi vắng..."></textarea>
+                                <button type="submit" class="btn btn-danger mt-4 w-100 fw-bold">Xác nhận Hủy
+                                    lịch</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        @endforeach
+    </div>
+
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales-all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 
     <script>
