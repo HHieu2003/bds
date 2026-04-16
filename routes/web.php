@@ -120,10 +120,7 @@ Route::prefix('tai-khoan')->name('khach-hang.')->group(function () {
         Route::post('dat-lai-mat-khau', [KhachHangAuthController::class, 'reset'])->middleware('throttle:anti-spam')->name('reset.post');
     });
 
-    // Xem danh sách lịch hẹn
     Route::get('lich-hen', [FeLichHenController::class, 'lichHen'])->name('lich-hen');
-
-    // Khách hàng chủ động hủy lịch
     Route::post('lich-hen/{id}/huy', [FeLichHenController::class, 'huyLichHen'])->name('lich-hen.huy');
 
     Route::middleware('auth:customer')->group(function () {
@@ -150,10 +147,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
     Route::middleware('auth:nhanvien')->group(function () {
 
         Route::post('logout', [AdminAuthController::class, 'logout'])->name('logout');
-
         Route::post('cap-nhat-thong-tin', [AdminAuthController::class, 'updateProfile'])->name('update-profile');
         Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])->name('change-password');
-
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
         // ══════════════════════════════════════
@@ -175,7 +170,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 });
             });
 
-            // ── LỊCH HẸN DÙNG CHUNG ADMIN / SALE / NGUỒN
+            // ── LỊCH HẸN DÙNG CHUNG ADMIN / SALE / NGUỒN ──
             Route::middleware('check.role:admin,sale,nguon_hang')->group(function () {
                 Route::resource('ngan-hang', NganHangController::class)->except(['create', 'edit']);
 
@@ -185,17 +180,18 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::get('/api/hom-nay',         [LichHenController::class, 'apiLichHenHomNay'])->name('api.hom-nay');
                     Route::get('/create',              [LichHenController::class, 'create'])->name('create');
                     Route::post('/',                   [LichHenController::class, 'store'])->name('store');
-
-                    // FIX LỖI TÊN ROUTE API LỊCH HẸN Ở ĐÂY
                     Route::get('/api-events',          [LichHenController::class, 'apiEvents'])->name('api.events');
-
                     Route::get('/{lichHen}',           [LichHenController::class, 'show'])->name('show');
-                    Route::delete('/{lichHen}',        [LichHenController::class, 'destroy'])->name('destroy'); // ĐÃ BỔ SUNG ROUTE XÓA LỊCH HẸN
+                    Route::delete('/{lichHen}',        [LichHenController::class, 'destroy'])->name('destroy');
 
+                    // CÁC ROUTE XỬ LÝ TRẠNG THÁI (ĐÃ BỔ SUNG ROUTE MỚI)
+                    Route::patch('/{lichHen}/nhan-lich', [LichHenController::class, 'nhanLich'])->name('nhan-lich');
                     Route::patch('/{lichHen}/tiep-nhan', [LichHenController::class, 'tiepNhan'])->name('tiep-nhan');
+                    Route::patch('/{lichHen}/sale-tu-choi', [LichHenController::class, 'saleTuChoi'])->name('sale-tu-choi');
+                    Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
+
                     Route::post('/{lichHen}/doi-gio-nhanh', [LichHenController::class, 'doiGioNhanh'])->name('doi-gio-nhanh');
                     Route::post('/{lichHen}/xac-nhan-doi-gio', [LichHenController::class, 'xacNhanDoiGio'])->name('xac-nhan-doi-gio');
-                    Route::patch('/{lichHen}/hoan-thanh', [LichHenController::class, 'hoanThanh'])->name('hoan-thanh');
                     Route::patch('/{lichHen}/huy',     [LichHenController::class, 'huy'])->name('huy');
                     Route::patch('/{lichHen}/bao-lai-gio', [LichHenController::class, 'baoLaiGio'])->name('bao-lai-gio');
                     Route::patch('/{lichHen}/sale-doi-gio', [LichHenController::class, 'saleDoiGio'])->name('sale-doi-gio');

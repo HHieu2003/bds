@@ -35,7 +35,7 @@
             border-radius: 14px;
             overflow: hidden;
             box-shadow: var(--sh-xs);
-            height: 100%;
+
             min-width: 0;
             position: relative;
             z-index: 1;

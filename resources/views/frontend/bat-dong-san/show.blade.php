@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                                                                                                                                                               TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                                                                                                                                                            ═══════════════════════════════════════ */
+                                                                                                                                                                                                                                                                   TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                                                                                ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1181,6 +1181,16 @@
                                 </div>
                             @else
                                 @php
+                                    $thoiGianVaoThueMap = [
+                                        'ngay_lap_tuc' => 'Vào ở ngay',
+                                        'sau_1_tuan' => 'Sau 1 tuần',
+                                        'sau_1_thang' => 'Sau 1 tháng',
+                                        'thoa_thuan' => 'Thỏa thuận',
+                                    ];
+                                    $thoiGianVaoThueLabel = $bds->thoi_gian_vao_thue
+                                        ? $thoiGianVaoThueMap[$bds->thoi_gian_vao_thue] ?? $bds->thoi_gian_vao_thue
+                                        : 'Đang cập nhật';
+
                                     $hinhThucThanhToanMap = [
                                         'thang_1' => 'Thanh toán 1 tháng/lần',
                                         'thang_3' => 'Thanh toán 3 tháng/lần',
@@ -1197,6 +1207,14 @@
                                     <div class="info-item-text">
                                         <span class="lbl">Hình thức thanh toán</span>
                                         <span class="val">{{ $hinhThucThanhToanLabel }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="info-item">
+                                    <div class="info-item-icon"><i class="fas fa-calendar-check"></i></div>
+                                    <div class="info-item-text">
+                                        <span class="lbl">Thời gian vào thuê</span>
+                                        <span class="val">{{ $thoiGianVaoThueLabel }}</span>
                                     </div>
                                 </div>
                             @endif

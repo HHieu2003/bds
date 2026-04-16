@@ -332,8 +332,9 @@
                             <td class="text-center">
                                 <label class="toggle-sw"><input type="checkbox" data-display-id="{{ $bds->id }}"
                                         data-toggle-url="/nhan-vien/admin/bat-dong-san/{{ $bds->id }}/toggle"
-                                        {{ $bds->hien_thi ? 'checked' : '' }}><span class="toggle-sw-track"><span
-                                            class="toggle-sw-thumb"></span></span></label>
+                                        {{ $bds->hien_thi ? 'checked' : '' }}
+                                        {{ $bds->trang_thai !== 'con_hang' ? 'disabled' : '' }}><span
+                                        class="toggle-sw-track"><span class="toggle-sw-thumb"></span></span></label>
                                 <div class="text-muted" style="font-size: 0.68rem" title="Lượt xem"><i
                                         class="fas fa-eye"></i>
                                     {{ number_format($bds->luot_xem) }}</div>
@@ -423,10 +424,11 @@
                         @endif
                     </div>
                     <div class="mobile-card-foot">
-                        <label class="toggle-sw"><input type="checkbox"
+                        <label class="toggle-sw"><input type="checkbox" data-display-id="{{ $bds->id }}"
                                 data-toggle-url="/nhan-vien/admin/bat-dong-san/{{ $bds->id }}/toggle"
-                                {{ $bds->hien_thi ? 'checked' : '' }}><span class="toggle-sw-track"><span
-                                    class="toggle-sw-thumb"></span></span></label>
+                                {{ $bds->hien_thi ? 'checked' : '' }}
+                                {{ $bds->trang_thai !== 'con_hang' ? 'disabled' : '' }}><span
+                                class="toggle-sw-track"><span class="toggle-sw-thumb"></span></span></label>
                         <div class="btn-actions-group">
                             <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
                                 class="btn-action btn-action-edit"><i class="fas fa-pen"></i></a>
@@ -742,9 +744,56 @@
                                     badge.style.background = statusInfo.bg;
                                     badge.style.color = statusInfo.color;
                                 }
+
+                                // Đồng bộ công tắc hiển thị theo trạng thái mới.
+                                document.querySelectorAll(
+                                    `input[data-display-id="${bdsId}"]`).forEach(cb => {
+                                    const choPhepHienThi = newStatus === 'con_hang';
+                                    cb.disabled = !choPhepHienThi;
+                                    if (!choPhepHienThi) {
+                                        cb.checked = false;
+                                    }
+                                });
+
                                 showAdminToast('Đã cập nhật trạng thái', 'success');
                             } else showAdminToast('Lỗi cập nhật', 'error');
                         }).catch(() => showAdminToast('Lỗi kết nối', 'error'));
+                    });
+                });
+            }
+
+            // ══ TOGGLE HIỂN THỊ HANDLER ══
+            function bindToggleCheckboxes() {
+                document.querySelectorAll('input[data-toggle-url]').forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const previous = !this.checked;
+                        const toggleUrl = this.dataset.toggleUrl;
+
+                        fetch(toggleUrl, {
+                            method: 'PATCH',
+                            headers: {
+                                'X-CSRF-TOKEN': CSRF,
+                                'Accept': 'application/json'
+                            }
+                        }).then(async r => {
+                            const data = await r.json().catch(() => ({}));
+
+                            if (!r.ok || !data.ok) {
+                                this.checked = previous;
+                                if (typeof data.hien_thi === 'boolean') {
+                                    this.checked = data.hien_thi;
+                                }
+                                showAdminToast(data.message ||
+                                    'Không thể cập nhật hiển thị', 'error');
+                                return;
+                            }
+
+                            this.checked = !!data.hien_thi;
+                            showAdminToast('Đã cập nhật hiển thị', 'success');
+                        }).catch(() => {
+                            this.checked = previous;
+                            showAdminToast('Lỗi kết nối', 'error');
+                        });
                     });
                 });
             }
@@ -785,6 +834,7 @@
             bindPaginationLinks();
             bindDeleteButtons();
             bindStatusButtons();
+            bindToggleCheckboxes();
             bindChuNhaButtons();
         });
     </script>

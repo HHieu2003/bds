@@ -293,19 +293,20 @@
                 </div>
             </div>
 
-            <div class="sale-kpi-card">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="fw-bold">Hiệu quả lịch tháng này</span>
-                    <span class="small text-muted">{{ $tiLeChotLich }}% chốt</span>
-                </div>
-                <div class="small text-muted mb-1">Hoàn thành: {{ $hoanThanhSafe }} lịch</div>
-                <div class="sale-progress mb-2">
-                    <div style="height:100%;width:{{ $ptHoanThanh }}%;background:#16a34a;"></div>
-                </div>
-                <div class="small text-muted mb-1">Boom/Hủy: {{ $huySafe }} lịch</div>
-                <div class="sale-progress">
-                    <div style="height:100%;width:{{ $ptHuy }}%;background:#dc2626;"></div>
-                </div>
+        </div>
+
+        <div class="sale-kpi-card">
+            <div class="d-flex justify-content-between mb-2">
+                <span class="fw-bold">Hiệu quả lịch tháng này</span>
+                <span class="small text-muted">{{ $tiLeChotLich }}% chốt</span>
+            </div>
+            <div class="small text-muted mb-1">Hoàn thành: {{ $hoanThanhSafe }} lịch</div>
+            <div class="sale-progress mb-2">
+                <div style="height:100%;width:{{ $ptHoanThanh }}%;background:#16a34a;"></div>
+            </div>
+            <div class="small text-muted mb-1">Boom/Hủy: {{ $huySafe }} lịch</div>
+            <div class="sale-progress">
+                <div style="height:100%;width:{{ $ptHuy }}%;background:#dc2626;"></div>
             </div>
         </div>
     </div>

@@ -15,6 +15,8 @@ use Illuminate\Support\Str;
 
 class BatDongSanController extends Controller
 {
+    private const TRANG_THAI_HOP_LE = ['con_hang', 'dat_coc', 'da_ban', 'dang_thue', 'da_thue', 'tam_an'];
+
     private function redirectVeDanhSach(Request $request)
     {
         $redirectTo = (string) $request->input('redirect_to', '');
@@ -253,6 +255,11 @@ class BatDongSanController extends Controller
         $data['slug']     = Str::slug($data['tieu_de']) . '-' . time();
         $data['ma_bat_dong_san'] = 'BDS-' . strtoupper(Str::random(6));
 
+        // Chỉ "còn hàng" mới được phép hiển thị ra ngoài.
+        if (($data['trang_thai'] ?? null) !== 'con_hang') {
+            $data['hien_thi'] = false;
+        }
+
         if (empty($data['thoi_diem_dang'])) {
             $data['thoi_diem_dang'] = now();
         }
@@ -309,6 +316,11 @@ class BatDongSanController extends Controller
         $data['noi_bat']  = $request->has('noi_bat');
         $data['gui_mail_canh_bao_gia'] = $request->has('gui_mail_canh_bao_gia');
         $data['slug']     = Str::slug($data['tieu_de']) . '-' . $batDongSan->id;
+
+        // Chỉ "còn hàng" mới được phép hiển thị ra ngoài.
+        if (($data['trang_thai'] ?? null) !== 'con_hang') {
+            $data['hien_thi'] = false;
+        }
 
         // Xử lý Ảnh Đại Diện
         if ($request->hasFile('hinh_anh')) {
@@ -376,6 +388,18 @@ class BatDongSanController extends Controller
     {
         $this->chongSaleQuanLyTonKho();
 
+        if ($batDongSan->trang_thai !== 'con_hang') {
+            if ($batDongSan->hien_thi) {
+                $batDongSan->update(['hien_thi' => false]);
+            }
+
+            return response()->json([
+                'ok' => false,
+                'hien_thi' => false,
+                'message' => 'Chỉ bất động sản còn hàng mới được bật hiển thị.'
+            ], 422);
+        }
+
         $batDongSan->update(['hien_thi' => !$batDongSan->hien_thi]);
         return response()->json(['ok' => true, 'hien_thi' => $batDongSan->hien_thi]);
     }
@@ -391,9 +415,20 @@ class BatDongSanController extends Controller
     {
         $this->chongSaleQuanLyTonKho();
 
-        $request->validate(['trang_thai' => 'required|string']);
-        $batDongSan->update(['trang_thai' => $request->trang_thai]);
-        return response()->json(['ok' => true]);
+        $request->validate(['trang_thai' => 'required|in:' . implode(',', self::TRANG_THAI_HOP_LE)]);
+
+        $payload = ['trang_thai' => $request->trang_thai];
+        if ($request->trang_thai !== 'con_hang') {
+            $payload['hien_thi'] = false;
+        }
+
+        $batDongSan->update($payload);
+
+        return response()->json([
+            'ok' => true,
+            'hien_thi' => $batDongSan->hien_thi,
+            'trang_thai' => $batDongSan->trang_thai,
+        ]);
     }
 
     // Alias cho route nhóm sale (giữ tương thích tên method cũ)

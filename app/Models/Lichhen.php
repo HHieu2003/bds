@@ -73,14 +73,7 @@ class LichHen extends Model
     {
         return $this->hasMany(TinNhanNoiBo::class, 'lich_hen_id');
     }
-    // Các hằng số trạng thái để dễ quản lý trong code
-    const STATUS_MOI_DAT        = 'moi_dat';        // Web vừa đổ về
-    const STATUS_SALE_TIEP_NHAN = 'sale_tiep_nhan'; // Sale đang giữ để gọi khách
-    const STATUS_CHO_XAC_NHAN   = 'cho_xac_nhan';   // Đã gửi sang cho Nguồn
-    const STATUS_DA_XAC_NHAN    = 'da_xac_nhan';    // Nguồn đã chốt với chủ
-    const STATUS_HOAN_THANH     = 'hoan_thanh';
-    const STATUS_HUY            = 'huy';
-    const STATUS_TU_CHOI        = 'tu_choi';
+
     // ============================================================
     // SCOPES
     // ============================================================

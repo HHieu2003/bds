@@ -23,6 +23,7 @@
         .lh-kpi .k-label {
             color: #64748b;
             font-size: .78rem;
+            font-weight: bold;
         }
 
         .lh-kpi .k-value {
@@ -46,7 +47,6 @@
             border-bottom: 2px solid #0d6efd;
         }
 
-        /* Giao diện Modal Chi tiết dạng Ticket */
         .modal-ticket-info {
             background: #f8f9fa;
             border-radius: 8px;
@@ -95,40 +95,40 @@
 
     {{-- KHỐI KPI --}}
     <div class="row g-3 mb-4">
-        <div class="col-6 col-md-3 col-lg-2">
+        <div class="col-6 col-md-2">
             <div class="lh-kpi border-warning" style="border-left-width: 4px;">
-                <div class="k-label text-warning">MỚI ĐẶT</div>
+                <div class="k-label text-warning">MỚI (CHỜ NHẬN)</div>
                 <div class="k-value">{{ number_format($stats['moi_dat'] ?? 0) }}</div>
             </div>
         </div>
-        <div class="col-6 col-md-3 col-lg-2">
+        <div class="col-6 col-md-2">
+            <div class="lh-kpi border-primary" style="border-left-width: 4px;">
+                <div class="k-label text-primary">ĐANG XÁC NHẬN</div>
+                <div class="k-value">{{ number_format($stats['sale_da_nhan'] ?? 0) }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
             <div class="lh-kpi border-info" style="border-left-width: 4px;">
                 <div class="k-label text-info">CHỜ NGUỒN XN</div>
                 <div class="k-value">{{ number_format($stats['cho_xac_nhan'] ?? 0) }}</div>
             </div>
         </div>
-        <div class="col-6 col-md-3 col-lg-2">
+        <div class="col-6 col-md-2">
             <div class="lh-kpi border-success" style="border-left-width: 4px;">
                 <div class="k-label text-success">ĐÃ CHỐT ĐI XEM</div>
                 <div class="k-value">{{ number_format($stats['da_xac_nhan'] ?? 0) }}</div>
             </div>
         </div>
-        <div class="col-6 col-md-3 col-lg-2">
+        <div class="col-6 col-md-2">
             <div class="lh-kpi border-secondary" style="border-left-width: 4px;">
                 <div class="k-label text-secondary">HOÀN THÀNH</div>
                 <div class="k-value">{{ number_format($stats['hoan_thanh'] ?? 0) }}</div>
             </div>
         </div>
-        <div class="col-6 col-md-3 col-lg-2">
+        <div class="col-6 col-md-2">
             <div class="lh-kpi border-danger" style="border-left-width: 4px;">
                 <div class="k-label text-danger">TỪ CHỐI / HỦY</div>
                 <div class="k-value">{{ number_format(($stats['tu_choi'] ?? 0) + ($stats['huy'] ?? 0)) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-3 col-lg-2">
-            <div class="lh-kpi border-primary" style="background: #eef2ff; border-left-width: 4px;">
-                <div class="k-label text-primary">LỊCH TRONG NGÀY</div>
-                <div class="k-value">{{ number_format($stats['hom_nay'] ?? 0) }}</div>
             </div>
         </div>
     </div>
@@ -136,28 +136,29 @@
     {{-- KHỐI TABS --}}
     <div class="lh-shell shadow-sm mb-5">
         <ul class="nav nav-tabs lh-tabs mb-4" id="lhTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#tab-calendar"
-                    type="button" role="tab"><i class="fas fa-calendar-day me-1"></i> Lịch của tôi (Calendar)</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#tab-list" type="button"
-                    role="tab"><i class="fas fa-list me-1"></i> Danh sách tổng hợp</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request" type="button"
-                    role="tab">
-                    <i class="fas fa-inbox me-1"></i> Yêu cầu tư vấn
-                    @if (($lienHeThongKe['moi'] ?? 0) > 0)
-                        <span class="badge bg-danger rounded-pill ms-1">{{ $lienHeThongKe['moi'] }}</span>
+            <li class="nav-item">
+                <button class="nav-link active" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request"
+                    type="button">
+                    <i class="fas fa-home me-1"></i> Yêu cầu xem nhà
+                    @if (($stats['moi_dat'] ?? 0) > 0)
+                        <span class="badge bg-danger rounded-pill ms-1">{{ $stats['moi_dat'] }}</span>
                     @endif
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link " id="calendar-tab" data-bs-toggle="tab" data-bs-target="#tab-calendar"
+                    type="button"><i class="fas fa-calendar-day me-1"></i> Lịch của tôi</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#tab-list" type="button"><i
+                        class="fas fa-list me-1"></i> Danh sách tổng hợp</button>
+            </li>
+
         </ul>
 
         <div class="tab-content" id="lhTabContent">
             {{-- TAB 1: CALENDAR --}}
-            <div class="tab-pane fade show active" id="tab-calendar" role="tabpanel">
+            <div class="tab-pane fade" id="tab-calendar">
                 <div class="row g-3">
                     <div class="col-12 col-xl-9">
                         <div class="bg-white p-3 rounded-3 border">
@@ -167,59 +168,48 @@
                     <div class="col-12 col-xl-3">
                         <div class="bg-white p-3 rounded-3 border h-100">
                             <h6 class="fw-bold mb-3">Chú giải màu sắc</h6>
-                            <ul class="list-unstyled mb-0" style="font-size: 0.85rem">
+                            <ul class="list-unstyled small mb-0">
                                 <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
-                                        style="width: 12px; height: 12px; background: #f59e0b;"></span> <strong>Mới
-                                        đặt</strong> (Chờ Sale nhận)</li>
+                                        style="width: 12px; height: 12px; background: #f59e0b;"></span> <strong>Chưa ai
+                                        nhận</strong></li>
                                 <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
-                                        style="width: 12px; height: 12px; background: #3b82f6;"></span> <strong>Chờ
-                                        xác nhận</strong> (Chờ Nguồn chốt chủ)</li>
+                                        style="width: 12px; height: 12px; background: #8b5cf6;"></span> <strong>Sale đang
+                                        xác nhận</strong></li>
+                                <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
+                                        style="width: 12px; height: 12px; background: #3b82f6;"></span> <strong>Chờ Nguồn
+                                        chốt</strong></li>
                                 <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
                                         style="width: 12px; height: 12px; background: #10b981;"></span> <strong>Đã chốt đi
                                         xem</strong></li>
                                 <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
                                         style="width: 12px; height: 12px; background: #6b7280;"></span> <strong>Hoàn
                                         thành</strong></li>
-                                <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
-                                        style="width: 12px; height: 12px; background: #ef4444;"></span> <strong>Hủy / Từ
-                                        chối</strong></li>
                             </ul>
-                            <hr>
-                            <p class="text-muted small"><em>Gợi ý: Nhấp vào sự kiện trên lịch để xem chi tiết hoặc thay đổi
-                                    trạng thái.</em></p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {{-- TAB 2: DANH SÁCH --}}
-            <div class="tab-pane fade" id="tab-list" role="tabpanel">
+            <div class="tab-pane fade" id="tab-list">
                 <div class="bg-white p-3 rounded-3 border mb-3">
                     <form method="GET" action="{{ route('nhanvien.admin.lich-hen.index') }}">
                         <div class="row g-2">
-                            <div class="col-12 col-md-3">
-                                <input type="text" name="tim_kiem" class="form-control"
-                                    placeholder="Tên khách, SĐT, Mã BĐS..." value="{{ request('tim_kiem') }}">
-                            </div>
-                            <div class="col-6 col-md-2">
-                                <input type="date" name="tu_ngay" class="form-control" title="Từ ngày"
-                                    value="{{ request('tu_ngay') }}">
-                            </div>
-                            <div class="col-6 col-md-2">
-                                <input type="date" name="den_ngay" class="form-control" title="Đến ngày"
-                                    value="{{ request('den_ngay') }}">
-                            </div>
+                            <div class="col-12 col-md-3"><input type="text" name="tim_kiem" class="form-control"
+                                    placeholder="Tìm kiếm..." value="{{ request('tim_kiem') }}"></div>
+                            <div class="col-6 col-md-2"><input type="date" name="tu_ngay" class="form-control"
+                                    value="{{ request('tu_ngay') }}"></div>
+                            <div class="col-6 col-md-2"><input type="date" name="den_ngay" class="form-control"
+                                    value="{{ request('den_ngay') }}"></div>
                             <div class="col-6 col-md-3">
                                 <select name="trang_thai" class="form-select">
                                     <option value="">-- Mọi trạng thái --</option>
-                                    <option value="moi_dat" @selected(request('trang_thai') == 'moi_dat')>Mới đặt (Chờ Sale nhận)
-                                    </option>
-                                    <option value="cho_xac_nhan" @selected(request('trang_thai') == 'cho_xac_nhan')>Chờ Nguồn chốt với
-                                        Chủ</option>
-                                    <option value="da_xac_nhan" @selected(request('trang_thai') == 'da_xac_nhan')>Đã chốt đi xem
-                                    </option>
+                                    <option value="moi_dat" @selected(request('trang_thai') == 'moi_dat')>Chưa ai nhận</option>
+                                    <option value="sale_da_nhan" @selected(request('trang_thai') == 'sale_da_nhan')>Sale đang xác nhận</option>
+                                    <option value="cho_xac_nhan" @selected(request('trang_thai') == 'cho_xac_nhan')>Chờ Nguồn chốt</option>
+                                    <option value="da_xac_nhan" @selected(request('trang_thai') == 'da_xac_nhan')>Đã chốt đi xem</option>
                                     <option value="hoan_thanh" @selected(request('trang_thai') == 'hoan_thanh')>Hoàn thành</option>
-                                    <option value="tu_choi" @selected(request('trang_thai') == 'tu_choi')>Bị từ chối</option>
+                                    <option value="tu_choi" @selected(request('trang_thai') == 'tu_choi')>Từ chối</option>
                                     <option value="huy" @selected(request('trang_thai') == 'huy')>Đã hủy</option>
                                 </select>
                             </div>
@@ -234,7 +224,6 @@
                         </div>
                     </form>
                 </div>
-
                 <div class="table-responsive bg-white rounded-3 border">
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
@@ -256,33 +245,25 @@
                                     </td>
                                     <td>
                                         <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
-                                        <div class="small"><a href="tel:{{ $lh->sdt_khach_hang }}"
-                                                class="text-success text-decoration-none"><i
-                                                    class="fas fa-phone-alt me-1"></i>{{ $lh->sdt_khach_hang }}</a></div>
+                                        <div class="small text-success"><i
+                                                class="fas fa-phone-alt me-1"></i>{{ $lh->sdt_khach_hang }}</div>
                                     </td>
                                     <td>
-                                        @if ($lh->batDongSan)
-                                            <div class="fw-medium text-dark text-truncate" style="max-width: 200px;"
-                                                title="{{ $lh->batDongSan->tieu_de }}">
-                                                {{ $lh->batDongSan->tieu_de }}
-                                            </div>
-                                            <div class="small text-muted"><i class="fas fa-map-marker-alt me-1"></i>Mã:
-                                                {{ $lh->batDongSan->ma_bat_dong_san }}</div>
-                                        @else
-                                            <span class="text-muted fst-italic">BĐS ngoài hệ thống</span>
-                                        @endif
+                                        <div class="fw-medium">
+                                            {{ optional($lh->batDongSan)->tieu_de ?? 'Ngoài hệ thống' }}</div>
                                     </td>
                                     <td>
-                                        <div class="small"><strong>Sale:</strong>
-                                            {{ $lh->nhanVienSale->ho_ten ?? 'Chưa có' }}</div>
-                                        <div class="small"><strong>Nguồn:</strong>
-                                            {{ $lh->nhanVienNguonHang->ho_ten ?? 'Chưa xác định' }}</div>
+                                        <div class="small">Sale: {{ optional($lh->nhanVienSale)->ho_ten ?? 'Chưa có' }}
+                                        </div>
+                                        <div class="small">Nguồn:
+                                            {{ optional($lh->nhanVienNguonHang)->ho_ten ?? 'Chưa gán' }}</div>
                                     </td>
                                     <td>
                                         @php
                                             $ttMap = [
-                                                'moi_dat' => ['bg-warning', 'Mới đặt (Chờ nhận)'],
-                                                'cho_xac_nhan' => ['bg-info', 'Chờ Nguồn chốt'],
+                                                'moi_dat' => ['bg-warning text-dark', 'Chưa nhận'],
+                                                'sale_da_nhan' => ['bg-primary', 'Đang xác nhận'],
+                                                'cho_xac_nhan' => ['bg-info text-dark', 'Chờ Nguồn chốt'],
                                                 'da_xac_nhan' => ['bg-success', 'Đã chốt đi xem'],
                                                 'hoan_thanh' => ['bg-secondary', 'Hoàn thành'],
                                                 'tu_choi' => ['bg-danger', 'Từ chối'],
@@ -295,93 +276,76 @@
                                     <td class="text-center">
                                         <button class="btn btn-sm btn-light border btn-trigger-modal"
                                             data-id="{{ $lh->id }}" data-trang_thai="{{ $lh->trang_thai }}"
-                                            data-trang_thai_label="{{ $tt[1] }}"
                                             data-ten_khach="{{ $lh->ten_khach_hang }}"
                                             data-sdt_khach="{{ $lh->sdt_khach_hang }}"
-                                            data-bds="{{ $lh->batDongSan ? $lh->batDongSan->tieu_de : 'Nhà lẻ / Chưa xác định' }}"
+                                            data-bds="{{ optional($lh->batDongSan)->tieu_de }}"
                                             data-sale_id="{{ $lh->nhan_vien_sale_id }}"
                                             data-nguon_phu_trach_id="{{ optional($lh->batDongSan)->nhan_vien_phu_trach_id }}"
-                                            data-start="{{ $lh->thoi_gian_hen }}" title="Xử lý / Xem chi tiết">
+                                            data-start="{{ $lh->thoi_gian_hen }}">
                                             <i class="fas fa-magic text-primary"></i>
                                         </button>
                                         <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                            class="btn btn-sm btn-light border" title="Chi tiết trang lớn">
-                                            <i class="fas fa-external-link-alt"></i>
-                                        </a>
+                                            class="btn btn-sm btn-light border"><i
+                                                class="fas fa-external-link-alt"></i></a>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Không tìm thấy lịch hẹn nào.
-                                    </td>
+                                    <td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu.</td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                <div class="mt-3">
-                    {{ $lichHensList->links('pagination::bootstrap-5') }}
-                </div>
+                <div class="mt-3">{{ $lichHensList->links() }}</div>
             </div>
 
-            {{-- TAB 3: YÊU CẦU TƯ VẤN (TÍCH HỢP TỪ LIÊN HỆ) --}}
-            <div class="tab-pane fade" id="tab-request" role="tabpanel">
-                <div class="bg-white p-4 rounded-3 border">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold m-0"><i class="fas fa-inbox text-danger me-2"></i> Yêu cầu Tư vấn mới từ
-                            Website</h5>
-                        <a href="{{ route('nhanvien.admin.lien-he.index') }}" class="btn btn-sm btn-outline-primary">Tới
-                            trang CRM Leads <i class="fas fa-arrow-right"></i></a>
-                    </div>
+            {{-- TAB 3: YÊU CẦU XEM NHÀ (MỚI ĐẶT CHƯA AI NHẬN) --}}
+            <div class="tab-pane fade  show active" id="tab-request">
+                <div class="bg-white p-4 rounded-3 border border-warning shadow-sm">
+                    <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-bell me-2"></i> Yêu cầu xem nhà cần nhận</h5>
                     <div class="table-responsive">
                         <table class="table table-hover align-middle">
                             <thead class="table-light">
                                 <tr>
                                     <th>Khách hàng</th>
-                                    <th>Nội dung / BĐS quan tâm</th>
+                                    <th>Bất động sản</th>
                                     <th>Thời gian</th>
                                     <th class="text-center">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($lienHeItems as $lead)
-                                    <tr
-                                        class="{{ is_null($lead->nhan_vien_phu_trach_id) ? 'bg-danger bg-opacity-10' : '' }}">
+                                @forelse($lichHenMoiItems as $lh)
+                                    <tr>
                                         <td>
-                                            <div class="fw-bold">{{ $lead->ho_ten }}</div>
+                                            <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
                                             <div class="small"><i
-                                                    class="fas fa-phone-alt text-success me-1"></i>{{ $lead->so_dien_thoai }}
+                                                    class="fas fa-phone-alt text-success me-1"></i>{{ $lh->sdt_khach_hang }}
                                             </div>
                                         </td>
                                         <td>
-                                            @if ($lead->batDongSan)
-                                                <div class="fw-bold text-primary" style="font-size: 0.85rem">Quan tâm:
-                                                    {{ Str::limit($lead->batDongSan->tieu_de, 40) }}</div>
-                                            @endif
-                                            <div class="small text-muted fst-italic">
-                                                "{{ Str::limit($lead->noi_dung, 60) }}"</div>
+                                            <div class="fw-bold text-primary">{{ optional($lh->batDongSan)->tieu_de }}
+                                            </div>
                                         </td>
                                         <td>
-                                            <div class="small">{{ $lead->created_at->format('H:i d/m/Y') }}</div>
+                                            <div class="fw-bold text-danger">
+                                                {{ $lh->thoi_gian_hen->format('H:i - d/m/Y') }}</div>
                                         </td>
                                         <td class="text-center">
-                                            @if (is_null($lead->nhan_vien_phu_trach_id))
-                                                <form action="{{ route('nhanvien.admin.lien-he.nhan-lead', $lead->id) }}"
-                                                    method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-danger fw-bold shadow-sm"
-                                                        style="animation: pulse-animation 2s infinite;">
-                                                        <i class="fas fa-hand-paper me-1"></i> NHẬN NGAY
-                                                    </button>
-                                                </form>
-                                            @else
-                                                <span class="badge bg-secondary">Đã nhận</span>
-                                            @endif
+                                            <form action="{{ route('nhanvien.admin.lich-hen.nhan-lich', $lh->id) }}"
+                                                method="POST">
+                                                @csrf @method('PATCH')
+                                                <button type="submit" class="btn btn-sm btn-danger fw-bold shadow-sm"
+                                                    style="animation: pulse-animation 2s infinite;">
+                                                    <i class="fas fa-hand-paper me-1"></i> NHẬN LỊCH NGAY
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center py-3">Không có yêu cầu tư vấn mới.</td>
+                                        <td colspan="4" class="text-center py-3 text-muted">Không có yêu cầu xem nhà
+                                            mới.</td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -392,81 +356,85 @@
         </div>
     </div>
 
-    {{-- ======================================================
-         MODAL CHUẨN UX (TIẾP NHẬN & XỬ LÝ LỊCH HẸN)
-         ====================================================== --}}
-    <div class="modal fade" id="modalLichHen" tabindex="-1" aria-hidden="true">
+    {{-- MODAL XỬ LÝ LỊCH HẸN --}}
+    <div class="modal fade" id="modalLichHen" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light">
-                    <h5 class="modal-title fw-bold text-primary"><i class="fas fa-calendar-check me-2"></i>Chi tiết lịch
+                    <h5 class="modal-title fw-bold text-primary"><i class="fas fa-calendar-check me-2"></i>Thao tác lịch
                         hẹn</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-4">
-
-                    {{-- Khung Ticket Thông Tin --}}
                     <div class="modal-ticket-info">
                         <div class="ticket-row">
-                            <div class="ticket-label"><i class="fas fa-user me-1"></i> Khách hàng:</div>
-                            <div class="ticket-data" id="md_ten_khach">---</div>
+                            <div class="ticket-label">Khách hàng:</div>
+                            <div class="ticket-data" id="md_ten_khach"></div>
                         </div>
                         <div class="ticket-row">
-                            <div class="ticket-label"><i class="fas fa-phone-alt me-1"></i> Điện thoại:</div>
-                            <div class="ticket-data text-success" id="md_sdt_khach">---</div>
+                            <div class="ticket-label">Điện thoại:</div>
+                            <div class="ticket-data text-success" id="md_sdt_khach"></div>
                         </div>
                         <div class="ticket-row">
-                            <div class="ticket-label"><i class="fas fa-home me-1"></i> Căn nhà/Dự án:</div>
-                            <div class="ticket-data text-primary" id="md_bds">---</div>
+                            <div class="ticket-label">Nhà/Dự án:</div>
+                            <div class="ticket-data text-primary" id="md_bds"></div>
                         </div>
                         <div class="ticket-row">
-                            <div class="ticket-label"><i class="far fa-clock me-1"></i> Thời gian:</div>
-                            <div class="ticket-data text-danger" id="md_thoi_gian">---</div>
+                            <div class="ticket-label">Thời gian:</div>
+                            <div class="ticket-data text-danger" id="md_thoi_gian"></div>
                         </div>
                         <div class="ticket-row">
-                            <div class="ticket-label"><i class="fas fa-info-circle me-1"></i> Trạng thái:</div>
-                            <div class="ticket-data"><span class="badge bg-secondary" id="md_trang_thai">---</span></div>
+                            <div class="ticket-label">Trạng thái:</div>
+                            <div class="ticket-data" id="md_trang_thai"></div>
                         </div>
                     </div>
 
-                    {{-- FORM 1: Nút Tiếp nhận (dành cho trạng thái moi_dat) --}}
-                    <form id="frmTiepNhan" action="" method="POST" style="display: none;">
-                        @csrf
-                        @method('PATCH')
-                        <div class="mb-3">
-                            <label class="form-label fw-bold text-dark"><i class="fas fa-user-tag text-warning me-1"></i>
-                                Chọn Nguồn hàng để liên hệ chủ nhà:</label>
-                            <select name="nhan_vien_nguon_hang_id" id="nhan_vien_nguon_hang_id" class="form-select"
-                                required>
-                                <option value="">-- Chọn Nguồn hàng (Hệ thống đã tự gợi ý) --</option>
-                                @foreach ($dsNguonHang as $ng)
-                                    <option value="{{ $ng->id }}">{{ $ng->ho_ten }}</option>
-                                @endforeach
-                            </select>
-                            <small class="text-muted d-block mt-1">Lưu ý: Hệ thống đã tự động trỏ đến Nguồn hàng đang quản
-                                lý căn này.</small>
-                        </div>
-                        <button type="submit" class="btn btn-success w-100 fw-bold py-2"><i
-                                class="fas fa-hand-holding-heart me-2"></i>TIẾP NHẬN & GỬI YÊU CẦU CHỐT CHỦ</button>
+                    {{-- Form 1: NHẬN LỊCH --}}
+                    <form id="frmNhanLich" action="" method="POST" style="display: none;" class="mb-2">
+                        @csrf @method('PATCH')
+                        <button type="submit" class="btn btn-danger w-100 fw-bold py-2"><i
+                                class="fas fa-hand-paper me-2"></i>NHẬN XỬ LÝ LỊCH NÀY</button>
                     </form>
 
-                    {{-- Khu vực hiển thị Nút thao tác nhanh cho các trạng thái khác --}}
-                    <div id="actionButtons" class="d-flex flex-column gap-2 mt-3">
-                        <a href="#" id="btnFullDetail" class="btn btn-outline-primary fw-bold"><i
-                                class="fas fa-external-link-alt me-1"></i>Mở trang chi tiết lịch hẹn</a>
+                    {{-- Form 2: CHUYỂN NGUỒN & TỪ CHỐI (Sau khi nhận) --}}
+                    <div id="boxXacNhan" style="display: none;">
+                        <div class="alert alert-info small mb-3">Hãy gọi khách hàng xác nhận. Nếu thông tin chuẩn, chọn
+                            Nguồn để yêu cầu mở cửa.</div>
+                        <form id="frmChuyenNguon" action="" method="POST" class="mb-3">
+                            @csrf @method('PATCH')
+                            <div class="mb-2">
+                                <label class="form-label fw-bold small">Ghi chú (Tùy chọn):</label>
+                                <input type="text" name="ghi_chu_sale" class="form-control form-control-sm"
+                                    placeholder="Ghi chú cho Nguồn...">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-dark"><i
+                                        class="fas fa-user-tag text-warning me-1"></i> Chọn Nguồn hàng:</label>
+                                <select name="nhan_vien_nguon_hang_id" id="nhan_vien_nguon_hang_id" class="form-select"
+                                    required>
+                                    <option value="">-- Chọn Nguồn hàng --</option>
+                                    @foreach ($dsNguonHang as $ng)
+                                        <option value="{{ $ng->id }}">{{ $ng->ho_ten }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 fw-bold py-2"><i
+                                    class="fas fa-paper-plane me-2"></i>GỬI CHO NGUỒN</button>
+                        </form>
+
+                        <form id="frmTuChoi" action="" method="POST">
+                            @csrf @method('PATCH')
+                            <input type="hidden" name="ly_do_tu_choi" value="Sai số hoặc khách hủy">
+                            <button type="button" class="btn btn-outline-danger w-100 btn-sm"
+                                onclick="if(confirm('Khách ảo/sai số? Từ chối lịch này?')) this.form.submit();">Khách ảo /
+                                Báo Hủy</button>
+                        </form>
                     </div>
 
-                    {{-- NÚT XÓA DÀNH RIÊNG CHO ADMIN --}}
-                    @if ($nhanVien->vai_tro == 'admin')
-                        <hr>
-                        <form id="frmDeleteLichHen" action="" method="POST"
-                            onsubmit="return confirm('Bạn có chắc chắn muốn xóa vĩnh viễn lịch hẹn này? Hành động này không thể hoàn tác!')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-danger w-100"><i class="fas fa-trash-alt me-2"></i>Xóa
-                                vĩnh viễn lịch hẹn</button>
-                        </form>
-                    @endif
+                    <div class="mt-3 text-center">
+                        <a href="#" id="btnFullDetail" class="text-decoration-none">Vào trang xem chi tiết toàn
+                            bộ</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -480,120 +448,61 @@
 
     <script>
         function openLichHenModal(id, props, start) {
-            // Đổ dữ liệu vào giao diện Ticket
             document.getElementById('md_ten_khach').innerText = props.ten_khach || '---';
             document.getElementById('md_sdt_khach').innerText = props.sdt_khach || '---';
             document.getElementById('md_bds').innerText = props.bds || '---';
             document.getElementById('md_thoi_gian').innerText = moment(start).format('HH:mm DD/MM/YYYY');
 
-            // Xử lý Gợi ý Nguồn hàng
             let nguonSelect = document.getElementById('nhan_vien_nguon_hang_id');
-            if (nguonSelect) {
-                if (props.nguon_phu_trach_id) {
-                    nguonSelect.value = props.nguon_phu_trach_id;
-                } else {
-                    nguonSelect.value = "";
-                }
-            }
+            if (nguonSelect) nguonSelect.value = props.nguon_phu_trach_id || "";
 
             let badgeHtml = '';
-            switch (props.trang_thai) {
-                case 'moi_dat':
-                    badgeHtml = '<span class="badge bg-warning text-dark">Mới đặt</span>';
-                    break;
-                case 'cho_xac_nhan':
-                    badgeHtml = '<span class="badge bg-info text-dark">Chờ Nguồn chốt</span>';
-                    break;
-                case 'da_xac_nhan':
-                    badgeHtml = '<span class="badge bg-success">Đã chốt đi xem</span>';
-                    break;
-                case 'hoan_thanh':
-                    badgeHtml = '<span class="badge bg-secondary">Hoàn thành</span>';
-                    break;
-                case 'tu_choi':
-                    badgeHtml = '<span class="badge bg-danger">Bị từ chối</span>';
-                    break;
-                case 'huy':
-                    badgeHtml = '<span class="badge bg-danger">Đã hủy</span>';
-                    break;
-                default:
-                    badgeHtml = '<span class="badge bg-dark">' + props.trang_thai + '</span>';
-            }
-            document.getElementById('md_trang_thai').innerHTML = badgeHtml;
+            let frmNhanLich = document.getElementById('frmNhanLich');
+            let boxXacNhan = document.getElementById('boxXacNhan');
 
-            // Xử lý Form Tiếp nhận
-            let frmTiepNhan = document.getElementById('frmTiepNhan');
-            if (props.trang_thai === 'moi_dat' && (!props.sale_id || props.sale_id == {{ $nhanVien->id }})) {
-                frmTiepNhan.style.display = 'block';
-                frmTiepNhan.action = `/nhan-vien/admin/lich-hen/${id}/tiep-nhan`;
+            frmNhanLich.style.display = 'none';
+            boxXacNhan.style.display = 'none';
+
+            if (props.trang_thai === 'moi_dat' && (!props.sale_id)) {
+                badgeHtml = '<span class="badge bg-warning text-dark">Chưa có người nhận</span>';
+                frmNhanLich.style.display = 'block';
+                frmNhanLich.action = `/nhan-vien/admin/lich-hen/${id}/nhan-lich`;
+            } else if (props.trang_thai === 'sale_da_nhan' && props.sale_id == {{ $nhanVien->id }}) {
+                badgeHtml = '<span class="badge bg-primary">Đang xác nhận thông tin</span>';
+                boxXacNhan.style.display = 'block';
+                document.getElementById('frmChuyenNguon').action = `/nhan-vien/admin/lich-hen/${id}/tiep-nhan`;
+                document.getElementById('frmTuChoi').action = `/nhan-vien/admin/lich-hen/${id}/sale-tu-choi`;
             } else {
-                frmTiepNhan.style.display = 'none';
+                badgeHtml = `<span class="badge bg-secondary">${props.trang_thai}</span>`;
             }
 
-            // Xử lý Link Form Xóa (Admin)
-            let frmDelete = document.getElementById('frmDeleteLichHen');
-            if (frmDelete) {
-                frmDelete.action = `/nhan-vien/admin/lich-hen/${id}`;
-            }
-
-            // Cập nhật link nút Xem chi tiết
+            document.getElementById('md_trang_thai').innerHTML = badgeHtml;
             document.getElementById('btnFullDetail').href = `/nhan-vien/admin/lich-hen/${id}`;
-
-            // Hiển thị modal
-            var myModal = new bootstrap.Modal(document.getElementById('modalLichHen'));
-            myModal.show();
+            new bootstrap.Modal(document.getElementById('modalLichHen')).show();
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridWeek',
                 locale: 'vi',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+                    right: 'dayGridMonth,timeGridWeek,listWeek'
                 },
-                slotMinTime: "07:00:00",
-                slotMaxTime: "21:00:00",
-                allDaySlot: false,
-                height: 650,
                 events: '{{ route('nhanvien.admin.lich-hen.api.events') }}',
                 eventClick: function(info) {
-                    if (info.jsEvent) {
-                        info.jsEvent.preventDefault();
-                    }
+                    info.jsEvent.preventDefault();
                     openLichHenModal(info.event.id, info.event.extendedProps || {}, info.event.start);
                 }
             });
+            setTimeout(() => calendar.render(), 300);
 
-            // Bắt sự kiện chuyển Tab để fix lỗi render của Calendar
-            var tabCalendarEl = document.getElementById('calendar-tab');
-            if (tabCalendarEl) {
-                tabCalendarEl.addEventListener('shown.bs.tab', function() {
-                    calendar.render();
-                });
-            }
+            document.getElementById('calendar-tab').addEventListener('shown.bs.tab', () => calendar.render());
 
-            if (document.getElementById('tab-calendar').classList.contains('show')) {
-                calendar.render();
-            }
-
-            // Sự kiện click nút icon Ma thuật "Xử lý" ở danh sách
             document.querySelectorAll('.btn-trigger-modal').forEach(btn => {
                 btn.addEventListener('click', function() {
-                    let id = this.dataset.id;
-                    let start = this.dataset.start;
-                    let props = {
-                        trang_thai: this.dataset.trang_thai,
-                        ten_khach: this.dataset.ten_khach,
-                        sdt_khach: this.dataset.sdt_khach,
-                        bds: this.dataset.bds,
-                        sale_id: this.dataset.sale_id,
-                        nguon_phu_trach_id: this.dataset
-                            .nguon_phu_trach_id // <-- Data quan trọng
-                    };
-                    openLichHenModal(id, props, start);
+                    openLichHenModal(this.dataset.id, this.dataset, this.dataset.start);
                 });
             });
         });
