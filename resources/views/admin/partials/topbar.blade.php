@@ -242,8 +242,6 @@
         </form>
     </div>
 </div>
-
-{{-- Script inline — đảm bảo chạy ngay cả khi admin.js chưa load --}}
 <script>
     // Topbar helpers
     (function() {

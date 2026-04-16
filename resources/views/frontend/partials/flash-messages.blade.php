@@ -1,9 +1,3 @@
-{{-- ══════════════════════════════════════
-     FLASH MESSAGES — CSS + HTML + JS
-     Dùng: session('success/error/info/warning')
-     hoặc gọi từ JS: showFlash('nội dung', 'success')
-══════════════════════════════════════ --}}
-
 <style>
     /* Khung chứa — cố định góc phải */
     .flash-container {
@@ -98,8 +92,6 @@
         opacity: 1;
     }
 </style>
-
-{{-- HTML: đọc session từ Laravel --}}
 <div class="flash-container" id="flashContainer">
 
     @if (session('success'))

@@ -16,10 +16,7 @@ class ChatController extends Controller
 
     public function __construct(private GeminiChatService $geminiChatService) {}
 
-    // ══════════════════════════════════════════════
-    // KHỞI TẠO PHIÊN CHAT
-    // POST /chat/khoi-tao
-    // ══════════════════════════════════════════════
+
     public function khoiTao(Request $request)
     {
         $request->validate([

@@ -1,4 +1,3 @@
-{{-- Dùng @include('frontend.partials.form-lien-he-bds', ['bds' => $batDongSan]) --}}
 <div
     style="background:#fff;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,.08);padding:24px;border:1.5px solid #f0f2f5">
     <div style="font-size:1rem;font-weight:800;color:#1a3c5e;margin-bottom:16px;display:flex;align-items:center;gap:8px">

@@ -1,7 +1,3 @@
-{{-- ====================================================================
-     AUTH MODAL HOÀN CHỈNH (Đã áp dụng Tông màu Luxury Gold/Navy)
-==================================================================== --}}
-
 <div class="kh-modal-backdrop" id="authModalBackdrop" onclick="closeAuthModal()"></div>
 
 <div class="kh-modal" id="authModal">
@@ -212,7 +208,6 @@
     </div>
 </div>
 
-{{-- Script gọi mở Modal nếu có Session (Cái này phải dùng lệnh Blade nên để nguyên ở đây) --}}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         @if (session('open_auth_modal'))

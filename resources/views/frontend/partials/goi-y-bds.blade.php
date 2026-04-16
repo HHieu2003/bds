@@ -1,4 +1,3 @@
-{{-- resources/views/frontend/partials/goi-y-bds.blade.php --}}
 @if ($goiYBds->isNotEmpty())
     <section class="section-goi-y py-5" style="background: var(--bg-alt);">
         <div class="container">

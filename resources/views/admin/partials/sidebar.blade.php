@@ -2,7 +2,6 @@
     $nhanVien = Auth::guard('nhanvien')->user();
     $routeName = Route::currentRouteName() ?? '';
 
-    // ── Badges (Giữ nguyên logic tính toán xuất sắc của bạn) ──
     $kyGuiCount = \App\Models\KyGui::where('trang_thai', 'cho_duyet')->count();
 
     if ($nhanVien->isSale()) {

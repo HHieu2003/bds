@@ -1,9 +1,3 @@
-/* =========================================================
-   ADMIN.JS — THÀNH CÔNG LAND  v4.0
-   Dùng Bootstrap 5 cho: Modal, Toast, Alert.
-   Chỉ giữ custom: Sidebar, Topbar dropdown,
-   Confirm delete, Form helpers, Table helpers, Utilities.
-========================================================= */
 "use strict";
 
 /* =========================================================

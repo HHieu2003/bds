@@ -1,7 +1,3 @@
-{{-- ══════════════════════════════════════════
-     CONTACT PANEL — Thành Công Land
-══════════════════════════════════════════ --}}
-
 {{-- NÚT MỞ PANEL --}}
 <button id="contactToggleBtn" onclick="toggleContactPanel()" title="Liên hệ với chúng tôi" class="cp-toggle-btn">
     <div class="cp-btn-inner">

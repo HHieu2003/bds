@@ -1,5 +1,4 @@
-{{-- resources/views/admin/bai-viet/_form.blade.php --}}
-{{-- Variables: $baiViet (BaiViet|null), $isEdit (bool), $danhMucs (Collection) --}}
+
 @php
     $isEdit = $isEdit ?? isset($baiViet);
     $v = fn($key, $default = '') => old($key, $isEdit ? $baiViet->{$key} ?? $default : $default);

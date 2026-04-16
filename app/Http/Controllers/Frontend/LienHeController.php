@@ -10,6 +10,11 @@ use Illuminate\Http\Request;
 
 class LienHeController extends Controller
 {
+    public function index()
+    {
+        return view('frontend.pages.lien-he');
+    }
+
     public function store(Request $request)
     {
         $request->validate([

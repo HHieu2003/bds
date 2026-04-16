@@ -263,20 +263,18 @@
                     // Hiển thị thông báo nhấp nháy cho người dùng biết
                     $('#nguon-hint').html(
                         '<span class="text-success fw-bold"><i class="fas fa-magic"></i> Đã tự động chọn Nguồn phụ trách căn này.</span>'
-                        );
+                    );
                 } else {
                     // Nếu BĐS không có người phụ trách (Nhà ngoài / Bị lỗi data) -> Reset ô Nguồn
                     $nguonSelect.val('').trigger('change');
                     $('#nguon-hint').html(
                         '<span class="text-danger fw-bold"><i class="fas fa-exclamation-triangle"></i> BĐS này chưa có người phụ trách, vui lòng tự chọn Nguồn!</span>'
-                        );
+                    );
                 }
             });
         });
 
-        // ==========================================
-        // LOGIC: TỰ ĐỘNG ĐIỀN DATA KHÁCH HÀNG
-        // ==========================================
+
         function autoFillKhach(sel) {
             const opt = sel.options[sel.selectedIndex];
 

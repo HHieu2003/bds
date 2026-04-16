@@ -179,7 +179,7 @@ class DuAnController extends Controller
         $this->yeuCauQuyenQuanLy();
 
         $duAn->update(['hien_thi' => !$duAn->hien_thi]);
-        return response()->json(['hien_thi' => $duAn->hien_thi]);
+        return response()->json(['ok' => true, 'hien_thi' => $duAn->hien_thi, 'msg' => 'Cập nhật thành công!']);
     }
 
     // ── Tạo slug unique ──

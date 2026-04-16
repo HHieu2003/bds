@@ -286,7 +286,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::post('/{id}/tiep-nhan', [AdminChatController::class, 'tiepNhan'])->name('tiep-nhan');
                     Route::post('/{id}/dong',      [AdminChatController::class, 'dongPhien'])->name('dong');
                     Route::get('/{id}/long-poll',  [AdminChatController::class, 'longPoll'])->name('long-poll');
-                    Route::delete('/{id}',         [AdminChatController::class, 'destroy'])->name('destroy'); // ĐÃ BỔ SUNG ROUTE XÓA CHAT
+                    Route::delete('/{id}',         [AdminChatController::class, 'destroy'])->name('destroy');
                 });
             });
         });

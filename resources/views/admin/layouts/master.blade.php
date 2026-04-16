@@ -41,15 +41,11 @@
     <div id="main-wrapper">
         <div class="main-content">
 
-            {{-- Flash Messages: hiển thị bằng toast góc phải trên (xử lý ở script cuối trang) --}}
-
             {{-- Nội dung từng trang --}}
             @yield('content')
 
         </div>
     </div>
-
-    {{-- ── Confirm Delete Modal (custom — dùng chung toàn admin) ── --}}
     <div id="confirmModal">
         <div class="confirm-box">
             <div class="confirm-icon">

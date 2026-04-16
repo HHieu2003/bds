@@ -62,7 +62,8 @@
                                                 @if (isset($nganHangs) && $nganHangs->count() > 0)
                                                     @foreach ($nganHangs as $nh)
                                                         <option value="{{ $nh->lai_suat_uu_dai }}">{{ $nh->ten_ngan_hang }}
-                                                            (Lãi suất ưu đãi: {{ $nh->lai_suat_uu_dai }}%/năm)</option>
+                                                            (Lãi suất ưu đãi: {{ $nh->lai_suat_uu_dai }}%/năm)
+                                                        </option>
                                                     @endforeach
                                                 @else
                                                     <option value="6.5">Ngân hàng Mặc định (Lãi suất: 6.5%/năm)</option>
@@ -224,10 +225,6 @@
 
     @push('styles')
         <style>
-            /* =======================================================
-               CSS SỬ DỤNG TRỰC TIẾP BIẾN TỪ FRONTEND.CSS
-            ======================================================= */
-
             .finance-page-wrapper {
                 background: var(--bg-main);
                 min-height: 100vh;

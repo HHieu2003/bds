@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 
 class BatDongSanObserver
 {
-    // Đảm bảo Observer chỉ chạy sau khi Database đã lưu xong hoàn toàn (rất quan trọng)
     public $afterCommit = true;
 
     /**

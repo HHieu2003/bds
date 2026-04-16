@@ -49,7 +49,6 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
 
-        // ĐỐI TÁC LẬP TRÌNH: Đăng ký Observer theo dõi thay đổi giá Bất động sản
         BatDongSan::observe(BatDongSanObserver::class);
 
         try {
@@ -64,8 +63,6 @@ class AppServiceProvider extends ServiceProvider
                 ->get();
 
             $tongSoDuAn = DuAn::where('hien_thi', true)->count();
-            // Thêm vào bên trong try{} cùng chỗ với $khuVucMenu
-
             $duAnMenu = DuAn::withCount([
                 'batDongSans as so_can_ban' => fn($q) =>
                 $q->where('nhu_cau', 'ban')

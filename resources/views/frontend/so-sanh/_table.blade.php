@@ -1,5 +1,3 @@
-{{-- AJAX partial — trả về bởi SoSanhController@modal --}}
-
 @php
     $formatNoiThat = function ($value) {
         if (!$value) {

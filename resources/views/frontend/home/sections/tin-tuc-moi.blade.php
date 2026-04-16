@@ -1,8 +1,5 @@
 @push('styles')
     <style>
-        /* ══════════════════════════════
-               SECTION TIN TỨC — MAGAZINE
-            ══════════════════════════════ */
         .news-section {
             background: var(--bg-alt);
             padding: 72px 0;
@@ -51,8 +48,8 @@
         }
 
         /* ════════════════════════════
-               CỘT TRÁI — chiều cao khớp cột phải
-            ════════════════════════════ */
+                   CỘT TRÁI — chiều cao khớp cột phải
+                ════════════════════════════ */
         .news-col-left {
             display: flex;
             flex-direction: column;
@@ -221,8 +218,8 @@
         }
 
         /* ════════════════════════════
-               CỘT PHẢI: 4 bài xếp dọc
-            ════════════════════════════ */
+                   CỘT PHẢI: 4 bài xếp dọc
+                ════════════════════════════ */
         .news-col-right {
             display: flex;
             flex-direction: column;

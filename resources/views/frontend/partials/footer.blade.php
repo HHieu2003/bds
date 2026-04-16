@@ -1,9 +1,3 @@
-{{-- ============================================================
-     FOOTER — Thành Công Land
-============================================================ --}}
-
-{{-- ── Pre-footer: Đăng ký nhận tin ── --}}
-{{-- ── Pre-footer: Đăng ký nhận tin ── --}}
 <div class="footer-newsletter">
     <div class="container-fluid px-4">
         <div class="newsletter-inner">

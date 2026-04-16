@@ -18,15 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'khach-hang/logout',
             'tai-khoan/dang-xuat',
         ]);
-        // ✅ THÊM ĐOẠN NÀY — redirect đúng trang login theo URL
         $middleware->redirectGuestsTo(function (Request $request) {
 
-            // Nếu đang ở trang nhân viên/admin → về login nhân viên
             if ($request->is('nhan-vien/*') || $request->is('nhan-vien')) {
                 return route('nhanvien.login');
             }
 
-            // Còn lại (khách hàng, frontend) → về login khách hàng
             return route('khach-hang.login');
         });
 
