@@ -6,8 +6,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                                                                                                                                                           TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                                                                                                                                                        ═══════════════════════════════════════ */
+                                                                                                                                                                                                                                                               TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                                                                            ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1290,7 +1290,8 @@
                                 <div class="callback-form-title">
                                     <i class="fas fa-phone-volume"></i> Yêu cầu tư vấn
                                 </div>
-                                <form id="formCallBack" onsubmit="guiYeuCauGoiLai(event)">
+                                <form id="formCallBack" method="POST" action="{{ route('frontend.lien-he.store') }}"
+                                    onsubmit="guiYeuCauGoiLai(event)">
                                     @csrf
                                     <input type="hidden" name="bat_dong_san_id" value="{{ $bds->id }}">
                                     <input type="hidden" name="email" value="{{ $customer?->email ?? '' }}">

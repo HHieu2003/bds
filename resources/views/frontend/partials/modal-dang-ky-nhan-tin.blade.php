@@ -129,7 +129,7 @@
         const nhuCauInput = document.getElementById('dk_nhu_cau');
         const khuVucInput = document.getElementById('dk_khu_vuc_id');
         const duAnInput = document.getElementById('dk_du_an_id');
-    const soPhongNguInput = document.getElementById('dk_so_phong_ngu');
+        const soPhongNguInput = document.getElementById('dk_so_phong_ngu');
 
         if (email) emailInput.value = email;
 
@@ -287,12 +287,20 @@
         btn.disabled = true;
 
         try {
+            const requestHeaders = (typeof window.getCsrfHeaders === 'function') ?
+                window.getCsrfHeaders({
+                    'Accept': 'application/json',
+                }) :
+                {
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                };
+
             const response = await fetch("{{ route('frontend.dang-ky-nhan-tin.store') }}", {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'Accept': 'application/json',
-                }
+                headers: requestHeaders,
+                credentials: 'same-origin'
             });
 
             const data = await response.json();

@@ -33,6 +33,13 @@ function initGalleryViewer() {
 }
 
 function buildHeaders() {
+    if (typeof window.getCsrfHeaders === "function") {
+        return window.getCsrfHeaders({
+            "X-Requested-With": "XMLHttpRequest",
+            Accept: "application/json",
+        });
+    }
+
     return {
         "X-Requested-With": "XMLHttpRequest",
         Accept: "application/json",
@@ -75,7 +82,12 @@ window.guiYeuCauGoiLai = function guiYeuCauGoiLai(e) {
     btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang gửi...';
     btn.disabled = true;
 
-    fetch(window.BDS_SHOW?.routes?.lienHeStore || "", {
+    const lienHeEndpoint =
+        window.BDS_SHOW?.routes?.lienHeStore ||
+        form.getAttribute("action") ||
+        "";
+
+    fetch(lienHeEndpoint, {
         method: "POST",
         headers: buildHeaders(),
         credentials: "same-origin",
@@ -163,10 +175,8 @@ function initDatLichForm() {
 
         fetch(form.action, {
             method: "POST",
-            headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                Accept: "application/json",
-            },
+            headers: buildHeaders(),
+            credentials: "same-origin",
             body: new FormData(form),
         })
             .then(async (response) => {

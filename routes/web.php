@@ -211,7 +211,10 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             });
 
             Route::middleware('check.role:admin,nguon_hang')->group(function () {
-                Route::resource('chu-nha', ChuNhaController::class)->except(['create', 'edit']);
+                Route::get('chu-nha/create', function () {
+                    return redirect()->route('nhanvien.admin.chu-nha.index');
+                })->name('chu-nha.create');
+                Route::resource('chu-nha', ChuNhaController::class)->except(['create', 'edit', 'show']);
                 Route::delete('bat-dong-san/{batDongSan}', [BatDongSanController::class, 'destroy'])->name('bat-dong-san.destroy');
 
                 Route::get('ky-gui/{kyGui}/duyet', [AdminKyGuiController::class, 'duyetForm'])->name('ky-gui.duyet');

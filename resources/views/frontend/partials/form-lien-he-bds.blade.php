@@ -51,11 +51,19 @@
         const formData = new FormData(this);
 
         try {
+            const requestHeaders = (typeof window.getCsrfHeaders === 'function') ?
+                window.getCsrfHeaders({
+                    'X-Requested-With': 'XMLHttpRequest'
+                }) :
+                {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                };
+
             const res = await fetch('{{ route('frontend.lien-he.store') }}', {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
+                headers: requestHeaders,
+                credentials: 'same-origin',
                 body: formData
             });
             const data = await res.json();

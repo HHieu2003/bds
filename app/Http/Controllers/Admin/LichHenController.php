@@ -25,7 +25,7 @@ class LichHenController extends Controller
         // ========================================================
         // 1. XÂY DỰNG DATA CHO TAB "DANH SÁCH TOÀN BỘ" (CHUNG CHO MỌI ROLE)
         // ========================================================
-        $queryList = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang']);
+        $queryList = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.duAn', 'nhanVienSale', 'nhanVienNguonHang']);
 
         // Phân quyền nhìn thấy trên Danh sách
         if ($nhanVien->isSale()) {
@@ -72,7 +72,7 @@ class LichHenController extends Controller
         // ========================================================
         if ($nhanVien->isNguonHang()) {
             // Data riêng cho Tab "Cần xử lý" của Nguồn hàng
-            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale'])
+            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.duAn', 'nhanVienSale'])
                 ->where('nhan_vien_nguon_hang_id', $nhanVien->id)
                 ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
                 ->orderBy('thoi_gian_hen', 'asc')
@@ -83,7 +83,7 @@ class LichHenController extends Controller
 
         // Admin có thể vào cả 2 giao diện: Calendar/List và To-do của Nguồn hàng.
         if ($nhanVien->isAdmin() && $request->get('giao_dien') === 'nguon_hang') {
-            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'nhanVienSale', 'nhanVienNguonHang'])
+            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.duAn', 'nhanVienSale', 'nhanVienNguonHang'])
                 ->whereIn('trang_thai', ['cho_xac_nhan', 'da_xac_nhan'])
                 ->orderBy('thoi_gian_hen', 'asc')
                 ->get();

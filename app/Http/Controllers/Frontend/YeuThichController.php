@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\KhachHang;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,6 +19,7 @@ class YeuThichController extends Controller
             return redirect()->route('frontend.home')->with('info', 'Vui lòng đăng nhập để xem danh sách yêu thích.');
         }
 
+        /** @var KhachHang $khachHang */
         $khachHang = Auth::guard('customer')->user();
 
         // 2. Lấy danh sách BĐS thông qua relationship đã tạo ở Bước 1
@@ -40,6 +42,7 @@ class YeuThichController extends Controller
         }
 
         $bdsId = $request->bat_dong_san_id;
+        /** @var KhachHang $khachHang */
         $khachHang = Auth::guard('customer')->user();
 
         // 2. Kiểm tra xem BĐS này đã được lưu chưa

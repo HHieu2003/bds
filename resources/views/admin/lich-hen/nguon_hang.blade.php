@@ -283,9 +283,9 @@
                                                 {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}
                                             </div>
                                             <div class="small text-muted text-truncate" style="max-width: 260px;"
-                                                title="{{ $lh->batDongSan->dia_chi ?? 'Khu vực chưa rõ' }}">
-                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                                {{ $lh->batDongSan->dia_chi ?? 'Khu vực chưa rõ' }}
+                                                title="{{ optional($lh->batDongSan)->duAn?->ten_du_an ?? 'Dự án chưa rõ' }}">
+                                                <i class="fas fa-sitemap text-danger me-1"></i>
+                                                {{ optional($lh->batDongSan)->duAn?->ten_du_an ?? 'Dự án chưa rõ' }}
                                             </div>
                                         </td>
                                         <td class="small fw-bold">{{ $lh->nhanVienSale->ho_ten ?? 'N/A' }}</td>
@@ -386,9 +386,9 @@
                                             {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}
                                         </div>
                                         <div class="text-muted small mb-2 text-truncate"
-                                            title="{{ $lh->batDongSan->dia_chi ?? 'Khu vực chưa rõ' }}">
-                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
-                                            {{ $lh->batDongSan->dia_chi ?? 'Khu vực chưa rõ' }}
+                                            title="{{ optional($lh->batDongSan)->duAn?->ten_du_an ?? 'Dự án chưa rõ' }}">
+                                            <i class="fas fa-sitemap text-danger me-1"></i>
+                                            {{ optional($lh->batDongSan)->duAn?->ten_du_an ?? 'Dự án chưa rõ' }}
                                         </div>
                                         <div class="small">
                                             <span class="text-muted"><i class="fas fa-user-tag me-1"></i> Sale

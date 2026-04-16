@@ -93,8 +93,6 @@
         </div>
     </div>
 
-    @include('frontend.partials.flash-messages')
-
     {{-- KHỐI KPI --}}
     <div class="row g-3 mb-4">
         <div class="col-6 col-md-3 col-lg-2">
@@ -149,7 +147,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request" type="button"
                     role="tab">
-                    <i class="fas fa-inbox me-1"></i> Yêu cầu tư vấn / Kèo khách
+                    <i class="fas fa-inbox me-1"></i> Yêu cầu tư vấn
                     @if (($lienHeThongKe['moi'] ?? 0) > 0)
                         <span class="badge bg-danger rounded-pill ms-1">{{ $lienHeThongKe['moi'] }}</span>
                     @endif
@@ -434,6 +432,7 @@
                     {{-- FORM 1: Nút Tiếp nhận (dành cho trạng thái moi_dat) --}}
                     <form id="frmTiepNhan" action="" method="POST" style="display: none;">
                         @csrf
+                        @method('PATCH')
                         <div class="mb-3">
                             <label class="form-label fw-bold text-dark"><i class="fas fa-user-tag text-warning me-1"></i>
                                 Chọn Nguồn hàng để liên hệ chủ nhà:</label>
