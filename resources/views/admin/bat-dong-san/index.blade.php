@@ -214,11 +214,11 @@
                         @unless ($isSaleView)
                             <th style="width: 12%">Chủ nhà</th>
                         @endunless
-                        <th style="width: 13%">Giá</th>
+                        <th style="width: 11%">Giá</th>
                         <th style="width: 9%">Diện tích</th>
                         <th style="width: 12%">Trạng thái</th>
                         <th class="text-center" style="width: 92px">Hiển thị</th>
-                        <th class="text-center" style="width: 90px">Thao tác</th>
+                        <th class="text-center" style="width: 105px">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -303,13 +303,12 @@
                                             data-cap-nhat="{{ $bds->updated_at?->format('d/m/Y H:i') ?: '—' }}"
                                             data-ghi-chu="{{ $bds->ghi_chu_noi_bo ?: '' }}"
                                             data-image="{{ $hinhAnhBds }}"
-                                            style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.85rem;"
+                                            style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 0.75rem;"
                                             title="Xem nhanh thông tin BĐS">{{ $bds->tieu_de }}</button>
                                         <div class="d-flex flex-wrap gap-1 align-items-center" style="font-size: 0.7rem">
                                             @if ($bds->duAn)
                                                 <span class="text-muted text-truncate" style="max-width: 130px;"
-                                                    title="{{ $bds->duAn->ten_du_an }}"><i
-                                                        class="fas fa-city me-1"></i>{{ $bds->duAn->ten_du_an }}</span>
+                                                    title="{{ $bds->duAn->ten_du_an }}">{{ $bds->duAn->ten_du_an }}</span>
                                             @endif
                                             @if ($bds->nhanVienPhuTrach)
                                                 <span class="text-muted ms-1"><i
@@ -331,12 +330,12 @@
                                     @if ($bds->chuNha)
                                         <a href="javascript:void(0)"
                                             class="text-decoration-none fw-bold text-dark d-block text-truncate btn-view-chunha"
-                                            style="font-size: 0.85rem;" data-hoten="{{ $bds->chuNha->ho_ten }}"
+                                            style="font-size: 0.7rem;" data-hoten="{{ $bds->chuNha->ho_ten }}"
                                             data-sdt="{{ $bds->chuNha->so_dien_thoai }}"
                                             data-email="{{ $bds->chuNha->email }}" data-cccd="{{ $bds->chuNha->cccd }}"
                                             data-diachi="{{ $bds->chuNha->dia_chi }}"
                                             data-ghichu="{{ $bds->chuNha->ghi_chu }}">
-                                            <i class="fas fa-user-tie text-secondary me-1"></i>{{ $bds->chuNha->ho_ten }}
+                                            {{ $bds->chuNha->ho_ten }}
                                         </a>
                                         <div class="text-muted" style="font-size: 0.75rem;">{{ $bds->chuNha->so_dien_thoai }}
                                         </div>
@@ -712,8 +711,7 @@
         <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content border-0 shadow">
                 <div class="modal-header bg-light border-bottom-0">
-                    <h5 class="modal-title fw-bold text-navy">
-                        <i class="fas fa-building text-primary me-2"></i><span id="vb_tieu_de">Thông tin BĐS</span>
+                    <h5 class="modal-title fw-bold text-navy"><span id="vb_tieu_de">Thông tin BĐS</span>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>

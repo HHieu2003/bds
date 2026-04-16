@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\NhanVien;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -58,16 +59,35 @@ class NhanVienController extends Controller
     // CREATE / STORE
     public function store(Request $request)
     {
-        // Hỗ trợ cả AJAX (JSON) và form thường
-        $data = $this->validateNhanVien($request);
-        $data['vai_tro']      = NhanVien::normalizeVaiTro($data['vai_tro']);
+        try {
+            // Hỗ trợ cả AJAX (JSON) và form thường
+            $data = $this->validateNhanVien($request);
+            $data['vai_tro']      = NhanVien::normalizeVaiTro($data['vai_tro']);
 
-        $data['password']     = Hash::make($data['mat_khau']);
-        $data['kich_hoat']    = $request->input('kich_hoat', '1') === '1' || $request->boolean('kich_hoat', true);
-        $data['anh_dai_dien'] = $this->handleAvatar($request);
-        unset($data['mat_khau'], $data['mat_khau_confirmation']);
+            $data['password']     = Hash::make($data['mat_khau']);
+            $data['kich_hoat']    = $request->input('kich_hoat', '1') === '1' || $request->boolean('kich_hoat', true);
+            $data['anh_dai_dien'] = $this->handleAvatar($request);
+            unset($data['mat_khau'], $data['mat_khau_confirmation']);
 
-        $nv = NhanVien::create($data);
+            $nv = NhanVien::create($data);
+        } catch (QueryException $e) {
+            if ((int) $e->getCode() === 23000) {
+                $msg = 'Email hoặc số điện thoại đã tồn tại trong hệ thống.';
+
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'ok' => false,
+                        'errors' => [
+                            'email' => [$msg],
+                        ],
+                    ], 422);
+                }
+
+                return back()->withInput()->with('error', '❌ ' . $msg);
+            }
+
+            throw $e;
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -102,25 +122,44 @@ class NhanVienController extends Controller
     // EDIT / UPDATE
     public function update(Request $request, NhanVien $nhanVien)
     {
-        $data = $this->validateNhanVien($request, $nhanVien->id);
-        $data['vai_tro'] = NhanVien::normalizeVaiTro($data['vai_tro']);
+        try {
+            $data = $this->validateNhanVien($request, $nhanVien->id);
+            $data['vai_tro'] = NhanVien::normalizeVaiTro($data['vai_tro']);
 
-        if (!empty($data['mat_khau'])) {
-            $data['password'] = Hash::make($data['mat_khau']);
-        }
-        unset($data['mat_khau'], $data['mat_khau_confirmation']);
-
-        $data['kich_hoat'] = $request->input('kich_hoat', '0') === '1' || $request->boolean('kich_hoat');
-
-        $newAvatar = $this->handleAvatar($request);
-        if ($newAvatar) {
-            if ($nhanVien->anh_dai_dien) {
-                Storage::disk('public')->delete($nhanVien->anh_dai_dien);
+            if (!empty($data['mat_khau'])) {
+                $data['password'] = Hash::make($data['mat_khau']);
             }
-            $data['anh_dai_dien'] = $newAvatar;
-        }
+            unset($data['mat_khau'], $data['mat_khau_confirmation']);
 
-        $nhanVien->update($data);
+            $data['kich_hoat'] = $request->input('kich_hoat', '0') === '1' || $request->boolean('kich_hoat');
+
+            $newAvatar = $this->handleAvatar($request);
+            if ($newAvatar) {
+                if ($nhanVien->anh_dai_dien) {
+                    Storage::disk('public')->delete($nhanVien->anh_dai_dien);
+                }
+                $data['anh_dai_dien'] = $newAvatar;
+            }
+
+            $nhanVien->update($data);
+        } catch (QueryException $e) {
+            if ((int) $e->getCode() === 23000) {
+                $msg = 'Email hoặc số điện thoại đã tồn tại trong hệ thống.';
+
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'ok' => false,
+                        'errors' => [
+                            'email' => [$msg],
+                        ],
+                    ], 422);
+                }
+
+                return back()->withInput()->with('error', '❌ ' . $msg);
+            }
+
+            throw $e;
+        }
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -190,7 +229,7 @@ class NhanVienController extends Controller
                 'required',
                 'email',
                 'max:150',
-                Rule::unique('nhan_vien', 'email')->ignore($ignoreId)->whereNull('deleted_at'),
+                Rule::unique('nhan_vien', 'email')->ignore($ignoreId),
             ],
             'mat_khau'            => $ignoreId ? 'nullable|string|min:6|max:50' : 'required|string|min:6|max:50',
             'mat_khau_confirmation' => $ignoreId ? 'nullable|string' : 'required|string',
@@ -199,7 +238,7 @@ class NhanVienController extends Controller
                 'nullable',
                 'string',
                 'max:20',
-                Rule::unique('nhan_vien', 'so_dien_thoai')->ignore($ignoreId)->whereNull('deleted_at'),
+                Rule::unique('nhan_vien', 'so_dien_thoai')->ignore($ignoreId),
             ],
             'anh_dai_dien'        => 'nullable|image|mimes:jpeg,png,webp|max:2048',
             'kich_hoat'           => 'nullable',
