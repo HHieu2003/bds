@@ -97,6 +97,18 @@
         </script>
     @endif
 
+    @if ($errors->any())
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const errs = @json($errors->all());
+                if (typeof showAdminToast !== 'function') return;
+                errs.forEach((msg, idx) => {
+                    setTimeout(() => showAdminToast(msg, 'error'), 350 + idx * 220);
+                });
+            });
+        </script>
+    @endif
+
     @stack('scripts')
 
 </body>

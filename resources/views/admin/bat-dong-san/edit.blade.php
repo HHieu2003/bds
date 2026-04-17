@@ -14,12 +14,18 @@
             <h1 class="page-header-title"><i class="fas fa-edit text-primary"></i> Chỉnh sửa BĐS <span
                     class="badge bg-warning text-dark ms-2 fs-6">#{{ $batDongSan->ma_bat_dong_san }}</span></h1>
         </div>
-        @if ($batDongSan->slug)
-            <a href="{{ route('frontend.bat-dong-san.show', $batDongSan->slug) }}" target="_blank"
-                class="btn btn-outline-primary bg-white shadow-sm">
-                <i class="fas fa-external-link-alt me-1"></i> Xem trang hiển thị
+        <div class="d-flex gap-2 align-items-center">
+            <a href="{{ route('nhanvien.admin.bat-dong-san.create', array_filter(['clone_from' => $batDongSan->id, 'redirect_to' => request('redirect_to')])) }}"
+                class="btn btn-outline-secondary bg-white shadow-sm">
+                <i class="fas fa-copy me-1"></i> Sao chép tin này
             </a>
-        @endif
+            @if ($batDongSan->slug)
+                <a href="{{ route('frontend.bat-dong-san.show', $batDongSan->slug) }}" target="_blank"
+                    class="btn btn-outline-primary bg-white shadow-sm">
+                    <i class="fas fa-external-link-alt me-1"></i> Xem trang hiển thị
+                </a>
+            @endif
+        </div>
     </div>
 
     @if (session('success'))
@@ -29,16 +35,6 @@
         </div>
     @endif
 
-    @if ($errors->any())
-        <div class="alert alert-danger shadow-sm border-0 mb-4">
-            <div class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Vui lòng kiểm tra lại:</div>
-            <ul class="mb-0 ps-3" style="font-size: 0.85rem">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
 
     <form action="{{ route('nhanvien.admin.bat-dong-san.update', $batDongSan) }}" method="POST"
         enctype="multipart/form-data" id="bdsForm">

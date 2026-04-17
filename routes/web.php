@@ -230,7 +230,8 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::put('/{batDongSan}',            [BatDongSanController::class, 'update'])->name('update');
                     Route::patch('/{batDongSan}/toggle',   [BatDongSanController::class, 'toggleHienThi'])->name('toggle');
                     Route::patch('/{batDongSan}/trang-thai', [BatDongSanController::class, 'doiTrangThai'])->name('trang-thai');
-                    Route::delete('/{batDongSan}/xoa-anh', [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');
+                    Route::delete('/{batDongSan}/xoa-anh',   [BatDongSanController::class, 'xoaAnh'])->name('xoa-anh');
+                    Route::delete('/{batDongSan}/xoa-video', [BatDongSanController::class, 'xoaVideo'])->name('xoa-video');
                 });
             });
 

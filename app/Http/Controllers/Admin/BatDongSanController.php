@@ -217,17 +217,28 @@ class BatDongSanController extends Controller
     {
         $this->chongSaleQuanLyTonKho();
 
-        $duAns = DuAn::orderBy('ten_du_an')->get();
+        $duAns    = DuAn::orderBy('ten_du_an')->get();
         $nhanViens = NhanVien::where('kich_hoat', true)->get();
-        $chuNhas = ChuNha::orderBy('ho_ten')->get();
+        $chuNhas   = ChuNha::orderBy('ho_ten')->get();
         $constants = $this->getConstants();
         $defaultNhanVienPhuTrachId = Auth::guard('nhanvien')->id();
-        $prefillNhuCau = in_array($request->query('nhu_cau'), ['ban', 'thue'], true)
-            ? $request->query('nhu_cau')
-            : null;
-        $prefillDuAnId = $request->filled('du_an_id') && $duAns->contains('id', (int) $request->query('du_an_id'))
-            ? (int) $request->query('du_an_id')
-            : null;
+
+        // ----- SAO CHÉP TỪ BDS CŨ -----
+        $sourceBds = null;
+        if ($request->filled('clone_from')) {
+            $sourceBds = BatDongSan::find((int) $request->clone_from);
+        }
+
+        // Prefill nhu_cau / du_an_id (uu tien source BDS neu co)
+        $prefillNhuCau = $sourceBds
+            ? $sourceBds->nhu_cau
+            : (in_array($request->query('nhu_cau'), ['ban', 'thue'], true) ? $request->query('nhu_cau') : null);
+
+        $prefillDuAnId = $sourceBds
+            ? $sourceBds->du_an_id
+            : ($request->filled('du_an_id') && $duAns->contains('id', (int) $request->query('du_an_id'))
+                ? (int) $request->query('du_an_id')
+                : null);
 
         return view('admin.bat-dong-san.create', compact(
             'duAns',
@@ -236,7 +247,8 @@ class BatDongSanController extends Controller
             'constants',
             'defaultNhanVienPhuTrachId',
             'prefillNhuCau',
-            'prefillDuAnId'
+            'prefillDuAnId',
+            'sourceBds'
         ));
     }
 
@@ -277,6 +289,15 @@ class BatDongSanController extends Controller
             }
         }
         $data['album_anh'] = $album;
+
+        // Upload Album Video
+        $albumVideo = [];
+        if ($request->hasFile('album_video')) {
+            foreach ($request->file('album_video') as $file) {
+                $albumVideo[] = $file->store('bat-dong-san/video', 'public');
+            }
+        }
+        $data['album_video'] = $albumVideo;
 
         BatDongSan::create($data);
 
@@ -386,6 +407,29 @@ class BatDongSanController extends Controller
         // 3. Gộp mảng ảnh
         $data['album_anh'] = array_values(array_merge($albumCu, $albumMoi));
 
+        // --- XỬ LÝ ALBUM VIDEO ---
+        $albumVideoCu = $this->normalizeAlbumAnh($batDongSan->album_video ?? []);
+        $xoaVideo = $request->input('xoa_video', []);
+
+        // 1. Xóa video cũ được đánh dấu X
+        if (is_array($xoaVideo) && count($xoaVideo) > 0) {
+            foreach ($xoaVideo as $path) {
+                Storage::disk('public')->delete($path);
+                $albumVideoCu = array_filter($albumVideoCu, fn($p) => $p !== $path);
+            }
+        }
+
+        // 2. Thêm video mới
+        $albumVideoMoi = [];
+        if ($request->hasFile('album_video')) {
+            foreach ($request->file('album_video') as $file) {
+                $albumVideoMoi[] = $file->store('bat-dong-san/video', 'public');
+            }
+        }
+
+        // 3. Gộp mảng video
+        $data['album_video'] = array_values(array_merge($albumVideoCu, $albumVideoMoi));
+
         $batDongSan->update($data);
 
         return $this->redirectVeDanhSach($request)->with('success', '✅ Đã cập nhật thông tin Bất động sản!');
@@ -401,10 +445,18 @@ class BatDongSanController extends Controller
             Storage::disk('public')->delete($batDongSan->hinh_anh);
         }
 
-        // Xóa toàn bộ album
+        // Xóa toàn bộ album ảnh
         $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
         if (!empty($album)) {
             foreach ($album as $path) {
+                Storage::disk('public')->delete($path);
+            }
+        }
+
+        // Xóa toàn bộ album video
+        $videos = $this->normalizeAlbumAnh($batDongSan->album_video ?? []);
+        if (!empty($videos)) {
+            foreach ($videos as $path) {
                 Storage::disk('public')->delete($path);
             }
         }
@@ -488,6 +540,24 @@ class BatDongSanController extends Controller
         return response()->json(['ok' => false], 400);
     }
 
+    // Xóa từng video riêng lẻ bằng nút X (AJAX)
+    public function xoaVideo(Request $request, BatDongSan $batDongSan)
+    {
+        $this->chongSaleQuanLyTonKho();
+
+        $path = $request->path;
+        $videos = $this->normalizeAlbumAnh($batDongSan->album_video ?? []);
+
+        if (in_array($path, $videos)) {
+            Storage::disk('public')->delete($path);
+            $videos = array_filter($videos, fn($p) => $p !== $path);
+            $batDongSan->update(['album_video' => array_values($videos)]);
+            return response()->json(['ok' => true]);
+        }
+
+        return response()->json(['ok' => false], 400);
+    }
+
     private function normalizeAlbumAnh(mixed $value): array
     {
         if (is_array($value)) {
@@ -547,9 +617,32 @@ class BatDongSanController extends Controller
             'seo_keywords'           => 'nullable|string|max:255',
             'hinh_anh'               => 'nullable|image|max:3072',
             'album_anh.*'            => 'nullable|image|max:3072',
+            'album_video.*'          => 'nullable|mimetypes:video/mp4,video/webm,video/quicktime,video/x-msvideo|max:102400',
             'trang_thai'             => 'required|string',
             'thu_tu_hien_thi'        => 'nullable|integer|min:0',
             'thoi_diem_dang'         => 'nullable|date',
+        ], [
+            'tieu_de.required'    => 'Vui lòng nhập tiêu đề tin đăng.',
+            'tieu_de.max'         => 'Tiêu đề không được vượt quá 255 ký tự.',
+            'loai_hinh.required'  => 'Vui lòng chọn loại hình bất động sản.',
+            'nhu_cau.required'    => 'Vui lòng chọn Nhu cầu (Bán hoặc Cho thuê).',
+            'nhu_cau.in'          => 'Nhu cầu không hợp lệ, phải là Bán hoặc Cho thuê.',
+            'dien_tich.required'  => 'Vui lòng nhập Diện tích (m²).',
+            'dien_tich.numeric'   => 'Diện tích phải là số.',
+            'dien_tich.min'       => 'Diện tích tối thiểu là 1 m².',
+            'gia.numeric'         => 'Giá bán phải là số.',
+            'gia.min'             => 'Giá bán không được âm.',
+            'gia_thue.numeric'    => 'Giá thuê phải là số.',
+            'gia_thue.min'        => 'Giá thuê không được âm.',
+            'hinh_anh.image'      => 'File ảnh đại diện không hợp lệ (chỉ chấp nhận JPG, PNG, WebP).',
+            'hinh_anh.max'        => 'Ảnh đại diện không được vượt quá 3MB.',
+            'album_anh.*.image'   => 'Một hoặc nhiều file trong album không phải ảnh hợp lệ.',
+            'album_anh.*.max'     => 'Mỗi ảnh album không được vượt quá 3MB.',
+            'album_video.*.mimetypes' => 'File video không hợp lệ (chỉ chấp nhận MP4, WebM, MOV).',
+            'album_video.*.max'       => 'Mỗi video không được vượt quá 100MB.',
+            'trang_thai.required' => 'Vui lòng chọn trạng thái giao dịch.',
+            'du_an_id.exists'     => 'Dự án được chọn không tồn tại.',
+            'chu_nha_id.exists'   => 'Chủ nhà được chọn không tồn tại.',
         ]);
     }
 }

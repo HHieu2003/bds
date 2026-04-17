@@ -14,17 +14,6 @@
         <p class="text-muted" style="font-size: 0.85rem">Hệ thống sẽ tự động tạo mã BĐS sau khi lưu thành công.</p>
     </div>
 
-    @if ($errors->any())
-        <div class="alert alert-danger shadow-sm border-0 mb-4">
-            <div class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-1"></i> Vui lòng kiểm tra lại:</div>
-            <ul class="mb-0 ps-3" style="font-size: 0.85rem">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
     <form action="{{ route('nhanvien.admin.bat-dong-san.store') }}" method="POST" enctype="multipart/form-data"
         id="bdsForm">
         @csrf

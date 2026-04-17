@@ -1,10 +1,14 @@
 @php
     $isEdit = isset($batDongSan) && $batDongSan !== null;
+    // Nguồn dữ liệu: BDS đang sửa (edit) hoặc BDS được clone (tạo mới từ bản sao)
+    $sourceBds   = $sourceBds ?? null;
+    $dataSource  = $isEdit ? $batDongSan : $sourceBds; // null khi tạo mới hoàn toàn
+
     $prefillNhuCau = $prefillNhuCau ?? null;
     $prefillDuAnId = $prefillDuAnId ?? null;
-    $oldLoaiHinh = old('loai_hinh', $isEdit ? $batDongSan->loai_hinh : 'can_ho');
-    $oldNhuCau = old('nhu_cau', $isEdit ? $batDongSan->nhu_cau : $prefillNhuCau ?? '');
-    $oldTrangThai = old('trang_thai', $isEdit ? $batDongSan->trang_thai : 'con_hang');
+    $oldLoaiHinh   = old('loai_hinh',  $dataSource ? $dataSource->loai_hinh  : 'can_ho');
+    $oldNhuCau     = old('nhu_cau',    $dataSource ? $dataSource->nhu_cau    : ($prefillNhuCau ?? ''));
+    $oldTrangThai  = old('trang_thai', $dataSource ? $dataSource->trang_thai  : 'con_hang');
     $defaultNhanVienPhuTrachId = $defaultNhanVienPhuTrachId ?? '';
     $huongs = ['Đông', 'Tây', 'Nam', 'Bắc', 'Đông Nam', 'Đông Bắc', 'Tây Nam', 'Tây Bắc'];
     $ngayDang = old(
@@ -41,7 +45,7 @@
                 <div class="mb-3">
                     <label class="form-label">Tiêu đề tin đăng <span class="text-danger">*</span></label>
                     <input type="text" name="tieu_de" class="form-control @error('tieu_de') is-invalid @enderror"
-                        value="{{ old('tieu_de', $isEdit ? $batDongSan->tieu_de : '') }}"
+                        value="{{ old('tieu_de', $isEdit ? $batDongSan->tieu_de : ($dataSource?->tieu_de ?? '')) }}"
                         placeholder="VD: Bán căn hộ 2PN Vinhomes Smart City..." autofocus>
                     @error('tieu_de')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -86,7 +90,7 @@
                         <select name="du_an_id" id="sel_du_an" class="form-select">
                             <option value="">-- Không thuộc dự án --</option>
                             @foreach ($duAns as $da)
-                                <option value="{{ $da->id }}" @selected(old('du_an_id', $isEdit ? $batDongSan->du_an_id : $prefillDuAnId ?? '') == $da->id)>{{ $da->ten_du_an }}
+                                <option value="{{ $da->id }}" @selected(old('du_an_id', $dataSource?->du_an_id ?? $prefillDuAnId ?? '') == $da->id)>{{ $da->ten_du_an }}
                                 </option>
                             @endforeach
                         </select>
@@ -97,7 +101,7 @@
                         <select name="chu_nha_id" id="sel_chu_nha" class="form-select border-success border-opacity-50">
                             <option value="">-- Chưa gán chủ nhà --</option>
                             @foreach ($chuNhas as $cn)
-                                <option value="{{ $cn->id }}" @selected(old('chu_nha_id', $isEdit ? $batDongSan->chu_nha_id : '') == $cn->id)>{{ $cn->ho_ten }} -
+                                <option value="{{ $cn->id }}" @selected(old('chu_nha_id', $dataSource?->chu_nha_id ?? '') == $cn->id)>{{ $cn->ho_ten }} -
                                     {{ $cn->so_dien_thoai }}</option>
                             @endforeach
                         </select>
@@ -125,13 +129,13 @@
             <div class="card-body">
                 <div class="row g-3 mb-3" id="row_toatang">
                     <div class="col-md-4"><label class="form-label">Tòa nhà</label><input type="text" name="toa"
-                            class="form-control" value="{{ old('toa', $isEdit ? $batDongSan->toa : '') }}"
+                            class="form-control" value="{{ old('toa', $dataSource?->toa ?? '') }}"
                             placeholder="VD: S2.05"></div>
                     <div class="col-md-4"><label class="form-label">Tầng</label><input type="text" name="tang"
-                            class="form-control" value="{{ old('tang', $isEdit ? $batDongSan->tang : '') }}"
+                            class="form-control" value="{{ old('tang', $dataSource?->tang ?? '') }}"
                             placeholder="VD: 18"></div>
                     <div class="col-md-4"><label class="form-label">Mã căn</label><input type="text" name="ma_can"
-                            class="form-control" value="{{ old('ma_can', $isEdit ? $batDongSan->ma_can : '') }}"
+                            class="form-control" value="{{ old('ma_can', $dataSource?->ma_can ?? '') }}"
                             placeholder="VD: 1806"></div>
                 </div>
 
@@ -140,7 +144,7 @@
                         <label class="form-label">Diện tích (m²) <span class="text-danger">*</span></label>
                         <input type="number" name="dien_tich" step="0.1" min="1"
                             class="form-control @error('dien_tich') is-invalid @enderror"
-                            value="{{ old('dien_tich', $isEdit ? $batDongSan->dien_tich : '') }}">
+                            value="{{ old('dien_tich', $dataSource?->dien_tich ?? '') }}">
                         @error('dien_tich')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -148,7 +152,7 @@
                     <div class="col-md-6">
                         <label class="form-label">Số phòng ngủ</label>
                         <input type="text" name="so_phong_ngu" class="form-control"
-                            value="{{ old('so_phong_ngu', $isEdit ? $batDongSan->so_phong_ngu : '') }}"
+                            value="{{ old('so_phong_ngu', $dataSource?->so_phong_ngu ?? '') }}"
                             placeholder="VD: 2, 3, Studio, 2+1, Penthouse, v.v...">
                     </div>
                 </div>
@@ -159,7 +163,7 @@
                         <select name="huong_cua" class="form-select">
                             <option value="">-- Không xác định --</option>
                             @foreach ($huongs as $h)
-                                <option value="{{ $h }}" @selected(old('huong_cua', $isEdit ? $batDongSan->huong_cua : '') == $h)>{{ $h }}
+                                <option value="{{ $h }}" @selected(old('huong_cua', $dataSource?->huong_cua ?? '') == $h)>{{ $h }}
                                 </option>
                             @endforeach
                         </select>
@@ -169,7 +173,7 @@
                         <select name="huong_ban_cong" class="form-select">
                             <option value="">-- Không xác định --</option>
                             @foreach ($huongs as $h)
-                                <option value="{{ $h }}" @selected(old('huong_ban_cong', $isEdit ? $batDongSan->huong_ban_cong : '') == $h)>{{ $h }}
+                                <option value="{{ $h }}" @selected(old('huong_ban_cong', $dataSource?->huong_ban_cong ?? '') == $h)>{{ $h }}
                                 </option>
                             @endforeach
                         </select>
@@ -182,7 +186,7 @@
                         <select name="noi_that" class="form-select">
                             <option value="">-- Không xác định --</option>
                             @foreach ($constants['noi_that'] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('noi_that', $isEdit ? $batDongSan->noi_that : '') == $v)>{{ $l }}
+                                <option value="{{ $v }}" @selected(old('noi_that', $dataSource?->noi_that ?? '') == $v)>{{ $l }}
                                 </option>
                             @endforeach
                         </select>
@@ -191,11 +195,11 @@
                         <label class="form-label">Pháp lý</label>
                         <select name="phap_ly" class="form-select">
                             <option value="">-- Không xác định --</option>
-                            <option value="so_hong" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'so_hong')>Sổ hồng</option>
-                            <option value="hop_dong_mua_ban" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'hop_dong_mua_ban')>Hợp đồng mua bán</option>
-                            <option value="hop_dong_50_nam" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'hop_dong_50_nam')>Hợp đồng mua bán 50 năm
+                            <option value="so_hong" @selected(old('phap_ly', $dataSource?->phap_ly ?? '') == 'so_hong')>Sổ hồng</option>
+                            <option value="hop_dong_mua_ban" @selected(old('phap_ly', $dataSource?->phap_ly ?? '') == 'hop_dong_mua_ban')>Hợp đồng mua bán</option>
+                            <option value="hop_dong_50_nam" @selected(old('phap_ly', $dataSource?->phap_ly ?? '') == 'hop_dong_50_nam')>Hợp đồng mua bán 50 năm
                             </option>
-                            <option value="so_50_nam" @selected(old('phap_ly', $isEdit ? $batDongSan->phap_ly : '') == 'so_50_nam')>Sổ 50 năm</option>
+                            <option value="so_50_nam" @selected(old('phap_ly', $dataSource?->phap_ly ?? '') == 'so_50_nam')>Sổ 50 năm</option>
                         </select>
                     </div>
                 </div>
@@ -211,7 +215,7 @@
                         <label class="form-label">Giá bán (VNĐ) <span class="text-danger">*</span></label>
                         <input type="number" name="gia" id="inp_gia" step="100000" min="0"
                             class="form-control @error('gia') is-invalid @enderror"
-                            value="{{ old('gia', $isEdit ? $batDongSan->gia : '') }}">
+                            value="{{ old('gia', $dataSource?->gia ?? '') }}">
                         <div class="form-text text-success fw-bold" id="gia_hint"></div>
                         @error('gia')
                             <div class="invalid-feedback">{{ $message }}</div>
@@ -220,12 +224,12 @@
                     <div class="col-md-4">
                         <label class="form-label">Phí môi giới (VNĐ)</label>
                         <input type="number" name="phi_moi_gioi" class="form-control"
-                            value="{{ old('phi_moi_gioi', $isEdit ? $batDongSan->phi_moi_gioi : '') }}">
+                            value="{{ old('phi_moi_gioi', $dataSource?->phi_moi_gioi ?? '') }}">
                     </div>
                     <div class="col-md-4">
                         <label class="form-label">Phí sang tên (VNĐ)</label>
                         <input type="number" name="phi_sang_ten" class="form-control"
-                            value="{{ old('phi_sang_ten', $isEdit ? $batDongSan->phi_sang_ten : '') }}">
+                            value="{{ old('phi_sang_ten', $dataSource?->phi_sang_ten ?? '') }}">
                     </div>
                 </div>
             </div>
@@ -240,7 +244,7 @@
                         <label class="form-label">Giá thuê / tháng (VNĐ) <span class="text-danger">*</span></label>
                         <input type="number" name="gia_thue"
                             class="form-control @error('gia_thue') is-invalid @enderror"
-                            value="{{ old('gia_thue', $isEdit ? $batDongSan->gia_thue : '') }}">
+                            value="{{ old('gia_thue', $dataSource?->gia_thue ?? '') }}">
                         @error('gia_thue')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -250,7 +254,7 @@
                         <select name="thoi_gian_vao_thue" class="form-select">
                             <option value="">-- Chọn --</option>
                             @foreach ($constants['thoi_gian_vao_thue'] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('thoi_gian_vao_thue', $isEdit ? $batDongSan->thoi_gian_vao_thue : '') == $v)>{{ $l }}
+                                <option value="{{ $v }}" @selected(old('thoi_gian_vao_thue', $dataSource?->thoi_gian_vao_thue ?? '') == $v)>{{ $l }}
                                 </option>
                             @endforeach
                         </select>
@@ -260,7 +264,7 @@
                         <select name="hinh_thuc_thanh_toan" class="form-select">
                             <option value="">-- Chọn --</option>
                             @foreach ($constants['hinh_thuc_tt'] as $v => $l)
-                                <option value="{{ $v }}" @selected(old('hinh_thuc_thanh_toan', $isEdit ? $batDongSan->hinh_thuc_thanh_toan : '') == $v)>{{ $l }}
+                                <option value="{{ $v }}" @selected(old('hinh_thuc_thanh_toan', $dataSource?->hinh_thuc_thanh_toan ?? '') == $v)>{{ $l }}
                                 </option>
                             @endforeach
                         </select>
@@ -274,7 +278,7 @@
             <div class="card-header bg-white py-3"><i class="fas fa-align-left text-navy me-2"></i>Mô tả chi tiết
             </div>
             <div class="card-body">
-                <textarea name="mo_ta" id="moTaBdsEditor">{{ old('mo_ta', $isEdit ? $batDongSan->mo_ta : '') }}</textarea>
+                <textarea name="mo_ta" id="moTaBdsEditor">{{ old('mo_ta', $dataSource?->mo_ta ?? '') }}</textarea>
             </div>
         </div>
 
@@ -336,7 +340,59 @@
             </div>
         </div>
 
-        {{-- SEO --}}
+        {{-- ALBUM VIDEO --}}
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <i class="fas fa-film text-danger me-2"></i>Album video
+                <span class="text-muted fw-normal" style="font-size: 0.8rem">(MP4, WebM, MOV — tối đa 100MB/video)</span>
+            </div>
+            <div class="card-body">
+                {{-- Video cũ (chỉ hiện khi edit) --}}
+                @if ($isEdit && !empty($batDongSan->album_video))
+                    <div class="d-flex flex-wrap gap-3 mb-3" id="videoExist">
+                        @foreach ($batDongSan->album_video as $vidPath)
+                            @php $vidKey = substr(md5($vidPath), 0, 12); @endphp
+                            <div class="position-relative border rounded" id="vid_{{ $vidKey }}"
+                                style="width: 160px;">
+                                <video src="{{ asset('storage/' . $vidPath) }}"
+                                    class="w-100 rounded" style="height: 100px; object-fit: cover;"
+                                    muted preload="metadata"></video>
+                                <div class="text-muted text-truncate px-1" style="font-size: 0.7rem">
+                                    {{ basename($vidPath) }}
+                                </div>
+                                <button type="button"
+                                    class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 vid-del-btn p-0 d-flex align-items-center justify-content-center"
+                                    style="width: 20px; height: 20px;"
+                                    data-bds="{{ $batDongSan->id }}"
+                                    data-path="{{ $vidPath }}" data-key="{{ $vidKey }}">
+                                    <i class="fas fa-times" style="font-size: 0.6rem"></i>
+                                </button>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+
+                {{-- Preview video mới --}}
+                <div class="d-flex flex-wrap gap-3 mb-3" id="videoPreview"></div>
+
+                {{-- Nút Upload --}}
+                <label for="inp_video"
+                    class="d-flex flex-column align-items-center justify-content-center border border-dashed rounded bg-light cursor-pointer"
+                    style="height: 120px; transition: 0.2s; border-color: #f87171 !important;">
+                    <i class="fas fa-video fs-2 text-danger opacity-50 mb-2"></i>
+                    <span class="text-secondary" style="font-size: 0.85rem">Click để chọn video (MP4, WebM, MOV)</span>
+                    <input type="file" id="inp_video" name="album_video[]" multiple
+                        accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" class="d-none">
+                </label>
+                @error('album_video.*')
+                    <div class="text-danger mt-2" style="font-size: 0.8rem">
+                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                    </div>
+                @enderror
+            </div>
+        </div>
+
+
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3"><i class="fas fa-search text-secondary me-2"></i>Tối ưu SEO (Tùy
                 chọn)</div>
@@ -487,6 +543,62 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
+    <style>
+        /* ── BDS ERROR BANNER ── */
+        .bds-error-banner {
+            animation: slideDown 0.35s ease;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .bds-error-banner-inner {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            background: linear-gradient(135deg, #fff1f0 0%, #fff8f7 100%);
+            border: 1.5px solid #fca5a5;
+            border-left: 5px solid #ef4444;
+            border-radius: 10px;
+            padding: 16px 18px;
+            box-shadow: 0 4px 16px rgba(239,68,68,.10);
+        }
+        .bds-error-icon {
+            flex-shrink: 0;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: #fee2e2;
+            display: flex; align-items: center; justify-content: center;
+            color: #dc2626;
+            font-size: 1rem;
+        }
+        .bds-error-content { flex: 1; }
+        .bds-error-title {
+            font-weight: 700;
+            color: #b91c1c;
+            font-size: .92rem;
+            margin-bottom: 6px;
+        }
+        .bds-error-list {
+            margin: 0; padding-left: 0;
+            list-style: none;
+            font-size: .84rem;
+            color: #7f1d1d;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .bds-error-list li { display: flex; align-items: baseline; gap: 4px; }
+        .bds-error-list .fa-dot-circle { color: #ef4444; font-size: .65rem; flex-shrink: 0; margin-top: 2px; }
+        .bds-error-close {
+            flex-shrink: 0;
+            background: none; border: none; padding: 4px 6px;
+            color: #ef4444; opacity: .7; cursor: pointer;
+            border-radius: 6px; line-height: 1;
+            transition: opacity .2s, background .2s;
+        }
+        .bds-error-close:hover { opacity: 1; background: #fee2e2; }
+    </style>
 @endpush
 
 @push('scripts')
@@ -606,6 +718,49 @@
                     });
                 });
             });
+
+            // 5b. Preview & Xóa Video Album
+            const inpVideo = document.getElementById('inp_video');
+            if (inpVideo) {
+                inpVideo.addEventListener('change', function () {
+                    const preview = document.getElementById('videoPreview');
+                    Array.from(this.files).forEach(file => {
+                        const url = URL.createObjectURL(file);
+                        const div = document.createElement('div');
+                        div.className = 'position-relative border rounded';
+                        div.style = 'width: 160px;';
+                        div.innerHTML = `
+                            <video src="${url}" class="w-100 rounded" style="height:100px;object-fit:cover;" muted preload="metadata"></video>
+                            <div class="text-muted text-truncate px-1" style="font-size:0.7rem">${file.name}</div>
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 p-0 d-flex align-items-center justify-content-center"
+                                style="width:20px;height:20px;" onclick="this.parentElement.remove()">
+                                <i class="fas fa-times" style="font-size:0.6rem"></i>
+                            </button>`;
+                        preview.appendChild(div);
+                    });
+                });
+            }
+
+            document.querySelectorAll('.vid-del-btn[data-bds]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    if (!confirm('Xóa video này khỏi hệ thống?')) return;
+                    const path = this.dataset.path,
+                        bdsId = this.dataset.bds,
+                        key   = this.dataset.key;
+                    fetch(`/nhan-vien/admin/bat-dong-san/${bdsId}/xoa-video`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': CSRF,
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ path })
+                    }).then(r => r.json()).then(data => {
+                        if (data.ok) document.getElementById('vid_' + key).remove();
+                    });
+                });
+            });
+
 
             // 6. Format giá VNĐ khi gõ
             const inpGia = document.getElementById('inp_gia');

@@ -33,6 +33,7 @@ class BatDongSan extends Model
         'ghi_chu_noi_bo',
         'hinh_anh',
         'album_anh',
+        'album_video',
         'gia',
         'phi_moi_gioi',
         'phi_sang_ten',
@@ -54,6 +55,7 @@ class BatDongSan extends Model
 
     protected $casts = [
         'album_anh'      => 'array',
+        'album_video'    => 'array',
         'noi_bat'        => 'boolean',
         'gui_mail_canh_bao_gia' => 'boolean',
         'hien_thi'       => 'boolean',

@@ -3,7 +3,7 @@
 @section('title', $bds->tieu_de . ' — Thành Công Land')
 
 @push('styles')
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/css/lightbox.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <style>
         /* ═══════════════════════════════════════
                                                                                                                                                                                                                                                                    TRANG CHI TIẾT BĐS — Global Styles
@@ -105,7 +105,8 @@
             display: block;
         }
 
-        .bds-gallery .gal-item img {
+        .bds-gallery .gal-item img,
+        .bds-gallery .gal-item video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -113,7 +114,8 @@
             display: block;
         }
 
-        .bds-gallery .gal-item:hover img {
+        .bds-gallery .gal-item:hover img,
+        .bds-gallery .gal-item:hover video {
             transform: scale(1.06);
         }
 
@@ -958,16 +960,35 @@
             $raw = is_string($bds->album_anh) ? json_decode($bds->album_anh, true) : $bds->album_anh;
             $album = is_array($raw) ? $raw : [];
         }
-        $default = asset('images/default-bds.jpg');
-        $anhChinh = count($album) > 0 ? asset('storage/' . $album[0]) : $default;
-        $anh2 = count($album) > 1 ? asset('storage/' . $album[1]) : null;
-        $anh3 = count($album) > 2 ? asset('storage/' . $album[2]) : null;
-        $anh4 = count($album) > 3 ? asset('storage/' . $album[3]) : null;
-        $anh5 = count($album) > 4 ? asset('storage/' . $album[4]) : null;
 
-        $galleryCount = max(1, min(5, count($album)));
-        $extraCount = max(0, count($album) - 5);
-        $galleryImages = count($album) > 0 ? array_map(fn($img) => asset('storage/' . $img), $album) : [$default];
+        $albumVideo = [];
+        if (!empty($bds->album_video)) {
+            $rawVid = is_string($bds->album_video) ? json_decode($bds->album_video, true) : $bds->album_video;
+            $albumVideo = is_array($rawVid) ? array_values($rawVid) : [];
+        }
+
+        // Gộp chung video lên đầu, sau đó đến ảnh
+        $media = [];
+        foreach ($albumVideo as $v) {
+            $media[] = ['type' => 'video', 'path' => asset('storage/' . $v)];
+        }
+        foreach ($album as $a) {
+            $media[] = ['type' => 'image', 'path' => asset('storage/' . $a)];
+        }
+
+        $default = asset('images/default-bds.jpg');
+        if (count($media) == 0) {
+            $media[] = ['type' => 'image', 'path' => $default];
+        }
+
+        $mediaChinh = count($media) > 0 ? $media[0] : null;
+        $media2 = count($media) > 1 ? $media[1] : null;
+        $media3 = count($media) > 2 ? $media[2] : null;
+        $media4 = count($media) > 3 ? $media[3] : null;
+        $media5 = count($media) > 4 ? $media[4] : null;
+
+        $galleryCount = max(1, min(5, count($media)));
+        $extraCount = max(0, count($media) - 5);
     @endphp
 
     <div class="bds-detail-page">
@@ -1002,58 +1023,104 @@
             {{-- ═══════ GALLERY ═══════ --}}
             <div class="position-relative">
                 <div class="bds-gallery count-{{ $galleryCount }}">
-                    {{-- Ảnh chính --}}
-                    <a href="{{ $anhChinh }}" data-lightbox="bds-gallery" class="gal-item gal-main"
-                        aria-label="Xem ảnh chính">
-                        <img src="{{ $anhChinh }}" alt="{{ $bds->tieu_de }}" loading="eager">
-                        <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                    </a>
-
-                    {{-- Ảnh phụ 2 --}}
-                    @if ($anh2)
-                        <a href="{{ $anh2 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-2"
-                            aria-label="Xem ảnh 2">
-                            <img src="{{ $anh2 }}" alt="Ảnh 2" loading="lazy">
-                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                    @endif
-
-                    {{-- Ảnh phụ 3 --}}
-                    @if ($anh3)
-                        <a href="{{ $anh3 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-3"
-                            aria-label="Xem ảnh 3">
-                            <img src="{{ $anh3 }}" alt="Ảnh 3" loading="lazy">
-                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                    @endif
-                    @if ($anh4)
-                        <a href="{{ $anh4 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-4"
-                            aria-label="Xem ảnh 4">
-                            <img src="{{ $anh4 }}" alt="Ảnh 4" loading="lazy">
-                            <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                        </a>
-                    @endif
-                    {{-- Ảnh phụ 4 — overlay "+N" --}}
-                    @if ($anh5)
-                        <a href="{{ $anh5 }}" data-lightbox="bds-gallery" class="gal-item gal-sub-5"
-                            aria-label="Xem ảnh 5">
-                            <img src="{{ $anh5 }}" alt="Ảnh 5" loading="lazy">
-                            @if ($extraCount > 0)
-                                <div class="gal-more-overlay">
-                                    <span>+{{ $extraCount }}</span>
-                                    <small>XEM THÊM</small>
-                                </div>
-                            @else
+                    {{-- Media chính --}}
+                    @if ($mediaChinh)
+                        @if ($mediaChinh['type'] == 'video')
+                            <a href="{{ $mediaChinh['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-main" aria-label="Xem video chính">
+                                <video src="{{ $mediaChinh['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                                <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 3rem;"></i></div>
+                            </a>
+                        @else
+                            <a href="{{ $mediaChinh['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-main"
+                                aria-label="Xem ảnh chính">
+                                <img src="{{ $mediaChinh['path'] }}" alt="{{ $bds->tieu_de }}" loading="eager">
                                 <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
-                            @endif
-                        </a>
+                            </a>
+                        @endif
+                    @endif
+
+                    {{-- Media phụ 2 --}}
+                    @if ($media2)
+                        @if ($media2['type'] == 'video')
+                            <a href="{{ $media2['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-2" aria-label="Xem video 2">
+                                <video src="{{ $media2['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                                <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
+                            </a>
+                        @else
+                            <a href="{{ $media2['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-2"
+                                aria-label="Xem ảnh 2">
+                                <img src="{{ $media2['path'] }}" alt="Ảnh 2" loading="lazy">
+                                <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                            </a>
+                        @endif
+                    @endif
+
+                    {{-- Media phụ 3 --}}
+                    @if ($media3)
+                        @if ($media3['type'] == 'video')
+                            <a href="{{ $media3['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-3" aria-label="Xem video 3">
+                                <video src="{{ $media3['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                                <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
+                            </a>
+                        @else
+                            <a href="{{ $media3['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-3"
+                                aria-label="Xem ảnh 3">
+                                <img src="{{ $media3['path'] }}" alt="Ảnh 3" loading="lazy">
+                                <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                            </a>
+                        @endif
+                    @endif
+
+                    {{-- Media phụ 4 --}}
+                    @if ($media4)
+                        @if ($media4['type'] == 'video')
+                            <a href="{{ $media4['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-4" aria-label="Xem video 4">
+                                <video src="{{ $media4['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                                <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
+                            </a>
+                        @else
+                            <a href="{{ $media4['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-4"
+                                aria-label="Xem ảnh 4">
+                                <img src="{{ $media4['path'] }}" alt="Ảnh 4" loading="lazy">
+                                <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                            </a>
+                        @endif
+                    @endif
+
+                    {{-- Media phụ 5 --}}
+                    @if ($media5)
+                        @if ($media5['type'] == 'video')
+                            <a href="{{ $media5['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-5" aria-label="Xem video 5">
+                                <video src="{{ $media5['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                                @if ($extraCount > 0)
+                                    <div class="gal-more-overlay">
+                                        <span>+{{ $extraCount }}</span>
+                                        <small>XEM THÊM</small>
+                                    </div>
+                                @else
+                                    <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
+                                @endif
+                            </a>
+                        @else
+                            <a href="{{ $media5['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-5"
+                                aria-label="Xem ảnh 5">
+                                <img src="{{ $media5['path'] }}" alt="Ảnh 5" loading="lazy">
+                                @if ($extraCount > 0)
+                                    <div class="gal-more-overlay">
+                                        <span>+{{ $extraCount }}</span>
+                                        <small>XEM THÊM</small>
+                                    </div>
+                                @else
+                                    <div class="gal-overlay"><i class="fas fa-search-plus"></i></div>
+                                @endif
+                            </a>
+                        @endif
                     @endif
                 </div>
 
-                @if (count($album) > 5)
-                    @for ($i = 5; $i < count($album); $i++)
-                        <a href="{{ asset('storage/' . $album[$i]) }}" data-lightbox="bds-gallery" class="d-none"
-                            aria-hidden="true"></a>
+                @if (count($media) > 5)
+                    @for ($i = 5; $i < count($media); $i++)
+                        <a href="{{ $media[$i]['path'] }}" data-fancybox="bds-gallery" class="d-none" aria-hidden="true"></a>
                     @endfor
                 @endif
 
@@ -1271,6 +1338,7 @@
                     @if ($bds->nhu_cau === 'ban')
                         @include('frontend.partials.cong-cu-tai-chinh')
                     @endif
+
                 </div>
 
                 {{-- ══ CỘT PHẢI — SIDEBAR ══ --}}
@@ -1484,19 +1552,29 @@
                 </form>
             </div>
         </div>
+        </div>
     </div>
 
 @endsection
 @push('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightbox2/2.11.4/js/lightbox-plus-jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.umd.js"></script>
     <script>
-        if (typeof lightbox !== 'undefined') {
-            lightbox.option({
-                resizeDuration: 180,
-                wrapAround: true,
-                albumLabel: 'Ảnh %1 / %2'
-            });
-        }
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof window.Fancybox !== 'undefined') {
+                console.log('Khởi tạo Fancybox cho bds-gallery');
+                window.Fancybox.bind('[data-fancybox="bds-gallery"]', {
+                    Thumbs: {
+                        type: "modern"
+                    },
+                    Carousel: {
+                        infinite: true
+                    }
+                });
+            } else {
+                console.error('Không tải được Fancybox');
+            }
+        });
+    </script>
 
         window.BDS_SHOW = {
             bdsId: {{ $bds->id }},

@@ -227,10 +227,10 @@
                         @unless ($isSaleView)
                             <th style="width: 12%">Chủ nhà</th>
                         @endunless
-                        <th style="width: 11%">Giá</th>
+                        <th style="width: 10%">Giá</th>
                         <th style="width: 9%">Diện tích</th>
                         <th style="width: 12%">Trạng thái</th>
-                        <th class="text-center" style="width: 92px">Hiển thị</th>
+                        <th class="text-center" style="width: 70px">Hiển thị</th>
                         <th class="text-center" style="width: 105px">Thao tác</th>
                     </tr>
                 </thead>
@@ -426,6 +426,7 @@
                                     <a href="{{ route('nhanvien.admin.bat-dong-san.edit', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                         class="btn-action btn-action-edit" title="Sửa"><i class="fas fa-pen"></i></a>
                                     @unless ($isSaleView)
+
                                         <form id="frmDel_{{ $bds->id }}"
                                             action="{{ route('nhanvien.admin.bat-dong-san.destroy', array_merge(['batDongSan' => $bds->id], $currentFilters, ['redirect_to' => $currentListUrl])) }}"
                                             method="POST" class="d-none">@csrf @method('DELETE')</form>
