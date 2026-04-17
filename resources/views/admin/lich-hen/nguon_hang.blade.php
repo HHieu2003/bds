@@ -529,6 +529,7 @@
                     <form action="{{ route('nhanvien.admin.lich-hen.xac-nhan', $lh->id) }}" method="POST"
                         class="modal-content border-0 shadow-lg">
                         @csrf @method('PATCH')
+                        <input type="hidden" name="_redirect_back" value="{{ url()->full() }}">
                         <div class="modal-header bg-success text-white">
                             <h5 class="modal-title fw-bold"><i class="fas fa-check-circle me-2"></i> Chốt Mở Cửa Với Chủ
                                 Nhà</h5>
@@ -553,6 +554,7 @@
                     <form action="{{ route('nhanvien.admin.lich-hen.tu-choi', $lh->id) }}" method="POST"
                         class="modal-content border-0 shadow-lg">
                         @csrf @method('PATCH')
+                        <input type="hidden" name="_redirect_back" value="{{ url()->full() }}">
                         <div class="modal-header bg-danger text-white">
                             <h5 class="modal-title fw-bold"><i class="fas fa-times-circle me-2"></i> Từ Chối Lịch Xem Nhà
                             </h5><button type="button" class="btn-close btn-close-white"
@@ -575,6 +577,7 @@
                     <form action="{{ route('nhanvien.admin.lich-hen.bao-lai-gio', $lh->id) }}" method="POST"
                         class="modal-content border-0 shadow-lg">
                         @csrf @method('PATCH')
+                        <input type="hidden" name="_redirect_back" value="{{ url()->full() }}">
                         <div class="modal-header bg-warning">
                             <h5 class="modal-title fw-bold text-dark"><i class="fas fa-clock me-2"></i> Đề Xuất Dời Giờ
                             </h5>
@@ -605,6 +608,7 @@
                     <form action="{{ route('nhanvien.admin.lich-hen.huy', $lh->id) }}" method="POST"
                         class="modal-content border-0 shadow-lg">
                         @csrf @method('PATCH')
+                        <input type="hidden" name="_redirect_back" value="{{ url()->full() }}">
                         <div class="modal-header bg-danger text-white">
                             <h5 class="modal-title fw-bold"><i class="fas fa-ban me-2"></i> Báo Hủy Lịch Đột Xuất</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

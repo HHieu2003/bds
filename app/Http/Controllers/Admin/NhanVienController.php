@@ -43,6 +43,11 @@ class NhanVienController extends Controller
             default     => $query->orderByDesc('created_at'),
         };
 
+        // Xuất toàn bộ báo cáo theo bộ lọc hiện tại (không phân trang)
+        if ($request->get('export') === 'csv') {
+            return $this->exportNhanVienCsv((clone $query)->get(), $request);
+        }
+
         $nhanViens = $query->paginate(15)->withQueryString();
 
         $thongKe = [
@@ -54,6 +59,90 @@ class NhanVienController extends Controller
         ];
 
         return view('admin.nhan-vien.index', compact('nhanViens', 'thongKe'));
+    }
+
+    private function exportNhanVienCsv($rows, Request $request)
+    {
+        $fileName = 'Bao_Cao_Nhan_Vien_' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Expires'             => '0',
+        ];
+
+        $boLoc = [];
+        if ($request->filled('tukhoa')) {
+            $boLoc[] = 'Tu khoa: ' . $request->tukhoa;
+        }
+        if ($request->filled('vai_tro')) {
+            $role = NhanVien::normalizeVaiTro($request->vai_tro);
+            $boLoc[] = 'Vai tro: ' . (NhanVien::VAI_TRO[$role]['label'] ?? $role);
+        }
+        if ($request->filled('kich_hoat')) {
+            $boLoc[] = 'Trang thai: ' . ($request->kich_hoat === '1' ? 'Dang hoat dong' : 'Vo hieu hoa');
+        }
+
+        $sapXepLabel = match ($request->get('sapxep', 'moi_nhat')) {
+            'ten_az' => 'Ten A-Z',
+            'ten_za' => 'Ten Z-A',
+            'dang_nhap' => 'Dang nhap gan nhat',
+            default => 'Moi nhat',
+        };
+
+        $tongDangHoatDong = $rows->where('kich_hoat', true)->count();
+        $tongVoHieuHoa = $rows->count() - $tongDangHoatDong;
+        $tongAdmin = $rows->filter(fn($nv) => NhanVien::normalizeVaiTro($nv->vai_tro) === 'admin')->count();
+        $tongSale = $rows->filter(fn($nv) => NhanVien::normalizeVaiTro($nv->vai_tro) === 'sale')->count();
+        $tongNguonHang = $rows->filter(fn($nv) => NhanVien::normalizeVaiTro($nv->vai_tro) === 'nguon_hang')->count();
+
+        $callback = function () use ($rows, $boLoc, $sapXepLabel, $tongDangHoatDong, $tongVoHieuHoa, $tongAdmin, $tongSale, $tongNguonHang) {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF");
+            $delimiter = ';';
+
+            fputcsv($file, ['BAO CAO NHAN VIEN'], $delimiter);
+            fputcsv($file, ['Thoi gian xuat', now()->format('d/m/Y H:i:s')], $delimiter);
+            fputcsv($file, ['Tong so dong', $rows->count()], $delimiter);
+            fputcsv($file, ['Sap xep', $sapXepLabel], $delimiter);
+            fputcsv($file, ['Bo loc', empty($boLoc) ? 'Khong co' : implode(' | ', $boLoc)], $delimiter);
+            fputcsv($file, [], $delimiter);
+
+            fputcsv($file, ['TONG QUAN'], $delimiter);
+            fputcsv($file, ['Tong nhan vien (theo bo loc)', $rows->count()], $delimiter);
+            fputcsv($file, ['Dang hoat dong', $tongDangHoatDong], $delimiter);
+            fputcsv($file, ['Vo hieu hoa', $tongVoHieuHoa], $delimiter);
+            fputcsv($file, ['Vai tro Admin', $tongAdmin], $delimiter);
+            fputcsv($file, ['Vai tro Sale', $tongSale], $delimiter);
+            fputcsv($file, ['Vai tro Nguon hang', $tongNguonHang], $delimiter);
+            fputcsv($file, [], $delimiter);
+
+            fputcsv($file, ['CHI TIET DANH SACH'], $delimiter);
+            fputcsv($file, ['STT', 'ID', 'Ho ten', 'Email', 'So dien thoai', 'Vai tro', 'Trang thai', 'Dang nhap cuoi', 'Ngay tao'], $delimiter);
+
+            foreach ($rows->values() as $index => $nv) {
+                $vaiTro = NhanVien::normalizeVaiTro($nv->vai_tro);
+                $vaiTroLabel = NhanVien::VAI_TRO[$vaiTro]['label'] ?? $vaiTro;
+
+                fputcsv($file, [
+                    $index + 1,
+                    $nv->id,
+                    $nv->ho_ten,
+                    $nv->email,
+                    $nv->so_dien_thoai,
+                    $vaiTroLabel,
+                    $nv->kich_hoat ? 'Dang hoat dong' : 'Vo hieu hoa',
+                    optional($nv->dang_nhap_cuoi_at)->format('d/m/Y H:i:s') ?: 'Chua dang nhap',
+                    optional($nv->created_at)->format('d/m/Y H:i:s'),
+                ], $delimiter);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // CREATE / STORE

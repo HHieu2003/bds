@@ -757,6 +757,10 @@ let feChatOpened = false;
 let feLongPollController = null;
 let feAiThinkingVisible = false;
 let feAiThinkingTimer = null;
+let feChatMode = "faq";
+let feChatFaqCache = null;
+let feAiQuickQuestions = [];
+let feQuickRepliesSignature = "";
 const FE_CHAT_POLL_INTERVAL_MS = 1200;
 
 function escapeHtml(value) {
@@ -967,34 +971,186 @@ function extractJsonPayload(rawText) {
     return null;
 }
 
-// ── Hiển thị câu hỏi gợi ý ──
-function renderQuickReplies(questions) {
+function getChatFaqItems() {
+    if (Array.isArray(feChatFaqCache)) {
+        return feChatFaqCache;
+    }
+
+    const fromDb = Array.isArray(window.APP?.chatFaq) ? window.APP.chatFaq : [];
+    const normalized = fromDb
+        .map((item) => ({
+            question: String(item?.q || item?.question || "").trim(),
+            answer: String(item?.a || item?.answer || "").trim(),
+        }))
+        .filter((item) => item.question && item.answer)
+        .slice(0, 8);
+
+    feChatFaqCache =
+        normalized.length > 0
+            ? normalized
+            : [
+                  {
+                      question: "Lịch làm việc của văn phòng như thế nào?",
+                      answer: "Văn phòng làm việc từ 8:00 đến 18:00 các ngày trong tuần, hỗ trợ xem nhà ngoài giờ theo lịch hẹn trước.",
+                  },
+                  {
+                      question: "Dự án này hiện còn những loại căn nào?",
+                      answer: "Hiện tại còn nhiều lựa chọn theo nhu cầu ở thực và đầu tư. Anh/chị để lại nhu cầu cụ thể, em sẽ gửi giỏ hàng phù hợp ngay.",
+                  },
+                  {
+                      question: "Giá căn hộ hiện tại khoảng bao nhiêu?",
+                      answer: "Giá phụ thuộc diện tích, tầng, view và nội thất. Em có thể gửi bảng giá mới nhất theo đúng phân khúc anh/chị quan tâm.",
+                  },
+                  {
+                      question: "Chi phí sang tên và thuế phí gồm những gì?",
+                      answer: "Thông thường gồm thuế, lệ phí trước bạ và phí công chứng theo quy định. Em sẽ hỗ trợ ước tính chi tiết theo từng giao dịch cụ thể.",
+                  },
+                  {
+                      question: "Có hỗ trợ vay ngân hàng không?",
+                      answer: "Bên em có hỗ trợ kết nối ngân hàng và tư vấn phương án vay phù hợp khả năng tài chính của anh/chị.",
+                  },
+              ];
+
+    return feChatFaqCache;
+}
+
+function hideQuickReplies() {
     const wrap = document.getElementById("chatQuickReplies");
-    if (!wrap || !questions || questions.length === 0) {
-        wrap.style.display = "none";
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    wrap.style.display = "none";
+    feQuickRepliesSignature = "";
+}
+
+function appendLocalBotMessage(content) {
+    const body = document.getElementById("chatBody");
+    if (!body || !content) return;
+
+    const html = `<div class="fe-chat-row" data-msg-id="faq-${Date.now()}"><div class="fe-msg-bubble fe-msg-admin">${normalizeChatText(content)}<div class="fe-msg-time">${formatChatTime(new Date().toISOString())}</div></div></div>`;
+    body.insertAdjacentHTML("beforeend", html);
+    body.scrollTop = body.scrollHeight;
+}
+
+function renderFaqMenu() {
+    const wrap = document.getElementById("chatQuickReplies");
+    if (!wrap) return;
+
+    const faqItems = getChatFaqItems();
+    const nextSignature = `faq:${faqItems.map((item) => item.question).join("|")}`;
+    if (
+        feQuickRepliesSignature === nextSignature &&
+        wrap.style.display === "flex" &&
+        wrap.childElementCount > 0
+    ) {
         return;
     }
+
+    feQuickRepliesSignature = nextSignature;
     wrap.innerHTML = "";
     wrap.style.animation = "none";
 
-    questions.forEach((q, index) => {
+    faqItems.forEach((item, index) => {
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.textContent = q;
-        btn.style.animationDelay = `${index * 0.05}s`;
+        btn.className = "chat-qr-btn";
+        btn.textContent = item.question;
+        btn.style.animationDelay = `${index * 0.04}s`;
         btn.onclick = (e) => {
             e.preventDefault();
-            document.getElementById("chatInput").value = q;
-            wrap.style.display = "none";
-            sendFrontendMessage(); // gửi luôn
+            appendOptimisticCustomerMessage(item.question);
+            appendLocalBotMessage(item.answer);
         };
         wrap.appendChild(btn);
     });
+
+    const aiBtn = document.createElement("button");
+    aiBtn.type = "button";
+    aiBtn.className = "chat-qr-btn is-ai";
+    aiBtn.textContent = "Chat với AI";
+    aiBtn.onclick = (e) => {
+        e.preventDefault();
+        feChatMode = "ai";
+        setChatInputsEnabled(true);
+        renderAiModeActions();
+    };
+    wrap.appendChild(aiBtn);
+
+    const supportBtn = document.createElement("button");
+    supportBtn.type = "button";
+    supportBtn.className = "chat-qr-btn is-support";
+    supportBtn.textContent = "Yêu cầu nhân viên hỗ trợ";
+    supportBtn.onclick = (e) => {
+        e.preventDefault();
+        transferToAgent();
+    };
+    wrap.appendChild(supportBtn);
+
     wrap.style.display = "flex";
-    // Trigger animation
     setTimeout(() => {
         wrap.style.animation = "slideUp 0.3s ease-out";
     }, 10);
+}
+
+function renderAiModeActions(questions = null) {
+    const wrap = document.getElementById("chatQuickReplies");
+    if (!wrap) return;
+
+    const quickQuestions = Array.isArray(questions)
+        ? questions
+        : feAiQuickQuestions;
+    const nextSignature = `ai:${quickQuestions.join("|")}`;
+    if (
+        feQuickRepliesSignature === nextSignature &&
+        wrap.style.display === "flex" &&
+        wrap.childElementCount > 0
+    ) {
+        return;
+    }
+
+    feQuickRepliesSignature = nextSignature;
+
+    wrap.innerHTML = "";
+    wrap.style.animation = "none";
+
+    if (Array.isArray(quickQuestions) && quickQuestions.length > 0) {
+        quickQuestions.slice(0, 5).forEach((q, index) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "chat-qr-btn is-ai-suggest";
+            btn.textContent = q;
+            btn.style.animationDelay = `${index * 0.04}s`;
+            btn.onclick = (e) => {
+                e.preventDefault();
+                document.getElementById("chatInput").value = q;
+                sendFrontendMessage();
+            };
+            wrap.appendChild(btn);
+        });
+    }
+
+    const supportBtn = document.createElement("button");
+    supportBtn.type = "button";
+    supportBtn.className = "chat-qr-btn is-support";
+    supportBtn.textContent = "Yêu cầu nhân viên hỗ trợ";
+    supportBtn.onclick = (e) => {
+        e.preventDefault();
+        transferToAgent();
+    };
+    wrap.appendChild(supportBtn);
+
+    wrap.style.display = "flex";
+    setTimeout(() => {
+        wrap.style.animation = "slideUp 0.3s ease-out";
+    }, 10);
+}
+
+// ── Hiển thị câu hỏi gợi ý ──
+function renderQuickReplies(questions) {
+    if (feChatMode !== "ai") {
+        return;
+    }
+    feAiQuickQuestions = Array.isArray(questions) ? questions.slice(0, 5) : [];
+    renderAiModeActions(feAiQuickQuestions);
 }
 
 // ── Sửa hàm xử lý response sau khi gửi tin nhắn ──
@@ -1078,26 +1234,67 @@ window.sendChatSelectedFile = function () {
 };
 
 function updateTransferButtonsByState(trangThai, dangBotXuLy) {
-    const transferWrap = document.getElementById("chatTransferWrap");
-    const toAgentBtn = transferWrap?.querySelector(
-        "button[onclick='transferToAgent()']",
-    );
-    const backToBotBtn = document.getElementById("chatBackToBotBtn");
-
-    if (!transferWrap) return;
-
     const isClosed = trangThai === "da_dong";
     const isBotMode = Boolean(dangBotXuLy) || trangThai === "dang_bot";
     const isWaitingForAgent = trangThai === "dang_cho";
 
-    // Ẩn transfer card nếu đã đóng, hoặc đang chờ/đã chuyển sang agent
-    transferWrap.style.display =
-        isClosed || isWaitingForAgent ? "none" : "block";
-    if (toAgentBtn)
-        toAgentBtn.style.display = isBotMode ? "inline-flex" : "none";
-    if (backToBotBtn)
-        backToBotBtn.style.display = !isBotMode ? "inline-flex" : "none";
+    if (isClosed) {
+        feChatMode = "closed";
+        setChatInputsEnabled(false);
+        hideQuickReplies();
+        return;
+    }
+
+    if (isWaitingForAgent || !isBotMode) {
+        feChatMode = "agent";
+        setChatInputsEnabled(true);
+        hideQuickReplies();
+        return;
+    }
+
+    if (feChatMode === "ai") {
+        setChatInputsEnabled(true);
+        renderAiModeActions();
+        return;
+    }
+
+    feChatMode = "faq";
+    setChatInputsEnabled(false);
+    renderFaqMenu();
 }
+
+function syncChatExpandUi() {
+    const win = document.getElementById("chatWindow");
+    const backdrop = document.getElementById("chatWindowBackdrop");
+    const icon = document.getElementById("chatExpandIcon");
+    const btn = document.getElementById("chatExpandBtn");
+    const expanded = win?.classList.contains("is-expanded");
+
+    if (backdrop) {
+        backdrop.classList.toggle("show", Boolean(expanded));
+    }
+    if (icon) {
+        icon.className = expanded ? "fas fa-compress" : "fas fa-expand";
+    }
+    if (btn) {
+        const title = expanded ? "Thu nhỏ khung chat" : "Phóng to khung chat";
+        btn.setAttribute("title", title);
+        btn.setAttribute("aria-label", title);
+    }
+}
+
+window.toggleChatExpand = function (forceExpand) {
+    const win = document.getElementById("chatWindow");
+    if (!win || !win.classList.contains("show")) return;
+
+    if (typeof forceExpand === "boolean") {
+        win.classList.toggle("is-expanded", forceExpand);
+    } else {
+        win.classList.toggle("is-expanded");
+    }
+
+    syncChatExpandUi();
+};
 
 window.toggleChatWindow = function () {
     const win = document.getElementById("chatWindow");
@@ -1106,6 +1303,8 @@ window.toggleChatWindow = function () {
     if (!win) return;
 
     if (win.classList.contains("show")) {
+        win.classList.remove("is-expanded");
+        syncChatExpandUi();
         win.classList.remove("show");
         btn.classList.remove("active");
         feChatOpened = false;
@@ -1114,12 +1313,21 @@ window.toggleChatWindow = function () {
         clearInterval(feChatPolling);
     } else {
         win.classList.add("show");
+        syncChatExpandUi();
         btn.classList.add("active");
         feChatOpened = true;
         if (badge) badge.style.display = "none";
         initFrontendChat();
     }
 };
+
+document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    const win = document.getElementById("chatWindow");
+    if (!win?.classList.contains("is-expanded")) return;
+    win.classList.remove("is-expanded");
+    syncChatExpandUi();
+});
 
 function startPolling(phienChatId) {
     clearInterval(feChatPolling);
@@ -1190,7 +1398,9 @@ function initChatSession(payload = {}) {
                 data.phien_chat_id;
             feLastMessageId = 0;
             feLastMessageCount = 0;
-            setChatInputsEnabled(true);
+            feChatMode = "faq";
+            feAiQuickQuestions = [];
+            setChatInputsEnabled(false);
             setAiThinking(false);
             updateTransferButtonsByState("dang_bot", true);
             fetchFrontendMessages();
@@ -1378,7 +1588,9 @@ window.transferToAgent = function () {
         .then((res) => parseApiJsonResponse(res))
         .then((data) => {
             if (data.success) {
+                feChatMode = "agent";
                 updateTransferButtonsByState("dang_cho", false);
+                hideQuickReplies();
                 showFlash(
                     "Yêu cầu đã được chuyển cho nhân viên kinh doanh.",
                     "success",
@@ -1420,6 +1632,7 @@ window.transferBackToBot = function () {
                 return;
             }
 
+            feChatMode = "faq";
             updateTransferButtonsByState("dang_bot", true);
             showFlash("Đã chuyển lại cho trợ lý AI.", "success");
             fetchFrontendMessages();

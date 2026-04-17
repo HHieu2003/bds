@@ -58,6 +58,16 @@
             </a>
         </div>
 
+        @if($nhanVien->isAdmin())
+        <div class="nav-item">
+            <a class="nav-link-item {{ $active('nhanvien.thong-ke') }}" href="{{ route('nhanvien.thong-ke') }}"
+                data-tooltip="Thống kê & Phân tích">
+                <i class="fas fa-chart-bar nav-icon"></i>
+                <span class="nav-link-text">Thống kê & Phân tích</span>
+            </a>
+        </div>
+        @endif
+
         {{-- ── 2. QUẢN LÝ BÁN HÀNG (CRM) ── --}}
         <div class="nav-group-label">Quản lý Bán hàng</div>
 

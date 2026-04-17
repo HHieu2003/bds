@@ -67,11 +67,11 @@
                 <div class="footer-license">
                     <div class="footer-license-item">
                         <i class="fas fa-certificate"></i>
-                        <span><strong>MST:</strong> 0123456789</span>
+                        <span><strong>MST:</strong> 0110308301</span>
                     </div>
                     <div class="footer-license-item">
                         <i class="fas fa-calendar-check"></i>
-                        <span><strong>Cấp ngày:</strong> 01/01/2026 · Sở KHĐT TP. Hà Nội</span>
+                        <span><strong>Cấp ngày:</strong> 03/04/2023 · Sở KHĐT TP. Hà Nội</span>
                     </div>
                 </div>
 

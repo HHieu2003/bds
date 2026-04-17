@@ -2,6 +2,10 @@
 @section('title', 'Quản lý Chủ nhà')
 
 @section('content')
+    @php
+        $exportQuery = array_merge(request()->except(['page', 'export']), ['export' => 'csv']);
+    @endphp
+
     <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet">
     <style>
         .ts-dropdown {
@@ -65,10 +69,16 @@
             <p class="page-header-sub mb-0 text-muted">{{ $thongKe['tong'] }} chủ nhà • {{ $thongKe['new_thang_nay'] }} mới
                 trong tháng</p>
         </div>
-        <button type="button" class="btn btn-primary shadow-sm px-4" data-bs-toggle="modal"
-            data-bs-target="#modalCreateChuNha">
-            <i class="fas fa-plus me-2"></i>Thêm chủ nhà
-        </button>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-primary shadow-sm px-4" data-bs-toggle="modal"
+                data-bs-target="#modalCreateChuNha">
+                <i class="fas fa-plus me-2"></i>Thêm chủ nhà
+            </button>
+            <a href="{{ route('nhanvien.admin.chu-nha.index', $exportQuery) }}" class="btn btn-success shadow-sm px-4"
+                title="Xuất báo cáo theo bộ lọc hiện tại">
+                <i class="fas fa-file-export me-2"></i>Xuất báo cáo
+            </a>
+        </div>
     </div>
 
     @if (session('success'))

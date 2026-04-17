@@ -4,6 +4,10 @@
 
 @section('content')
 
+    @php
+        $exportQuery = array_merge(request()->except(['page', 'export']), ['export' => 'csv']);
+    @endphp
+
     {{-- ═══════════════════════════════════════════════
      PAGE HEADER
 ═══════════════════════════════════════════════ --}}
@@ -19,11 +23,18 @@
                 <span>{{ $thongKe['kich_hoat'] }} đang hoạt động</span>
             </div>
         </div>
-        <button class="btn btn-primary d-flex align-items-center gap-2 flex-shrink-0" data-bs-toggle="modal"
-            data-bs-target="#nvModal" onclick="openModalAdd()">
-            <i class="fas fa-user-plus"></i>
-            <span class="d-none d-sm-inline">Thêm nhân viên</span>
-        </button>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+            <a href="{{ route('nhanvien.admin.nhan-vien.index', $exportQuery) }}"
+                class="btn btn-success d-flex align-items-center gap-2" title="Xuất báo cáo theo bộ lọc hiện tại">
+                <i class="fas fa-file-export"></i>
+                <span class="d-none d-sm-inline">Xuất báo cáo</span>
+            </a>
+            <button class="btn btn-primary d-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#nvModal"
+                onclick="openModalAdd()">
+                <i class="fas fa-user-plus"></i>
+                <span class="d-none d-sm-inline">Thêm nhân viên</span>
+            </button>
+        </div>
     </div>
 
     {{-- ═══════════════════════════════════════════════

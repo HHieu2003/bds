@@ -232,9 +232,9 @@
 
             /* HERO BANNER - Dùng nền Nâu Than sang trọng */
             .finance-hero {
-                background: var(--bg-dark);
+                background: #c58e38;
                 background-image: radial-gradient(circle at 50% 0%, rgba(192, 102, 42, 0.15) 0%, transparent 70%);
-                padding: 70px 0 90px;
+                padding: 35px 0 90px;
                 color: var(--text-light);
                 margin-bottom: -50px;
             }
@@ -400,8 +400,8 @@
 
             /* RESULT SECTION - Dùng màu Navy (Secondary) chuẩn Luxury */
             .result-section {
-                background: var(--secondary);
-                background-image: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-dark) 100%);
+                background: var(--primary);
+                background-image: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
                 border-radius: 20px;
                 padding: 35px;
                 height: 100%;

@@ -38,6 +38,7 @@
             min-width: 0;
             position: relative;
             z-index: 1;
+            height: 100%;
         }
 
         .src-head {
@@ -264,7 +265,7 @@
             </div>
 
             <div class="col-12 col-xl-5">
-                <div class="src-board mb-3" style="height: auto">
+                <div class="src-board mb-3">
                     <div class="src-head">
                         <div class="fw-bold text-success src-head-title"><i class="fas fa-route me-2"></i>Timeline hôm nay
                             (Đã chốt)</div>
@@ -295,33 +296,33 @@
                     </div>
                 </div>
 
-                
+
             </div>
             <div class="src-board">
-                    <div class="src-head">
-                        <div class="fw-bold text-danger src-head-title"><i class="fas fa-triangle-exclamation me-2"></i>Lịch
-                            quá hạn chưa xử lý</div>
-                        <span class="badge bg-danger rounded-pill">{{ $lichQuaHan->count() }}</span>
-                    </div>
-                    <div class="src-body src-body-scroll">
-                        @forelse($lichQuaHan as $lh)
-                            <div class="src-item src-alert">
-                                <div class="src-item-top">
-                                    <div class="src-main">
-                                        <div class="fw-bold">{{ Str::limit($lh->batDongSan->tieu_de ?? 'N/A', 40) }}</div>
-                                        <div class="small text-muted src-subline">
-                                            {{ optional($lh->thoi_gian_hen)->format('d/m H:i') }} ·
-                                            {{ optional($lh->thoi_gian_hen)->diffForHumans() }}</div>
-                                    </div>
-                                    <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                        class="btn btn-sm btn-outline-danger">Mở</a>
-                                </div>
-                            </div>
-                        @empty
-                            <div class="src-empty">Không có lịch quá hạn.</div>
-                        @endforelse
-                    </div>
+                <div class="src-head">
+                    <div class="fw-bold text-danger src-head-title"><i class="fas fa-triangle-exclamation me-2"></i>Lịch
+                        quá hạn chưa xử lý</div>
+                    <span class="badge bg-danger rounded-pill">{{ $lichQuaHan->count() }}</span>
                 </div>
+                <div class="src-body src-body-scroll">
+                    @forelse($lichQuaHan as $lh)
+                        <div class="src-item src-alert">
+                            <div class="src-item-top">
+                                <div class="src-main">
+                                    <div class="fw-bold">{{ Str::limit($lh->batDongSan->tieu_de ?? 'N/A', 40) }}</div>
+                                    <div class="small text-muted src-subline">
+                                        {{ optional($lh->thoi_gian_hen)->format('d/m H:i') }} ·
+                                        {{ optional($lh->thoi_gian_hen)->diffForHumans() }}</div>
+                                </div>
+                                <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
+                                    class="btn btn-sm btn-outline-danger">Mở</a>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="src-empty">Không có lịch quá hạn.</div>
+                    @endforelse
+                </div>
+            </div>
         </div>
 
         <div class="row g-3">

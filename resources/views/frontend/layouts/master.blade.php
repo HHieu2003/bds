@@ -95,6 +95,27 @@
             @else
                 null
             @endif ,
+            chatFaq: [{
+                    q: 'Lịch làm việc của văn phòng như thế nào?',
+                    a: 'Văn phòng làm việc từ 8:00 đến 18:00 các ngày trong tuần, hỗ trợ xem nhà ngoài giờ theo lịch hẹn trước.'
+                },
+                {
+                    q: 'Dự án này hiện còn những loại căn nào?',
+                    a: 'Hiện tại còn nhiều lựa chọn theo nhu cầu ở thực và đầu tư. Anh/chị để lại nhu cầu cụ thể, em sẽ gửi giỏ hàng phù hợp ngay.'
+                },
+                {
+                    q: 'Giá căn hộ hiện tại khoảng bao nhiêu?',
+                    a: 'Giá phụ thuộc diện tích, tầng, view và nội thất. Em có thể gửi bảng giá mới nhất theo đúng phân khúc anh/chị quan tâm.'
+                },
+                {
+                    q: 'Chi phí sang tên và thuế phí gồm những gì?',
+                    a: 'Thông thường gồm thuế, lệ phí trước bạ và phí công chứng theo quy định. Em sẽ hỗ trợ ước tính chi tiết theo từng giao dịch cụ thể.'
+                },
+                {
+                    q: 'Có hỗ trợ vay ngân hàng không?',
+                    a: 'Bên em có hỗ trợ kết nối ngân hàng và tư vấn phương án vay phù hợp khả năng tài chính của anh/chị.'
+                }
+            ],
             routes: {
                 login: '{{ route('khach-hang.login') }}',
                 loginPost: '{{ route('khach-hang.login.post') }}',

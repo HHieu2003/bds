@@ -24,6 +24,7 @@ use App\Http\Controllers\Frontend\LienHeController as FrontendLienHeController;
 use App\Http\Controllers\Frontend\ChatController as FeChatController;
 use App\Http\Controllers\Frontend\DangKyNhanTinController;
 use App\Http\Controllers\Admin\NganHangController;
+use App\Http\Controllers\Admin\ThongKeController;
 use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
 use App\Http\Controllers\Admin\ChuNhaController;
 use App\Http\Controllers\Admin\KhuVucController;
@@ -150,6 +151,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
         Route::post('cap-nhat-thong-tin', [AdminAuthController::class, 'updateProfile'])->name('update-profile');
         Route::post('doi-mat-khau', [AdminAuthController::class, 'changePassword'])->name('change-password');
         Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('thong-ke', [ThongKeController::class, 'index'])->name('thong-ke');
 
         // ══════════════════════════════════════
         // ADMIN PANEL

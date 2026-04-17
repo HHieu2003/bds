@@ -8,7 +8,6 @@ use App\Models\NhanVien;
 use App\Models\DuAn;
 use App\Models\BatDongSan;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class ChuNhaController extends Controller
 {
@@ -70,6 +69,11 @@ class ChuNhaController extends Controller
             'new_thang_nay' => (clone $query)->where('created_at', '>=', now()->startOfMonth())->count(),
         ];
 
+        // Xuất toàn bộ báo cáo theo bộ lọc hiện tại (không phân trang)
+        if ($request->get('export') === 'csv') {
+            return $this->exportChuNhaCsv((clone $query)->get(), $request, $thongKe);
+        }
+
         $chuNhas = $query->paginate(15)->withQueryString();
 
         $nhanViens = NhanVien::where('kich_hoat', true)
@@ -90,6 +94,86 @@ class ChuNhaController extends Controller
             ->get();
 
         return view('admin.chu-nha.index', compact('chuNhas', 'nhanViens', 'duAns', 'toas', 'allBdsList', 'thongKe'));
+    }
+
+    private function exportChuNhaCsv($rows, Request $request, array $thongKe)
+    {
+        $fileName = 'Bao_Cao_Chu_Nha_' . now()->format('Ymd_His') . '.csv';
+
+        $headers = [
+            'Content-type'        => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=$fileName",
+            'Pragma'              => 'no-cache',
+            'Cache-Control'       => 'no-store, no-cache, must-revalidate, max-age=0',
+            'Expires'             => '0',
+        ];
+
+        $boLoc = [];
+        if ($request->filled('tim_kiem')) {
+            $boLoc[] = 'Tu khoa: ' . $request->tim_kiem;
+        }
+        if ($request->filled('du_an_id')) {
+            $boLoc[] = 'Du an ID: ' . $request->du_an_id;
+        }
+        if ($request->filled('toa')) {
+            $boLoc[] = 'Toa: ' . $request->toa;
+        }
+        if ($request->filled('nhan_vien_phu_trach_id')) {
+            $boLoc[] = $request->nhan_vien_phu_trach_id === 'none'
+                ? 'Phu trach: Chung'
+                : 'Phu trach ID: ' . $request->nhan_vien_phu_trach_id;
+        }
+
+        $sapXepLabel = $request->get('sort_date', 'newest') === 'oldest' ? 'Lau chua tuong tac' : 'Moi cap nhat';
+        $tongCan = $rows->sum('bat_dong_sans_count');
+
+        $callback = function () use ($rows, $boLoc, $sapXepLabel, $thongKe, $tongCan) {
+            $file = fopen('php://output', 'w');
+            fputs($file, "\xEF\xBB\xBF");
+            $delimiter = ';';
+
+            fputcsv($file, ['BAO CAO CHU NHA'], $delimiter);
+            fputcsv($file, ['Thoi gian xuat', now()->format('d/m/Y H:i:s')], $delimiter);
+            fputcsv($file, ['Tong dong', $rows->count()], $delimiter);
+            fputcsv($file, ['Sap xep', $sapXepLabel], $delimiter);
+            fputcsv($file, ['Bo loc', empty($boLoc) ? 'Khong co' : implode(' | ', $boLoc)], $delimiter);
+            fputcsv($file, [], $delimiter);
+
+            fputcsv($file, ['TONG QUAN'], $delimiter);
+            fputcsv($file, ['Tong chu nha (theo bo loc)', (int) ($thongKe['tong'] ?? 0)], $delimiter);
+            fputcsv($file, ['Chu nha moi trong thang (theo bo loc)', (int) ($thongKe['new_thang_nay'] ?? 0)], $delimiter);
+            fputcsv($file, ['Tong tai san dang lien ket', (int) $tongCan], $delimiter);
+            fputcsv($file, [], $delimiter);
+
+            fputcsv($file, ['CHI TIET DANH SACH'], $delimiter);
+            fputcsv($file, ['STT', 'ID', 'Ho ten', 'So dien thoai', 'Email', 'CCCD', 'Phu trach', 'So tai san', 'Ma can/Toa', 'Dia chi', 'Ghi chu', 'Cap nhat luc'], $delimiter);
+
+            foreach ($rows->values() as $index => $cn) {
+                $maCanList = $cn->batDongSans
+                    ->take(10)
+                    ->map(fn($bds) => ($bds->toa ? ($bds->toa . '-') : '') . ($bds->ma_can ?: ('#' . $bds->id)))
+                    ->implode(', ');
+
+                fputcsv($file, [
+                    $index + 1,
+                    $cn->id,
+                    $cn->ho_ten,
+                    $cn->so_dien_thoai,
+                    $cn->email,
+                    $cn->cccd,
+                    optional($cn->nhanVienPhuTrach)->ho_ten ?? 'Chung',
+                    (int) $cn->bat_dong_sans_count,
+                    $maCanList,
+                    $cn->dia_chi,
+                    str_replace(["\r", "\n"], ' ', (string) $cn->ghi_chu),
+                    optional($cn->updated_at)->format('d/m/Y H:i:s'),
+                ], $delimiter);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     // Thiết lập các câu thông báo lỗi Tiếng Việt

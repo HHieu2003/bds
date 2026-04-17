@@ -528,7 +528,7 @@
                 <div class="modal fade" id="modalChuyenNguon{{ $lh->id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <form action="{{ route('nhanvien.admin.lich-hen.tiep-nhan', $lh->id) }}" method="POST"
-                            class="modal-content shadow border-0">
+                            class="modal-content shadow border-0" data-persist-tab>
                             @csrf @method('PATCH')
                             <div class="modal-header bg-primary text-white">
                                 <h5 class="modal-title fw-bold">Chuyển cho Nguồn Hàng</h5><button type="button"
@@ -569,7 +569,7 @@
                 <div class="modal fade" id="modalSaleTuChoi{{ $lh->id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <form action="{{ route('nhanvien.admin.lich-hen.sale-tu-choi', $lh->id) }}" method="POST"
-                            class="modal-content shadow border-0">
+                            class="modal-content shadow border-0" data-persist-tab>
                             @csrf @method('PATCH')
                             <div class="modal-body p-4">
                                 <h5 class="fw-bold text-danger mb-3">Từ chối Yêu cầu</h5>
@@ -588,7 +588,7 @@
                 <div class="modal fade" id="modalHoanThanh{{ $lh->id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <form action="{{ route('nhanvien.admin.lich-hen.hoan-thanh', $lh->id) }}" method="POST"
-                            class="modal-content shadow border-0">
+                            class="modal-content shadow border-0" data-persist-tab>
                             @csrf @method('PATCH')
                             <div class="modal-header bg-success text-white">
                                 <h5 class="modal-title fw-bold"><i class="fas fa-flag-checkered me-2"></i>Cập nhật Kết quả
@@ -623,7 +623,7 @@
                 <div class="modal fade" id="modalSaleDoiGio{{ $lh->id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <form action="{{ route('nhanvien.admin.lich-hen.sale-doi-gio', $lh->id) }}" method="POST"
-                            class="modal-content shadow border-0">
+                            class="modal-content shadow border-0" data-persist-tab>
                             @csrf @method('PATCH')
                             <div class="modal-header bg-warning text-dark">
                                 <h5 class="modal-title fw-bold"><i class="fas fa-clock me-2"></i>Dời lịch xem nhà</h5>
@@ -651,7 +651,7 @@
                 <div class="modal fade" id="modalHuyShow{{ $lh->id }}" tabindex="-1">
                     <div class="modal-dialog modal-dialog-centered">
                         <form action="{{ route('nhanvien.admin.lich-hen.huy', $lh->id) }}" method="POST"
-                            class="modal-content shadow border-0">
+                            class="modal-content shadow border-0" data-persist-tab>
                             @csrf @method('PATCH')
                             <div class="modal-header bg-danger text-white">
                                 <h5 class="modal-title fw-bold"><i class="fas fa-ban me-2"></i> Hủy lịch xem nhà</h5>
@@ -714,6 +714,39 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // ─── GHI NHỚ VÀ PHỤC HỒI TAB ĐANG ACTIVE ───
+            const TAB_KEY = 'lh_active_tab';
+            const tabEls = document.querySelectorAll('#lhTab [data-bs-toggle="tab"]');
+
+            // Restore tab từ localStorage
+            const savedTab = localStorage.getItem(TAB_KEY);
+            if (savedTab) {
+                const tabToShow = document.querySelector('#lhTab [data-bs-target="' + savedTab + '"]');
+                if (tabToShow) {
+                    bootstrap.Tab.getOrCreateInstance(tabToShow).show();
+                }
+            }
+
+            // Lưu tab khi user click
+            tabEls.forEach(function(tabEl) {
+                tabEl.addEventListener('shown.bs.tab', function(e) {
+                    localStorage.setItem(TAB_KEY, e.target.getAttribute('data-bs-target'));
+                });
+            });
+
+            // ─── SET _redirect_back vào tất cả các form trong trang này ───
+            document.querySelectorAll('form[data-persist-tab]').forEach(function(form) {
+                const activeTab = localStorage.getItem(TAB_KEY) || '#tab-request';
+                let inp = form.querySelector('input[name="_redirect_back"]');
+                if (!inp) {
+                    inp = document.createElement('input');
+                    inp.type = 'hidden';
+                    inp.name = '_redirect_back';
+                    form.appendChild(inp);
+                }
+                inp.value = window.location.href;
+            });
+
             var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 initialView: 'timeGridWeek',
                 locale: 'vi',

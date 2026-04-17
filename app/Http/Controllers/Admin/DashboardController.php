@@ -9,7 +9,6 @@ use App\Models\BatDongSan;
 use App\Models\DuAn;
 use App\Models\LichHen;
 use App\Models\KyGui;
-use App\Models\PhienChat;
 use App\Models\YeuCauLienHe;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -161,24 +160,45 @@ class DashboardController extends Controller
 
         // 1. Khởi tạo giá trị lọc thời gian
         $loai_loc = $request->input('loai_loc', 'thang');
+        if (!in_array($loai_loc, ['ngay', 'thang', 'nam'], true)) {
+            $loai_loc = 'thang';
+        }
+
         $startDate = null;
         $endDate = null;
         $labelKyBaoCao = "";
 
         if ($loai_loc === 'ngay') {
-            $date = Carbon::parse($request->input('ngay', $now->toDateString()));
+            $ngayInput = $request->input('ngay', $now->toDateString());
+            try {
+                $date = Carbon::parse($ngayInput);
+            } catch (\Throwable $e) {
+                $date = $now->copy();
+            }
             $startDate = $date->copy()->startOfDay();
             $endDate = $date->copy()->endOfDay();
             $labelKyBaoCao = "Ngày " . $date->format('d/m/Y');
         } elseif ($loai_loc === 'nam') {
-            $year = $request->input('nam', $now->year);
+            $year = (int) $request->input('nam', $now->year);
+            if ($year < 2020 || $year > 2099) {
+                $year = (int) $now->year;
+            }
             $startDate = Carbon::createFromDate($year, 1, 1)->startOfYear();
             $endDate = Carbon::createFromDate($year, 1, 1)->endOfYear();
             $labelKyBaoCao = "Năm " . $year;
         } else {
             // Mặc định lọc theo Tháng
             $monthInput = $request->input('thang', $now->format('Y-m')); // Format: YYYY-MM
-            $date = Carbon::parse($monthInput . '-01');
+            if (!preg_match('/^\d{4}-\d{2}$/', (string) $monthInput)) {
+                $monthInput = $now->format('Y-m');
+            }
+
+            try {
+                $date = Carbon::parse($monthInput . '-01');
+            } catch (\Throwable $e) {
+                $date = $now->copy()->startOfMonth();
+            }
+
             $startDate = $date->copy()->startOfMonth();
             $endDate = $date->copy()->endOfMonth();
             $labelKyBaoCao = "Tháng " . $date->format('m/Y');
@@ -198,7 +218,7 @@ class DashboardController extends Controller
 
         // 3. Xử lý Yêu cầu Xuất File (Export CSV)
         if ($request->has('export') && $request->export === 'csv') {
-            return $this->exportDashboardCsv($tongQuan, $labelKyBaoCao);
+            return $this->exportDashboardCsv($tongQuan, $labelKyBaoCao, $startDate, $endDate, $loai_loc);
         }
 
         // 4. Các dữ liệu phụ cho Biểu đồ và Danh sách bên dưới
@@ -264,40 +284,59 @@ class DashboardController extends Controller
     /**
      * Hàm hỗ trợ xuất file CSV
      */
-    private function exportDashboardCsv($data, $label)
+    private function exportDashboardCsv(array $data, string $label, Carbon $startDate, Carbon $endDate, string $loaiLoc)
     {
-        $fileName = 'Bao_Cao_Tong_Quan_' . str_replace([' ', '/'], '_', $label) . '_' . time() . '.csv';
+        $labelSafe = preg_replace('/[^A-Za-z0-9_\-]/', '_', str_replace([' ', '/'], '_', $label));
+        $fileName = 'Bao_Cao_Tong_Quan_' . trim((string) $labelSafe, '_') . '_' . now()->format('Ymd_His') . '.csv';
 
         $headers = array(
-            "Content-type"        => "text/csv",
+            "Content-type"        => "text/csv; charset=UTF-8",
             "Content-Disposition" => "attachment; filename=$fileName",
             "Pragma"              => "no-cache",
-            "Cache-Control"       => "must-revalidate, post-check=0, pre-check=0",
+            "Cache-Control"       => "no-store, no-cache, must-revalidate, max-age=0",
             "Expires"             => "0"
         );
 
-        $columns = ['Chi So Thong Ke', 'So Luong (Trong Ky)'];
+        $columns = ['Chi so thong ke', 'So luong (trong ky)'];
 
-        $callback = function () use ($data, $columns, $label) {
+        $tongLich = (int) ($data['lich_hen_trong_ky'] ?? 0);
+        $lichChot = (int) ($data['lich_chot'] ?? 0);
+        $tiLeChot = $tongLich > 0 ? round(($lichChot / $tongLich) * 100, 2) : 0;
+
+        $loaiLocLabel = match ($loaiLoc) {
+            'ngay' => 'Theo ngay',
+            'nam' => 'Theo nam',
+            default => 'Theo thang',
+        };
+
+        $callback = function () use ($data, $columns, $label, $startDate, $endDate, $loaiLocLabel, $tiLeChot) {
             $file = fopen('php://output', 'w');
 
             // Thêm BOM để Excel đọc được tiếng Việt (UTF-8)
             fputs($file, "\xEF\xBB\xBF");
 
+            // Dùng dấu ; để tương thích tốt hơn với Excel theo locale VN
+            $delimiter = ';';
+
             // Dòng Tiêu đề File
-            fputcsv($file, ["BAO CAO THONG KE HE THONG - " . mb_strtoupper($label)]);
-            fputcsv($file, []); // Dòng trống
-            fputcsv($file, $columns);
+            fputcsv($file, ["BAO CAO THONG KE HE THONG - " . mb_strtoupper($label)], $delimiter);
+            fputcsv($file, ['Thoi gian xuat', now()->format('d/m/Y H:i:s')], $delimiter);
+            fputcsv($file, ['Loai loc', $loaiLocLabel], $delimiter);
+            fputcsv($file, ['Tu ngay', $startDate->format('d/m/Y H:i:s')], $delimiter);
+            fputcsv($file, ['Den ngay', $endDate->format('d/m/Y H:i:s')], $delimiter);
+            fputcsv($file, [], $delimiter); // Dòng trống
+            fputcsv($file, $columns, $delimiter);
 
             // Ghi dữ liệu
-            fputcsv($file, ['Bất động sản thêm mới', $data['bds_moi']]);
-            fputcsv($file, ['Bất động sản chốt/bán', $data['bds_da_ban']]);
-            fputcsv($file, ['Khách hàng mới', $data['khach_hang_moi']]);
-            fputcsv($file, ['Dự án thêm mới', $data['du_an_moi']]);
-            fputcsv($file, ['Yêu cầu liên hệ (Leads mới)', $data['yeu_cau_moi']]);
-            fputcsv($file, ['Ký gửi mới', $data['ky_gui_moi']]);
-            fputcsv($file, ['Lịch xem nhà diễn ra', $data['lich_hen_trong_ky']]);
-            fputcsv($file, ['Lịch xem nhà thành công (Chốt deal)', $data['lich_chot']]);
+            fputcsv($file, ['Bat dong san them moi', (int) ($data['bds_moi'] ?? 0)], $delimiter);
+            fputcsv($file, ['Bat dong san chot/ban', (int) ($data['bds_da_ban'] ?? 0)], $delimiter);
+            fputcsv($file, ['Khach hang moi', (int) ($data['khach_hang_moi'] ?? 0)], $delimiter);
+            fputcsv($file, ['Du an them moi', (int) ($data['du_an_moi'] ?? 0)], $delimiter);
+            fputcsv($file, ['Yeu cau lien he (lead moi)', (int) ($data['yeu_cau_moi'] ?? 0)], $delimiter);
+            fputcsv($file, ['Ky gui moi', (int) ($data['ky_gui_moi'] ?? 0)], $delimiter);
+            fputcsv($file, ['Lich xem nha dien ra', (int) ($data['lich_hen_trong_ky'] ?? 0)], $delimiter);
+            fputcsv($file, ['Lich xem nha thanh cong (chot deal)', (int) ($data['lich_chot'] ?? 0)], $delimiter);
+            fputcsv($file, ['Ti le chot lich (%)', $tiLeChot], $delimiter);
 
             fclose($file);
         };

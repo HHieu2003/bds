@@ -1,11 +1,52 @@
 <style>
+    .chat-window-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(12, 22, 38, 0.45);
+        backdrop-filter: blur(2px);
+        z-index: 9997;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s ease, visibility 0.2s ease;
+    }
+
+    .chat-window-backdrop.show {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .chat-window.is-expanded {
+        right: auto !important;
+        bottom: auto !important;
+        left: 50% !important;
+        top: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        width: min(920px, calc(100vw - 36px)) !important;
+        height: min(82vh, 760px) !important;
+        max-height: 82vh !important;
+        border-radius: 16px !important;
+        z-index: 9998 !important;
+        box-shadow: 0 24px 64px rgba(11, 24, 43, 0.35) !important;
+    }
+
+    @media (max-width: 768px) {
+        .chat-window.is-expanded {
+            width: calc(100vw - 12px) !important;
+            height: calc(100vh - 12px) !important;
+            max-height: calc(100vh - 12px) !important;
+            border-radius: 12px !important;
+        }
+    }
+
     .chat-quick-replies {
         display: flex;
         flex-wrap: wrap;
-        gap: 6px;
-        padding: 10px 12px;
-        border-top: 1px solid #f0f0f0;
-        background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
+        gap: 8px;
+        padding: 12px;
+        border-top: 1px solid rgba(10, 20, 40, 0.08);
+        background:
+            radial-gradient(circle at 0% 0%, rgba(192, 102, 42, 0.12), transparent 60%),
+            linear-gradient(145deg, #fbfcff 0%, #f6f8fc 100%);
         animation: slideUp 0.3s ease-out;
     }
 
@@ -21,30 +62,71 @@
         }
     }
 
-    .chat-quick-replies button {
+    .chat-quick-replies .chat-qr-btn {
         font-size: 12px;
-        padding: 6px 12px;
-        border-radius: 18px;
-        border: 1px solid #d0e8ff;
-        background: #fff;
-        color: #0d6efd;
+        padding: 8px 13px;
+        border-radius: 999px;
+        border: 1px solid #d9e3f4;
+        background: #ffffff;
+        color: #19345f;
         cursor: pointer;
-        white-space: nowrap;
+        white-space: normal;
+        line-height: 1.35;
+        text-align: left;
         transition: all 0.2s;
-        font-weight: 500;
-        flex: 1;
-        min-width: 100px;
+        font-weight: 600;
+        flex: 1 1 calc(50% - 8px);
+        min-width: 140px;
+        box-shadow: 0 1px 4px rgba(10, 20, 40, 0.08);
     }
 
-    .chat-quick-replies button:hover {
-        background: #0d6efd;
-        color: #fff;
+    .chat-quick-replies .chat-qr-btn:hover {
+        border-color: #c0662a;
+        background: #fff8f2;
+        color: #8d471d;
         transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        box-shadow: 0 8px 20px rgba(192, 102, 42, 0.2);
     }
 
-    .chat-quick-replies button:active {
+    .chat-quick-replies .chat-qr-btn:active {
         transform: translateY(0);
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-ai {
+        border-color: #19345f;
+        background: linear-gradient(135deg, #19345f 0%, #264f8f 100%);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(25, 52, 95, 0.3);
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-ai:hover {
+        border-color: #19345f;
+        background: linear-gradient(135deg, #152d52 0%, #1e447f 100%);
+        color: #fff;
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-ai-suggest {
+        border-color: #d4e3ff;
+        background: #f3f7ff;
+        color: #20406f;
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-support {
+        border-color: #c0662a;
+        background: #fff1e7;
+        color: #9a4f21;
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-support:hover {
+        border-color: #9a4f21;
+        background: #ffe4d3;
+        color: #7e3f18;
+    }
+
+    @media (max-width: 576px) {
+        .chat-quick-replies .chat-qr-btn {
+            flex-basis: 100%;
+        }
     }
 
     /* ===== TRANSFER CARD ===== */
@@ -137,6 +219,7 @@
     <span id="chatUnreadBadge" class="cw-unread-badge" style="display:none;">1</span>
     <span class="cw-pulse"></span>
 </button>
+<div id="chatWindowBackdrop" class="chat-window-backdrop" onclick="toggleChatExpand(false)"></div>
 
 {{-- Cửa sổ chat --}}
 <div id="chatWindow" class="chat-window">
@@ -153,6 +236,10 @@
                 </div>
             </div>
             <div class="chat-head-actions">
+                <button type="button" id="chatExpandBtn" class="chat-icon-btn" onclick="toggleChatExpand()"
+                    title="Phóng to khung chat" aria-label="Phóng to khung chat">
+                    <i id="chatExpandIcon" class="fas fa-expand"></i>
+                </button>
                 <button type="button" class="chat-icon-btn" onclick="openAuthModal('login')" title="Đăng nhập">
                     <i class="far fa-user"></i>
                 </button>
@@ -195,22 +282,6 @@
             </div>
         </div>
 
-        {{-- Chuyển NV — có confirm --}}
-        <div id="chatTransferWrap" class="chat-transfer-wrap" style="display:none;">
-            <div class="chat-transfer-card">
-                <div class="chat-transfer-copy">
-                    <strong><i class="fas fa-user-tie" style="color:#1976d2"></i> Cần hỗ trợ sâu hơn?</strong>
-                </div>
-                <button type="button" class="btn btn-outline-theme" onclick="transferToAgent()">
-                    Chuyển nhân viên tư vấn
-                </button>
-                <button type="button" class="btn btn-outline-secondary" id="chatBackToBotBtn"
-                    onclick="transferBackToBot()" style="display:none;">
-                    <i class="fas fa-robot me-1"></i> Chuyển lại AI
-                </button>
-            </div>
-        </div>
-
     </div>
     {{-- ── Câu hỏi gợi ý (quick replies) ── --}}
     <div id="chatQuickReplies" class="chat-quick-replies" style="display:none;"></div>
@@ -240,25 +311,3 @@
     </div>
 
 </div>
-
-@push('scripts')
-    <script>
-        function transferToAgent() {
-            const transferWrap = document.getElementById('chatTransferWrap');
-            if (transferWrap) {
-                transferWrap.style.display = 'none';
-            }
-            // Gọi các handler khác liên quan đến transfer nếu có
-            console.log('Chuyển sang nhân viên tư vấn');
-        }
-
-        function transferBackToBot() {
-            const transferWrap = document.getElementById('chatTransferWrap');
-            if (transferWrap) {
-                transferWrap.style.display = 'block';
-            }
-            // Gọi các handler khác liên quan đến transfer nếu có
-            console.log('Chuyển lại AI');
-        }
-    </script>
-@endpush

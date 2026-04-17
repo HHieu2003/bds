@@ -251,7 +251,7 @@ class LichHenController extends Controller
             'trang_thai'              => 'cho_xac_nhan',
         ]);
         $this->_thongBaoNguonHang($lichHen, 'Có lịch xem nhà', 'Sale yêu cầu mở cửa.');
-        return back()->with('success', 'Đã chuyển cho Nguồn hàng!');
+        return $this->_smartRedirect($request, 'Đã chuyển cho Nguồn hàng!');
     }
 
     public function baoLaiGio(Request $request, LichHen $lichHen)
@@ -265,7 +265,7 @@ class LichHenController extends Controller
         ]);
 
         $this->_thongBaoSale($lichHen, 'Nguồn xin dời giờ', 'Xác nhận lại giờ với khách: ' . $request->ghi_chu_nguon_hang);
-        return back()->with('success', 'Đã dời giờ! Đang chờ Sale xác nhận lại với khách.');
+        return $this->_smartRedirect($request, 'Đã dời giờ! Đang chờ Sale xác nhận lại với khách.');
     }
 
     public function xacNhanDoiGio(Request $request, LichHen $lichHen)
@@ -275,14 +275,14 @@ class LichHenController extends Controller
 
         $lichHen->update(['trang_thai' => 'da_xac_nhan', 'xac_nhan_at' => now()]);
         $this->_thongBaoNguonHang($lichHen, 'Sale chốt giờ mới', 'Khách hàng đồng ý đi xem giờ bạn đề xuất.');
-        return back()->with('success', 'Đã chốt giờ mới với khách!');
+        return $this->_smartRedirect($request, 'Đã chốt giờ mới với khách!');
     }
 
     public function saleDoiGio(Request $request, LichHen $lichHen)
     {
         $request->validate(['thoi_gian_hen' => 'required|date', 'ghi_chu_sale' => 'required|string']);
         $lichHen->update(['thoi_gian_hen' => $request->thoi_gian_hen, 'ghi_chu_sale' => $request->ghi_chu_sale, 'trang_thai' => 'cho_xac_nhan']);
-        return back()->with('success', 'Đã dời lịch và báo cho Nguồn!');
+        return $this->_smartRedirect($request, 'Đã dời lịch và báo cho Nguồn!');
     }
 
     public function hoanThanh(Request $request, LichHen $lichHen)
@@ -294,32 +294,32 @@ class LichHenController extends Controller
             'ghi_chu_sale' => "Kết quả: " . ($request->ket_qua == 'chot' ? 'CHỐT' : 'KHÔNG CHỐT') . " - " . $request->ghi_chu_sale
         ]);
         if ($request->ket_qua === 'chot' && $lichHen->batDongSan) $lichHen->batDongSan->update(['trang_thai' => 'da_ban']);
-        return back()->with('success', 'Cập nhật kết quả thành công!');
+        return $this->_smartRedirect($request, 'Cập nhật kết quả thành công!');
     }
 
     public function xacNhan(LichHen $lichHen)
     {
         $lichHen->update(['trang_thai' => 'da_xac_nhan', 'xac_nhan_at' => now()]);
         $this->_thongBaoSale($lichHen, 'Lịch ĐÃ ĐƯỢC XÁC NHẬN', 'Nguồn hàng đã chốt.');
-        return back()->with('success', 'Đã xác nhận lịch!');
+        return $this->_smartRedirect($request, 'Đã xác nhận lịch!');
     }
 
     public function tuChoi(Request $request, LichHen $lichHen)
     {
         $lichHen->update(['trang_thai' => 'tu_choi', 'ly_do_tu_choi' => $request->ly_do_tu_choi, 'tu_choi_at' => now()]);
-        return back()->with('success', 'Đã từ chối lịch hẹn.');
+        return $this->_smartRedirect($request, 'Đã từ chối lịch hẹn.');
     }
     public function saleTuChoi(Request $request, LichHen $lichHen)
     {
         $lichHen->update(['trang_thai' => 'tu_choi', 'ly_do_tu_choi' => 'Sale báo: ' . $request->ly_do_tu_choi, 'tu_choi_at' => now()]);
-        return back()->with('success', 'Đã từ chối lịch xem nhà.');
+        return $this->_smartRedirect($request, 'Đã từ chối lịch xem nhà.');
     }
 
     public function huy(Request $request, LichHen $lichHen)
     {
         $nhanVien = $this->currentNhanVien();
         $lichHen->update(['trang_thai' => 'huy', 'ly_do_tu_choi' => 'Hủy bởi ' . $nhanVien->ho_ten . ' - Lý do: ' . $request->ly_do, 'huy_at' => now()]);
-        return back()->with('success', 'Đã hủy lịch.');
+        return $this->_smartRedirect($request, 'Đã hủy lịch.');
     }
 
     public function destroy(LichHen $lichHen)
@@ -333,6 +333,18 @@ class LichHenController extends Controller
     private function currentNhanVien(): NhanVien
     {
         return Auth::guard('nhanvien')->user();
+    }
+
+    /**
+     * Redirect về URL trước đó (giữ tab) nếu có _redirect_back, ngược lại dùng back()
+     */
+    private function _smartRedirect(Request $request, string $message, string $type = 'success')
+    {
+        $redirectUrl = $request->input('_redirect_back');
+        if ($redirectUrl && str_starts_with($redirectUrl, url('/'))) {
+            return redirect($redirectUrl)->with($type, $message);
+        }
+        return back()->with($type, $message);
     }
 
     private function _thongBaoNguonHang(LichHen $lh, string $t, string $b): void

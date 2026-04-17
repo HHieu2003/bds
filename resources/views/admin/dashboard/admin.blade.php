@@ -3,7 +3,6 @@
 @section('title', 'Dashboard Admin')
 
 @push('styles')
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .dashboard-header {
             display: flex;
@@ -145,12 +144,25 @@
 
 @section('content')
 
+    @php
+        $trangThaiLabels = [
+            'moi_dat' => 'Mới đặt',
+            'sale_da_nhan' => 'Sale đã nhận',
+            'cho_xac_nhan' => 'Chờ Nguồn chốt',
+            'cho_sale_xac_nhan_doi_gio' => 'Chờ Sale chốt dời giờ',
+            'da_xac_nhan' => 'Đã chốt đi xem',
+            'hoan_thanh' => 'Hoàn thành',
+            'tu_choi' => 'Từ chối',
+            'huy' => 'Đã hủy',
+        ];
+    @endphp
+
     {{-- ── Header ── --}}
     <div class="dashboard-header">
         <div>
             <h1 class="dashboard-title">Tổng quan hệ thống</h1>
             <div class="dashboard-subtitle">Xin chào <strong>{{ $nhanVien->ho_ten }}</strong>
-                ({{ $nhanVien->vai_tro_label }}) - {{ now()->format('l, d/m/Y') }}</div>
+                ({{ $nhanVien->vai_tro_label }}) - {{ now()->translatedFormat('l, d/m/Y') }}</div>
         </div>
         <div class="d-flex gap-2">
             <a href="{{ route('nhanvien.admin.bat-dong-san.create') }}" class="btn btn-primary"><i
@@ -309,22 +321,17 @@
                                             {{ $lh->batDongSan?->tieu_de ?? 'Chưa xác định' }}</td>
                                         <td>
                                             @php
-                                                $trangThaiLabels = [
-                                                    'moi_dat' => 'Mới đặt',
-                                                    'sale_da_nhan' => 'Sale đang nhận',
-                                                    'cho_xac_nhan' => 'Chờ Nguồn chốt',
-                                                    'cho_sale_xac_nhan_doi_gio' => 'Chờ dời giờ',
-                                                    'da_xac_nhan' => 'Đã chốt đi xem',
-                                                    'hoan_thanh' => 'Hoàn thành',
-                                                    'tu_choi' => 'Từ chối',
-                                                    'huy' => 'Đã hủy',
-                                                ];
                                                 $lbl = $trangThaiLabels[$lh->trang_thai] ?? $lh->trang_thai;
                                                 $badgeClass = match ($lh->trang_thai) {
+                                                    'moi_dat' => 'bg-info text-dark',
+                                                    'sale_da_nhan' => 'bg-primary',
+                                                    'cho_xac_nhan',
+                                                    'cho_sale_xac_nhan_doi_gio'
+                                                        => 'bg-warning text-dark',
                                                     'da_xac_nhan' => 'bg-success',
                                                     'hoan_thanh' => 'bg-secondary',
-                                                    'moi_dat' => 'bg-info text-dark',
-                                                    default => 'bg-warning text-dark',
+                                                    'tu_choi', 'huy' => 'bg-danger',
+                                                    default => 'bg-dark',
                                                 };
                                             @endphp
                                             <span class="badge {{ $badgeClass }}">{{ $lbl }}</span>
@@ -351,26 +358,45 @@
                     <div class="row g-3">
                         @forelse($bdsMoiNhat as $bds)
                             @php
-                                $imgs = is_array($bds->hinh_anh)
-                                    ? $bds->hinh_anh
-                                    : json_decode($bds->hinh_anh ?? '[]', true);
-                                $thumb = !empty($imgs) ? asset('storage/' . $imgs[0]) : asset('images/no-image.jpg');
+                                $albumAnh = is_array($bds->album_anh)
+                                    ? $bds->album_anh
+                                    : json_decode($bds->album_anh ?? '[]', true);
+                                $hinhAnhChinh = $bds->hinh_anh;
+                                if (!empty($albumAnh) && is_array($albumAnh)) {
+                                    $hinhAnhChinh = $albumAnh[0];
+                                }
+
+                                $thumb = $hinhAnhChinh
+                                    ? asset('storage/' . ltrim($hinhAnhChinh, '/'))
+                                    : asset('images/no-image.jpg');
+
+                                $giaHienThi = 'Thỏa thuận';
+                                if (($bds->nhu_cau ?? null) === 'thue') {
+                                    $giaHienThi = $bds->gia_thue
+                                        ? number_format((float) $bds->gia_thue, 0, ',', '.') . ' đ/tháng'
+                                        : 'Thỏa thuận';
+                                } else {
+                                    $giaHienThi = $bds->gia
+                                        ? number_format((float) $bds->gia, 0, ',', '.') . ' đ'
+                                        : 'Thỏa thuận';
+                                }
                             @endphp
                             <div class="col-12 col-md-6">
                                 <div class="mini-list-item p-2 rounded"
                                     style="background: var(--bg-alt); border: 1px solid var(--border);">
                                     <img src="{{ $thumb }}" class="mini-thumb" alt="thumb">
                                     <div class="mini-info">
-                                         <div class="mini-title">{{ $bds->tieu_de }}</div>
-                                         <div class="mini-sub d-flex justify-content-between pe-2">
-                                             <div>
-                                                 <strong class="text-danger">{{ number_format($bds->gia, 2) }} tỷ</strong>
-                                                 <span class="ms-2 small text-muted">| {{ $bds->nhanVienPhuTrach->ho_ten ?? 'Nguồn ẩn' }}</span>
-                                             </div>
-                                             <span
-                                                 class="badge {{ $bds->trang_thai == 'con_hang' ? 'bg-success' : 'bg-secondary' }}">{{ $bds->trang_thai == 'con_hang' ? 'Còn hàng' : 'Đã bán' }}</span>
-                                         </div>
-                                     </div>
+                                        <div class="mini-title">{{ $bds->tieu_de }}</div>
+                                        <div class="mini-sub d-flex justify-content-between pe-2">
+                                            <div>
+                                                <strong class="text-danger">{{ $giaHienThi }}</strong>
+                                                <span class="ms-2 small text-muted">|
+                                                    {{ $bds->nhanVienPhuTrach->ho_ten ?? 'Nguồn ẩn' }}</span>
+                                            </div>
+                                            <span
+                                                class="badge {{ $bds->trang_thai == 'con_hang' ? 'bg-success' : 'bg-secondary' }}">{{ $bds->trang_thai == 'con_hang' ? 'Còn hàng' : 'Đã bán' }}</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         @empty
@@ -453,13 +479,13 @@
                                     {{ mb_strtoupper(mb_substr($nv->ho_ten, 0, 1)) }}
                                 </div>
                                 <div class="mini-info">
-                                     <div class="mini-title">{{ $nv->ho_ten }}</div>
-                                     <div class="mini-sub text-truncate">
-                                         <span class="text-primary fw-bold">{{ $nv->so_bds }}</span> BĐS · 
-                                         <span class="text-success fw-bold">{{ $nv->so_lich_hen }}</span> Lịch · 
-                                         <span class="text-info fw-bold">{{ $nv->so_ky_gui }}</span> Ký gửi
-                                     </div>
-                                 </div>
+                                    <div class="mini-title">{{ $nv->ho_ten }}</div>
+                                    <div class="mini-sub text-truncate">
+                                        <span class="text-primary fw-bold">{{ $nv->so_bds }}</span> BĐS ·
+                                        <span class="text-success fw-bold">{{ $nv->so_lich_hen }}</span> Lịch ·
+                                        <span class="text-info fw-bold">{{ $nv->so_ky_gui }}</span> Ký gửi
+                                    </div>
+                                </div>
                             </div>
                         @endforeach
                     </div>
@@ -472,6 +498,7 @@
 @endsection
 
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         // Xử lý chuyển đổi Form Bộ Lọc
         function toggleFilterInputs() {
@@ -482,20 +509,18 @@
 
         // Xử lý nút Xuất CSV
         function exportData() {
-            let form = document.getElementById('formFilter');
-            let inputExport = document.createElement('input');
-            inputExport.type = 'hidden';
-            inputExport.name = 'export';
-            inputExport.value = 'csv';
-            inputExport.id = 'temp_export_input';
+            const form = document.getElementById('formFilter');
+            const url = new URL(form.action, window.location.origin);
+            const formData = new FormData(form);
 
-            form.appendChild(inputExport);
-            form.submit();
+            formData.forEach((value, key) => {
+                if (value !== null && value !== '') {
+                    url.searchParams.set(key, value);
+                }
+            });
 
-            // Xóa input export sau khi submit để khi lọc lại không bị lỗi
-            setTimeout(() => {
-                document.getElementById('temp_export_input').remove();
-            }, 500);
+            url.searchParams.set('export', 'csv');
+            window.location.href = url.toString();
         }
 
         document.addEventListener('DOMContentLoaded', function() {

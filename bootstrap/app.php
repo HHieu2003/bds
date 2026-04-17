@@ -27,10 +27,13 @@ return Application::configure(basePath: dirname(__DIR__))
             return route('khach-hang.login');
         });
 
+        // Tự động track lượt truy cập frontend (silent, không crash)
+        $middleware->append(\App\Http\Middleware\TrackPageView::class);
+
         $middleware->alias([
             'guest'      => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'check.role' => \App\Http\Middleware\CheckRole::class,
-            'checkrole' => \App\Http\Middleware\CheckRole::class,
+            'checkrole'  => \App\Http\Middleware\CheckRole::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
