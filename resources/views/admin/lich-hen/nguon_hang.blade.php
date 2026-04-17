@@ -512,7 +512,7 @@
                     </div>
                     @if (isset($lichHensList) && $lichHensList->hasPages())
                         <div class="p-3 border-top">
-                            {{ $lichHensList->links() }}
+                            {{ $lichHensList->links('pagination::bootstrap-5') }}
                         </div>
                     @endif
                 </div>

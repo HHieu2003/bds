@@ -308,13 +308,26 @@
                                         <td class="text-muted"><i class="fas fa-map-marker-alt me-1 text-danger"></i>
                                             {{ $lh->batDongSan?->tieu_de ?? 'Chưa xác định' }}</td>
                                         <td>
-                                            @if ($lh->trang_thai === 'da_xac_nhan')
-                                                <span class="badge bg-success">Đã chốt giờ</span>
-                                            @elseif($lh->trang_thai === 'hoan_thanh')
-                                                <span class="badge bg-secondary">Hoàn thành</span>
-                                            @else
-                                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
-                                            @endif
+                                            @php
+                                                $trangThaiLabels = [
+                                                    'moi_dat' => 'Mới đặt',
+                                                    'sale_da_nhan' => 'Sale đang nhận',
+                                                    'cho_xac_nhan' => 'Chờ Nguồn chốt',
+                                                    'cho_sale_xac_nhan_doi_gio' => 'Chờ dời giờ',
+                                                    'da_xac_nhan' => 'Đã chốt đi xem',
+                                                    'hoan_thanh' => 'Hoàn thành',
+                                                    'tu_choi' => 'Từ chối',
+                                                    'huy' => 'Đã hủy',
+                                                ];
+                                                $lbl = $trangThaiLabels[$lh->trang_thai] ?? $lh->trang_thai;
+                                                $badgeClass = match ($lh->trang_thai) {
+                                                    'da_xac_nhan' => 'bg-success',
+                                                    'hoan_thanh' => 'bg-secondary',
+                                                    'moi_dat' => 'bg-info text-dark',
+                                                    default => 'bg-warning text-dark',
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $badgeClass }}">{{ $lbl }}</span>
                                         </td>
                                     </tr>
                                 @empty
@@ -348,13 +361,16 @@
                                     style="background: var(--bg-alt); border: 1px solid var(--border);">
                                     <img src="{{ $thumb }}" class="mini-thumb" alt="thumb">
                                     <div class="mini-info">
-                                        <div class="mini-title">{{ $bds->tieu_de }}</div>
-                                        <div class="mini-sub d-flex justify-content-between pe-2">
-                                            <strong class="text-danger">{{ number_format($bds->gia, 2) }} tỷ</strong>
-                                            <span
-                                                class="badge {{ $bds->trang_thai == 'con_hang' ? 'bg-success' : 'bg-secondary' }}">{{ $bds->trang_thai == 'con_hang' ? 'Còn hàng' : 'Đã bán' }}</span>
-                                        </div>
-                                    </div>
+                                         <div class="mini-title">{{ $bds->tieu_de }}</div>
+                                         <div class="mini-sub d-flex justify-content-between pe-2">
+                                             <div>
+                                                 <strong class="text-danger">{{ number_format($bds->gia, 2) }} tỷ</strong>
+                                                 <span class="ms-2 small text-muted">| {{ $bds->nhanVienPhuTrach->ho_ten ?? 'Nguồn ẩn' }}</span>
+                                             </div>
+                                             <span
+                                                 class="badge {{ $bds->trang_thai == 'con_hang' ? 'bg-success' : 'bg-secondary' }}">{{ $bds->trang_thai == 'con_hang' ? 'Còn hàng' : 'Đã bán' }}</span>
+                                         </div>
+                                     </div>
                                 </div>
                             </div>
                         @empty
@@ -437,9 +453,13 @@
                                     {{ mb_strtoupper(mb_substr($nv->ho_ten, 0, 1)) }}
                                 </div>
                                 <div class="mini-info">
-                                    <div class="mini-title">{{ $nv->ho_ten }}</div>
-                                    <div class="mini-sub">{{ $nv->so_bds }} BĐS · {{ $nv->so_lich_hen }} Lịch hẹn</div>
-                                </div>
+                                     <div class="mini-title">{{ $nv->ho_ten }}</div>
+                                     <div class="mini-sub text-truncate">
+                                         <span class="text-primary fw-bold">{{ $nv->so_bds }}</span> BĐS · 
+                                         <span class="text-success fw-bold">{{ $nv->so_lich_hen }}</span> Lịch · 
+                                         <span class="text-info fw-bold">{{ $nv->so_ky_gui }}</span> Ký gửi
+                                     </div>
+                                 </div>
                             </div>
                         @endforeach
                     </div>

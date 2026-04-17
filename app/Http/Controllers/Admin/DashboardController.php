@@ -187,7 +187,7 @@ class DashboardController extends Controller
         // 2. Query dữ liệu KPI theo thời gian đã lọc (Lấy dữ liệu "Trong kỳ")
         $tongQuan = [
             'bds_moi'           => BatDongSan::whereNull('deleted_at')->whereBetween('created_at', [$startDate, $endDate])->count(),
-            'bds_da_ban'        => BatDongSan::where('trang_thai', 'da_ban')->whereNull('deleted_at')->whereBetween('updated_at', [$startDate, $endDate])->count(),
+            'bds_da_ban'        => BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->whereNull('deleted_at')->whereBetween('updated_at', [$startDate, $endDate])->count(),
             'khach_hang_moi'    => KhachHang::whereNull('deleted_at')->whereBetween('created_at', [$startDate, $endDate])->count(),
             'du_an_moi'         => DuAn::whereNull('deleted_at')->whereBetween('created_at', [$startDate, $endDate])->count(),
             'yeu_cau_moi'       => YeuCauLienHe::whereNull('deleted_at')->whereBetween('created_at', [$startDate, $endDate])->count(),
@@ -202,7 +202,7 @@ class DashboardController extends Controller
         }
 
         // 4. Các dữ liệu phụ cho Biểu đồ và Danh sách bên dưới
-        $bdsMoiNhat = BatDongSan::with('duAn')->whereNull('deleted_at')->latest()->limit(6)->get();
+        $bdsMoiNhat = BatDongSan::with(['duAn', 'nhanVienPhuTrach'])->whereNull('deleted_at')->latest()->limit(6)->get();
         // Lịch hẹn hôm nay vẫn fix cứng là "Ngày hôm nay" để Admin theo dõi tiến độ ngày
         $lichHenHomNay = LichHen::with(['khachHang', 'batDongSan'])->whereDate('thoi_gian_hen', $now->toDateString())->whereNotIn('trang_thai', ['huy', 'tu_choi'])->orderBy('thoi_gian_hen')->limit(6)->get();
         $khachHangMoi = KhachHang::whereNull('deleted_at')->latest()->limit(5)->get();
@@ -210,9 +210,9 @@ class DashboardController extends Controller
 
         $bdsByLoai = [
             'ban_con_hang' => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')->count(),
-            'ban_da_ban'   => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'ban')->where('trang_thai', 'da_ban')->count(),
+            'ban_da_ban'   => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'ban')->whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
             'thue_con_hang' => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')->count(),
-            'thue_da_thue' => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'thue')->where('trang_thai', 'da_thue')->count(),
+            'thue_da_thue' => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'thue')->whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
         ];
 
         // Biểu đồ 6 tháng (Tính lùi 6 tháng từ ngày End Date đang lọc)
@@ -224,13 +224,27 @@ class DashboardController extends Controller
             $month = $baseChartDate->copy()->subMonths($i);
             $labels6Thang[] = $month->format('m/Y');
             $dataThem6Thang[] = BatDongSan::whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)->whereNull('deleted_at')->count();
-            $dataBan6Thang[] = BatDongSan::where('trang_thai', 'da_ban')->whereYear('updated_at', $month->year)->whereMonth('updated_at', $month->month)->whereNull('deleted_at')->count();
+            $dataBan6Thang[] = BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->whereYear('updated_at', $month->year)->whereMonth('updated_at', $month->month)->whereNull('deleted_at')->count();
         }
         $chart6Thang = ['labels' => $labels6Thang, 'them' => $dataThem6Thang, 'ban' => $dataBan6Thang];
 
         $danhSachNhanVien = NhanVien::whereNull('deleted_at')
-            ->withCount(['batDongSans as so_bds', 'lichHenSale as so_lich_hen', 'kyGuis as so_ky_gui'])
-            ->orderBy('so_bds', 'desc')->limit(5)->get();
+            ->withCount([
+                'batDongSans as so_bds' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                },
+                'lichHenSale as so_lich_hen' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                },
+                'kyGuis as so_ky_gui' => function ($q) use ($startDate, $endDate) {
+                    $q->whereBetween('created_at', [$startDate, $endDate]);
+                }
+            ])
+            ->get()
+            ->sortByDesc(function ($nv) {
+                return $nv->so_bds + $nv->so_lich_hen + $nv->so_ky_gui;
+            })
+            ->take(5);
 
         return view('admin.dashboard.admin', compact(
             'nhanVien',

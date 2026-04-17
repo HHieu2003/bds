@@ -210,7 +210,7 @@
                     </div>
                     @if ($lichHenMoiItems->hasPages())
                         <div class="p-3 border-top">
-                            {{ $lichHenMoiItems->links() }}
+                            {{ $lichHenMoiItems->links('pagination::bootstrap-5') }}
                         </div>
                     @endif
                 </div>
@@ -307,16 +307,6 @@
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalSaleDoiGio{{ $lh->id }}">Dời lịch</button>
                                             @endif
-
-                                            @if ($nhanVien->vai_tro == 'admin' || ($nhanVien->vai_tro == 'sale' && $lh->nhan_vien_sale_id == $nhanVien->id))
-                                                <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
-                                                    method="POST" class="mt-2 d-inline">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger w-100 fw-bold"
-                                                        onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
-                                                            class="fas fa-trash"></i> Xóa lịch</button>
-                                                </form>
-                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -330,7 +320,7 @@
                     </div>
                     @if ($lichHenDangXuLyItems->hasPages())
                         <div class="p-3 border-top">
-                            {{ $lichHenDangXuLyItems->links() }}
+                            {{ $lichHenDangXuLyItems->links('pagination::bootstrap-5') }}
                         </div>
                     @endif
                 </div>
@@ -478,7 +468,7 @@
                     </div>
                     @if ($lichHensList->hasPages())
                         <div class="p-3 border-top">
-                            {{ $lichHensList->links() }}
+                            {{ $lichHensList->links('pagination::bootstrap-5') }}
                         </div>
                     @endif
                 </div>
