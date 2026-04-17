@@ -300,8 +300,8 @@
             [
                 'icon' => 'fas fa-envelope',
                 'label' => 'Email',
-                'val' => 'contact@thanhcongland.vn',
-                'href' => 'mailto:contact@thanhcongland.vn',
+                'val' => 'hieutran170626@gmail.com',
+                'href' => 'mailto: hieutran170626@gmail.com',
             ],
             [
                 'icon' => 'fas fa-map-marker-alt',

@@ -6,8 +6,8 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <style>
         /* ═══════════════════════════════════════
-                                                                                                                                                                                                                                                                   TRANG CHI TIẾT BĐS — Global Styles
-                                                                                                                                                                                                                                                                ═══════════════════════════════════════ */
+                                                                                                                                                                                                                                                                       TRANG CHI TIẾT BĐS — Global Styles
+                                                                                                                                                                                                                                                                    ═══════════════════════════════════════ */
         .bds-detail-page {
             background: #f4f6f9;
             min-height: 100vh;
@@ -1026,8 +1026,10 @@
                     {{-- Media chính --}}
                     @if ($mediaChinh)
                         @if ($mediaChinh['type'] == 'video')
-                            <a href="{{ $mediaChinh['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-main" aria-label="Xem video chính">
-                                <video src="{{ $mediaChinh['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                            <a href="{{ $mediaChinh['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-main"
+                                aria-label="Xem video chính">
+                                <video src="{{ $mediaChinh['path'] }}" class="w-100 h-100 object-fit-cover" muted
+                                    preload="metadata" style="pointer-events: none;"></video>
                                 <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 3rem;"></i></div>
                             </a>
                         @else
@@ -1042,8 +1044,10 @@
                     {{-- Media phụ 2 --}}
                     @if ($media2)
                         @if ($media2['type'] == 'video')
-                            <a href="{{ $media2['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-2" aria-label="Xem video 2">
-                                <video src="{{ $media2['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                            <a href="{{ $media2['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-2"
+                                aria-label="Xem video 2">
+                                <video src="{{ $media2['path'] }}" class="w-100 h-100 object-fit-cover" muted
+                                    preload="metadata" style="pointer-events: none;"></video>
                                 <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
                             </a>
                         @else
@@ -1058,8 +1062,10 @@
                     {{-- Media phụ 3 --}}
                     @if ($media3)
                         @if ($media3['type'] == 'video')
-                            <a href="{{ $media3['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-3" aria-label="Xem video 3">
-                                <video src="{{ $media3['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                            <a href="{{ $media3['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-3"
+                                aria-label="Xem video 3">
+                                <video src="{{ $media3['path'] }}" class="w-100 h-100 object-fit-cover" muted
+                                    preload="metadata" style="pointer-events: none;"></video>
                                 <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
                             </a>
                         @else
@@ -1074,8 +1080,10 @@
                     {{-- Media phụ 4 --}}
                     @if ($media4)
                         @if ($media4['type'] == 'video')
-                            <a href="{{ $media4['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-4" aria-label="Xem video 4">
-                                <video src="{{ $media4['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                            <a href="{{ $media4['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-4"
+                                aria-label="Xem video 4">
+                                <video src="{{ $media4['path'] }}" class="w-100 h-100 object-fit-cover" muted
+                                    preload="metadata" style="pointer-events: none;"></video>
                                 <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
                             </a>
                         @else
@@ -1090,15 +1098,18 @@
                     {{-- Media phụ 5 --}}
                     @if ($media5)
                         @if ($media5['type'] == 'video')
-                            <a href="{{ $media5['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-5" aria-label="Xem video 5">
-                                <video src="{{ $media5['path'] }}" class="w-100 h-100 object-fit-cover" muted preload="metadata" style="pointer-events: none;"></video>
+                            <a href="{{ $media5['path'] }}" data-fancybox="bds-gallery" class="gal-item gal-sub-5"
+                                aria-label="Xem video 5">
+                                <video src="{{ $media5['path'] }}" class="w-100 h-100 object-fit-cover" muted
+                                    preload="metadata" style="pointer-events: none;"></video>
                                 @if ($extraCount > 0)
                                     <div class="gal-more-overlay">
                                         <span>+{{ $extraCount }}</span>
                                         <small>XEM THÊM</small>
                                     </div>
                                 @else
-                                    <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i></div>
+                                    <div class="gal-overlay"><i class="fas fa-play-circle" style="font-size: 2rem;"></i>
+                                    </div>
                                 @endif
                             </a>
                         @else
@@ -1120,7 +1131,8 @@
 
                 @if (count($media) > 5)
                     @for ($i = 5; $i < count($media); $i++)
-                        <a href="{{ $media[$i]['path'] }}" data-fancybox="bds-gallery" class="d-none" aria-hidden="true"></a>
+                        <a href="{{ $media[$i]['path'] }}" data-fancybox="bds-gallery" class="d-none"
+                            aria-hidden="true"></a>
                     @endfor
                 @endif
 
@@ -1141,10 +1153,10 @@
                     <div class="bds-title-block">
                         <h1 class="bds-main-title">{{ $bds->tieu_de }}</h1>
                         @if ($bds->duAn?->dia_chi)
-                        <p class="bds-address">
-                            <i class="fas fa-map-marker-alt"></i>
-                            {{ $bds->duAn->dia_chi }}
-                        </p>
+                            <p class="bds-address">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ $bds->duAn->dia_chi }}
+                            </p>
                         @endif
                         <div class="bds-price-row">
                             <div class="bds-price">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</div>
@@ -1552,7 +1564,7 @@
                 </form>
             </div>
         </div>
-        </div>
+    </div>
     </div>
 
 @endsection
@@ -1575,16 +1587,16 @@
             }
         });
     </script>
-
+    <script>
         window.BDS_SHOW = {
-            bdsId: {{ $bds->id }},
+            bdsId: @json($bds->id),
             title: @json($bds->tieu_de),
             nhuCau: @json($bds->nhu_cau),
-            khuVucId: {{ $bds->duAn->khu_vuc_id ?? 'null' }},
-            duAnId: {{ $bds->du_an_id ?? 'null' }},
-            soPhongNgu: {{ $bds->so_phong_ngu ?? 'null' }},
+            khuVucId: @json($bds->duAn->khu_vuc_id ?? null),
+            duAnId: @json($bds->du_an_id ?? null),
+            soPhongNgu: @json($bds->so_phong_ngu ?? null),
             csrfToken: @json(csrf_token()),
-            isCustomerLoggedIn: {{ $customer ? 'true' : 'false' }},
+            isCustomerLoggedIn: @json((bool) $customer),
             routes: {
                 lienHeStore: @json(route('frontend.lien-he.store')),
                 trackTime: @json(route('frontend.bds.track-time'))

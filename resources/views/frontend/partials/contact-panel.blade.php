@@ -61,13 +61,13 @@
             <i class="fas fa-arrow-right cp-ch-arrow"></i>
         </a>
 
-        <a href="mailto:info@thanhcongland.vn" class="cp-channel cp-channel--email">
+        <a href="mailto:hieutran170626@gmail.com" class="cp-channel cp-channel--email">
             <div class="cp-ch-icon">
                 <i class="fas fa-paper-plane"></i>
             </div>
             <div class="cp-ch-info">
                 <span class="cp-ch-name">Gửi Email</span>
-                <span class="cp-ch-detail">info@thanhcongland.vn</span>
+                <span class="cp-ch-detail">hieutran170626@gmail.com</span>
             </div>
             <i class="fas fa-arrow-right cp-ch-arrow"></i>
         </a>
@@ -97,7 +97,7 @@
     <div class="cp-panel-footer">
         <i class="fas fa-map-marker-alt"></i>
         <span>Vinhomes Smart City, Tây Mỗ</span>
-        <a href="https://maps.google.com" target="_blank" class="cp-map-link">
+        <a href="https://maps.app.goo.gl/MAqHdt9cXtSa51zs6" target="_blank" class="cp-map-link">
             Xem bản đồ <i class="fas fa-external-link-alt"></i>
         </a>
     </div>

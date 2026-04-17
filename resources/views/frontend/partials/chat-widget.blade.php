@@ -240,9 +240,11 @@
                     title="Phóng to khung chat" aria-label="Phóng to khung chat">
                     <i id="chatExpandIcon" class="fas fa-expand"></i>
                 </button>
-                <button type="button" class="chat-icon-btn" onclick="openAuthModal('login')" title="Đăng nhập">
-                    <i class="far fa-user"></i>
-                </button>
+                @if (!Auth::guard('customer')->check())
+                    <button type="button" class="chat-icon-btn" onclick="openAuthModal('login')" title="Đăng nhập">
+                        <i class="far fa-user"></i>
+                    </button>
+                @endif
                 <button class="chat-close-btn" onclick="toggleChatWindow()" aria-label="Đóng chat">
                     <i class="fas fa-times"></i>
                 </button>

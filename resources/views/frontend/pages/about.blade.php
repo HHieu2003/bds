@@ -14,13 +14,13 @@
                 Thành Công Land
             </h1>
             <p class="vct-hero-sub" data-aos="fade-up" data-aos-duration="600" data-aos-delay="200">
-                Hơn 10 năm kiến tạo giá trị — mang đến những giải pháp bất động sản toàn diện
+                Hơn 5 năm kiến tạo giá trị — mang đến những giải pháp bất động sản toàn diện
                 và không gian sống hoàn hảo cho hàng ngàn gia đình Việt.
             </p>
             {{-- Số liệu nổi bật --}}
             <div class="vct-hero-stats" data-aos="fade-up" data-aos-duration="600" data-aos-delay="300">
                 <div class="vct-hero-stat">
-                    <strong>10+</strong><span>Năm kinh nghiệm</span>
+                    <strong>5+</strong><span>Năm kinh nghiệm</span>
                 </div>
                 <div class="vct-hero-stat-sep"></div>
                 <div class="vct-hero-stat">
@@ -66,7 +66,7 @@
                         class="img-fluid rounded-4 shadow-lg vct-img-sub border border-4 border-white" alt="Dự án thực tế">
                     {{-- Badge kinh nghiệm --}}
                     <div class="vct-exp-badge" data-aos="zoom-in" data-aos-delay="400">
-                        <strong>10+</strong>
+                        <strong>5+</strong>
                         <span>Năm<br>kinh nghiệm</span>
                     </div>
                 </div>
@@ -131,7 +131,7 @@
                     $stats = [
                         ['icon' => 'fa-home', 'num' => '5.000+', 'label' => 'Căn nhà đã bàn giao', 'delay' => 0],
                         ['icon' => 'fa-users', 'num' => '50+', 'label' => 'Chuyên viên tư vấn', 'delay' => 100],
-                        ['icon' => 'fa-award', 'num' => '10+', 'label' => 'Năm kinh nghiệm', 'delay' => 200],
+                        ['icon' => 'fa-award', 'num' => '5+', 'label' => 'Năm kinh nghiệm', 'delay' => 200],
                         ['icon' => 'fa-star', 'num' => '98%', 'label' => 'Khách hàng hài lòng', 'delay' => 300],
                         ['icon' => 'fa-building', 'num' => '20+', 'label' => 'Dự án hợp tác', 'delay' => 400],
                         [
@@ -360,7 +360,7 @@
                         [
                             'name' => 'Trần Minh Khoa',
                             'role' => 'Giám đốc Pháp lý',
-                            'exp' => '10 năm kinh nghiệm',
+                            'exp' => '5 năm kinh nghiệm',
                             'delay' => 200,
                         ],
                     ];

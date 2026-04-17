@@ -149,7 +149,7 @@
                         <div class="contact-icon"><i class="fas fa-envelope"></i></div>
                         <div class="contact-body">
                             <span class="contact-label">Email</span>
-                            <a href="mailto:contact@thanhcongland.vn">contact@thanhcongland.vn</a>
+                            <a href="mailto:hieutran170626@gmail.com">hieutran170626@gmail.com</a>
                         </div>
                     </li>
                     <li>
