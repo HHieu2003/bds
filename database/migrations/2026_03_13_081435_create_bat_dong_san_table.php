@@ -56,8 +56,10 @@ return new class extends Migration
             $table->string('noi_that')->nullable();
 
             $table->longText('mo_ta')->nullable();
+            $table->longText('ghi_chu_noi_bo')->nullable();
             $table->string('hinh_anh')->nullable();
             $table->json('album_anh')->nullable();
+            $table->json('album_video')->nullable()->comment('Danh sach duong dan video upload');
 
             // =============================================
             // THONG TIN BAN

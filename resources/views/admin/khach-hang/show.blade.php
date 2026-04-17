@@ -494,20 +494,60 @@
                             <div class="row g-3">
                                 @foreach ($khachHang->danhSachYeuThich as $bds)
                                     <div class="col-sm-6 col-xl-4">
-                                        <div class="card h-100 border shadow-sm">
+                                        @php
+                                            $anhThuNho = null;
+                                            if (!empty($bds->album_anh)) {
+                                                $album = is_string($bds->album_anh) ? json_decode($bds->album_anh, true) : $bds->album_anh;
+                                                if (is_array($album) && count($album) > 0) {
+                                                    $anhThuNho = asset('storage/' . $album[0]);
+                                                }
+                                            }
+                                            
+                                            $giaHienThi = $bds->nhu_cau == 'ban' 
+                                                ? ($bds->gia ? number_format($bds->gia, 0, ',', '.') . ' đ' : 'Thỏa thuận') 
+                                                : ($bds->gia_thue ? number_format($bds->gia_thue, 0, ',', '.') . ' đ/tháng' : 'Thỏa thuận');
+                                        @endphp
+                                        <div class="card h-100 border shadow-sm overflow-hidden">
+                                            {{-- Thumbnail --}}
+                                            @if($anhThuNho)
+                                                <div style="height: 140px; overflow: hidden; position: relative;">
+                                                    <img src="{{ $anhThuNho }}" alt="{{ $bds->tieu_de }}" class="w-100 h-100 object-fit-cover">
+                                                    <span class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-primary' : 'bg-info' }} position-absolute top-0 start-0 m-2">
+                                                        {{ $bds->nhu_cau == 'ban' ? 'Đang bán' : 'Cho thuê' }}
+                                                    </span>
+                                                </div>
+                                            @else
+                                                <div class="bg-light d-flex align-items-center justify-content-center position-relative" style="height: 140px;">
+                                                    <i class="fas fa-image text-muted fa-2x"></i>
+                                                    <span class="badge {{ $bds->nhu_cau == 'ban' ? 'bg-primary' : 'bg-info' }} position-absolute top-0 start-0 m-2">
+                                                        {{ $bds->nhu_cau == 'ban' ? 'Đang bán' : 'Cho thuê' }}
+                                                    </span>
+                                                </div>
+                                            @endif
+
                                             <div class="card-body p-3">
-                                                <h6 class="fw-semibold mb-1 text-truncate">{{ $bds->ten }}</h6>
-                                                <p class="text-muted mb-2" style="font-size:.78rem;">
-                                                    <i
-                                                        class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($bds->khuVuc)->ten ?? '–' }}
+                                                <h6 class="fw-semibold mb-2 text-truncate" title="{{ $bds->tieu_de }}">
+                                                    {{ $bds->tieu_de ?? 'BĐS #' . $bds->id }}
+                                                </h6>
+                                                
+                                                <p class="text-muted mb-2 text-truncate" style="font-size:.78rem;">
+                                                    <i class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($bds->duAn)->ten_du_an ?? (optional($bds->khuVuc)->ten ?? 'Chưa cập nhật') }}
                                                 </p>
-                                                <p class="fw-bold text-danger mb-0">
-                                                    {{ number_format($bds->gia / 1e9, 2) }} tỷ</p>
+                                                
+                                                <div class="d-flex align-items-center gap-3 mb-2 text-muted" style="font-size: .8rem;">
+                                                    <span><i class="fas fa-vector-square me-1"></i>{{ $bds->dien_tich ? $bds->dien_tich . ' m²' : '--' }}</span>
+                                                    <span><i class="fas fa-bed me-1"></i>{{ $bds->so_phong_ngu ?? '--' }}</span>
+                                                </div>
+                                                
+                                                <p class="fw-bold text-danger mb-0" style="font-size: 1.05rem;">
+                                                    {{ $giaHienThi }}
+                                                </p>
                                             </div>
-                                            <div class="card-footer bg-transparent pt-0 border-top p-2">
+
+                                            <div class="card-footer bg-transparent pt-0 border-top-0 px-3 pb-3">
                                                 <a href="{{ route('nhanvien.admin.bat-dong-san.edit', $bds) }}"
                                                     class="btn btn-outline-primary btn-sm w-100">
-                                                    <i class="fas fa-eye me-1"></i>Xem BĐS
+                                                    <i class="fas fa-eye me-1"></i>Xem Chi Tiết BĐS
                                                 </a>
                                             </div>
                                         </div>

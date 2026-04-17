@@ -58,26 +58,26 @@
             </a>
         </div>
 
-        {{-- ── 2. BÁN HÀNG & CRM (Trái tim của hệ thống) ── --}}
-        <div class="nav-group-label">Bán hàng & CRM</div>
+        {{-- ── 2. QUẢN LÝ BÁN HÀNG (CRM) ── --}}
+        <div class="nav-group-label">Quản lý Bán hàng</div>
 
         @if ($nhanVien->hasRole(['admin', 'sale']))
-            <div class="nav-item">
-                <a class="nav-link-item {{ $active('nhanvien.admin.lien-he') }}"
-                    href="{{ route('nhanvien.admin.lien-he.index') }}" data-tooltip="Leads / Liên hệ">
-                    <i class="fas fa-bullhorn nav-icon"></i>
-                    <span class="nav-link-text">Leads / Yêu cầu</span>
-                    @if ($lienHeCanXuLyCount > 0)
-                        <span class="nav-badge">{{ $lienHeCanXuLyCount }}</span>
-                    @endif
-                </a>
-            </div>
-
             <div class="nav-item">
                 <a class="nav-link-item {{ $active('nhanvien.admin.khach-hang') }}"
                     href="{{ route('nhanvien.admin.khach-hang.index') }}" data-tooltip="Khách hàng">
                     <i class="fas fa-users nav-icon"></i>
                     <span class="nav-link-text">Khách hàng</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.lien-he') }}"
+                    href="{{ route('nhanvien.admin.lien-he.index') }}" data-tooltip="Leads / Yêu cầu">
+                    <i class="fas fa-bullhorn nav-icon"></i>
+                    <span class="nav-link-text">Leads / Yêu cầu</span>
+                    @if ($lienHeCanXuLyCount > 0)
+                        <span class="nav-badge">{{ $lienHeCanXuLyCount }}</span>
+                    @endif
                 </a>
             </div>
         @endif
@@ -111,7 +111,7 @@
             </div>
         @endif
 
-        {{-- ── 3. QUẢN LÝ NGUỒN HÀNG (Kho dữ liệu sản phẩm) ── --}}
+        {{-- ── 3. QUẢN LÝ NGUỒN HÀNG ── --}}
         <div class="nav-group-label">Kho Bất Động Sản</div>
 
         @if ($nhanVien->hasRole(['admin', 'sale', 'nguon_hang']))
@@ -132,29 +132,6 @@
                         <i class="fas fa-key"></i> BĐS Thuê
                     </a>
                 </div>
-            </div>
-
-            <div class="nav-item">
-                <a class="nav-link-item {{ $active('nhanvien.admin.du-an') }}"
-                    href="{{ route('nhanvien.admin.du-an.index') }}" data-tooltip="Dự án">
-                    <i class="fas fa-city nav-icon"></i>
-                    <span class="nav-link-text">Quản lý Dự án</span>
-                </a>
-            </div>
-            <div class="nav-item">
-                <a class="nav-link-item {{ $active('nhanvien.admin.khu-vuc') }}"
-                    href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">
-                    <i class="fas fa-map-marked-alt nav-icon"></i>
-                    <span class="nav-link-text">Danh mục Khu vực</span>
-                </a>
-            </div>
-
-            <div class="nav-item">
-                <a class="nav-link-item {{ $active('nhanvien.admin.ngan-hang') }}"
-                    href="{{ route('nhanvien.admin.ngan-hang.index') }}" data-tooltip="Lãi suất">
-                    <i class="fas fa-university nav-icon"></i>
-                    <span class="nav-link-text">Cấu hình Lãi suất</span>
-                </a>
             </div>
         @endif
 
@@ -179,7 +156,36 @@
             </div>
         @endif
 
-        {{-- ── 4. TRUYỀN THÔNG & MARKETING ── --}}
+        {{-- ── 4. DỮ LIỆU BỔ TRỢ ── --}}
+        @if ($nhanVien->hasRole(['admin', 'sale', 'nguon_hang']))
+            <div class="nav-group-label">Dữ liệu bổ trợ</div>
+
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.du-an') }}"
+                    href="{{ route('nhanvien.admin.du-an.index') }}" data-tooltip="Dự án">
+                    <i class="fas fa-city nav-icon"></i>
+                    <span class="nav-link-text">Quản lý Dự án</span>
+                </a>
+            </div>
+            
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.khu-vuc') }}"
+                    href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">
+                    <i class="fas fa-map-marked-alt nav-icon"></i>
+                    <span class="nav-link-text">Danh mục Khu vực</span>
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.ngan-hang') }}"
+                    href="{{ route('nhanvien.admin.ngan-hang.index') }}" data-tooltip="Lãi suất">
+                    <i class="fas fa-university nav-icon"></i>
+                    <span class="nav-link-text">Cấu hình Lãi suất</span>
+                </a>
+            </div>
+        @endif
+
+        {{-- ── 5. TRUYỀN THÔNG & MARKETING ── --}}
         <div class="nav-group-label">Truyền thông</div>
 
         <div class="nav-item">
@@ -190,7 +196,7 @@
             </a>
         </div>
 
-        {{-- ── 5. HỆ THỐNG & CÀI ĐẶT (Dành riêng cho Admin) ── --}}
+        {{-- ── 6. HỆ THỐNG & CÀI ĐẶT ── --}}
         @if ($nhanVien->isAdmin())
             <div class="nav-group-label">Hệ thống & Cài đặt</div>
 
@@ -201,15 +207,6 @@
                     <span class="nav-link-text">Quản lý Nhân sự</span>
                 </a>
             </div>
-
-
-            {{-- 
-            <div class="nav-item">
-                <a class="nav-link-item" href="#" data-tooltip="Cài đặt chung">
-                    <i class="fas fa-cog nav-icon"></i>
-                    <span class="nav-link-text">Cài đặt chung</span>
-                </a>
-            </div> --}}
         @endif
 
     </nav>

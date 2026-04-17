@@ -1,12 +1,71 @@
 @extends('admin.layouts.master')
 @section('title', 'Nhiệm vụ Xác nhận Lịch hẹn')
 
+@push('styles')
+    <style>
+        /* CSS cho CRM Tabs */
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border: 1px solid transparent;
+            padding: 12px 20px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: var(--bs-success);
+            background-color: #e9ecef;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--bs-success);
+            font-weight: 700;
+            background-color: #fff;
+            border-top: 3px solid var(--bs-success) !important;
+            border-bottom: 0 !important;
+            box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.02);
+        }
+    </style>
+@endpush
+
 @section('content')
     <div class="mb-4 d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
         <div>
             <h1 class="page-header-title text-success mb-1"><i class="fas fa-clipboard-list me-2"></i> Trạm Điều Phối Nguồn
                 Hàng</h1>
-            <p class="text-muted mb-0">Bộ phận Nguồn Hàng: Xác nhận giờ xem nhà, hỗ trợ Sale xuất kho.</p>
+            @php
+                $tongLich =
+                    ($stats['cho_xac_nhan'] ?? 0) +
+                    ($stats['cho_sale_xac_nhan_doi_gio'] ?? 0) +
+                    ($stats['da_xac_nhan'] ?? 0) +
+                    ($stats['hoan_thanh'] ?? 0) +
+                    ($stats['tu_choi'] ?? 0) +
+                    ($stats['huy'] ?? 0);
+            @endphp
+            {{-- THỐNG KÊ NHANH --}}
+            <div style="font-size:.78rem;color:var(--text-sub);" class="mt-1">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ number_format($tongLich) }}</strong> lịch tổng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#0dcaf0"><strong>{{ number_format($stats['cho_xac_nhan'] ?? 0) }}</strong> 🗝️ chờ
+                        chốt</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span
+                        style="color:#ffc107"><strong>{{ number_format($stats['cho_sale_xac_nhan_doi_gio'] ?? 0) }}</strong>
+                        ⏳ xin dời</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#198754"><strong>{{ number_format($stats['da_xac_nhan'] ?? 0) }}</strong> ✅ đã báo
+                        chìa</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#6c757d"><strong>{{ number_format($stats['hoan_thanh'] ?? 0) }}</strong> 🏆 hoàn
+                        thành</span>
+                </div>
+            </div>
         </div>
         @if (!empty($adminMode))
             <div class="alert alert-success d-flex align-items-center mb-0 py-2 px-3 shadow-sm border-0">
@@ -21,6 +80,16 @@
     @php
         $isListTab = request('tab') == 'list';
         $todoView = request('todo_view', 'card');
+        $trangThaiLabels = [
+            'moi_dat' => 'Mới đặt',
+            'sale_da_nhan' => 'Sale đang xác nhận',
+            'cho_xac_nhan' => 'Chờ Nguồn chốt',
+            'cho_sale_xac_nhan_doi_gio' => 'Chờ Sale chốt dời giờ',
+            'da_xac_nhan' => 'Đã báo có chìa',
+            'hoan_thanh' => 'Hoàn thành',
+            'tu_choi' => 'Từ chối',
+            'huy' => 'Đã hủy',
+        ];
 
         $todoCollection = collect($lichHensTodo ?? []);
         $todayDate = now()->toDateString();
@@ -70,17 +139,17 @@
         }
     @endphp
 
-    <ul class="nav nav-tabs mb-4 border-bottom-2" role="tablist">
+    <ul class="nav nav-tabs mb-4 border-bottom-0" role="tablist" style="gap: 5px;">
         <li class="nav-item">
-            <a href="{{ $tabTodoUrl }}"
-                class="nav-link px-4 {{ !$isListTab ? 'active fw-bold text-success border-success border-bottom-0' : 'text-muted' }}">
+            <a href="{{ $tabTodoUrl }}" class="nav-link border-0 {{ !$isListTab ? 'active' : '' }}"
+                style="border-radius: 6px 6px 0 0;">
                 <i class="fas fa-bell me-1"></i> Cần Xử Lý <span
                     class="badge bg-{{ !$isListTab ? 'success' : 'secondary' }} ms-1">{{ $todoMetrics['all'] }}</span>
             </a>
         </li>
         <li class="nav-item">
-            <a href="{{ $tabListUrl }}"
-                class="nav-link px-4 {{ $isListTab ? 'active fw-bold text-success border-success border-bottom-0' : 'text-muted' }}">
+            <a href="{{ $tabListUrl }}" class="nav-link border-0 {{ $isListTab ? 'active' : '' }}"
+                style="border-radius: 6px 6px 0 0;">
                 <i class="fas fa-history me-1"></i> Lịch Sử Nhiệm Vụ
             </a>
         </li>
@@ -247,105 +316,107 @@
                         </div>
                     </div>
 
-                    {{-- DẠNG THẺ (CARD VIEW) MẶC ĐỊNH --}}
+                    {{-- DẠNG THẺ (CARD VIEW) HIỆN ĐẠI --}}
                 @else
-                    <div class="row g-3">
+                    <div class="row g-4">
                         @foreach ($todoCollection as $lh)
-                            <div class="col-12 col-xxl-6">
-                                <div
-                                    class="card border-0 shadow-sm h-100 transition-hover {{ $lh->trang_thai == 'cho_xac_nhan' ? 'border-start border-4 border-info' : ($isDoiGio($lh) ? 'border-start border-4 border-warning' : 'border-start border-4 border-success') }}">
-                                    <div class="card-body p-3 p-md-4">
-                                        <div class="row align-items-center g-4">
-                                            <div class="col-12 col-md-3 text-md-center border-md-end">
-                                                <div class="fw-bold text-danger display-6 mb-1">
-                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
-                                                <div class="text-muted small fw-medium mb-3">
-                                                    {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
-                                                @if ($isDoiGio($lh))
-                                                    <span
-                                                        class="badge rounded-pill bg-warning text-dark px-3 py-2 w-100"><i
-                                                            class="fas fa-spinner fa-spin me-1"></i> CHỜ SALE CHỐT</span>
-                                                @elseif ($lh->trang_thai == 'cho_xac_nhan')
-                                                    <span class="badge rounded-pill bg-info text-dark px-3 py-2 w-100">CẦN
-                                                        CHỐT CHỦ</span>
-                                                @else
-                                                    <span class="badge rounded-pill bg-success px-3 py-2 w-100">ĐÃ BÁO CÓ
-                                                        CHÌA</span>
-                                                @endif
-                                            </div>
-                                            <div class="col-12 col-md-5">
-                                                <div class="fw-bold text-primary fs-5 mb-1">
-                                                    {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}</div>
-                                                <div class="text-muted small mb-2"><i
-                                                        class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($lh->batDongSan)->khuVuc?->ten_khu_vuc ?? '---' }}
+                            @php
+                                $statusColor =
+                                    $lh->trang_thai == 'cho_xac_nhan'
+                                        ? 'info'
+                                        : ($isDoiGio($lh)
+                                            ? 'warning'
+                                            : 'success');
+                                $statusLabel = '';
+                                if ($isDoiGio($lh)) {
+                                    $statusLabel = '<i class="fas fa-spinner fa-spin me-1"></i> Chờ Sale chốt';
+                                } elseif ($lh->trang_thai == 'cho_xac_nhan') {
+                                    $statusLabel = 'Cần chốt chủ';
+                                } else {
+                                    $statusLabel = 'Đã báo chìa';
+                                }
+                            @endphp
+                            <div class="col-12 col-md-6 col-xxl-4">
+                                <div class="src-card border-{{ $statusColor }}">
+                                    <div class="src-card-status-indicator bg-{{ $statusColor }}"></div>
+                                    <div class="src-card-header">
+                                        <div>
+                                            <div class="src-card-time">
+                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
+                                            <div class="src-card-date">
+                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
+                                        </div>
+                                        <span
+                                            class="badge rounded-pill bg-{{ $statusColor }} {{ $statusColor == 'warning' || $statusColor == 'info' ? 'text-dark' : '' }} px-3 py-2 fw-bold shadow-sm">
+                                            {!! $statusLabel !!}
+                                        </span>
+                                    </div>
+                                    <div class="src-card-body">
+                                        <div class="src-card-title">{{ $lh->batDongSan->tieu_de ?? 'Ngoài hệ thống' }}
+                                        </div>
+                                        <div class="text-muted small mb-3"><i
+                                                class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($lh->batDongSan)->khuVuc?->ten_khu_vuc ?? 'Chưa cập nhật khu vực' }}
+                                        </div>
+
+                                        <div class="src-card-info">
+                                            <div class="row g-2">
+                                                <div class="col-6 border-end">
+                                                    <div class="small text-muted mb-1"><i
+                                                            class="fas fa-user-tie me-1"></i>Sale đặt lịch:</div>
+                                                    <div class="fw-bold text-dark text-truncate">
+                                                        {{ $lh->nhanVienSale->ho_ten ?? '---' }}</div>
                                                 </div>
-                                                <div class="row g-2 mb-2">
-                                                    <div class="col-sm-6">
-                                                        <div class="p-2 border rounded bg-white h-100">
-                                                            <div class="small text-muted"><i
-                                                                    class="fas fa-user-tie me-1"></i>Sale đặt lịch:</div>
-                                                            <div class="fw-bold">{{ $lh->nhanVienSale->ho_ten ?? '---' }}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-sm-6">
-                                                        <div
-                                                            class="p-2 border rounded bg-success bg-opacity-10 border-success h-100">
-                                                            <div class="small text-success fw-bold"><i
-                                                                    class="fas fa-id-card me-1"></i>Chủ nhà:</div>
-                                                            <div class="fw-bold text-dark">
-                                                                {{ optional($lh->batDongSan?->chuNha)->ho_ten ?? 'Chưa rõ' }}
-                                                            </div>
-                                                            @if ($lh->batDongSan?->chuNha)
-                                                                <a href="tel:{{ $lh->batDongSan->chuNha->so_dien_thoai }}"
-                                                                    class="small fw-bold text-success text-decoration-none">{{ $lh->batDongSan->chuNha->so_dien_thoai }}</a>
-                                                            @endif
-                                                        </div>
-                                                    </div>
+                                                <div class="col-6 ps-2">
+                                                    <div class="small text-success fw-bold mb-1"><i
+                                                            class="fas fa-house-user me-1"></i>Chủ nhà:</div>
+                                                    <div class="fw-bold text-dark text-truncate">
+                                                        {{ optional($lh->batDongSan?->chuNha)->ho_ten ?? 'Chưa rõ' }}</div>
+                                                    @if ($lh->batDongSan?->chuNha)
+                                                        <a href="tel:{{ $lh->batDongSan->chuNha->so_dien_thoai }}"
+                                                            class="small fw-bold text-success text-decoration-none d-block mt-1"><i
+                                                                class="fas fa-phone-alt me-1"></i>{{ $lh->batDongSan->chuNha->so_dien_thoai }}</a>
+                                                    @endif
                                                 </div>
-                                                @if ($lh->ghi_chu_sale)
-                                                    <div
-                                                        class="small p-2 bg-warning bg-opacity-10 border border-warning rounded text-dark mt-2">
-                                                        <strong><i class="fas fa-comment-dots me-1"></i>Sale nhắn:</strong>
-                                                        {{ $lh->ghi_chu_sale }}</div>
-                                                @endif
                                             </div>
                                         </div>
+
+                                        @if ($lh->ghi_chu_sale)
+                                            <div
+                                                class="small p-2 bg-warning bg-opacity-10 border border-warning rounded text-dark">
+                                                <strong class="d-block mb-1"><i class="fas fa-comment-dots me-1"></i>Ghi
+                                                    chú từ Sale:</strong>
+                                                {{ $lh->ghi_chu_sale }}
+                                            </div>
+                                        @endif
                                     </div>
-                                    <div class="card-footer bg-white border-top p-3">
+                                    <div class="src-card-footer">
                                         @if ($lh->trang_thai == 'cho_xac_nhan')
-                                            <div class="d-flex gap-2">
-                                                <button class="btn btn-success fw-bold flex-fill" data-bs-toggle="modal"
-                                                    data-bs-target="#modalXacNhan{{ $lh->id }}"><i
-                                                        class="fas fa-key me-1"></i> Có chìa khóa</button>
-                                                <button class="btn btn-warning fw-bold text-dark flex-fill"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalBaoLai{{ $lh->id }}"><i
-                                                        class="fas fa-clock me-1"></i> Xin dời lịch</button>
-                                                <button class="btn btn-outline-danger fw-bold flex-fill"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalTuChoi{{ $lh->id }}"><i
-                                                        class="fas fa-times me-1"></i> Từ chối</button>
-                                            </div>
+                                            <button class="btn btn-sm btn-success fw-bold flex-fill"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalXacNhan{{ $lh->id }}"><i
+                                                    class="fas fa-check me-1"></i> Có chìa</button>
+                                            <button class="btn btn-sm btn-warning fw-bold text-dark flex-fill"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalBaoLai{{ $lh->id }}"><i
+                                                    class="fas fa-clock me-1"></i> Dời</button>
+                                            <button class="btn btn-sm btn-outline-danger fw-bold flex-fill"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalTuChoi{{ $lh->id }}"><i
+                                                    class="fas fa-times me-1"></i> Hủy</button>
                                         @elseif ($isDoiGio($lh))
-                                            <div class="d-flex justify-content-between align-items-center">
-                                                <div class="small text-muted"><i class="fas fa-info-circle me-1"></i> Đã
-                                                    xin dời lịch! Đang chờ Sale hỏi khách...</div>
-                                                <button class="btn btn-light border fw-bold text-danger px-4"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo Hủy</button>
-                                            </div>
+                                            <button class="btn btn-sm btn-outline-danger fw-bold w-100"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalHuyNguon{{ $lh->id }}"><i
+                                                    class="fas fa-ban me-1"></i> Báo Hủy Đột Xuất</button>
                                         @else
-                                            <div class="d-flex gap-2 justify-content-end">
-                                                <button class="btn btn-light border fw-bold text-dark px-4"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalBaoLai{{ $lh->id }}"><i
-                                                        class="fas fa-clock text-warning me-1"></i> Dời lịch</button>
-                                                <button class="btn btn-light border fw-bold text-danger px-4"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalHuyNguon{{ $lh->id }}"><i
-                                                        class="fas fa-ban me-1"></i> Hủy lịch</button>
-                                            </div>
+                                            <button class="btn btn-sm btn-light border fw-bold text-dark flex-fill"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalBaoLai{{ $lh->id }}"><i
+                                                    class="fas fa-clock text-warning me-1"></i> Dời lịch</button>
+                                            <button class="btn btn-sm btn-light border fw-bold text-danger flex-fill"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#modalHuyNguon{{ $lh->id }}"><i
+                                                    class="fas fa-ban me-1"></i> Hủy lịch</button>
                                         @endif
                                     </div>
                                 </div>
@@ -393,38 +464,58 @@
             </div>
 
             <div class="card border-0 shadow-sm">
-                <div class="table-responsive p-3">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Thời gian</th>
-                                <th>Khách hàng</th>
-                                <th>Bất động sản</th>
-                                <th>Trạng thái</th>
-                                <th>Chi tiết</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($lichHensList ?? [] as $lh)
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i d/m/Y') }}</td>
-                                    <td>{{ $lh->ten_khach_hang }} <br><small
-                                            class="text-success">{{ $lh->sdt_khach_hang }}</small></td>
-                                    <td class="text-primary fw-bold">{{ $lh->batDongSan->tieu_de ?? 'Ngoài hệ thống' }}
-                                    </td>
-                                    <td><span class="badge bg-secondary">{{ $lh->trang_thai }}</span></td>
-                                    <td><a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                            class="btn btn-sm btn-outline-primary">Xem</a></td>
+                                    <th>Thời gian</th>
+                                    <th>Khách hàng</th>
+                                    <th>Bất động sản</th>
+                                    <th>Trạng thái</th>
+                                    <th>Chi tiết</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="5" class="text-center py-4">Không có dữ liệu lịch sử.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($lichHensList ?? [] as $lh)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-primary">
+                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
+                                            <div class="small text-muted">
+                                                {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
+                                            <div class="small text-success"><i
+                                                    class="fas fa-phone-alt me-1"></i>{{ $lh->sdt_khach_hang }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-medium text-dark">
+                                                {{ $lh->batDongSan->tieu_de ?? 'Ngoài hệ thống' }}</div>
+                                        </td>
+                                        <td><span
+                                                class="badge bg-secondary">{{ $trangThaiLabels[$lh->trang_thai] ?? $lh->trang_thai }}</span>
+                                        </td>
+                                        <td><a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
+                                                class="btn btn-sm btn-light border"><i
+                                                    class="fas fa-eye text-primary"></i></a></td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-4 text-muted">Không có dữ liệu lịch sử.
+                                        </td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (isset($lichHensList) && $lichHensList->hasPages())
+                        <div class="p-3 border-top">
+                            {{ $lichHensList->links() }}
+                        </div>
+                    @endif
                 </div>
-                <div class="mt-3 p-3">{{ optional($lichHensList)->links() }}</div>
             </div>
         </div>
     </div>
@@ -558,18 +649,87 @@
             background: transparent;
         }
 
-        @media (max-width: 767.98px) {
-            .border-md-end {
-                border-right: none !important;
-                border-bottom: 1px dashed #dee2e6;
-                padding-bottom: 1rem;
-            }
+        /* Thẻ Card Mới */
+        .src-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
 
-            .border-start-md {
-                border-left: none !important;
-                border-top: 1px dashed #dee2e6;
-                padding-top: 1rem;
-            }
+        .src-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .src-card-status-indicator {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 5px;
+        }
+
+        .src-card-header {
+            padding: 1.25rem 1.25rem 0.5rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .src-card-time {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--bs-danger);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.5px;
+        }
+
+        .src-card-date {
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .src-card-body {
+            padding: 0.5rem 1.25rem 1.25rem 1.5rem;
+            flex: 1;
+        }
+
+        .src-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.3rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .src-card-info {
+            background: #f8fafc;
+            border-radius: 10px;
+            padding: 0.85rem;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .src-card-footer {
+            padding: 1rem 1.25rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
         }
     </style>
 @endpush

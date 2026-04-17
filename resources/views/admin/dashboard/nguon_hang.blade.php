@@ -295,7 +295,9 @@
                     </div>
                 </div>
 
-                <div class="src-board">
+                
+            </div>
+            <div class="src-board">
                     <div class="src-head">
                         <div class="fw-bold text-danger src-head-title"><i class="fas fa-triangle-exclamation me-2"></i>Lịch
                             quá hạn chưa xử lý</div>
@@ -320,7 +322,6 @@
                         @endforelse
                     </div>
                 </div>
-            </div>
         </div>
 
         <div class="row g-3">

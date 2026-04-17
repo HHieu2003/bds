@@ -4,6 +4,36 @@
 
 @push('styles')
     <style>
+        .lichhen-show {
+            --lh-border: #e2e8f0;
+            --lh-muted: #64748b;
+            --lh-bg-soft: #f8fafc;
+        }
+
+        .lichhen-show .card {
+            border: 1px solid var(--lh-border) !important;
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05) !important;
+        }
+
+        .lichhen-show .card-header {
+            background: #fff !important;
+            border-bottom: 1px solid var(--lh-border);
+        }
+
+        .lh-status-badge {
+            font-size: 0.92rem;
+            font-weight: 700;
+            padding: 0.55rem 0.9rem;
+            border-radius: 999px;
+        }
+
+        .lh-head-time {
+            font-size: 0.95rem;
+            color: var(--lh-muted);
+            font-weight: 600;
+        }
+
         .timeline {
             position: relative;
             padding-left: 2.5rem;
@@ -86,7 +116,7 @@
 
         .info-lbl {
             min-width: 120px;
-            color: #6c757d;
+            color: var(--lh-muted);
             font-weight: 600;
             font-size: 0.85rem;
             padding-top: 0.15rem;
@@ -98,6 +128,18 @@
             font-size: 0.9rem;
             color: #212529;
         }
+
+        .lh-soft-box {
+            background: var(--lh-bg-soft);
+            border: 1px solid var(--lh-border);
+            border-radius: 10px;
+        }
+
+        .lh-soft-box-warn {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            border-radius: 10px;
+        }
     </style>
 @endpush
 
@@ -108,23 +150,47 @@
 
         $canViewKhachHang = $role === 'admin' || $role === 'sale' || $isHoanThanh;
         $canViewChuNha = $role === 'admin' || $role === 'nguon_hang' || $isHoanThanh;
+
+        $trangThaiVn = [
+            'moi_dat' => 'Mới đặt',
+            'sale_da_nhan' => 'Sale đã nhận',
+            'cho_xac_nhan' => 'Chờ xác nhận',
+            'cho_sale_xac_nhan_doi_gio' => 'Chờ sale xác nhận dời giờ',
+            'da_xac_nhan' => 'Đã xác nhận',
+            'hoan_thanh' => 'Hoàn thành',
+            'tu_choi' => 'Từ chối',
+            'huy' => 'Hủy',
+        ];
+
+        $trangThaiLabel = $trangThaiVn[$lichHen->trang_thai] ?? ucfirst(str_replace('_', ' ', $lichHen->trang_thai));
+
+        $trangThaiClass = match ($lichHen->trang_thai) {
+            'moi_dat' => 'bg-info-subtle text-info-emphasis border border-info-subtle',
+            'sale_da_nhan' => 'bg-primary-subtle text-primary-emphasis border border-primary-subtle',
+            'cho_xac_nhan',
+            'cho_sale_xac_nhan_doi_gio'
+                => 'bg-warning-subtle text-warning-emphasis border border-warning-subtle',
+            'da_xac_nhan' => 'bg-success-subtle text-success-emphasis border border-success-subtle',
+            'hoan_thanh' => 'bg-success text-white',
+            'tu_choi', 'huy' => 'bg-danger text-white',
+            default => 'bg-secondary text-white',
+        };
     @endphp
 
-    <div class="container-fluid py-2">
+    <div class="container-fluid py-2 lichhen-show">
         <div class="row justify-content-center">
             <div class="col-lg-10">
-                <div class="card border-0 shadow-sm border-top border-4 border-primary mb-4">
+                <div class="card shadow-sm border-top border-4 border-primary mb-4">
                     <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
                         <div>
                             <h4 class="fw-bold mb-1 text-primary"><i class="fas fa-calendar-alt me-2"></i>Lịch hẹn
                                 #{{ $lichHen->id }}</h4>
-                            <div class="text-muted fw-semibold">Thời gian: <span
+                            <div class="lh-head-time">Thời gian: <span
                                     class="text-danger">{{ $lichHen->thoi_gian_hen->format('H:i — d/m/Y') }}</span></div>
                         </div>
-                        <div>
-                            <span
-                                class="badge bg-dark fs-5 px-3 py-2 text-uppercase">{{ str_replace('_', ' ', $lichHen->trang_thai) }}</span>
-                            @if ($nhanVien->vai_tro == 'admin')
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <span class="badge lh-status-badge {{ $trangThaiClass }}">{{ $trangThaiLabel }}</span>
+                            @if ($nhanVien->vai_tro == 'admin' || ($nhanVien->vai_tro == 'sale' && $lichHen->nhan_vien_sale_id == $nhanVien->id))
                                 <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lichHen->id) }}" method="POST"
                                     class="d-inline ms-2">
                                     @csrf @method('DELETE')
@@ -140,8 +206,8 @@
                 <div class="row g-4">
                     <div class="col-md-7">
                         <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-light py-3 fw-bold"><i
-                                    class="fas fa-user-circle text-primary me-2"></i>Thông tin Khách Hàng</div>
+                            <div class="card-header py-3 fw-bold"><i class="fas fa-user-circle text-primary me-2"></i>Thông
+                                tin Khách Hàng</div>
                             <div class="card-body p-4">
                                 @if ($canViewKhachHang)
                                     <div class="info-row">
@@ -163,15 +229,15 @@
                         </div>
 
                         <div class="card border-0 shadow-sm mb-4">
-                            <div class="card-header bg-light py-3 fw-bold"><i
-                                    class="fas fa-building text-success me-2"></i>Bất Động Sản & Chủ Nhà</div>
-                            <div class="card-body p-4 bg-success bg-opacity-10">
+                            <div class="card-header py-3 fw-bold"><i class="fas fa-building text-primary me-2"></i>Bất Động
+                                Sản & Chủ Nhà</div>
+                            <div class="card-body p-4">
                                 <div class="info-row">
                                     <div class="info-lbl">Tên nhà/Dự án:</div>
-                                    <div class="info-val fw-bold text-success fs-6">
+                                    <div class="info-val fw-bold text-primary fs-6">
                                         {{ optional($lichHen->batDongSan)->tieu_de }}</div>
                                 </div>
-                                <hr class="border-success opacity-25">
+                                <hr class="border-primary opacity-25">
                                 @if ($canViewChuNha)
                                     <div class="info-row">
                                         <div class="info-lbl">Chủ nhà:</div>
@@ -203,10 +269,10 @@
                                     <div class="col-6"><strong class="text-info d-block">Nguồn mở cửa:</strong>
                                         {{ optional($lichHen->nhanVienNguonHang)->ho_ten ?? '---' }}</div>
                                 </div>
-                                <div class="bg-light p-3 rounded mb-2"><strong><i
+                                <div class="lh-soft-box p-3 mb-2"><strong><i
                                             class="fas fa-comment-dots text-primary me-1"></i> Sale ghi chú:</strong>
                                     {{ $lichHen->ghi_chu_sale ?: 'Không có' }}</div>
-                                <div class="bg-warning bg-opacity-10 border-warning border p-3 rounded"><strong><i
+                                <div class="lh-soft-box-warn p-3"><strong><i
                                             class="fas fa-comment-dots text-warning me-1"></i> Nguồn phản hồi:</strong>
                                     {{ $lichHen->ghi_chu_nguon_hang ?: 'Không có' }}</div>
                             </div>
@@ -214,8 +280,8 @@
                     </div>
 
                     <div class="col-md-5 d-flex flex-column gap-4">
-                        <div class="card border-0 shadow-sm border-top border-4 border-dark">
-                            <div class="card-header bg-light py-3 fw-bold"><i class="fas fa-magic text-dark me-2"></i>Bảng
+                        <div class="card shadow-sm border-top border-4 border-primary">
+                            <div class="card-header py-3 fw-bold"><i class="fas fa-magic text-primary me-2"></i>Bảng
                                 Thao Tác Xử Lý</div>
                             <div class="card-body p-4 d-flex flex-column gap-3">
 

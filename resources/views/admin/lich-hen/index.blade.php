@@ -4,47 +4,28 @@
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <style>
-        .lh-shell {
-            background: linear-gradient(180deg, #f8fbff 0%, #ffffff 55%);
-            border: 1px solid #e5edf8;
-            border-radius: 14px;
-            padding: 1rem;
-        }
-
-        .lh-kpi {
-            background: #fff;
-            border: 1px solid #e8eef7;
-            border-radius: 12px;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.05);
-            padding: .8rem .9rem;
-            height: 100%;
-        }
-
-        .lh-kpi .k-label {
-            color: #64748b;
-            font-size: .78rem;
-            font-weight: bold;
-        }
-
-        .lh-kpi .k-value {
-            font-size: 1.25rem;
-            font-weight: 800;
-            line-height: 1.1;
-            color: #0f172a;
-        }
-
-        .lh-tabs .nav-link {
-            font-weight: 700;
-            color: #64748b;
-            border: 0;
-            border-bottom: 2px solid transparent;
+        /* CSS cho CRM Tabs */
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border: 1px solid transparent;
             padding: 12px 20px;
+            transition: all 0.2s ease-in-out;
         }
 
-        .lh-tabs .nav-link.active {
-            color: #0d6efd;
-            background: none;
-            border-bottom: 2px solid #0d6efd;
+        .nav-tabs .nav-link:hover {
+            color: var(--bs-primary);
+            background-color: #e9ecef;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: var(--bs-primary);
+            font-weight: 700;
+            background-color: #fff;
+            border-top: 3px solid var(--bs-primary) !important;
+            border-bottom: 0 !important;
+            box-shadow: 0 -3px 5px rgba(0, 0, 0, 0.02);
         }
 
         .modal-ticket-info {
@@ -79,7 +60,43 @@
     <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
         <div>
             <h1 class="page-header-title"><i class="fas fa-calendar-alt text-primary me-2"></i> Quản lý Lịch hẹn</h1>
-            <p class="text-muted mb-0">Theo dõi, sắp xếp lịch đưa khách hàng đi xem nhà.</p>
+            @php
+                $tongLich = array_sum($stats ?? []);
+                $dangXuLy =
+                    ($stats['sale_da_nhan'] ?? 0) +
+                    ($stats['cho_xac_nhan'] ?? 0) +
+                    ($stats['cho_sale_xac_nhan_doi_gio'] ?? 0);
+                $trangThaiLabels = [
+                    'moi_dat' => 'Mới đặt',
+                    'sale_da_nhan' => 'Sale đang xác nhận',
+                    'cho_xac_nhan' => 'Chờ Nguồn chốt',
+                    'cho_sale_xac_nhan_doi_gio' => 'Chờ Sale chốt dời giờ',
+                    'da_xac_nhan' => 'Đã chốt đi xem',
+                    'hoan_thanh' => 'Hoàn thành',
+                    'tu_choi' => 'Từ chối',
+                    'huy' => 'Đã hủy',
+                ];
+            @endphp
+            {{-- THỐNG KÊ NHANH --}}
+            <div style="font-size:.78rem;color:var(--text-sub);" class="mt-1">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span><strong>{{ number_format($tongLich) }}</strong> lịch tổng</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#0d6efd"><strong>{{ number_format($stats['moi_dat'] ?? 0) }}</strong> 🆕 mới</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#FF9800"><strong>{{ number_format($dangXuLy) }}</strong> ⏳ đang xử lý</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#28a745"><strong>{{ number_format($stats['da_xac_nhan'] ?? 0) }}</strong> ✅ đã chốt
+                        đi xem</span>
+                    <span
+                        style="width:4px;height:4px;border-radius:50%;background:var(--text-muted);display:inline-block"></span>
+                    <span style="color:#6c757d"><strong>{{ number_format($stats['hoan_thanh'] ?? 0) }}</strong> 🏆 hoàn
+                        thành</span>
+                </div>
+            </div>
         </div>
         <div class="d-flex gap-2">
             @if ($nhanVien->vai_tro == 'admin')
@@ -93,84 +110,51 @@
         </div>
     </div>
 
-    {{-- KHỐI KPI --}}
-    <div class="row g-3 mb-4">
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-warning" style="border-left-width: 4px;">
-                <div class="k-label text-warning">MỚI (CHỜ NHẬN)</div>
-                <div class="k-value">{{ number_format($stats['moi_dat'] ?? 0) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-primary" style="border-left-width: 4px;">
-                <div class="k-label text-primary">ĐANG XÁC NHẬN</div>
-                <div class="k-value">{{ number_format($stats['sale_da_nhan'] ?? 0) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-info" style="border-left-width: 4px;">
-                <div class="k-label text-info">CHỜ NGUỒN XN</div>
-                <div class="k-value">{{ number_format($stats['cho_xac_nhan'] ?? 0) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-success" style="border-left-width: 4px;">
-                <div class="k-label text-success">ĐÃ CHỐT ĐI XEM</div>
-                <div class="k-value">{{ number_format($stats['da_xac_nhan'] ?? 0) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-secondary" style="border-left-width: 4px;">
-                <div class="k-label text-secondary">HOÀN THÀNH</div>
-                <div class="k-value">{{ number_format($stats['hoan_thanh'] ?? 0) }}</div>
-            </div>
-        </div>
-        <div class="col-6 col-md-2">
-            <div class="lh-kpi border-danger" style="border-left-width: 4px;">
-                <div class="k-label text-danger">TỪ CHỐI / HỦY</div>
-                <div class="k-value">{{ number_format(($stats['tu_choi'] ?? 0) + ($stats['huy'] ?? 0)) }}</div>
-            </div>
-        </div>
-    </div>
-
     {{-- KHỐI TABS --}}
-    <div class="lh-shell shadow-sm mb-5">
-        <ul class="nav nav-tabs lh-tabs mb-4" id="lhTab" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request"
-                    type="button">
-                    <i class="fas fa-home me-1"></i> Yêu cầu mới
-                    @if (($stats['moi_dat'] ?? 0) > 0)
-                        <span class="badge bg-danger rounded-pill ms-1">{{ $stats['moi_dat'] }}</span>
-                    @endif
-                </button>
-            </li>
+    <ul class="nav nav-tabs mb-4 border-bottom-0" id="lhTab" role="tablist" style="gap: 5px;">
+        <li class="nav-item">
+            <button class="nav-link active border-0" id="request-tab" data-bs-toggle="tab" data-bs-target="#tab-request"
+                type="button" style="border-radius: 6px 6px 0 0;">
+                <i class="fas fa-home me-1"></i> Yêu cầu mới
+                @if (($stats['moi_dat'] ?? 0) > 0)
+                    <span class="badge bg-danger rounded-pill ms-1">{{ $stats['moi_dat'] }}</span>
+                @endif
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link border-0" id="processing-tab" data-bs-toggle="tab" data-bs-target="#tab-processing"
+                type="button" style="border-radius: 6px 6px 0 0;">
+                <i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý
+                @if (($lichHenDangXuLyItems->total() ?? 0) > 0)
+                    <span class="badge bg-primary ms-1">{{ $lichHenDangXuLyItems->total() }}</span>
+                @endif
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link border-0" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#tab-calendar"
+                type="button" style="border-radius: 6px 6px 0 0;">
+                <i class="fas fa-calendar-day me-1"></i> Lịch của tôi
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link border-0" id="list-tab" data-bs-toggle="tab" data-bs-target="#tab-list" type="button"
+                style="border-radius: 6px 6px 0 0;">
+                <i class="fas fa-list me-1"></i> Danh sách tổng hợp
+            </button>
+        </li>
+    </ul>
 
-            <li class="nav-item">
-                <button class="nav-link text-primary" id="processing-tab" data-bs-toggle="tab"
-                    data-bs-target="#tab-processing" type="button">
-                    <i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý
-                    @if (($lichHenDangXuLyItems->total() ?? 0) > 0)
-                        <span class="badge bg-primary ms-1">{{ $lichHenDangXuLyItems->total() }}</span>
-                    @endif
-                </button>
-            </li>
+    <div class="tab-content" id="lhTabContent">
 
-            <li class="nav-item"><button class="nav-link" id="calendar-tab" data-bs-toggle="tab"
-                    data-bs-target="#tab-calendar" type="button"><i class="fas fa-calendar-day me-1"></i> Lịch của
-                    tôi</button></li>
-            <li class="nav-item"><button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#tab-list"
-                    type="button"><i class="fas fa-list me-1"></i> Danh sách tổng hợp</button></li>
-        </ul>
-
-        <div class="tab-content" id="lhTabContent">
-
-            {{-- TAB YÊU CẦU XEM NHÀ --}}
-            <div class="tab-pane fade show active" id="tab-request">
-                <div class="bg-white p-4 rounded-3 border border-warning shadow-sm">
-                    <h5 class="fw-bold mb-3 text-warning"><i class="fas fa-bell me-2"></i> Yêu cầu xem nhà cần nhận</h5>
+        {{-- TAB YÊU CẦU XEM NHÀ --}}
+        <div class="tab-pane fade show active" id="tab-request">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-bell me-2"></i> Yêu cầu xem nhà cần nhận</h5>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Khách hàng</th>
@@ -224,15 +208,24 @@
                             </tbody>
                         </table>
                     </div>
+                    @if ($lichHenMoiItems->hasPages())
+                        <div class="p-3 border-top">
+                            {{ $lichHenMoiItems->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
+        </div>
 
-            {{-- TAB ĐANG XỬ LÝ (ACTION TRỰC TIẾP BẰNG MODAL) --}}
-            <div class="tab-pane fade" id="tab-processing">
-                <div class="bg-white p-4 rounded-3 border shadow-sm">
-                    <h5 class="fw-bold mb-3 text-primary"><i class="fas fa-tasks me-2"></i> Lịch hẹn đang quản lý</h5>
+        {{-- TAB ĐANG XỬ LÝ (ACTION TRỰC TIẾP BẰNG MODAL) --}}
+        <div class="tab-pane fade" id="tab-processing">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                    <h5 class="fw-bold mb-0 text-primary"><i class="fas fa-tasks me-2"></i> Lịch hẹn đang quản lý</h5>
+                </div>
+                <div class="card-body p-0">
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle border">
+                        <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
                                 <tr>
                                     <th>Thời gian</th>
@@ -254,8 +247,16 @@
                                             <div class="small text-success">{{ $lh->sdt_khach_hang }}</div>
                                         </td>
                                         <td>
-                                            <div class="fw-bold text-primary">
-                                                {{ optional($lh->batDongSan)->tieu_de ?? 'Nhà lẻ' }}</div>
+                                            <a href="javascript:void(0)" class="fw-bold text-primary text-decoration-none btn-trigger-modal"
+                                                data-id="{{ $lh->id }}"
+                                                data-trang_thai="{{ $lh->trang_thai }}"
+                                                data-ten_khach="{{ $lh->ten_khach_hang }}"
+                                                data-sdt_khach="{{ $lh->sdt_khach_hang }}"
+                                                data-bds="{{ optional($lh->batDongSan)->tieu_de }}"
+                                                data-sale_id="{{ $lh->nhan_vien_sale_id }}"
+                                                data-start="{{ $lh->thoi_gian_hen }}">
+                                                {{ optional($lh->batDongSan)->tieu_de ?? 'Nhà lẻ' }}
+                                            </a>
                                         </td>
                                         <td>
                                             <div class="small fw-bold">
@@ -298,19 +299,22 @@
                                             @elseif ($lh->trang_thai === 'da_xac_nhan')
                                                 <span class="badge bg-success d-block mb-2 py-2 w-100">Đã chốt giờ - Xách
                                                     xe đi xem</span>
-                                                <button class="btn btn-sm btn-secondary w-100 fw-bold"
+                                                <button class="btn btn-sm btn-secondary w-100 fw-bold mb-1"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#modalHoanThanh{{ $lh->id }}">Báo kết quả Hoàn
                                                     Thành</button>
+                                                <button class="btn btn-sm btn-outline-warning w-100 fw-bold"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#modalSaleDoiGio{{ $lh->id }}">Dời lịch</button>
                                             @endif
 
-                                            @if ($nhanVien->vai_tro == 'admin')
+                                            @if ($nhanVien->vai_tro == 'admin' || ($nhanVien->vai_tro == 'sale' && $lh->nhan_vien_sale_id == $nhanVien->id))
                                                 <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
                                                     method="POST" class="mt-2 d-inline">
                                                     @csrf @method('DELETE')
                                                     <button type="submit" class="btn btn-sm btn-danger w-100 fw-bold"
                                                         onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
-                                                            class="fas fa-trash"></i> Xóa nhanh (Admin)</button>
+                                                            class="fas fa-trash"></i> Xóa lịch</button>
                                                 </form>
                                             @endif
                                         </td>
@@ -324,20 +328,28 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-3">{{ $lichHenDangXuLyItems->links() }}</div>
+                    @if ($lichHenDangXuLyItems->hasPages())
+                        <div class="p-3 border-top">
+                            {{ $lichHenDangXuLyItems->links() }}
+                        </div>
+                    @endif
                 </div>
             </div>
+        </div>
 
-            {{-- TAB CALENDAR --}}
-            <div class="tab-pane fade" id="tab-calendar">
-                <div class="row g-3">
-                    <div class="col-12 col-xl-9">
-                        <div class="bg-white p-3 rounded-3 border">
-                            <div id="calendar" style="min-height: 600px;"></div>
+        {{-- TAB LỊCH CỦA TÔI (FULLCALENDAR) --}}
+        <div class="tab-pane fade" id="tab-calendar">
+            <div class="row g-3">
+                <div class="col-12 col-xl-9">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body p-0">
+                            <div id="calendar" class="p-3"></div>
                         </div>
                     </div>
-                    <div class="col-12 col-xl-3">
-                        <div class="bg-white p-3 rounded-3 border h-100">
+                </div>
+                <div class="col-12 col-xl-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body">
                             <h6 class="fw-bold mb-3">Chú giải màu sắc</h6>
                             <ul class="list-unstyled small mb-0">
                                 <li class="mb-2"><span class="d-inline-block rounded-circle me-2"
@@ -363,10 +375,12 @@
                     </div>
                 </div>
             </div>
+        </div>
 
-            {{-- TAB DANH SÁCH TỔNG HỢP --}}
-            <div class="tab-pane fade" id="tab-list">
-                <div class="bg-white p-3 rounded-3 border mb-3">
+        {{-- TAB DANH SÁCH TỔNG HỢP --}}
+        <div class="tab-pane fade" id="tab-list">
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body p-3">
                     <form method="GET" action="{{ route('nhanvien.admin.lich-hen.index') }}">
                         <div class="row g-2">
                             <div class="col-12 col-md-3"><input type="text" name="tim_kiem" class="form-control"
@@ -398,64 +412,76 @@
                         </div>
                     </form>
                 </div>
-                <div class="table-responsive bg-white rounded-3 border">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Thời gian</th>
-                                <th>Khách hàng</th>
-                                <th>Bất động sản</th>
-                                <th>Phụ trách</th>
-                                <th>Trạng thái</th>
-                                <th class="text-center">Thao tác</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($lichHensList as $lh)
+            </div>
+
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
                                 <tr>
-                                    <td>
-                                        <div class="fw-bold text-primary">{{ $lh->thoi_gian_hen->format('H:i') }}</div>
-                                        <div class="small text-muted">{{ $lh->thoi_gian_hen->format('d/m/Y') }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
-                                        <div class="small text-success"><i
-                                                class="fas fa-phone-alt me-1"></i>{{ $lh->sdt_khach_hang }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="fw-medium">
-                                            {{ optional($lh->batDongSan)->tieu_de ?? 'Ngoài hệ thống' }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="small">Sale: {{ optional($lh->nhanVienSale)->ho_ten ?? 'Chưa có' }}
-                                        </div>
-                                        <div class="small">Nguồn:
-                                            {{ optional($lh->nhanVienNguonHang)->ho_ten ?? 'Chưa gán' }}</div>
-                                    </td>
-                                    <td><span class="badge bg-secondary">{{ $lh->trang_thai }}</span></td>
-                                    <td class="text-center">
-                                        <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                            class="btn btn-sm btn-light border"><i class="fas fa-eye"></i></a>
-                                        @if ($nhanVien->vai_tro == 'admin')
-                                            <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
-                                                method="POST" class="d-inline">
-                                                @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-danger border"
-                                                    onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
-                                                        class="fas fa-trash"></i></button>
-                                            </form>
-                                        @endif
-                                    </td>
+                                    <th>Thời gian</th>
+                                    <th>Khách hàng</th>
+                                    <th>Bất động sản</th>
+                                    <th>Phụ trách</th>
+                                    <th>Trạng thái</th>
+                                    <th class="text-center">Thao tác</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($lichHensList as $lh)
+                                    <tr>
+                                        <td>
+                                            <div class="fw-bold text-primary">{{ $lh->thoi_gian_hen->format('H:i') }}
+                                            </div>
+                                            <div class="small text-muted">{{ $lh->thoi_gian_hen->format('d/m/Y') }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-bold">{{ $lh->ten_khach_hang }}</div>
+                                            <div class="small text-success">{{ $lh->sdt_khach_hang }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-medium">
+                                                {{ optional($lh->batDongSan)->tieu_de ?? 'Ngoài hệ thống' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small">Sale:
+                                                {{ optional($lh->nhanVienSale)->ho_ten ?? 'Chưa có' }}
+                                            </div>
+                                            <div class="small">Nguồn:
+                                                {{ optional($lh->nhanVienNguonHang)->ho_ten ?? 'Chưa gán' }}</div>
+                                        </td>
+                                        <td><span
+                                                class="badge bg-secondary">{{ $trangThaiLabels[$lh->trang_thai] ?? $lh->trang_thai }}</span>
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
+                                                class="btn btn-sm btn-light border"><i class="fas fa-eye"></i></a>
+                                            @if ($nhanVien->vai_tro == 'admin')
+                                                <form action="{{ route('nhanvien.admin.lich-hen.destroy', $lh->id) }}"
+                                                    method="POST" class="d-inline">
+                                                    @csrf @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-danger border"
+                                                        onclick="return confirm('Xác nhận XÓA lịch hẹn này?')"><i
+                                                            class="fas fa-trash"></i></button>
+                                                </form>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">Không có dữ liệu.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                    @if ($lichHensList->hasPages())
+                        <div class="p-3 border-top">
+                            {{ $lichHensList->links() }}
+                        </div>
+                    @endif
                 </div>
-                <div class="mt-3">{{ $lichHensList->links() }}</div>
             </div>
         </div>
     </div>
@@ -523,10 +549,17 @@
                                     <label class="form-label fw-bold">Chọn Nguồn hàng phụ trách:</label>
                                     <select name="nhan_vien_nguon_hang_id" class="form-select form-select-lg" required>
                                         <option value="">-- Chọn Nguồn --</option>
+                                        @php
+                                            $phuTrachId =
+                                                $lh->nhan_vien_nguon_hang_id ??
+                                                optional($lh->batDongSan)->nhan_vien_phu_trach_id;
+                                        @endphp
                                         @foreach ($dsNguonHang as $ng)
                                             <option value="{{ $ng->id }}"
-                                                {{ optional($lh->batDongSan)->nhan_vien_phu_trach_id == $ng->id ? 'selected' : '' }}>
-                                                {{ $ng->ho_ten }}</option>
+                                                {{ $phuTrachId == $ng->id ? 'selected' : '' }}>
+                                                {{ $ng->ho_ten }}
+                                                {{ optional($lh->batDongSan)->nhan_vien_phu_trach_id == $ng->id ? '⭐ (Phụ trách)' : '' }}
+                                            </option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -595,6 +628,34 @@
                 </div>
             @endif
 
+            {{-- MODAL SALE DỜI GIỜ --}}
+            @if ($lh->trang_thai === 'da_xac_nhan')
+                <div class="modal fade" id="modalSaleDoiGio{{ $lh->id }}" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <form action="{{ route('nhanvien.admin.lich-hen.sale-doi-gio', $lh->id) }}" method="POST"
+                            class="modal-content shadow border-0">
+                            @csrf @method('PATCH')
+                            <div class="modal-header bg-warning text-dark">
+                                <h5 class="modal-title fw-bold"><i class="fas fa-clock me-2"></i>Dời lịch xem nhà</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Thời gian hẹn mới:</label>
+                                    <input type="datetime-local" name="thoi_gian_hen" class="form-control" required value="{{ $lh->thoi_gian_hen->format('Y-m-d\TH:i') }}">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold">Lý do dời lịch:</label>
+                                    <textarea name="ghi_chu_sale" class="form-control" rows="3" required placeholder="Khách bận đột xuất, xin dời qua ngày mai..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer bg-light border-0"><button type="submit"
+                                    class="btn btn-warning btn-lg fw-bold w-100">Xác nhận Dời lịch</button></div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+
             {{-- MODAL HỦY --}}
             @if (!in_array($lh->trang_thai, ['hoan_thanh', 'huy', 'tu_choi']))
                 <div class="modal fade" id="modalHuyShow{{ $lh->id }}" tabindex="-1">
@@ -628,6 +689,17 @@
 
     <script>
         function openLichHenModal(id, props, start) {
+            const statusLabels = {
+                moi_dat: 'Mới đặt',
+                sale_da_nhan: 'Sale đang xác nhận',
+                cho_xac_nhan: 'Chờ Nguồn chốt',
+                cho_sale_xac_nhan_doi_gio: 'Chờ Sale chốt dời giờ',
+                da_xac_nhan: 'Đã chốt đi xem',
+                hoan_thanh: 'Hoàn thành',
+                tu_choi: 'Từ chối',
+                huy: 'Đã hủy',
+            };
+
             document.getElementById('md_ten_khach').innerText = props.ten_khach || '---';
             document.getElementById('md_sdt_khach').innerText = props.sdt_khach || '---';
             document.getElementById('md_bds').innerText = props.bds || '---';
@@ -642,7 +714,8 @@
                 frmNhanLich.style.display = 'block';
                 frmNhanLich.action = `/nhan-vien/admin/lich-hen/${id}/nhan-lich`;
             } else {
-                badgeHtml = `<span class="badge bg-secondary">${props.trang_thai}</span>`;
+                const label = statusLabels[props.trang_thai] || props.trang_thai;
+                badgeHtml = `<span class="badge bg-secondary">${label}</span>`;
             }
 
             document.getElementById('md_trang_thai').innerHTML = badgeHtml;

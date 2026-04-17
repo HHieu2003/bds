@@ -308,7 +308,9 @@
                 </div>
             </div>
 
-            <div class="sale-kpi-card">
+          
+        </div>
+          <div class="sale-kpi-card">
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-bold">Tiến độ xem nhà tháng này</span>
                     <span class="small text-muted">{{ $tiLeChotLich }}% thành công</span>
@@ -322,7 +324,6 @@
                     <div style="height:100%;width:{{ $ptHuy }}%;background:#dc2626;"></div>
                 </div>
             </div>
-        </div>
     </div>
 
     <div class="row g-3">

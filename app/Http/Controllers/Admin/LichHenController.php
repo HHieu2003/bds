@@ -136,6 +136,8 @@ class LichHenController extends Controller
                         $qWeb->where('trang_thai', 'moi_dat')->whereNull('nhan_vien_sale_id');
                     });
             });
+        } elseif ($nhanVien->isNguonHang()) {
+             $query->where('nhan_vien_nguon_hang_id', $nhanVien->id);
         }
 
         $lichHens = $query->get();
@@ -153,10 +155,14 @@ class LichHenController extends Controller
         ];
 
         foreach ($lichHens as $lh) {
+            if (!$lh->thoi_gian_hen) continue;
+
+            $thoiGian = \Carbon\Carbon::parse($lh->thoi_gian_hen);
+            
             $events[] = [
                 'id' => $lh->id,
-                'title' => date('H:i', strtotime($lh->thoi_gian_hen)) . ' - ' . $lh->ten_khach_hang,
-                'start' => $lh->thoi_gian_hen,
+                'title' => $thoiGian->format('H:i') . ' - ' . $lh->ten_khach_hang,
+                'start' => $thoiGian->format('Y-m-d\TH:i:s'), // ISO8601 format requirement for FullCalendar (fixes Safari Invalid Date)
                 'backgroundColor' => $colorMap[$lh->trang_thai] ?? '#000',
                 'borderColor' => $colorMap[$lh->trang_thai] ?? '#000',
                 'extendedProps' => [
@@ -319,7 +325,7 @@ class LichHenController extends Controller
     public function destroy(LichHen $lichHen)
     {
         $nhanVien = $this->currentNhanVien();
-        abort_unless($nhanVien->vai_tro === 'admin', 403);
+        abort_unless($nhanVien->isAdmin() || ($nhanVien->isSale() && $lichHen->nhan_vien_sale_id === $nhanVien->id), 403);
         $lichHen->delete();
         return back()->with('success', 'Đã xóa lịch hẹn thành công!');
     }
