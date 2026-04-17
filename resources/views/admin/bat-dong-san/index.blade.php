@@ -64,7 +64,8 @@
                     </select>
                 </div>
                 <div class="col-6 col-lg" style="min-width: 110px;">
-                    <select name="khu_vuc_id" class="filter-ctrl w-100 filter-auto-submit">
+                    <select name="khu_vuc_id" class="filter-ctrl w-100" id="khuVucSelect"
+                        onchange="document.getElementById('duAnIdInput').value=''; this.closest('form').submit();">
                         <option value="">Khu vực</option>
                         @foreach ($khuVucs as $kv)
                             <option value="{{ $kv->id }}" @selected((string) request('khu_vuc_id') === (string) $kv->id)>
@@ -88,7 +89,7 @@
                         <option value="">Phòng ngủ</option>
                         @foreach ($soPhongNguOptions as $pn)
                             <option value="{{ $pn }}" @selected((string) request('so_phong_ngu') === (string) $pn)>
-                                {{ $pn == 0 ? 'Studio' : $pn . ' PN' }}
+                                {{ $pn == 0 ? 'Studio' : $pn }}
                             </option>
                         @endforeach
                     </select>
@@ -133,19 +134,31 @@
         </form>
 
         @php
-            $projectQueryBase = request()->except(['du_an_id', 'khu_vuc_id', 'toa', 'page']);
+            // Base query cho tab: bỏ du_an_id, toa, page — nhưng GIỮ khu_vuc_id
+            $projectQueryBase = request()->except(['du_an_id', 'toa', 'page']);
+            // Base query cho nút ALL: giữ khu_vuc_id hiện tại, bỏ du_an_id + toa + page
+            $allTabQuery = request()->except(['du_an_id', 'toa', 'page']);
+            // Tên khu vực đang chọn (để hiển thị label ALL)
+            $selectedKhuVuc = request('khu_vuc_id')
+                ? $khuVucs->firstWhere('id', request('khu_vuc_id'))
+                : null;
         @endphp
         <div class="project-tabs-wrap mt-3">
             <div class="project-tabs-title">
-                Chuyển nhanh theo dự án
-                @if (request('khu_vuc_id'))
-                    <span class="text-muted fw-normal">- đã lọc theo khu vực</span>
+                @if ($selectedKhuVuc)
+                    BĐS tại <strong>{{ $selectedKhuVuc->ten_khu_vuc }}</strong>
+                @else
+                    Chuyển nhanh theo dự án
                 @endif
             </div>
             <div class="project-tabs-scroller">
-                <a href="{{ route('nhanvien.admin.bat-dong-san.index', $projectQueryBase) }}"
+                <a href="{{ route('nhanvien.admin.bat-dong-san.index', $allTabQuery) }}"
                     class="project-tab {{ !request()->filled('du_an_id') ? 'active' : '' }}">
-                    ALL
+                    @if ($selectedKhuVuc)
+                        Tất cả — {{ $selectedKhuVuc->ten_khu_vuc }}
+                    @else
+                        ALL
+                    @endif
                 </a>
                 @foreach ($duAns as $da)
                     <a href="{{ route('nhanvien.admin.bat-dong-san.index', array_merge($projectQueryBase, ['du_an_id' => $da->id, 'khu_vuc_id' => $da->khu_vuc_id])) }}"

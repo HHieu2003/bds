@@ -1073,10 +1073,12 @@
                     {{-- TITLE BLOCK --}}
                     <div class="bds-title-block">
                         <h1 class="bds-main-title">{{ $bds->tieu_de }}</h1>
+                        @if ($bds->duAn?->dia_chi)
                         <p class="bds-address">
                             <i class="fas fa-map-marker-alt"></i>
                             {{ $bds->duAn->dia_chi }}
                         </p>
+                        @endif
                         <div class="bds-price-row">
                             <div class="bds-price">{{ $bds->gia_hien_thi ?? 'Thỏa thuận' }}</div>
                             <div class="bds-meta-badges">

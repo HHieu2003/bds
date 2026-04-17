@@ -1,6 +1,6 @@
 @extends('admin.layouts.master')
 
-@section('title', 'Dashboard')
+@section('title', 'Dashboard Admin')
 
 @push('styles')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -27,11 +27,51 @@
             margin-top: 0.2rem;
         }
 
+        /* Filter Bar Styles */
+        .filter-bar {
+            background: #fff;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
         .stat-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
             gap: 1.25rem;
             margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            text-decoration: none;
+            padding: 1.25rem;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid var(--border);
+            box-shadow: var(--sh-sm);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--sh-md);
         }
 
         .mini-list-item {
@@ -120,13 +160,63 @@
         </div>
     </div>
 
-    {{-- ── 8 Stat Cards ── --}}
+    {{-- ── Filter Bar ── --}}
+    <div class="filter-bar">
+        <form method="GET" action="{{ route('nhanvien.dashboard') }}" id="formFilter" class="filter-group m-0 w-100">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fas fa-filter text-muted"></i>
+                <span class="fw-bold text-dark">Kỳ báo cáo:</span>
+            </div>
+
+            <select name="loai_loc" id="loai_loc" class="form-select form-select-sm" style="width: auto;"
+                onchange="toggleFilterInputs()">
+                <option value="ngay" {{ request('loai_loc') == 'ngay' ? 'selected' : '' }}>Theo Ngày</option>
+                <option value="thang" {{ request('loai_loc', 'thang') == 'thang' ? 'selected' : '' }}>Theo Tháng</option>
+                <option value="nam" {{ request('loai_loc') == 'nam' ? 'selected' : '' }}>Theo Năm</option>
+            </select>
+
+            <div id="wrap_ngay" class="filter-input" style="{{ request('loai_loc') == 'ngay' ? '' : 'display: none;' }}">
+                <input type="date" name="ngay" class="form-control form-control-sm"
+                    value="{{ request('ngay', now()->toDateString()) }}">
+            </div>
+
+            <div id="wrap_thang" class="filter-input"
+                style="{{ request('loai_loc', 'thang') == 'thang' ? '' : 'display: none;' }}">
+                <input type="month" name="thang" class="form-control form-control-sm"
+                    value="{{ request('thang', now()->format('Y-m')) }}">
+            </div>
+
+            <div id="wrap_nam" class="filter-input" style="{{ request('loai_loc') == 'nam' ? '' : 'display: none;' }}">
+                <input type="number" name="nam" class="form-control form-control-sm" min="2020" max="2099"
+                    value="{{ request('nam', now()->year) }}">
+            </div>
+
+            <button type="submit" class="btn btn-sm btn-primary fw-bold px-3">Truy vấn</button>
+
+            {{-- Nút Export CSV --}}
+            <button type="button" class="btn btn-sm btn-success fw-bold ms-auto" onclick="exportData()"><i
+                    class="fas fa-file-excel me-1"></i> Xuất Excel (CSV)</button>
+        </form>
+    </div>
+
+    {{-- Hiển thị Nhãn Kỳ Báo Cáo --}}
+    <div class="mb-3 text-muted fw-bold"><i class="fas fa-chart-line me-1"></i> Số liệu phát sinh trong: <span
+            class="text-primary">{{ $labelKyBaoCao }}</span></div>
+
+    {{-- ── 8 Stat Cards (Dữ liệu Đã được lọc) ── --}}
     <div class="stat-grid">
         <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}" class="stat-card">
             <div class="stat-icon orange"><i class="fas fa-building"></i></div>
             <div>
-                <div class="stat-num">{{ number_format($tongQuan['tong_bds']) }}</div>
-                <div class="stat-label">Tổng Kho BĐS</div>
+                <div class="stat-num">{{ number_format($tongQuan['bds_moi']) }}</div>
+                <div class="stat-label">BĐS Mới (Kỳ này)</div>
+            </div>
+        </a>
+        <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}?trang_thai=da_ban" class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <div class="stat-num">{{ number_format($tongQuan['bds_da_ban']) }}</div>
+                <div class="stat-label">BĐS Đã chốt/bán</div>
             </div>
         </a>
         <a href="{{ route('nhanvien.admin.lien-he.index') }}" class="stat-card">
@@ -136,46 +226,39 @@
                 <div class="stat-label">Yêu cầu LH mới</div>
             </div>
         </a>
+        <a href="{{ route('nhanvien.admin.khach-hang.index') }}" class="stat-card">
+            <div class="stat-icon navy"><i class="fas fa-users"></i></div>
+            <div>
+                <div class="stat-num">{{ number_format($tongQuan['khach_hang_moi']) }}</div>
+                <div class="stat-label">Khách hàng mới</div>
+            </div>
+        </a>
         <a href="{{ route('nhanvien.admin.lich-hen.index') }}" class="stat-card">
             <div class="stat-icon blue"><i class="fas fa-calendar-day"></i></div>
             <div>
-                <div class="stat-num">{{ number_format($tongQuan['lich_hen_hom_nay']) }}</div>
-                <div class="stat-label">Lịch hẹn hôm nay</div>
+                <div class="stat-num">{{ number_format($tongQuan['lich_hen_trong_ky']) }}</div>
+                <div class="stat-label">Lịch đi xem nhà</div>
+            </div>
+        </a>
+        <a href="{{ route('nhanvien.admin.lich-hen.index') }}" class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-flag-checkered"></i></div>
+            <div>
+                <div class="stat-num">{{ number_format($tongQuan['lich_chot']) }}</div>
+                <div class="stat-label">Lịch chốt thành công</div>
             </div>
         </a>
         <a href="{{ route('nhanvien.admin.ky-gui.index') }}" class="stat-card">
             <div class="stat-icon pink"><i class="fas fa-file-signature"></i></div>
             <div>
-                <div class="stat-num">{{ number_format($tongQuan['ky_gui_cho_duyet']) }}</div>
-                <div class="stat-label">Ký gửi chờ duyệt</div>
-            </div>
-        </a>
-        <a href="{{ route('nhanvien.admin.bat-dong-san.index') }}?trang_thai=con_hang" class="stat-card">
-            <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
-            <div>
-                <div class="stat-num">{{ number_format($tongQuan['bds_con_hang']) }}</div>
-                <div class="stat-label">BĐS Còn hàng</div>
-            </div>
-        </a>
-        <a href="{{ route('nhanvien.admin.khach-hang.index') }}" class="stat-card">
-            <div class="stat-icon navy"><i class="fas fa-users"></i></div>
-            <div>
-                <div class="stat-num">{{ number_format($tongQuan['tong_khach_hang']) }}</div>
-                <div class="stat-label">Tổng Khách hàng</div>
+                <div class="stat-num">{{ number_format($tongQuan['ky_gui_moi']) }}</div>
+                <div class="stat-label">Ký gửi mới</div>
             </div>
         </a>
         <a href="{{ route('nhanvien.admin.du-an.index') }}" class="stat-card">
             <div class="stat-icon teal"><i class="fas fa-city"></i></div>
             <div>
-                <div class="stat-num">{{ number_format($tongQuan['tong_du_an']) }}</div>
-                <div class="stat-label">Dự án</div>
-            </div>
-        </a>
-        <a href="{{ route('nhanvien.admin.chat.index') }}" class="stat-card">
-            <div class="stat-icon purple"><i class="fas fa-comments"></i></div>
-            <div>
-                <div class="stat-num">{{ number_format($tongQuan['chat_dang_mo']) }}</div>
-                <div class="stat-label">Chat đang mở</div>
+                <div class="stat-num">{{ number_format($tongQuan['du_an_moi']) }}</div>
+                <div class="stat-label">Dự án mới</div>
             </div>
         </a>
     </div>
@@ -189,7 +272,7 @@
             {{-- Biểu đồ 6 tháng --}}
             <div class="card h-100">
                 <div class="card-header">
-                    <div><i class="fas fa-chart-area me-2"></i>Thống kê Bất Động Sản (6 Tháng)</div>
+                    <div><i class="fas fa-chart-area me-2"></i>Thống kê BĐS (6 Tháng tính từ kỳ báo cáo)</div>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -198,10 +281,10 @@
                 </div>
             </div>
 
-            {{-- Lịch hẹn hôm nay --}}
+            {{-- Lịch hẹn hôm nay (Bảng theo dõi nóng) --}}
             <div class="card">
                 <div class="card-header">
-                    <div><i class="fas fa-calendar-check me-2"></i>Lịch hẹn hôm nay</div>
+                    <div><i class="fas fa-calendar-check me-2"></i>Theo dõi Lịch hẹn Hôm nay</div>
                     <a href="{{ route('nhanvien.admin.lich-hen.index') }}"
                         class="badge bg-light text-primary text-decoration-none">Xem tất cả</a>
                 </div>
@@ -221,14 +304,17 @@
                                     <tr>
                                         <td class="fw-bold text-primary">
                                             {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</td>
-                                        <td class="fw-bold">{{ $lh->khachHang?->ho_ten ?? 'Khách vãng lai' }}</td>
+                                        <td class="fw-bold">{{ $lh->khachHang?->ho_ten ?? $lh->ten_khach_hang }}</td>
                                         <td class="text-muted"><i class="fas fa-map-marker-alt me-1 text-danger"></i>
                                             {{ $lh->batDongSan?->tieu_de ?? 'Chưa xác định' }}</td>
                                         <td>
-                                            <span
-                                                class="badge-status {{ $lh->trang_thai == 'da_xac_nhan' ? 'badge-active' : 'badge-pending' }}">
-                                                {{ $lh->trang_thai == 'da_xac_nhan' ? 'Đã xác nhận' : 'Mới / Chờ' }}
-                                            </span>
+                                            @if ($lh->trang_thai === 'da_xac_nhan')
+                                                <span class="badge bg-success">Đã chốt giờ</span>
+                                            @elseif($lh->trang_thai === 'hoan_thanh')
+                                                <span class="badge bg-secondary">Hoàn thành</span>
+                                            @else
+                                                <span class="badge bg-warning text-dark">Chờ xử lý</span>
+                                            @endif
                                         </td>
                                     </tr>
                                 @empty
@@ -246,7 +332,7 @@
             {{-- BĐS Mới Nhất --}}
             <div class="card">
                 <div class="card-header">
-                    <div><i class="fas fa-home me-2"></i>Bất động sản mới cập nhật</div>
+                    <div><i class="fas fa-home me-2"></i>Bất động sản mới cập nhật hệ thống</div>
                 </div>
                 <div class="card-body p-3">
                     <div class="row g-3">
@@ -283,10 +369,10 @@
         {{-- ================= CỘT PHẢI ================= --}}
         <div class="col-12 col-xl-4 d-flex flex-column gap-4">
 
-            {{-- Biểu đồ Tròn: Phân loại BĐS --}}
+            {{-- Biểu đồ Tròn: Phân loại BĐS (Tổng kho hiện tại) --}}
             <div class="card">
                 <div class="card-header">
-                    <div><i class="fas fa-chart-pie me-2"></i>Tỷ trọng Bất Động Sản</div>
+                    <div><i class="fas fa-chart-pie me-2"></i>Tỷ trọng Tổng kho BĐS</div>
                 </div>
                 <div class="card-body">
                     <div class="doughnut-container">
@@ -298,13 +384,14 @@
             {{-- Ký gửi chờ duyệt --}}
             <div class="card">
                 <div class="card-header">
-                    <div><i class="fas fa-file-signature me-2"></i>Ký gửi chờ duyệt</div>
+                    <div><i class="fas fa-file-signature me-2"></i>Ký gửi cần duyệt</div>
                 </div>
                 <div class="card-body p-0 px-3">
                     @forelse($kyGuiChoDuyet as $kg)
                         <div class="mini-list-item">
                             <div class="mini-info">
-                                <div class="mini-title">{{ $kg->khachHang?->ho_ten ?? 'Khách hàng' }}</div>
+                                <div class="mini-title">
+                                    {{ $kg->khachHang?->ho_ten ?? ($kg->ho_ten_chu_nha ?? 'Khách hàng') }}</div>
                                 <div class="mini-sub"><i class="fas fa-clock"></i>
                                     {{ $kg->created_at->format('d/m/Y H:i') }}</div>
                             </div>
@@ -320,7 +407,7 @@
             {{-- Khách hàng mới --}}
             <div class="card">
                 <div class="card-header">
-                    <div><i class="fas fa-user-plus me-2"></i>Khách hàng mới</div>
+                    <div><i class="fas fa-user-plus me-2"></i>Khách hàng mới nhất</div>
                 </div>
                 <div class="card-body p-0 px-3">
                     @forelse($khachHangMoi as $kh)
@@ -337,7 +424,7 @@
                 </div>
             </div>
 
-            {{-- Top Nhân viên (Chỉ Admin) --}}
+            {{-- Top Nhân viên --}}
             @if ($danhSachNhanVien)
                 <div class="card">
                     <div class="card-header">
@@ -366,12 +453,36 @@
 
 @push('scripts')
     <script>
+        // Xử lý chuyển đổi Form Bộ Lọc
+        function toggleFilterInputs() {
+            let val = document.getElementById('loai_loc').value;
+            document.querySelectorAll('.filter-input').forEach(el => el.style.display = 'none');
+            document.getElementById('wrap_' + val).style.display = 'block';
+        }
+
+        // Xử lý nút Xuất CSV
+        function exportData() {
+            let form = document.getElementById('formFilter');
+            let inputExport = document.createElement('input');
+            inputExport.type = 'hidden';
+            inputExport.name = 'export';
+            inputExport.value = 'csv';
+            inputExport.id = 'temp_export_input';
+
+            form.appendChild(inputExport);
+            form.submit();
+
+            // Xóa input export sau khi submit để khi lọc lại không bị lỗi
+            setTimeout(() => {
+                document.getElementById('temp_export_input').remove();
+            }, 500);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // ── 1. Cấu hình màu sắc mặc định của Chart.js ──
             Chart.defaults.font.family = "'Be Vietnam Pro', sans-serif";
             Chart.defaults.color = '#6b7280';
 
-            // ── 2. Render Biểu đồ 6 tháng (Bar & Line hỗn hợp) ──
+            // ── 2. Render Biểu đồ 6 tháng ──
             const ctx6Thang = document.getElementById('chart6Thang').getContext('2d');
             new Chart(ctx6Thang, {
                 type: 'bar',
@@ -442,12 +553,7 @@
                             {{ $bdsByLoai['thue_con_hang'] }},
                             {{ $bdsByLoai['thue_da_thue'] }}
                         ],
-                        backgroundColor: [
-                            '#3b82f6', // Blue
-                            '#1a3c5e', // Navy
-                            '#10b981', // Green
-                            '#8b5cf6' // Purple
-                        ],
+                        backgroundColor: ['#3b82f6', '#1a3c5e', '#10b981', '#8b5cf6'],
                         borderWidth: 0,
                         hoverOffset: 4
                     }]

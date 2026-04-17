@@ -374,7 +374,7 @@
                                     </form>
                                 @else
                                     <div class="fw-bold text-dark" style="font-size: 0.85rem;"><i
-                                            class="fas fa-user-tie text-primary me-1"></i>{{ $lh->nhanVienPhuTrach->ho_ten }}
+                                            class="fas fa-user-tie text-primary me-1"></i>{{ $lh->nhanVienPhuTrach?->ho_ten ?? '(Đã xóa)' }}
                                     </div>
                                     <div class="small text-muted mt-1"><i
                                             class="fas fa-sign-in-alt me-1"></i>{{ \App\Models\YeuCauLienHe::NGUON[$lh->nguon_lien_he] ?? $lh->nguon_lien_he }}
@@ -503,7 +503,7 @@
                     @if (!$isUnassigned)
                         <div class="mobile-card-footer">
                             <div class="small fw-bold text-muted"><i class="fas fa-user-tie me-1"></i>
-                                {{ Str::limit($lh->nhanVienPhuTrach->ho_ten, 15) }}</div>
+                                {{ Str::limit($lh->nhanVienPhuTrach?->ho_ten ?? '(Đã xóa)', 15) }}</div>
                             <a href="{{ route('nhanvien.admin.lien-he.show', $lh) }}"
                                 class="btn btn-sm btn-light border">Chi tiết <i class="fas fa-angle-right"></i></a>
                         </div>

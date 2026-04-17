@@ -127,32 +127,36 @@
         <div class="d-flex gap-2">
             <a href="{{ route('nhanvien.admin.khach-hang.create') }}" class="btn btn-primary"><i
                     class="fas fa-user-plus me-1"></i>Khách mới</a>
-            <a href="{{ route('nhanvien.admin.lich-hen.index') }}" class="btn btn-outline-primary"><i
-                    class="fas fa-calendar-check me-1"></i>Lịch hẹn</a>
+            <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'processing']) }}"
+                class="btn btn-outline-primary"><i class="fas fa-calendar-check me-1"></i>Quản lý Lịch hẹn</a>
             <a href="{{ route('nhanvien.admin.lien-he.index') }}" class="btn btn-outline-secondary"><i
                     class="fas fa-headset me-1"></i>Leads</a>
         </div>
     </div>
 
     @if (($leadMoiHomNay ?? 0) > 0 || ($lichHenCanXuLy ?? 0) > 0 || ($lichHen2hToi ?? 0) > 0 || ($leadsQuaHan ?? 0) > 0)
-        <div class="alert alert-warning border-0 d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <div
+            class="alert alert-warning border-0 d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3 shadow-sm">
             <div class="fw-bold"><i class="fas fa-bolt me-1"></i>Cảnh báo ưu tiên hôm nay</div>
             <div class="d-flex flex-wrap gap-2">
                 @if (($leadMoiHomNay ?? 0) > 0)
-                    <span class="sale-chip bg-white text-dark"><i class="fas fa-bullhorn text-warning"></i>Lead mới:
+                    <span class="sale-chip bg-white text-dark border"><i class="fas fa-bullhorn text-warning"></i>Lead mới:
                         {{ $leadMoiHomNay }}</span>
                 @endif
                 @if (($lichHenCanXuLy ?? 0) > 0)
-                    <span class="sale-chip bg-white text-dark"><i class="fas fa-list-check text-danger"></i>Lịch cần xử lý:
-                        {{ $lichHenCanXuLy }}</span>
+                    <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'processing']) }}"
+                        class="text-decoration-none">
+                        <span class="sale-chip bg-danger text-white shadow-sm"><i
+                                class="fas fa-list-check text-white"></i>Lịch cần xử lý: {{ $lichHenCanXuLy }}</span>
+                    </a>
                 @endif
                 @if (($lichHen2hToi ?? 0) > 0)
-                    <span class="sale-chip bg-white text-dark"><i class="fas fa-clock text-primary"></i>Lịch trong 2h:
-                        {{ $lichHen2hToi }}</span>
+                    <span class="sale-chip bg-white text-dark border"><i class="fas fa-clock text-primary"></i>Lịch trong
+                        2h: {{ $lichHen2hToi }}</span>
                 @endif
                 @if (($leadsQuaHan ?? 0) > 0)
-                    <span class="sale-chip bg-white text-dark"><i class="fas fa-triangle-exclamation text-danger"></i>Lead
-                        quá hạn gọi: {{ $leadsQuaHan }}</span>
+                    <span class="sale-chip bg-white text-dark border"><i
+                            class="fas fa-triangle-exclamation text-danger"></i>Lead quá hạn gọi: {{ $leadsQuaHan }}</span>
                 @endif
             </div>
         </div>
@@ -174,7 +178,7 @@
         <div class="col-6 col-xl-2">
             <div class="sale-kpi-card">
                 <div class="sale-kpi-value text-success">{{ number_format($lichHenHoanThanhThang ?? 0) }}</div>
-                <div class="sale-kpi-label">Đã hoàn thành tháng</div>
+                <div class="sale-kpi-label">Đã xem thành công</div>
             </div>
         </div>
         <div class="col-6 col-xl-2">
@@ -192,7 +196,7 @@
         <div class="col-6 col-xl-2">
             <div class="sale-kpi-card">
                 <div class="sale-kpi-value">{{ $tiLeChotLich ?? 0 }}%</div>
-                <div class="sale-kpi-label">Tỷ lệ chốt lịch</div>
+                <div class="sale-kpi-label">Tỷ lệ xem thành công</div>
             </div>
         </div>
     </div>
@@ -258,7 +262,8 @@
             <div class="sale-board mb-3">
                 <div class="sale-board-head">
                     <div class="fw-bold text-primary"><i class="fas fa-map-marked-alt me-2"></i>Lịch dẫn khách hôm nay</div>
-                    <span class="badge bg-primary rounded-pill">{{ $lichHenHomNay->count() }}</span>
+                    <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'calendar']) }}"
+                        class="badge bg-primary text-white text-decoration-none">Vào Lịch</a>
                 </div>
                 <div class="sale-board-body">
                     @forelse($lichHenHomNay as $lh)
@@ -277,8 +282,18 @@
                                     <div class="small text-muted text-truncate"><i
                                             class="fas fa-home me-1"></i>{{ $lh->batDongSan?->tieu_de ?? 'Chưa chốt BĐS' }}
                                     </div>
-                                    <div class="small text-muted"><i
-                                            class="fas fa-clock me-1"></i>{{ $tg->diffForHumans() }}</div>
+
+                                    <div class="mt-1">
+                                        @if ($lh->trang_thai === 'sale_da_nhan')
+                                            <span class="badge bg-primary">Mới nhận</span>
+                                        @elseif($lh->trang_thai === 'cho_xac_nhan')
+                                            <span class="badge bg-info text-dark">Chờ Nguồn chốt</span>
+                                        @elseif($lh->trang_thai === 'cho_sale_xac_nhan_doi_gio')
+                                            <span class="badge bg-danger">Nguồn xin dời giờ</span>
+                                        @elseif($lh->trang_thai === 'da_xac_nhan')
+                                            <span class="badge bg-success">Đã chốt mở cửa</span>
+                                        @endif
+                                    </div>
                                 </div>
                                 <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
                                     class="btn btn-sm btn-light border"><i class="fas fa-eye"></i></a>
@@ -293,20 +308,19 @@
                 </div>
             </div>
 
-        </div>
-
-        <div class="sale-kpi-card">
-            <div class="d-flex justify-content-between mb-2">
-                <span class="fw-bold">Hiệu quả lịch tháng này</span>
-                <span class="small text-muted">{{ $tiLeChotLich }}% chốt</span>
-            </div>
-            <div class="small text-muted mb-1">Hoàn thành: {{ $hoanThanhSafe }} lịch</div>
-            <div class="sale-progress mb-2">
-                <div style="height:100%;width:{{ $ptHoanThanh }}%;background:#16a34a;"></div>
-            </div>
-            <div class="small text-muted mb-1">Boom/Hủy: {{ $huySafe }} lịch</div>
-            <div class="sale-progress">
-                <div style="height:100%;width:{{ $ptHuy }}%;background:#dc2626;"></div>
+            <div class="sale-kpi-card">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold">Tiến độ xem nhà tháng này</span>
+                    <span class="small text-muted">{{ $tiLeChotLich }}% thành công</span>
+                </div>
+                <div class="small text-muted mb-1">Hoàn thành: {{ $hoanThanhSafe }} lịch</div>
+                <div class="sale-progress mb-2">
+                    <div style="height:100%;width:{{ $ptHoanThanh }}%;background:#16a34a;"></div>
+                </div>
+                <div class="small text-muted mb-1">Boom/Hủy: {{ $huySafe }} lịch</div>
+                <div class="sale-progress">
+                    <div style="height:100%;width:{{ $ptHuy }}%;background:#dc2626;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -315,8 +329,8 @@
         <div class="col-12 col-xl-6">
             <div class="sale-board">
                 <div class="sale-board-head">
-                    <div class="fw-bold text-danger"><i class="fas fa-triangle-exclamation me-2"></i>Lịch quá hạn / chưa
-                        chốt</div>
+                    <div class="fw-bold text-danger"><i class="fas fa-triangle-exclamation me-2"></i>Lịch quá hạn chưa báo
+                        kết quả</div>
                     <span class="badge bg-danger rounded-pill">{{ $lichHenQuaHan->count() }}</span>
                 </div>
                 <div class="sale-board-body">
@@ -327,17 +341,17 @@
                                 <div>
                                     <div class="fw-bold">
                                         {{ $lh->ten_khach_hang ?? ($lh->khachHang?->ho_ten ?? 'Khách lẻ') }}</div>
-                                    <div class="small text-muted">{{ $tg->format('d/m H:i') }} · Trễ
+                                    <div class="small text-muted">{{ $tg->format('d/m H:i') }} · Đã trễ
                                         {{ $tg->diffForHumans() }}</div>
                                     <div class="small text-muted text-truncate">
                                         {{ $lh->batDongSan?->tieu_de ?? 'Chưa có BĐS' }}</div>
                                 </div>
                                 <a href="{{ route('nhanvien.admin.lich-hen.show', $lh->id) }}"
-                                    class="btn btn-sm btn-outline-danger">Xử lý</a>
+                                    class="btn btn-sm btn-outline-danger">Cập nhật ngay</a>
                             </div>
                         </div>
                     @empty
-                        <div class="sale-empty">Không có lịch quá hạn.</div>
+                        <div class="sale-empty">Tuyệt vời! Không có lịch quá hạn.</div>
                     @endforelse
                 </div>
             </div>
@@ -361,7 +375,7 @@
                                     <div class="fw-bold">{{ $tg->format('D, d/m/Y H:i') }}</div>
                                     <div class="small text-muted">
                                         {{ $lh->ten_khach_hang ?? ($lh->khachHang?->ho_ten ?? 'Khách lẻ') }} ·
-                                        {{ $lh->sdt_khach_hang ?? ($lh->khachHang?->so_dien_thoai ?? '') }}</div>
+                                        {{ $lh->sdt_khach_hang ?? '' }}</div>
                                     <div class="small text-muted text-truncate">
                                         {{ $lh->batDongSan?->tieu_de ?? 'Chưa có BĐS' }}</div>
                                 </div>

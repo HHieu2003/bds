@@ -19,7 +19,7 @@ class LichHenController extends Controller
         $stats = $this->_stats($nhanVien);
 
         // ========================================================
-        // 1. DATA CHO TAB "DANH SÁCH TOÀN BỘ"
+        // 1. DATA CHO TAB "DANH SÁCH TOÀN BỘ" (Cả Sale & Nguồn đều dùng)
         // ========================================================
         $queryList = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.khuVuc.duAn', 'nhanVienSale', 'nhanVienNguonHang']);
 
@@ -34,6 +34,7 @@ class LichHenController extends Controller
             $queryList->where('nhan_vien_nguon_hang_id', $nhanVien->id);
         }
 
+        // BỘ LỌC CHUNG CHO DANH SÁCH
         if ($request->filled('tim_kiem')) {
             $kw = '%' . $request->tim_kiem . '%';
             $queryList->where(function ($q) use ($kw) {
@@ -51,17 +52,47 @@ class LichHenController extends Controller
         $lichHensList = $queryList->orderBy('thoi_gian_hen', 'desc')->paginate(15)->withQueryString();
 
         // ========================================================
-        // 2. DATA CHO VIEW NGUỒN HÀNG
+        // 2. DATA CHO VIEW NGUỒN HÀNG (ĐÃ THÊM LOGIC LỌC)
         // ========================================================
         if ($nhanVien->isNguonHang() || ($nhanVien->isAdmin() && $request->get('giao_dien') === 'nguon_hang')) {
-            $lichHensTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.khuVuc.duAn', 'nhanVienSale'])
+            $queryTodo = LichHen::with(['khachHang', 'batDongSan.chuNha', 'batDongSan.khuVuc.duAn', 'nhanVienSale'])
                 ->where('nhan_vien_nguon_hang_id', $nhanVien->id ?? null)
                 ->when($nhanVien->isAdmin(), function ($q) {
                     $q->orWhereNotNull('nhan_vien_nguon_hang_id');
-                })
-                ->whereIn('trang_thai', ['cho_xac_nhan', 'cho_sale_xac_nhan_doi_gio', 'da_xac_nhan'])
-                ->orderBy('thoi_gian_hen', 'asc')
-                ->get();
+                });
+
+            // Nếu không chọn trạng thái lọc cụ thể ở form lọc trên giao diện Cần xử lý, mặc định lấy 3 trạng thái
+            if (!$request->filled('todo_trang_thai')) {
+                $queryTodo->whereIn('trang_thai', ['cho_xac_nhan', 'cho_sale_xac_nhan_doi_gio', 'da_xac_nhan']);
+            }
+
+            // BỘ LỌC DÀNH RIÊNG CHO TAB CẦN XỬ LÝ (Sử dụng prefix 'todo_' để không đụng chạm với Tab Danh Sách)
+            if ($request->filled('todo_tim_kiem')) {
+                $kw = '%' . $request->todo_tim_kiem . '%';
+                $queryTodo->where(function ($q) use ($kw) {
+                    $q->whereHas('batDongSan', function ($qBds) use ($kw) {
+                        $qBds->where('tieu_de', 'like', $kw);
+                    })->orWhereHas('nhanVienSale', function ($qSale) use ($kw) {
+                        $qSale->where('ho_ten', 'like', $kw);
+                    });
+                });
+            }
+
+            if ($request->filled('todo_trang_thai')) {
+                // Nếu chọn trạng thái cụ thể
+                $queryTodo->where('trang_thai', $request->todo_trang_thai);
+            }
+
+            if ($request->filled('todo_tu_ngay')) {
+                $queryTodo->whereDate('thoi_gian_hen', '>=', $request->todo_tu_ngay);
+            }
+            if ($request->filled('todo_den_ngay')) {
+                $queryTodo->whereDate('thoi_gian_hen', '<=', $request->todo_den_ngay);
+            }
+
+            // Paginate hoặc Get tùy ý bạn. Ở đây lấy get() vì view cũ đang dùng Collection. Nếu dữ liệu lớn nên chuyển sang paginate
+            $lichHensTodo = $queryTodo->orderBy('thoi_gian_hen', 'asc')->get();
+
             $adminMode = $nhanVien->isAdmin();
             return view('admin.lich-hen.nguon_hang', compact('lichHensTodo', 'lichHensList', 'stats', 'adminMode'));
         }
@@ -71,14 +102,12 @@ class LichHenController extends Controller
         // ========================================================
         $dsNguonHang = NhanVien::where('vai_tro', 'nguon_hang')->where('kich_hoat', 1)->get();
 
-        // Lịch mới hệ thống web đổ về
         $lichHenMoiItems = LichHen::with(['batDongSan'])
             ->where('trang_thai', 'moi_dat')
             ->whereNull('nhan_vien_sale_id')
             ->orderBy('created_at', 'desc')
             ->paginate(12, ['*'], 'lh_page')->withQueryString();
 
-        // Lịch ĐANG XỬ LÝ của Sale
         $lichHenDangXuLyItems = LichHen::with(['batDongSan', 'nhanVienNguonHang'])
             ->where('nhan_vien_sale_id', $nhanVien->id)
             ->whereIn('trang_thai', ['sale_da_nhan', 'cho_xac_nhan', 'cho_sale_xac_nhan_doi_gio', 'da_xac_nhan'])
@@ -194,10 +223,6 @@ class LichHenController extends Controller
         return redirect()->route('nhanvien.admin.lich-hen.index')->with('success', 'Đã tạo lịch hẹn và gửi yêu cầu xác nhận đến Nguồn hàng!');
     }
 
-    // ============================================================
-    // WORKFLOW CHÍNH
-    // ============================================================
-
     public function nhanLich(LichHen $lichHen)
     {
         $nhanVien = $this->currentNhanVien();
@@ -291,7 +316,6 @@ class LichHenController extends Controller
         return back()->with('success', 'Đã hủy lịch.');
     }
 
-    // THÊM XÓA ADMIN
     public function destroy(LichHen $lichHen)
     {
         $nhanVien = $this->currentNhanVien();

@@ -20,7 +20,6 @@
 
     @php
         $isListTab = request('tab') == 'list';
-        // Biến kiểm soát chế độ xem (mặc định là card)
         $todoView = request('todo_view', 'card');
 
         $todoCollection = collect($lichHensTodo ?? []);
@@ -35,12 +34,10 @@
                 ->count(),
         ];
 
-        // Hàm kiểm tra lịch có đang chờ Sale đổi giờ không
         $isDoiGio = static function ($lh) {
             return $lh->trang_thai === 'cho_sale_xac_nhan_doi_gio';
         };
 
-        // Lấy URL hiện tại để append tham số query
         $queryBase = request()->query();
         $todoCardUrl = route(
             'nhanvien.admin.lich-hen.index',
@@ -51,7 +48,6 @@
             array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'list']),
         );
 
-        // URL chuyển tab giữ nguyên view
         $tabTodoUrl = route('nhanvien.admin.lich-hen.index', array_merge($queryBase, ['tab' => 'todo']));
         $tabListUrl = route('nhanvien.admin.lich-hen.index', array_merge($queryBase, ['tab' => 'list']));
         if (isset($adminMode) && $adminMode) {
@@ -72,7 +68,6 @@
                 array_merge($queryBase, ['tab' => 'todo', 'todo_view' => 'list', 'giao_dien' => 'nguon_hang']),
             );
         }
-
     @endphp
 
     <ul class="nav nav-tabs mb-4 border-bottom-2" role="tablist">
@@ -97,7 +92,6 @@
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0 text-dark fw-bold">Danh sách công việc</h5>
-                {{-- NÚT CHUYỂN ĐỔI GIAO DIỆN (CARD / LIST) --}}
                 <div class="btn-group bg-white shadow-sm rounded-3 p-1 border">
                     <a href="{{ $todoCardUrl }}"
                         class="btn btn-sm rounded-2 {{ $todoView === 'card' ? 'btn-success fw-bold' : 'btn-light border-0 text-muted' }}">
@@ -110,6 +104,49 @@
                 </div>
             </div>
 
+            {{-- FORM BỘ LỌC TÌM KIẾM CHO TAB ĐANG XỬ LÝ NGUỒN --}}
+            <div class="bg-white p-3 rounded-3 border mb-4 shadow-sm">
+                <form method="GET" action="{{ route('nhanvien.admin.lich-hen.index') }}">
+                    @if (isset($adminMode) && $adminMode)
+                        <input type="hidden" name="giao_dien" value="nguon_hang">
+                    @endif
+                    <input type="hidden" name="tab" value="todo">
+                    <input type="hidden" name="todo_view" value="{{ $todoView }}">
+
+                    <div class="row g-2">
+                        <div class="col-12 col-md-3">
+                            <input type="text" name="todo_tim_kiem" class="form-control" placeholder="Tìm BĐS, Sale..."
+                                value="{{ request('todo_tim_kiem') }}">
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" name="todo_tu_ngay" class="form-control"
+                                value="{{ request('todo_tu_ngay') }}">
+                        </div>
+                        <div class="col-6 col-md-2">
+                            <input type="date" name="todo_den_ngay" class="form-control"
+                                value="{{ request('todo_den_ngay') }}">
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <select name="todo_trang_thai" class="form-select">
+                                <option value="">-- Mọi trạng thái --</option>
+                                <option value="cho_xac_nhan" @selected(request('todo_trang_thai') == 'cho_xac_nhan')>Cần chốt chủ</option>
+                                <option value="cho_sale_xac_nhan_doi_gio" @selected(request('todo_trang_thai') == 'cho_sale_xac_nhan_doi_gio')>Chờ Sale chốt giờ dời
+                                </option>
+                                <option value="da_xac_nhan" @selected(request('todo_trang_thai') == 'da_xac_nhan')>Đã báo có chìa</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-success w-100 fw-bold"><i class="fas fa-filter"></i>
+                                Lọc</button>
+                            @if (request()->anyFilled(['todo_tim_kiem', 'todo_tu_ngay', 'todo_den_ngay', 'todo_trang_thai']))
+                                <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'todo', 'todo_view' => $todoView] + (isset($adminMode) && $adminMode ? ['giao_dien' => 'nguon_hang'] : [])) }}"
+                                    class="btn btn-light border text-danger"><i class="fas fa-times"></i></a>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             @if ($todoCollection->isEmpty())
                 <div class="text-center py-5 bg-white rounded-3 shadow-sm border">
                     <i class="fas fa-coffee text-success mb-3 opacity-25" style="font-size: 5rem;"></i>
@@ -117,7 +154,7 @@
                     <p class="text-muted">Không có nhiệm vụ nào đang chờ xử lý.</p>
                 </div>
             @else
-                {{-- ================= GIAO DIỆN DẠNG BẢNG (LIST VIEW) ================= --}}
+                {{-- DẠNG BẢNG (LIST VIEW) --}}
                 @if ($todoView === 'list')
                     <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
                         <div class="table-responsive">
@@ -135,15 +172,12 @@
                                     @foreach ($todoCollection as $lh)
                                         <tr
                                             class="{{ $lh->trang_thai == 'cho_xac_nhan' ? 'table-info table-active' : '' }}">
-                                            {{-- Cột Thời gian --}}
                                             <td class="px-3">
                                                 <div class="fw-bold text-danger fs-6">
                                                     {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
                                                 <div class="small text-muted fw-medium">
                                                     {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
                                             </td>
-
-                                            {{-- Cột BĐS & Sale --}}
                                             <td>
                                                 <div class="fw-bold text-primary mb-1">
                                                     {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}</div>
@@ -156,8 +190,6 @@
                                                     @endif
                                                 </div>
                                             </td>
-
-                                            {{-- Cột Chủ nhà --}}
                                             <td>
                                                 @if ($lh->batDongSan && $lh->batDongSan->chuNha)
                                                     <div class="fw-bold text-dark">{{ $lh->batDongSan->chuNha->ho_ten }}
@@ -171,8 +203,6 @@
                                                     <span class="badge bg-secondary">Chưa có data</span>
                                                 @endif
                                             </td>
-
-                                            {{-- Cột Trạng thái --}}
                                             <td>
                                                 @if ($isDoiGio($lh))
                                                     <span class="badge bg-warning text-dark"><i
@@ -183,8 +213,6 @@
                                                     <span class="badge bg-success">Đã báo có chìa</span>
                                                 @endif
                                             </td>
-
-                                            {{-- Cột Thao tác --}}
                                             <td class="text-end px-3">
                                                 @if ($lh->trang_thai == 'cho_xac_nhan')
                                                     <button class="btn btn-sm btn-success fw-bold mb-1"
@@ -201,7 +229,8 @@
                                                 @elseif ($isDoiGio($lh))
                                                     <button class="btn btn-sm btn-light border text-danger fw-bold"
                                                         data-bs-toggle="modal"
-                                                        data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo Hủy</button>
+                                                        data-bs-target="#modalHuyNguon{{ $lh->id }}">Báo
+                                                        Hủy</button>
                                                 @else
                                                     <button class="btn btn-sm btn-light border text-dark fw-bold mb-1"
                                                         data-bs-toggle="modal"
@@ -218,7 +247,7 @@
                         </div>
                     </div>
 
-                    {{-- ================= GIAO DIỆN DẠNG THẺ (CARD VIEW) MẶC ĐỊNH ================= --}}
+                    {{-- DẠNG THẺ (CARD VIEW) MẶC ĐỊNH --}}
                 @else
                     <div class="row g-3">
                         @foreach ($todoCollection as $lh)
@@ -227,14 +256,14 @@
                                     class="card border-0 shadow-sm h-100 transition-hover {{ $lh->trang_thai == 'cho_xac_nhan' ? 'border-start border-4 border-info' : ($isDoiGio($lh) ? 'border-start border-4 border-warning' : 'border-start border-4 border-success') }}">
                                     <div class="card-body p-3 p-md-4">
                                         <div class="row align-items-center g-4">
-                                            {{-- THỜI GIAN --}}
                                             <div class="col-12 col-md-3 text-md-center border-md-end">
                                                 <div class="fw-bold text-danger display-6 mb-1">
                                                     {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i') }}</div>
                                                 <div class="text-muted small fw-medium mb-3">
                                                     {{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('d/m/Y') }}</div>
                                                 @if ($isDoiGio($lh))
-                                                    <span class="badge rounded-pill bg-warning text-dark px-3 py-2 w-100"><i
+                                                    <span
+                                                        class="badge rounded-pill bg-warning text-dark px-3 py-2 w-100"><i
                                                             class="fas fa-spinner fa-spin me-1"></i> CHỜ SALE CHỐT</span>
                                                 @elseif ($lh->trang_thai == 'cho_xac_nhan')
                                                     <span class="badge rounded-pill bg-info text-dark px-3 py-2 w-100">CẦN
@@ -244,15 +273,12 @@
                                                         CHÌA</span>
                                                 @endif
                                             </div>
-
-                                            {{-- THÔNG TIN --}}
                                             <div class="col-12 col-md-5">
                                                 <div class="fw-bold text-primary fs-5 mb-1">
                                                     {{ $lh->batDongSan->tieu_de ?? 'Nhà lẻ' }}</div>
                                                 <div class="text-muted small mb-2"><i
                                                         class="fas fa-map-marker-alt text-danger me-1"></i>{{ optional($lh->batDongSan)->khuVuc?->ten_khu_vuc ?? '---' }}
                                                 </div>
-
                                                 <div class="row g-2 mb-2">
                                                     <div class="col-sm-6">
                                                         <div class="p-2 border rounded bg-white h-100">
@@ -277,7 +303,6 @@
                                                         </div>
                                                     </div>
                                                 </div>
-
                                                 @if ($lh->ghi_chu_sale)
                                                     <div
                                                         class="small p-2 bg-warning bg-opacity-10 border border-warning rounded text-dark mt-2">
@@ -287,8 +312,6 @@
                                             </div>
                                         </div>
                                     </div>
-
-                                    {{-- THAO TÁC THEO TRẠNG THÁI --}}
                                     <div class="card-footer bg-white border-top p-3">
                                         @if ($lh->trang_thai == 'cho_xac_nhan')
                                             <div class="d-flex gap-2">
@@ -333,8 +356,42 @@
             @endif
         </div>
 
-        {{-- ===================== TAB LỊCH SỬ TỔNG HỢP ===================== --}}
+        {{-- TAB LỊCH SỬ TỔNG HỢP NGUỒN HÀNG --}}
         <div class="tab-pane fade {{ $isListTab ? 'show active' : '' }}" id="tab-list">
+            <div class="bg-white p-3 rounded-3 border mb-3">
+                <form method="GET" action="{{ route('nhanvien.admin.lich-hen.index') }}">
+                    @if (isset($adminMode) && $adminMode)
+                        <input type="hidden" name="giao_dien" value="nguon_hang">
+                    @endif
+                    <input type="hidden" name="tab" value="list">
+                    <div class="row g-2">
+                        <div class="col-12 col-md-3"><input type="text" name="tim_kiem" class="form-control"
+                                placeholder="Tìm khách, sđt, dự án..." value="{{ request('tim_kiem') }}"></div>
+                        <div class="col-6 col-md-2"><input type="date" name="tu_ngay" class="form-control"
+                                value="{{ request('tu_ngay') }}"></div>
+                        <div class="col-6 col-md-2"><input type="date" name="den_ngay" class="form-control"
+                                value="{{ request('den_ngay') }}"></div>
+                        <div class="col-6 col-md-3">
+                            <select name="trang_thai" class="form-select">
+                                <option value="">-- Mọi trạng thái --</option>
+                                <option value="da_xac_nhan" @selected(request('trang_thai') == 'da_xac_nhan')>Đã báo có chìa</option>
+                                <option value="hoan_thanh" @selected(request('trang_thai') == 'hoan_thanh')>Hoàn thành</option>
+                                <option value="tu_choi" @selected(request('trang_thai') == 'tu_choi')>Từ chối</option>
+                                <option value="huy" @selected(request('trang_thai') == 'huy')>Đã hủy</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-2 d-flex gap-2">
+                            <button type="submit" class="btn btn-primary w-100"><i class="fas fa-filter"></i>
+                                Lọc</button>
+                            @if (request()->anyFilled(['tim_kiem', 'tu_ngay', 'den_ngay', 'trang_thai']))
+                                <a href="{{ route('nhanvien.admin.lich-hen.index', ['tab' => 'list'] + (isset($adminMode) && $adminMode ? ['giao_dien' => 'nguon_hang'] : [])) }}"
+                                    class="btn btn-light border text-danger"><i class="fas fa-times"></i></a>
+                            @endif
+                        </div>
+                    </div>
+                </form>
+            </div>
+
             <div class="card border-0 shadow-sm">
                 <div class="table-responsive p-3">
                     <table class="table table-hover align-middle mb-0">
@@ -351,7 +408,8 @@
                             @forelse($lichHensList ?? [] as $lh)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('H:i d/m/Y') }}</td>
-                                    <td>{{ $lh->ten_khach_hang }} ({{ $lh->sdt_khach_hang }})</td>
+                                    <td>{{ $lh->ten_khach_hang }} <br><small
+                                            class="text-success">{{ $lh->sdt_khach_hang }}</small></td>
                                     <td class="text-primary fw-bold">{{ $lh->batDongSan->tieu_de ?? 'Ngoài hệ thống' }}
                                     </td>
                                     <td><span class="badge bg-secondary">{{ $lh->trang_thai }}</span></td>
@@ -434,7 +492,7 @@
                         <div class="modal-body p-4">
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Giờ mới chủ nhà hẹn:</label>
-                                <input type="datetime-local" name="thoi_gian_hen" class="form-control"
+                                <input type="datetime-local" name="thoi_gian_hen" class="form-control form-control-lg"
                                     value="{{ \Carbon\Carbon::parse($lh->thoi_gian_hen)->format('Y-m-d\TH:i') }}"
                                     required>
                             </div>
@@ -500,7 +558,6 @@
             background: transparent;
         }
 
-        /* Fix hiển thị border của Cột Table trên Mobile */
         @media (max-width: 767.98px) {
             .border-md-end {
                 border-right: none !important;
