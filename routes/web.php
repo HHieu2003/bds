@@ -29,6 +29,7 @@ use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
 use App\Http\Controllers\Admin\ChuNhaController;
 use App\Http\Controllers\Admin\KhuVucController;
 use App\Http\Controllers\Admin\NhatKyEmailController;
+use App\Http\Controllers\Admin\ThongBaoController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -296,6 +297,13 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                     Route::get('/{id}/long-poll',  [AdminChatController::class, 'longPoll'])->name('long-poll');
                     Route::delete('/{id}',         [AdminChatController::class, 'destroy'])->name('destroy');
                 });
+            });
+
+            // ── THÔNG BÁO (tất cả nhân viên đã đăng nhập) ────────
+            Route::prefix('thong-bao')->name('thong-bao.')->group(function () {
+                Route::get('/',               [ThongBaoController::class, 'danhSach'])->name('danh-sach');
+                Route::get('/api',            [ThongBaoController::class, 'index'])->name('api');
+                Route::post('/mark-all-read', [ThongBaoController::class, 'markAllRead'])->name('mark-all-read');
             });
         });
     });

@@ -1,10 +1,7 @@
 @php
-    $nhanVien = Auth::guard('nhanvien')->user();
+    $nhanVien  = Auth::guard('nhanvien')->user();
     $avatarPath = $nhanVien->anh_dai_dien ?? ($nhanVien->avatar ?? null);
-    $hasAvatar = $avatarPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($avatarPath);
-    $totalNotif =
-        \App\Models\KyGui::where('trang_thai', 'cho_duyet')->count() +
-        \App\Models\PhienChat::where('trang_thai', 'dang_cho')->count();
+    $hasAvatar  = $avatarPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($avatarPath);
 @endphp
 
 <header id="topbar">
@@ -41,21 +38,64 @@
         </a>
 
         {{-- Thông báo --}}
-        <button class="topbar-icon-btn" title="Thông báo" type="button">
-            <i class="fas fa-bell" style="font-size:.85rem"></i>
-            @if ($totalNotif > 0)
-                <span class="notif-count"
-                    style="position:absolute;top:-4px;right:-4px;
+        <div style="position:relative;" id="notifWrap">
+            <button class="topbar-icon-btn" id="notifBtn" title="Thông báo" type="button"
+                    onclick="toggleNotifDropdown()" style="position:relative;">
+                <i class="fas fa-bell" style="font-size:.85rem"></i>
+                <span id="notifBadge"
+                      style="display:none;position:absolute;top:-4px;right:-4px;
                              min-width:18px;height:18px;border-radius:9px;
                              background:#e74c3c;color:#fff;font-size:.58rem;
-                             font-weight:800;display:flex;align-items:center;
-                             justify-content:center;padding:0 4px;border:2px solid #fff;">
-                    {{ $totalNotif > 99 ? '99+' : $totalNotif }}
-                </span>
-            @else
-                <span class="notif-dot"></span>
-            @endif
-        </button>
+                             font-weight:800;align-items:center;
+                             justify-content:center;padding:0 4px;border:2px solid #fff;"></span>
+            </button>
+
+            {{-- Dropdown Panel --}}
+            <div id="notifDropdown"
+                 style="display:none;position:absolute;top:calc(100% + 10px);right:0;
+                        width:360px;max-width:calc(100vw - 20px);
+                        background:#fff;border-radius:14px;
+                        border:1px solid var(--border);
+                        box-shadow:0 16px 48px rgba(0,0,0,.14);
+                        z-index:1500;overflow:hidden;">
+
+                {{-- Header --}}
+                <div style="padding:13px 16px 10px;border-bottom:1px solid var(--border);
+                            display:flex;align-items:center;justify-content:space-between;">
+                    <div style="font-size:.88rem;font-weight:800;color:var(--navy);display:flex;align-items:center;gap:7px;">
+                        <i class="fas fa-bell" style="color:var(--primary)"></i>
+                        Thông báo
+                        <span id="notifCountLabel"
+                              style="display:none;background:#e74c3c;color:#fff;font-size:.6rem;
+                                     font-weight:800;border-radius:20px;padding:1px 7px;"></span>
+                    </div>
+                    <button id="notifMarkAll" type="button" onclick="notifMarkAllRead()"
+                            style="display:none;font-size:.72rem;color:var(--primary);background:none;border:none;
+                                   cursor:pointer;font-weight:600;padding:0;">
+                        <i class="fas fa-check-double"></i> Đánh dấu đã đọc
+                    </button>
+                </div>
+
+                {{-- Body --}}
+                <div id="notifList"
+                     style="max-height:400px;overflow-y:auto;
+                            scrollbar-width:thin;scrollbar-color:#e0e3eb transparent;">
+                    <div id="notifSpinner"
+                         style="padding:32px;text-align:center;color:var(--text-sub);">
+                        <i class="fas fa-circle-notch fa-spin" style="font-size:1.3rem;color:var(--primary);"></i>
+                    </div>
+                </div>
+
+                {{-- Footer --}}
+                <div style="padding:9px 16px;border-top:1px solid var(--border);
+                            display:flex;justify-content:flex-end;background:#fafbfc;">
+                    <a href="{{ route('nhanvien.admin.thong-bao.danh-sach') }}"
+                       style="font-size:.73rem;color:var(--primary);font-weight:600;text-decoration:none;">
+                        Xem tất cả <i class="fas fa-arrow-right" style="font-size:.65rem"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
 
         {{-- Divider --}}
         <div style="width:1px;height:22px;background:var(--border);flex-shrink:0;"></div>
@@ -536,4 +576,262 @@
                 });
         });
     })();
+</script>
+
+<style>
+@keyframes notifSlideIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+#notifDropdown.show {
+    animation: notifSlideIn .18s ease;
+}
+.notif-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 11px 16px;
+    border-bottom: 1px solid #f0f1f5;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    transition: background .15s;
+}
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: #f8f9ff; }
+.notif-item.unread { background: #fffbf5; }
+.notif-item.unread:hover { background: #fff5e6; }
+.notif-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .85rem;
+    flex-shrink: 0;
+}
+.notif-body { flex: 1; min-width: 0; }
+.notif-title {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--navy);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.notif-text {
+    font-size: .72rem;
+    color: var(--text-sub);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.notif-time {
+    font-size: .66rem;
+    color: #aab;
+    margin-top: 3px;
+}
+.notif-unread-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--primary);
+    flex-shrink: 0;
+    margin-top: 5px;
+}
+.notif-empty {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-sub);
+    font-size: .82rem;
+}
+.notif-empty i { font-size: 2rem; margin-bottom: 8px; display: block; opacity: .35; }
+</style>
+
+<script>
+(function () {
+    var csrf   = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    var apiUrl = '{{ route('nhanvien.admin.thong-bao.api') }}';
+    var markUrl= '{{ route('nhanvien.admin.thong-bao.mark-all-read') }}';
+
+    var wrap    = document.getElementById('notifWrap');
+    var btn     = document.getElementById('notifBtn');
+    var dd      = document.getElementById('notifDropdown');
+    var list    = document.getElementById('notifList');
+    var spinner = document.getElementById('notifSpinner');
+    var badge   = document.getElementById('notifBadge');
+    var countLbl= document.getElementById('notifCountLabel');
+    var markBtn = document.getElementById('notifMarkAll');
+
+    var isOpen   = false;
+    var isLoaded = false;
+    var POLL_MS  = 45000;
+    var pollTimer= null;
+
+    // ── TOGGLE ──────────────────────────────────────────────────
+    window.toggleNotifDropdown = function () {
+        isOpen ? closeNotif() : openNotif();
+    };
+
+    function openNotif() {
+        isOpen = true;
+        dd.style.display = 'block';
+        dd.classList.add('show');
+        // Close user dropdown if open
+        var udd = document.getElementById('userDropdown');
+        if (udd) udd.classList.remove('show');
+        if (!isLoaded) fetchNotifs();
+    }
+
+    function closeNotif() {
+        isOpen = false;
+        dd.style.display = 'none';
+        dd.classList.remove('show');
+    }
+
+    // Close on outside click
+    document.addEventListener('click', function (e) {
+        if (isOpen && wrap && !wrap.contains(e.target)) closeNotif();
+    });
+
+    // ── FETCH ────────────────────────────────────────────────────
+    function fetchNotifs() {
+        fetch(apiUrl, {
+            headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf }
+        })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => {
+            if (!data || !data.ok) return;
+            isLoaded = true;
+            renderNotifs(data.items || []);
+        })
+        .catch(() => {});
+    }
+
+    // Auto-poll
+    function startPoll() {
+        pollTimer = setInterval(function () {
+            fetchNotifs();
+        }, POLL_MS);
+    }
+
+    // ── RENDER ───────────────────────────────────────────────────
+    var loaiLabel = {
+        ky_gui:      'Ký gửi',
+        lich_hen:    'Lịch hẹn',
+        yeu_cau:     'Liên hệ',
+        chat:        'Chat',
+        yeu_cau_lien_he: 'Liên hệ',
+        ky_gui_moi:  'Ký gửi',
+        lich_hen_moi:'Lịch hẹn',
+        tin_nhan_chat:'Chat',
+    };
+
+    function renderNotifs(items) {
+        var unreadCount = items.filter(i => !i.da_doc).length;
+
+        // Badge
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+            badge.style.display = 'flex';
+            countLbl.textContent = unreadCount;
+            countLbl.style.display = 'inline';
+            markBtn.style.display = 'inline-flex';
+        } else {
+            badge.style.display = 'none';
+            countLbl.style.display = 'none';
+            markBtn.style.display = 'none';
+        }
+
+        // Remove old spinner / content
+        list.innerHTML = '';
+
+        if (!items.length) {
+            list.innerHTML =
+                '<div class="notif-empty">' +
+                '<i class="fas fa-bell-slash"></i>' +
+                'Không có thông báo mới' +
+                '</div>';
+            return;
+        }
+
+        // Group by loai for section headers
+        var groups = {};
+        items.forEach(function (it) {
+            var g = it.loai || 'khac';
+            if (!groups[g]) groups[g] = [];
+            groups[g].push(it);
+        });
+
+        // Render all (sorted by time — already sorted from server)
+        items.forEach(function (it) {
+            var el = document.createElement('a');
+            el.className = 'notif-item' + (it.da_doc ? '' : ' unread');
+            el.href = it.lien_ket || '#';
+
+            el.innerHTML =
+                '<div class="notif-icon" style="background:' + (it.bg || '#f0f1f5') + ';color:' + (it.color || '#666') + '">' +
+                    '<i class="' + (it.icon || 'fas fa-bell') + '"></i>' +
+                '</div>' +
+                '<div class="notif-body">' +
+                    '<div class="notif-title">' + escHtml(it.tieu_de || '') + '</div>' +
+                    '<div class="notif-text">' + escHtml(it.noi_dung || '') + '</div>' +
+                    '<div class="notif-time"><i class="far fa-clock" style="margin-right:3px"></i>' + escHtml(it.thoi_gian_relative || '') + '</div>' +
+                '</div>' +
+                (it.da_doc ? '' : '<div class="notif-unread-dot"></div>');
+
+            list.appendChild(el);
+        });
+    }
+
+    // ── MARK ALL READ ────────────────────────────────────────────
+    window.notifMarkAllRead = function () {
+        fetch(markUrl, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(r => r.json())
+        .then(() => {
+            // Remove unread visual
+            list.querySelectorAll('.notif-item.unread').forEach(function (el) {
+                el.classList.remove('unread');
+                var dot = el.querySelector('.notif-unread-dot');
+                if (dot) dot.remove();
+            });
+            badge.style.display = 'none';
+            countLbl.style.display = 'none';
+            markBtn.style.display = 'none';
+        })
+        .catch(() => {});
+    };
+
+    // ── UTILS ────────────────────────────────────────────────────
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // Init: fetch once on page load for badge, then poll
+    document.addEventListener('DOMContentLoaded', function () {
+        // Initial silent fetch (badge only — don't open dropdown)
+        fetch(apiUrl, { headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf } })
+            .then(r => r.ok ? r.json() : null)
+            .then(data => {
+                if (!data || !data.ok) return;
+                var unread = (data.items || []).filter(i => !i.da_doc).length;
+                if (unread > 0) {
+                    badge.textContent = unread > 99 ? '99+' : unread;
+                    badge.style.display = 'flex';
+                }
+            })
+            .catch(() => {});
+
+        startPoll();
+    });
+})();
 </script>
