@@ -137,7 +137,7 @@ class LichHenController extends Controller
                     });
             });
         } elseif ($nhanVien->isNguonHang()) {
-             $query->where('nhan_vien_nguon_hang_id', $nhanVien->id);
+            $query->where('nhan_vien_nguon_hang_id', $nhanVien->id);
         }
 
         $lichHens = $query->get();
@@ -158,7 +158,7 @@ class LichHenController extends Controller
             if (!$lh->thoi_gian_hen) continue;
 
             $thoiGian = \Carbon\Carbon::parse($lh->thoi_gian_hen);
-            
+
             $events[] = [
                 'id' => $lh->id,
                 'title' => $thoiGian->format('H:i') . ' - ' . $lh->ten_khach_hang,
@@ -297,7 +297,7 @@ class LichHenController extends Controller
         return $this->_smartRedirect($request, 'Cập nhật kết quả thành công!');
     }
 
-    public function xacNhan(LichHen $lichHen)
+    public function xacNhan(Request $request, LichHen $lichHen)
     {
         $lichHen->update(['trang_thai' => 'da_xac_nhan', 'xac_nhan_at' => now()]);
         $this->_thongBaoSale($lichHen, 'Lịch ĐÃ ĐƯỢC XÁC NHẬN', 'Nguồn hàng đã chốt.');

@@ -66,7 +66,7 @@
             </div>
 
             <div id="tabMatKhau" class="kh-tab-panel">
-                <form onsubmit="submitMatKhau(event)">
+                <form id="formMatKhau" onsubmit="submitMatKhau(event)">
                     <div class="kh-field">
                         <label class="kh-field-label"><i class="fas fa-lock"></i>Mật khẩu hiện tại <span>*</span></label>
                         <div class="kh-pw-wrap">

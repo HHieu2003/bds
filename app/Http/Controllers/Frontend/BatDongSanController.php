@@ -261,8 +261,6 @@ class BatDongSanController extends Controller
     {
         $bds = BatDongSan::with(['duAn.khuVuc'])->where('slug', $slug)->where('hien_thi', 1)->firstOrFail();
 
-        // Tăng lượt xem
-        $bds->increment('luot_xem');
 
         // Bất động sản liên quan (Cùng dự án hoặc cùng khu vực)
         $bdsLienQuan = BatDongSan::with(['duAn.khuVuc'])

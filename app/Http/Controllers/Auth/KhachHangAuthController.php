@@ -423,13 +423,20 @@ class KhachHangAuthController extends Controller
         $kh = Auth::guard('customer')->user();
         $v = Validator::make($request->all(), [
             'ho_ten'        => 'required|string|max:100',
-            'so_dien_thoai' => 'required|string|max:15|unique:khach_hang,so_dien_thoai,' . $kh->id,
+            'so_dien_thoai' => 'nullable|string|max:20|unique:khach_hang,so_dien_thoai,' . $kh->id,
             'email'         => 'nullable|email|max:100|unique:khach_hang,email,' . $kh->id,
+        ], [
+            'ho_ten.required'       => 'Vui lòng nhập họ và tên.',
+            'ho_ten.max'            => 'Họ tên không được vượt quá 100 ký tự.',
+            'so_dien_thoai.unique'  => 'Số điện thoại này đã được sử dụng bởi tài khoản khác.',
+            'so_dien_thoai.max'     => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'email.email'           => 'Địa chỉ email không hợp lệ.',
+            'email.unique'          => 'Email này đã được sử dụng bởi tài khoản khác.',
         ]);
         if ($v->fails()) return response()->json(['success' => false, 'errors' => $v->errors()], 422);
 
         $kh->update($request->only('ho_ten', 'so_dien_thoai', 'email'));
-        return response()->json(['success' => true, 'message' => 'Cập nhật thành công!']);
+        return response()->json(['success' => true, 'message' => 'Cập nhật thông tin thành công!']);
     }
 
     public function changePassword(Request $request)
@@ -438,10 +445,17 @@ class KhachHangAuthController extends Controller
         $v = Validator::make($request->all(), [
             'mat_khau_cu'  => 'required',
             'mat_khau_moi' => 'required|min:6|confirmed',
+        ], [
+            'mat_khau_cu.required'  => 'Vui lòng nhập mật khẩu hiện tại.',
+            'mat_khau_moi.required' => 'Vui lòng nhập mật khẩu mới.',
+            'mat_khau_moi.min'      => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'mat_khau_moi.confirmed'=> 'Xác nhận mật khẩu không khớp.',
         ]);
         if ($v->fails()) return response()->json(['success' => false, 'errors' => $v->errors()], 422);
 
-        if (!Hash::check($request->mat_khau_cu, $kh->password)) return response()->json(['success' => false, 'errors' => ['mat_khau_cu' => ['Mật khẩu hiện tại không đúng.']]], 422);
+        if (!Hash::check($request->mat_khau_cu, $kh->password)) {
+            return response()->json(['success' => false, 'errors' => ['mat_khau_cu' => ['Mật khẩu hiện tại không đúng.']]], 422);
+        }
 
         $kh->update(['password' => Hash::make($request->mat_khau_moi)]);
         return response()->json(['success' => true, 'message' => 'Đổi mật khẩu thành công!']);

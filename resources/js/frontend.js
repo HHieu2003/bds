@@ -1895,16 +1895,36 @@ window.switchModalTab = function (tab) {
 
 window.submitThongTin = function (e) {
     e.preventDefault();
-    const btn = document.getElementById("btnSubmitThongTin");
+
+    // --- Xác thực phía client ---
+    let hasErr = false;
+    const hoTen = document.getElementById('f_ho_ten').value.trim();
+    const sdt   = document.getElementById('f_so_dien_thoai').value.trim();
+    const errHoTen = document.getElementById('err_ho_ten');
+    const errSdt   = document.getElementById('err_so_dien_thoai');
+
+    // Reset lỗi
+    if (errHoTen) errHoTen.textContent = '';
+    if (errSdt)   errSdt.textContent   = '';
+
+    if (!hoTen) {
+        if (errHoTen) errHoTen.textContent = 'Vui lòng nhập họ và tên.';
+        hasErr = true;
+    }
+    if (sdt && !/^[0-9+\- ]{7,20}$/.test(sdt)) {
+        if (errSdt) errSdt.textContent = 'Số điện thoại không hợp lệ.';
+        hasErr = true;
+    }
+    if (hasErr) return;
+
+    const btn  = document.getElementById('btnSubmitThongTin');
     const orig = '<i class="fas fa-save"></i> Lưu thay đổi';
     postKhachHang(
         window.APP.routes.profileUpdate,
         {
-            ho_ten: document.getElementById("f_ho_ten").value.trim(),
-            so_dien_thoai: document
-                .getElementById("f_so_dien_thoai")
-                .value.trim(),
-            email: document.getElementById("f_email").value.trim(),
+            ho_ten:         hoTen,
+            so_dien_thoai:  sdt,
+            email:          document.getElementById('f_email').value.trim(),
         },
         btn,
         orig,
@@ -1914,60 +1934,105 @@ window.submitThongTin = function (e) {
 
 window.submitMatKhau = function (e) {
     e.preventDefault();
-    const pw1 = document.getElementById("f_mat_khau_moi").value;
-    const pw2 = document.getElementById("f_mat_khau_moi_confirmation").value;
-    if (pw1 !== pw2) return;
-    const btn = document.getElementById("btnSubmitMk");
+    const pw1 = document.getElementById('f_mat_khau_moi').value;
+    const pw2 = document.getElementById('f_mat_khau_moi_confirmation').value;
+    const pwCu = document.getElementById('f_mat_khau_cu').value;
+
+    const errCu      = document.getElementById('err_mat_khau_cu');
+    const errMoi     = document.getElementById('err_mat_khau_moi');
+    const errConfirm = document.getElementById('err_mat_khau_moi_confirmation');
+
+    // Reset lỗi cũ
+    if (errCu)      errCu.textContent      = '';
+    if (errMoi)     errMoi.textContent     = '';
+    if (errConfirm) errConfirm.textContent = '';
+
+    // Validate phía client
+    let hasErr = false;
+    if (!pwCu) {
+        if (errCu) errCu.textContent = 'Vui lòng nhập mật khẩu hiện tại.';
+        hasErr = true;
+    }
+    if (!pw1) {
+        if (errMoi) errMoi.textContent = 'Vui lòng nhập mật khẩu mới.';
+        hasErr = true;
+    } else if (pw1.length < 6) {
+        if (errMoi) errMoi.textContent = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+        hasErr = true;
+    }
+    if (pw1 && pw2 && pw1 !== pw2) {
+        if (errConfirm) errConfirm.textContent = 'Xác nhận mật khẩu không khớp.';
+        hasErr = true;
+    }
+    if (hasErr) return;
+
+    const btn  = document.getElementById('btnSubmitMk');
+    const orig = '<i class="fas fa-shield-alt"></i> Cập nhật';
     postKhachHang(
         window.APP.routes.changePassword,
         {
-            mat_khau_cu: document.getElementById("f_mat_khau_cu").value,
-            mat_khau_moi: pw1,
-            mat_khau_moi_confirmation: pw2,
+            mat_khau_cu:                pwCu,
+            mat_khau_moi:               pw1,
+            mat_khau_moi_confirmation:  pw2,
         },
         btn,
-        '<i class="fas fa-shield-alt"></i> Cập nhật',
+        orig,
         () => {
-            document.getElementById("formMatKhau").reset();
+            // Dùng optional chaining để tránh crash nếu form không tìm thấy
+            document.getElementById('formMatKhau')?.reset();
             closeModalHoSo();
         },
     );
 };
 
+
 function postKhachHang(url, data, btn, orig, onSuccess) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
+    // Reset tất cả field errors trước khi gửi
+    document.querySelectorAll('.kh-field-err').forEach(el => el.textContent = '');
+
     fetch(url, {
-        method: "POST",
+        method: 'POST',
         headers: getCsrfHeaders({
-            "Content-Type": "application/json",
-            Accept: "application/json",
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
         }),
-        credentials: "same-origin",
+        credentials: 'same-origin',
         body: JSON.stringify(data),
     })
-        .then((r) => r.json())
-        .then((res) => {
+        .then(r => r.json())
+        .then(res => {
             if (res.success) {
-                showFlash(res.message || "Cập nhật thành công!", "success");
+                showFlash(res.message || 'Cập nhật thành công!', 'success');
                 if (onSuccess) onSuccess();
             } else {
-                showFlash(res.message || "Có lỗi xảy ra", "danger");
-                if (res.errors) {
+                // Nếu có lỗi field cụ thể → hiện inline, KHÔNG hiện toast chung
+                if (res.errors && Object.keys(res.errors).length > 0) {
+                    let firstMsg = null;
                     Object.entries(res.errors).forEach(([key, msgs]) => {
-                        const el = document.getElementById("err" + key);
+                        const msg = Array.isArray(msgs) ? msgs[0] : msgs;
+                        if (!firstMsg) firstMsg = msg;
+                        // id field err dùng dấu _ (vd: err_mat_khau_cu)
+                        const elUnder = document.getElementById('err_' + key);
+                        // fallback: tên không có dấu _ (err + key)
+                        const elCamel = document.getElementById('err' + key);
+                        const el = elUnder || elCamel;
                         if (el) {
-                            el.textContent = Array.isArray(msgs)
-                                ? msgs[0]
-                                : msgs;
-                            el.style.display = "block";
+                            el.textContent = msg;
                         }
                     });
+                    // Chỉ toast nếu không có field nào match
+                    if (!document.querySelector('.kh-field-err:not(:empty)')) {
+                        showFlash(res.message || firstMsg || 'Vui lòng kiểm tra lại thông tin.', 'danger');
+                    }
+                } else {
+                    showFlash(res.message || 'Có lỗi xảy ra.', 'danger');
                 }
             }
         })
-        .catch(() => showFlash("Lỗi kết nối", "danger"))
+        .catch(() => showFlash('Lỗi kết nối', 'danger'))
         .finally(() => {
             btn.disabled = false;
             btn.innerHTML = orig;

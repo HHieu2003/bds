@@ -99,7 +99,7 @@ class GoiYService
                 if (!empty($boLoc['loai_hinh']))  $loaiHinhScore[$boLoc['loai_hinh']] = ($loaiHinhScore[$boLoc['loai_hinh']] ?? 0) + (self::W_TIM_KIEM_LOAI * $heSoThoiGian);
                 if (!empty($boLoc['khu_vuc_id'])) $khuVucScore[$boLoc['khu_vuc_id']] = ($khuVucScore[$boLoc['khu_vuc_id']] ?? 0) + (self::W_TIM_KIEM_KHU * $heSoThoiGian);
                 if (!empty($boLoc['du_an_id']))   $duAnScore[$boLoc['du_an_id']] = ($duAnScore[$boLoc['du_an_id']] ?? 0) + (self::W_TIM_KIEM_DU_AN * $heSoThoiGian);
-                if (!empty($boLoc['nhu_cau']))    $nhuCauScore[$boLoc['nhu_cau']] = ($nhuCauScore[$boLoc['nhu_cau']] ?? 0) + (self::W_TIM_KIEM_LOAI * $heSoThoiGian);
+                if (!empty($boLoc['nhu_cau']))    $nhuCauScore[$boLoc['nhu_cau']] = ($nhuCauScore[$boLoc['nhu_cau']] ?? 0) + (self::W_TIM_KIEM_KHU * $heSoThoiGian);
 
                 if (!empty($boLoc['gia_tu']) && $boLoc['gia_tu'] > 0) $giaList[] = $boLoc['gia_tu'];
                 if (!empty($boLoc['gia_den']) && $boLoc['gia_den'] > 0) $giaList[] = $boLoc['gia_den'];
@@ -311,6 +311,7 @@ class GoiYService
             if ($truBdsId) $ids[] = $truBdsId;
 
             $boSung = BatDongSan::where('hien_thi', true)
+                ->where('trang_thai', 'con_hang')
                 ->whereNotIn('id', $ids)
                 ->with(['duAn.khuVuc'])
                 ->orderByDesc('noi_bat')
@@ -336,7 +337,7 @@ class GoiYService
 
         if ($daXem) return;
 
-        $bds->increment('luot_xem');
+        $bds->increment('luot_xem'); // Tăng đúng 1 lần, được bảo vệ bởi guard 1 giờ ở trên
         $gia = $bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue;
 
         LichSuXemBds::create([
