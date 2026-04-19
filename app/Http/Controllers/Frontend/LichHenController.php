@@ -3,12 +3,15 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Mail\DatLichXemNhaMail;
 use App\Models\LichHen;
 use App\Models\BatDongSan;
 use App\Models\ThongBao;
 use App\Models\NhanVien;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class LichHenController extends Controller
 {
@@ -46,7 +49,7 @@ class LichHenController extends Controller
             'nguon_dat_lich'   => 'website'
         ]);
 
-        // 5. (Tùy chọn) Bắn thông báo cho toàn bộ Sale và Admin biết có kèo mới để vào nhận
+        // 5. Bắn thông báo cho toàn bộ Sale và Admin biết có kèo mới để vào nhận
         $saleVaAdmin = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', 1)->get();
         foreach ($saleVaAdmin as $nv) {
             ThongBao::create([
@@ -59,11 +62,27 @@ class LichHenController extends Controller
             ]);
         }
 
+        // 6. Gửi email xác nhận cho khách hàng (nếu họ có nhập email)
+        $emailKhach = $request->email_khach_hang;
+        if ($emailKhach) {
+            try {
+                $lichHen->load('batDongSan');
+                Mail::to($emailKhach)->send(new DatLichXemNhaMail($lichHen));
+            } catch (\Throwable $e) {
+                Log::error('Không gửi được email xác nhận đặt lịch.', [
+                    'email' => $emailKhach,
+                    'error' => $e->getMessage(),
+                ]);
+                // Không throw — lịch hẹn đã được tạo, chỉ log lỗi mail
+            }
+        }
+
         return response()->json([
-            'status' => 'success',
+            'status'  => 'success',
             'message' => 'Cảm ơn bạn! Yêu cầu đặt lịch đã được gửi thành công. Chuyên viên của chúng tôi sẽ liên hệ lại trong ít phút.'
         ]);
     }
+
 
     /**
      * HIỂN THỊ DANH SÁCH LỊCH HẸN CỦA KHÁCH HÀNG

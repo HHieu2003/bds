@@ -1528,6 +1528,20 @@
                             <input type="text" name="ten_khach_hang" class="form-input-custom"
                                 value="{{ $customer?->ho_ten ?? '' }}" placeholder="Nhập tên của bạn" required>
                         </div>
+  <div class="mb-3">
+                            <label class="form-label fw-bold" style="font-size: 0.9rem;">
+                                Email
+                            </label>
+                            <div style="position:relative;">
+                                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;font-size:0.85rem;">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" name="email_khach_hang" class="form-input-custom"
+                                    value="{{ $customer?->email ?? '' }}"
+                                    placeholder="example@gmail.com"
+                                    style="padding-left: 36px;">
+                            </div>
+                        </div>
 
                         <div class="row mb-3 g-3">
                             <div class="col-sm-6">
@@ -1535,7 +1549,6 @@
                                         class="text-danger">*</span></label>
                                 <input type="text" name="sdt_khach_hang" class="form-input-custom"
                                     value="{{ $customer?->so_dien_thoai ?? '' }}" placeholder="09xx..." required>
-                                <input type="hidden" name="email_khach_hang" value="{{ $customer?->email ?? '' }}">
                             </div>
                             <div class="col-sm-6">
                                 <label class="form-label fw-bold" style="font-size: 0.9rem;">Thời gian xem <span
@@ -1545,12 +1558,14 @@
                             </div>
                         </div>
 
+                      
                         <div class="mb-0">
                             <label class="form-label fw-bold" style="font-size: 0.9rem;">Lời nhắn (Không bắt buộc)</label>
                             <textarea name="ghi_chu" class="form-input-custom" rows="3"
                                 placeholder="Ví dụ: Tôi chỉ xem được ngoài giờ hành chính..."></textarea>
                         </div>
                     </div>
+
 
                     <div class="modal-footer bg-light border-0">
                         <div class="small fw-semibold text-danger me-auto d-none" id="datLichError"></div>
