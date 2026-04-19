@@ -134,7 +134,7 @@ window.fetch = async function(...args) {
                 const meta = document.querySelector('meta[name="csrf-token"]');
                 if (meta) meta.setAttribute('content', newToken);
                 if (window.APP) window.APP.csrfToken = newToken;
-                
+
                 if (args.length >= 2 && args[1] && args[1].headers) {
                     if (args[1].headers instanceof Headers) {
                         args[1].headers.set('X-CSRF-TOKEN', newToken);
@@ -142,7 +142,7 @@ window.fetch = async function(...args) {
                         args[1].headers['X-CSRF-TOKEN'] = newToken;
                     }
                 }
-                
+
                 return await originalFetch.apply(this, args);
             }
         } catch(e) {
@@ -461,7 +461,32 @@ document
                 () => document.querySelector(".reg-otp-box")?.focus(),
                 100,
             );
-        } else if (data.errors) showAuthErrors(data.errors);
+        } else if (data.errors) {
+            showAuthErrors(data.errors);
+            if (
+                !data.errors.ho_ten &&
+                !data.errors.email &&
+                !data.errors.password &&
+                !data.errors.so_dien_thoai &&
+                !data.errors.password_confirmation
+            ) {
+                const errGeneral = document.getElementById("errRegGeneral");
+                if (errGeneral) {
+                    errGeneral.innerHTML =
+                        `<i class="fas fa-exclamation-circle"></i> ${data.message || "Đăng ký thất bại, vui lòng thử lại."}`;
+                    errGeneral.style.color = "var(--status-danger)";
+                    errGeneral.style.display = "block";
+                }
+            }
+        } else {
+            const errGeneral = document.getElementById("errRegGeneral");
+            if (errGeneral) {
+                errGeneral.innerHTML =
+                    `<i class="fas fa-exclamation-circle"></i> ${data.message || "Không thể đăng ký lúc này, vui lòng thử lại."}`;
+                errGeneral.style.color = "var(--status-danger)";
+                errGeneral.style.display = "block";
+            }
+        }
     });
 
 // OTP KÍCH HOẠT
@@ -1067,10 +1092,10 @@ function appendLocalBotMessage(content) {
 function renderCollapsedMenu() {
     const wrap = document.getElementById("chatQuickReplies");
     if (!wrap) return;
-    
+
     wrap.innerHTML = "";
     wrap.style.animation = "none";
-    
+
     const expandBtn = document.createElement("button");
     expandBtn.type = "button";
     expandBtn.className = "chat-qr-btn is-expand";

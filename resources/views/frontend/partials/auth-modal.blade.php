@@ -87,6 +87,9 @@
                     <div class="kh-field-err" id="errRegPasswordConfirmation"></div>
                 </div>
 
+                <div class="kh-field-err" id="errRegGeneral"
+                    style="text-align:center;margin-bottom:10px;font-size:.85rem"></div>
+
                 <button type="submit" class="btn-primary-brand w-100 justify-content-center py-2"
                     id="btnAuthRegister" style="font-size: 1rem;">
                     <i class="fas fa-user-plus"></i> Đăng ký

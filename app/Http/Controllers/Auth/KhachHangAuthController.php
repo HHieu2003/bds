@@ -10,8 +10,10 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class KhachHangAuthController extends Controller
 {
@@ -119,7 +121,19 @@ class KhachHangAuthController extends Controller
             ]
         );
 
-        Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+        try {
+            Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+        } catch (Throwable $e) {
+            Log::error('Không gửi được OTP đăng ký.', [
+                'email' => $kh->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Hệ thống email tạm thời gặp sự cố. Vui lòng thử lại sau ít phút.'
+            ], 503);
+        }
 
         return response()->json(['success' => true, 'email' => $kh->email, 'message' => 'OTP đã gửi đến ' . $kh->email]);
     }
@@ -147,7 +161,19 @@ class KhachHangAuthController extends Controller
             'token_expiry'       => Carbon::now()->addMinutes(15),
         ]);
 
-        Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+        try {
+            Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+        } catch (Throwable $e) {
+            Log::error('Không gửi lại được OTP.', [
+                'email' => $kh->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể gửi OTP lúc này. Vui lòng thử lại sau.'
+            ], 503);
+        }
 
         return response()->json(['success' => true, 'message' => 'Đã gửi lại OTP.']);
     }
@@ -246,7 +272,19 @@ class KhachHangAuthController extends Controller
         $kh->save();
 
         $resetLink = route('khach-hang.reset', ['token' => $otp, 'email' => $kh->email]);
-        Mail::to($kh->email)->send(new ResetPasswordMail($resetLink, $otp, $kh->ho_ten));
+        try {
+            Mail::to($kh->email)->send(new ResetPasswordMail($resetLink, $otp, $kh->ho_ten));
+        } catch (Throwable $e) {
+            Log::error('Không gửi được email đặt lại mật khẩu.', [
+                'email' => $kh->email,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể gửi email đặt lại mật khẩu lúc này. Vui lòng thử lại sau.'
+            ], 503);
+        }
 
         return response()->json([
             'success' => true,
