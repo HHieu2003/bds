@@ -67,6 +67,18 @@ class BatDongSanObserver
             foreach ($danhSachQuanTam as $dk) {
                 try {
                     Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, 'CapNhatGia', $giaCu));
+                    
+                    \App\Models\NhatKyEmail::create([
+                        'khach_hang_id' => $dk->khach_hang_id,
+                        'loai_email' => 'canh_bao_gia',
+                        'email_nguoi_nhan' => $dk->email,
+                        'tieu_de' => '📢 Giá Bất động sản bạn theo dõi vừa thay đổi',
+                        'noi_dung' => 'Hệ thống gửi tự động cho BĐS: ' . $bds->tieu_de,
+                        'trang_thai' => 'thanh_cong',
+                        'doi_tuong_lien_quan' => 'bat_dong_san',
+                        'doi_tuong_id' => $bds->id,
+                        'thoi_diem_gui' => now(),
+                    ]);
                 } catch (\Throwable $e) {
                     Log::error("Observer: Lỗi gửi mail CapNhatGia tới {$dk->email}: " . $e->getMessage());
                 }
@@ -139,13 +151,38 @@ class BatDongSanObserver
                 }
             }
 
-            // ── Kiểm tra Khoảng giá
-            if ($dk->muc_gia_tu && $giaHienTai < $dk->muc_gia_tu) continue;
-            if ($dk->muc_gia_den && $giaHienTai > $dk->muc_gia_den) continue;
+            // ── Kiểm tra Khoảng giá (Ép kiểu float để tránh lỗi so sánh chuỗi trong PHP)
+            $giaHienTaiFloat = (float) $giaHienTai;
+            
+            // Nếu khách hàng có thiết lập ngân sách cụ thể, ta bỏ qua các BĐS "Thỏa thuận" (giá = 0)
+            // vì giá 0 sẽ luôn bị tính là nhỏ hơn mức giá đến (muc_gia_den)
+            if (($dk->muc_gia_tu || $dk->muc_gia_den) && $giaHienTaiFloat <= 0) {
+                continue;
+            }
+
+            if ($dk->muc_gia_tu) {
+                if ($giaHienTaiFloat < (float) $dk->muc_gia_tu) continue;
+            }
+            if ($dk->muc_gia_den) {
+                if ($giaHienTaiFloat > (float) $dk->muc_gia_den) continue;
+            }
 
             // ── Khớp 100% → Gửi Mail
             try {
                 Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, $loai));
+                
+                \App\Models\NhatKyEmail::create([
+                    'khach_hang_id' => $dk->khach_hang_id,
+                    'loai_email' => 'canh_bao_gia',
+                    'email_nguoi_nhan' => $dk->email,
+                    'tieu_de' => '✨ Có Bất động sản mới phù hợp với bạn!',
+                    'noi_dung' => 'Hệ thống gửi tự động cho BĐS: ' . $bds->tieu_de,
+                    'trang_thai' => 'thanh_cong',
+                    'doi_tuong_lien_quan' => 'bat_dong_san',
+                    'doi_tuong_id' => $bds->id,
+                    'thoi_diem_gui' => now(),
+                ]);
+
                 $soGuiThanhCong++;
                 Log::info("Observer [{$loai}]: Gửi email tới {$dk->email} (DK ID {$dk->id})");
             } catch (\Throwable $e) {

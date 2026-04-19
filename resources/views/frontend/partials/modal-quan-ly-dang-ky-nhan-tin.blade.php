@@ -1,4 +1,4 @@
-@auth('customer')
+ @auth('customer')
     @php
         $dangKyNhanTinList = \App\Models\DangKyNhanTin::query()
             ->with(['khuVuc:id,ten_khu_vuc', 'duAn:id,ten_du_an', 'batDongSan:id,tieu_de'])

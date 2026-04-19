@@ -65,6 +65,19 @@ class DangKyNhanTin extends Model
         };
     }
 
+    private function formatGia($val): string
+    {
+        if (!$val || $val == 0) return '0 đ';
+        $n = (float) $val;
+        if ($n >= 1e9) {
+            return '≈ ' . rtrim(rtrim(number_format($n / 1e9, 2, ',', '.'), '0'), ',') . ' Tỷ';
+        }
+        if ($n >= 1e6) {
+            return '≈ ' . rtrim(rtrim(number_format($n / 1e6, 1, ',', '.'), '0'), ',') . ' Triệu';
+        }
+        return number_format($n, 0, ',', '.') . ' đ';
+    }
+
     public function getKhoangGiaLabelAttribute(): string
     {
         $tu = $this->muc_gia_tu;
@@ -75,14 +88,14 @@ class DangKyNhanTin extends Model
         }
 
         if (!is_null($tu) && is_null($den)) {
-            return 'Từ ' . number_format((float) $tu, 0, ',', '.') . ' đ';
+            return 'Từ ' . $this->formatGia($tu);
         }
 
         if (is_null($tu) && !is_null($den)) {
-            return 'Đến ' . number_format((float) $den, 0, ',', '.') . ' đ';
+            return 'Đến ' . $this->formatGia($den);
         }
 
-        return number_format((float) $tu, 0, ',', '.') . ' đ - ' . number_format((float) $den, 0, ',', '.') . ' đ';
+        return $this->formatGia($tu) . ' - ' . $this->formatGia($den);
     }
 
     public function getSoPhongNguLabelAttribute(): string

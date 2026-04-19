@@ -93,6 +93,7 @@
                         <label class="kh-field-label"><i class="fas fa-money-bill-wave"></i> Ngân sách từ (VNĐ)</label>
                         <input type="number" name="muc_gia_tu" id="dk_muc_gia_tu" class="kh-field-input"
                             placeholder="VD: 1000000000">
+                        <div class="text-muted mt-1" style="font-size:.75rem;" id="dk_gia_tu_label"></div>
                         <div class="kh-field-err" id="err_dk_muc_gia_tu"></div>
                     </div>
                 </div>
@@ -101,6 +102,7 @@
                         <label class="kh-field-label"><i class="fas fa-money-bill-wave"></i> Đến mức giá</label>
                         <input type="number" name="muc_gia_den" id="dk_muc_gia_den" class="kh-field-input"
                             placeholder="VD: 3000000000">
+                        <div class="text-muted mt-1" style="font-size:.75rem;" id="dk_gia_den_label"></div>
                         <div class="kh-field-err" id="err_dk_muc_gia_den"></div>
                     </div>
                 </div>
@@ -223,6 +225,8 @@
     function resetDangKyContext() {
         const bdsIdInput = document.getElementById('dk_bat_dong_san_id');
         const notice = document.getElementById('dk_price_alert_notice');
+        const giaTuLabel = document.getElementById('dk_gia_tu_label');
+        const giaDenLabel = document.getElementById('dk_gia_den_label');
 
         if (bdsIdInput) {
             bdsIdInput.value = '';
@@ -232,6 +236,9 @@
             notice.textContent = '';
             notice.style.display = 'none';
         }
+        
+        if (giaTuLabel) giaTuLabel.textContent = '';
+        if (giaDenLabel) giaDenLabel.textContent = '';
     }
 
     function clearDangKyErrors() {
@@ -411,6 +418,33 @@
                         duAnSelect.value = selectedOption.value; // Khôi phục lại selection sau khi danh sách reload
                     }
                 }
+            });
+        }
+
+        // Logic format giá trực tiếp
+        const inputGiaTu = document.getElementById('dk_muc_gia_tu');
+        const inputGiaDen = document.getElementById('dk_muc_gia_den');
+        const lblGiaTu = document.getElementById('dk_gia_tu_label');
+        const lblGiaDen = document.getElementById('dk_gia_den_label');
+
+        function formatDkGia(val) {
+            if (!val || isNaN(val)) return '';
+            const n = parseFloat(val);
+            if (n >= 1e9) return '≈ ' + (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + ' Tỷ';
+            if (n >= 1e6) return '≈ ' + (n / 1e6).toFixed(1).replace(/\.?0+$/, '') + ' Triệu';
+            if (n >= 1e3) return '≈ ' + (n / 1e3).toFixed(0) + ' Nghìn';
+            return '';
+        }
+
+        if (inputGiaTu && lblGiaTu) {
+            inputGiaTu.addEventListener('input', function() {
+                lblGiaTu.textContent = formatDkGia(this.value);
+            });
+        }
+        
+        if (inputGiaDen && lblGiaDen) {
+            inputGiaDen.addEventListener('input', function() {
+                lblGiaDen.textContent = formatDkGia(this.value);
             });
         }
     });

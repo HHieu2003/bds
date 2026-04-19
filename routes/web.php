@@ -28,6 +28,7 @@ use App\Http\Controllers\Admin\ThongKeController;
 use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
 use App\Http\Controllers\Admin\ChuNhaController;
 use App\Http\Controllers\Admin\KhuVucController;
+use App\Http\Controllers\Admin\NhatKyEmailController;
 use Illuminate\Support\Facades\Route;
 
 // ══════════════════════════════════════════════════════════
@@ -244,6 +245,11 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
                 Route::post('lien-he/{lienHe}/cap-nhat-nhanh', [AdminLienHeController::class, 'capNhatNhanh'])->name('lien-he.cap-nhat-nhanh');
                 Route::post('lien-he/{lienHe}/chuyen-khach', [AdminLienHeController::class, 'chuyenKhachHang'])->name('lien-he.chuyen-khach');
                 Route::post('lien-he/{lienHe}/chuyen-khach-hang', [AdminLienHeController::class, 'chuyenKhachHang'])->name('lien-he.convert');
+
+                Route::prefix('nhat-ky-email')->name('nhat-ky-email.')->group(function () {
+                    Route::get('/', [NhatKyEmailController::class, 'index'])->name('index');
+                    Route::post('/gui', [NhatKyEmailController::class, 'sendManual'])->name('send');
+                });
 
                 Route::prefix('khach-hang')->name('khach-hang.')->group(function () {
                     Route::get('/',                           [KhachHangController::class, 'index'])->name('index');

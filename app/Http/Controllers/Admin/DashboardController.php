@@ -136,8 +136,15 @@ class DashboardController extends Controller
         $kyGuiChoDuyet = (clone $kyGuiBase)->where('trang_thai', 'cho_duyet')->latest()->limit(8)->get();
         $bdsMoiNhat = (clone $bdsBase)->latest()->limit(8)->get();
 
-        $chuNhaNoiBat = \App\Models\ChuNha::withCount('batDongSans')->where('nhan_vien_phu_trach_id', $nhanVien->id)
-            ->whereNull('deleted_at')->orderByDesc('bat_dong_sans_count')->limit(6)->get();
+        $chuNhaNoiBat = \App\Models\ChuNha::withCount(['batDongSans' => function ($query) {
+            $query->where('trang_thai', 'con_hang')->where('hien_thi', 1);
+        }])
+        ->where('nhan_vien_phu_trach_id', $nhanVien->id)
+        ->whereNull('deleted_at')
+        ->having('bat_dong_sans_count', '>', 0)
+        ->orderByDesc('bat_dong_sans_count')
+        ->limit(6)
+        ->get();
 
         return view('admin.dashboard.nguon_hang', compact(
             'nhanVien',

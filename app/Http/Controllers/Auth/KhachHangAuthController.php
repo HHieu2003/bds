@@ -144,6 +144,18 @@ class KhachHangAuthController extends Controller
 
         try {
             Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+
+            \App\Models\NhatKyEmail::create([
+                'khach_hang_id' => $kh->id,
+                'loai_email' => 'xac_thuc',
+                'email_nguoi_nhan' => $kh->email,
+                'tieu_de' => 'Xác thực tài khoản của bạn',
+                'noi_dung' => 'Mã OTP xác thực: ' . $otp,
+                'trang_thai' => 'thanh_cong',
+                'doi_tuong_lien_quan' => 'khach_hang',
+                'doi_tuong_id' => $kh->id,
+                'thoi_diem_gui' => now(),
+            ]);
         } catch (Throwable $e) {
             Log::error('Không gửi được OTP đăng ký.', [
                 'email' => $kh->email,
@@ -184,6 +196,18 @@ class KhachHangAuthController extends Controller
 
         try {
             Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
+
+            \App\Models\NhatKyEmail::create([
+                'khach_hang_id' => $kh->id,
+                'loai_email' => 'xac_thuc',
+                'email_nguoi_nhan' => $kh->email,
+                'tieu_de' => 'Gửi lại mã xác thực',
+                'noi_dung' => 'Mã OTP xác thực mới: ' . $otp,
+                'trang_thai' => 'thanh_cong',
+                'doi_tuong_lien_quan' => 'khach_hang',
+                'doi_tuong_id' => $kh->id,
+                'thoi_diem_gui' => now(),
+            ]);
         } catch (Throwable $e) {
             Log::error('Không gửi lại được OTP.', [
                 'email' => $kh->email,
@@ -295,6 +319,18 @@ class KhachHangAuthController extends Controller
         $resetLink = route('khach-hang.reset', ['token' => $otp, 'email' => $kh->email]);
         try {
             Mail::to($kh->email)->send(new ResetPasswordMail($resetLink, $otp, $kh->ho_ten));
+
+            \App\Models\NhatKyEmail::create([
+                'khach_hang_id' => $kh->id,
+                'loai_email' => 'xac_thuc',
+                'email_nguoi_nhan' => $kh->email,
+                'tieu_de' => 'Đặt lại mật khẩu của bạn',
+                'noi_dung' => 'Mã OTP khôi phục mật khẩu: ' . $otp,
+                'trang_thai' => 'thanh_cong',
+                'doi_tuong_lien_quan' => 'khach_hang',
+                'doi_tuong_id' => $kh->id,
+                'thoi_diem_gui' => now(),
+            ]);
         } catch (Throwable $e) {
             Log::error('Không gửi được email đặt lại mật khẩu.', [
                 'email' => $kh->email,

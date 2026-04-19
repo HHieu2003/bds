@@ -58,14 +58,14 @@
             </a>
         </div>
 
-        @if($nhanVien->isAdmin())
-        <div class="nav-item">
-            <a class="nav-link-item {{ $active('nhanvien.thong-ke') }}" href="{{ route('nhanvien.thong-ke') }}"
-                data-tooltip="Thống kê & Phân tích">
-                <i class="fas fa-chart-bar nav-icon"></i>
-                <span class="nav-link-text">Thống kê & Phân tích</span>
-            </a>
-        </div>
+        @if ($nhanVien->isAdmin())
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.thong-ke') }}" href="{{ route('nhanvien.thong-ke') }}"
+                    data-tooltip="Thống kê & Phân tích">
+                    <i class="fas fa-chart-bar nav-icon"></i>
+                    <span class="nav-link-text">Thống kê & Phân tích</span>
+                </a>
+            </div>
         @endif
 
         {{-- ── 2. QUẢN LÝ BÁN HÀNG (CRM) ── --}}
@@ -88,6 +88,14 @@
                     @if ($lienHeCanXuLyCount > 0)
                         <span class="nav-badge">{{ $lienHeCanXuLyCount }}</span>
                     @endif
+                </a>
+            </div>
+
+            <div class="nav-item">
+                <a class="nav-link-item {{ $active('nhanvien.admin.nhat-ky-email') }}"
+                    href="{{ route('nhanvien.admin.nhat-ky-email.index') }}" data-tooltip="Nhật ký Email">
+                    <i class="fas fa-envelope-open-text nav-icon"></i>
+                    <span class="nav-link-text">Nhật ký Email</span>
                 </a>
             </div>
         @endif
@@ -177,7 +185,7 @@
                     <span class="nav-link-text">Quản lý Dự án</span>
                 </a>
             </div>
-            
+
             <div class="nav-item">
                 <a class="nav-link-item {{ $active('nhanvien.admin.khu-vuc') }}"
                     href="{{ route('nhanvien.admin.khu-vuc.index') }}" data-tooltip="Khu vực">

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\DuAn;
 use App\Models\KyGui;
+use App\Models\NhatKyEmail;
 use App\Mail\KyGuiSuccessMail; // Import Class Mail vừa tạo
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -101,12 +102,42 @@ class KyGuiController extends Controller
         if ($sendToEmail) {
             dispatch(function () use ($sendToEmail, $kyGui) {
                 try {
-                    Mail::to($sendToEmail)->send(new KyGuiSuccessMail($kyGui));
+                    $mail = new KyGuiSuccessMail($kyGui);
+                    $noiDung = $mail->render();
+
+                    Mail::to($sendToEmail)->send($mail);
+
+                    NhatKyEmail::create([
+                        'khach_hang_id' => $kyGui->khach_hang_id,
+                        'nhan_vien_id' => null,
+                        'loai_email' => 'ky_gui',
+                        'email_nguoi_nhan' => $sendToEmail,
+                        'tieu_de' => 'Xác nhận tiếp nhận yêu cầu ký gửi',
+                        'noi_dung' => $noiDung,
+                        'trang_thai' => 'thanh_cong',
+                        'doi_tuong_lien_quan' => 'ky_gui',
+                        'doi_tuong_id' => $kyGui->id,
+                        'thoi_diem_gui' => now(),
+                    ]);
                 } catch (\Throwable $e) {
                     Log::error('Gui email ky gui that bai', [
                         'ky_gui_id' => $kyGui->id,
                         'email' => $sendToEmail,
                         'error' => $e->getMessage(),
+                    ]);
+
+                    NhatKyEmail::create([
+                        'khach_hang_id' => $kyGui->khach_hang_id,
+                        'nhan_vien_id' => null,
+                        'loai_email' => 'ky_gui',
+                        'email_nguoi_nhan' => $sendToEmail,
+                        'tieu_de' => 'Xác nhận tiếp nhận yêu cầu ký gửi',
+                        'noi_dung' => null,
+                        'trang_thai' => 'that_bai',
+                        'loi' => mb_substr($e->getMessage(), 0, 1000),
+                        'doi_tuong_lien_quan' => 'ky_gui',
+                        'doi_tuong_id' => $kyGui->id,
+                        'thoi_diem_gui' => now(),
                     ]);
                 }
             })->afterResponse();

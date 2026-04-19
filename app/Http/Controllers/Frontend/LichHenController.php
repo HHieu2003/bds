@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Mail\DatLichXemNhaMail;
 use App\Models\LichHen;
 use App\Models\BatDongSan;
+use App\Models\NhatKyEmail;
 use App\Models\ThongBao;
 use App\Models\NhanVien;
 use Illuminate\Http\Request;
@@ -67,11 +68,41 @@ class LichHenController extends Controller
         if ($emailKhach) {
             try {
                 $lichHen->load('batDongSan');
-                Mail::to($emailKhach)->send(new DatLichXemNhaMail($lichHen));
+                $mail = new DatLichXemNhaMail($lichHen);
+                $noiDung = $mail->render();
+
+                Mail::to($emailKhach)->send($mail);
+
+                NhatKyEmail::create([
+                    'khach_hang_id' => $khachHangId,
+                    'nhan_vien_id' => null,
+                    'loai_email' => 'dat_lich_hen',
+                    'email_nguoi_nhan' => $emailKhach,
+                    'tieu_de' => 'Xác nhận đặt lịch xem nhà',
+                    'noi_dung' => $noiDung,
+                    'trang_thai' => 'thanh_cong',
+                    'doi_tuong_lien_quan' => 'lich_hen',
+                    'doi_tuong_id' => $lichHen->id,
+                    'thoi_diem_gui' => now(),
+                ]);
             } catch (\Throwable $e) {
                 Log::error('Không gửi được email xác nhận đặt lịch.', [
                     'email' => $emailKhach,
                     'error' => $e->getMessage(),
+                ]);
+
+                NhatKyEmail::create([
+                    'khach_hang_id' => $khachHangId,
+                    'nhan_vien_id' => null,
+                    'loai_email' => 'dat_lich_hen',
+                    'email_nguoi_nhan' => $emailKhach,
+                    'tieu_de' => 'Xác nhận đặt lịch xem nhà',
+                    'noi_dung' => null,
+                    'trang_thai' => 'that_bai',
+                    'loi' => mb_substr($e->getMessage(), 0, 1000),
+                    'doi_tuong_lien_quan' => 'lich_hen',
+                    'doi_tuong_id' => $lichHen->id,
+                    'thoi_diem_gui' => now(),
                 ]);
                 // Không throw — lịch hẹn đã được tạo, chỉ log lỗi mail
             }
