@@ -115,20 +115,27 @@ class BatDongSanObserver
                 if (is_null($khuVucId) || $dk->khu_vuc_id != $khuVucId) continue;
             }
 
-            // ── BUG FIX 2: Kiểm tra Số phòng ngủ — cast về string để tránh type mismatch
+            // ── BUG FIX 2: Kiểm tra Số phòng ngủ — Xử lý các chuỗi phức tạp như "2n2vs+", "3 PN"
             if ($dk->so_phong_ngu) {
-                $bdsPhong = (string) $bds->so_phong_ngu; // int→string, 'studio'→'studio'
+                $bdsPhong = strtolower(trim((string) $bds->so_phong_ngu));
                 $dkPhong  = (string) $dk->so_phong_ngu;
 
+                $isStudio = ($bdsPhong === 'studio' || $bdsPhong === '0');
+                
+                // Trích xuất số đầu tiên tìm thấy trong chuỗi BĐS (VD: "2n2vs+" -> 2)
+                preg_match('/\d+/', $bdsPhong, $matches);
+                $bdsNum = !empty($matches) ? (int)$matches[0] : 0;
+
                 if ($dkPhong === '3') {
-                    // "3+" nghĩa là >= 3 phòng ngủ
-                    if (!is_numeric($bdsPhong) || (int) $bdsPhong < 3) continue;
+                    // Đăng ký 3+: BĐS phải có số >= 3 và không phải studio
+                    if ($isStudio || $bdsNum < 3) continue;
                 } elseif ($dkPhong === 'studio') {
-                    // Studio: phòng ngủ = 0 hoặc chuỗi 'studio'
-                    if ($bdsPhong !== 'studio' && $bdsPhong !== '0') continue;
+                    // Đăng ký Studio: BĐS phải là studio
+                    if (!$isStudio) continue;
                 } else {
-                    // So sánh chính xác 1 hoặc 2
-                    if ($bdsPhong !== $dkPhong) continue;
+                    // Đăng ký 1 hoặc 2: Số lấy ra phải khớp và không phải studio
+                    $dkNum = (int) $dkPhong;
+                    if ($isStudio || $bdsNum !== $dkNum) continue;
                 }
             }
 
