@@ -272,8 +272,8 @@
             <table class="table table-hover align-middle mb-0" style="table-layout: fixed; width: 100%;">
                 <thead class="table-light">
                     <tr>
-                        <th style="width: 25%">Khách hàng</th>
-                        <th style="width: 22%">Ngữ cảnh tư vấn</th>
+                        <th style="width: 32%">Khách hàng</th>
+                        <th style="width: 20%">Ngữ cảnh tư vấn</th>
                         <th style="width: 25%">Tiến độ / Ghi chú</th>
                         <th class="text-center" style="width: 150px">Phụ trách</th>
                         <th class="text-center" style="width: 100px">Thao tác</th>

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Frontend;
 
 use App\Http\Controllers\Controller;
+use App\Models\DuAn;
 use App\Models\KyGui;
 use App\Mail\KyGuiSuccessMail; // Import Class Mail vừa tạo
 use Illuminate\Http\Request;
@@ -15,7 +16,13 @@ class KyGuiController extends Controller
 {
     public function create()
     {
-        return view('frontend.ky-gui.create');
+        $duAnGoiY = DuAn::hienThi()
+            ->orderBy('ten_du_an')
+            ->pluck('ten_du_an')
+            ->filter()
+            ->values();
+
+        return view('frontend.ky-gui.create', compact('duAnGoiY'));
     }
 
     public function store(Request $request)

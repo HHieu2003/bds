@@ -52,17 +52,30 @@ class DangKyNhanTinController extends Controller
 
         try {
             $result = DB::transaction(function () use ($validated, $email, $khachHangId, $now) {
+                // Tìm bản ghi cùng EMAIL + đúng tiêu chí + cùng khách hàng (nếu đã login)
+                // Ưu tiên bản ghi của chính khách đang login, sau đó fallback sang email không có tài khoản
                 $query = DB::table('dang_ky_nhan_tin')
                     ->whereRaw('LOWER(email) = ?', [$email])
-                    ->where('nhu_cau', $validated['nhu_cau'] ?? null)
-                    ->where('khu_vuc_id', $validated['khu_vuc_id'] ?? null)
-                    ->where('du_an_id', $validated['du_an_id'] ?? null)
-                    ->where('bat_dong_san_id', $validated['bat_dong_san_id'] ?? null)
-                    ->where('so_phong_ngu', $validated['so_phong_ngu'] ?? null)
-                    ->where('muc_gia_tu', $validated['muc_gia_tu'] ?? null)
-                    ->where('muc_gia_den', $validated['muc_gia_den'] ?? null);
+                    ->where('nhu_cau',          $validated['nhu_cau']          ?? null)
+                    ->where('khu_vuc_id',       $validated['khu_vuc_id']       ?? null)
+                    ->where('du_an_id',         $validated['du_an_id']         ?? null)
+                    ->where('bat_dong_san_id',  $validated['bat_dong_san_id']  ?? null)
+                    ->where('so_phong_ngu',     $validated['so_phong_ngu']     ?? null)
+                    ->where('muc_gia_tu',       $validated['muc_gia_tu']       ?? null)
+                    ->where('muc_gia_den',      $validated['muc_gia_den']      ?? null);
 
-                $existing = $query->lockForUpdate()->orderByDesc('id')->first();
+                // Nếu đang login: ưu tiên tìm bản ghi của chính mình trước
+                if ($khachHangId) {
+                    $existing = (clone $query)->where('khach_hang_id', $khachHangId)
+                        ->lockForUpdate()->orderByDesc('id')->first();
+                    // Nếu không có bản ghi của mình → kiểm tra cùng email chưa login
+                    if (!$existing) {
+                        $existing = $query->whereNull('khach_hang_id')
+                            ->lockForUpdate()->orderByDesc('id')->first();
+                    }
+                } else {
+                    $existing = $query->lockForUpdate()->orderByDesc('id')->first();
+                }
 
                 $payload = [
                     'khach_hang_id' => $khachHangId ?: ($existing->khach_hang_id ?? null),

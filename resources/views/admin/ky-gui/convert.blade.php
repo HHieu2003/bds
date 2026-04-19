@@ -3,7 +3,8 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css"
+        rel="stylesheet" />
     <style>
         .select2-container .select2-selection--single {
             height: calc(2.25rem + 2px);
@@ -11,6 +12,7 @@
             display: flex;
             align-items: center;
         }
+
         .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
             padding-left: 0;
         }
@@ -43,11 +45,11 @@
                             @php
                                 $prefix = $kyGui->nhu_cau === 'ban' ? 'Bán' : 'Cho thuê';
                                 $loaiHinhLabel = str_replace('_', ' ', ucfirst($kyGui->loai_hinh));
-                                $defaultTieuDe = $prefix . ' ' . $loaiHinhLabel . ($kyGui->dia_chi ? ' - ' . $kyGui->dia_chi : '');
+                                $defaultTieuDe =
+                                    $prefix . ' ' . $loaiHinhLabel . ($kyGui->dia_chi ? ' - ' . $kyGui->dia_chi : '');
                             @endphp
                             <input type="text" name="tieu_de" class="form-control form-control-lg text-primary fw-bold"
-                                value="{{ old('tieu_de', $defaultTieuDe) }}"
-                                required>
+                                value="{{ old('tieu_de', $defaultTieuDe) }}" required>
                         </div>
 
                         <div class="row g-4 mb-4">
@@ -74,16 +76,22 @@
                                 <select name="du_an_id" class="form-select border-warning select2-du-an">
                                     <option value="">-- Không thuộc dự án --</option>
                                     @foreach ($duAns as $da)
-                                        <option value="{{ $da->id }}">{{ $da->ten_du_an }}</option>
+                                        <option value="{{ $da->id }}" @selected((string) old('du_an_id', $duAnMatchedId ?? '') === (string) $da->id)>
+                                            {{ $da->ten_du_an }}</option>
                                     @endforeach
                                 </select>
+                                @if (!empty($kyGui->du_an))
+                                    <div class="form-text">Dự án khách đã nhập: <strong>{{ $kyGui->du_an }}</strong></div>
+                                @endif
                             </div>
                         </div>
 
                         {{-- Giá + trường điều kiện: hiện/ẩn theo nhu cầu --}}
-                        <div id="blockBan" class="row g-4 mb-4" style="{{ old('nhu_cau', $kyGui->nhu_cau) === 'ban' ? '' : 'display:none!important' }}">
+                        <div id="blockBan" class="row g-4 mb-4"
+                            style="{{ old('nhu_cau', $kyGui->nhu_cau) === 'ban' ? '' : 'display:none!important' }}">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Giá Bán (VNĐ) <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold">Giá Bán (VNĐ) <span
+                                        class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="gia" id="inputGia" class="form-control fw-bold"
                                         value="{{ old('gia', $kyGui->nhu_cau == 'ban' ? $kyGui->gia_ban_mong_muon : '') }}"
@@ -95,49 +103,67 @@
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Pháp lý</label>
                                 <input type="text" name="phap_ly" class="form-control"
-                                    value="{{ old('phap_ly', $kyGui->phap_ly) }}"
-                                    placeholder="Sổ hồng, Sổ đỏ...">
+                                    value="{{ old('phap_ly', $kyGui->phap_ly) }}" placeholder="Sổ hồng, Sổ đỏ...">
                             </div>
                         </div>
 
-                        <div id="blockThue" class="row g-4 mb-4" style="{{ old('nhu_cau', $kyGui->nhu_cau) === 'thue' ? '' : 'display:none!important' }}">
+                        <div id="blockThue" class="row g-4 mb-4"
+                            style="{{ old('nhu_cau', $kyGui->nhu_cau) === 'thue' ? '' : 'display:none!important' }}">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Giá Thuê (VNĐ/Tháng) <span class="text-danger">*</span></label>
+                                <label class="form-label fw-semibold">Giá Thuê (VNĐ/Tháng) <span
+                                        class="text-danger">*</span></label>
                                 <div class="input-group">
                                     <input type="number" name="gia_thue" id="inputGiaThue" class="form-control fw-bold"
                                         value="{{ old('gia_thue', $kyGui->nhu_cau == 'thue' ? $kyGui->gia_thue_mong_muon : '') }}"
                                         placeholder="Ví dụ: 15000000" min="0">
                                     <span class="input-group-text text-muted" style="font-size:.8rem;">VNĐ/th</span>
                                 </div>
-                                <div class="text-muted mt-1" style="font-size:.75rem;" id="giaThuеLabel"></div>
+                                <div class="text-muted mt-1" style="font-size:.75rem;" id="giaThueLabel"></div>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Hình thức thanh toán</label>
                                 <select name="hinh_thuc_thanh_toan" class="form-select">
                                     <option value="">-- Chọn --</option>
-                                    @foreach(['thang' => 'Thanh toán theo tháng', 'quy' => 'Thanh toán theo quý', 'nam_1' => 'Thanh toán 1 năm/lần'] as $htVal => $htLabel)
-                                        <option value="{{ $htVal }}" {{ old('hinh_thuc_thanh_toan', $kyGui->hinh_thuc_thanh_toan ?? '') == $htVal ? 'selected' : '' }}>{{ $htLabel }}</option>
+                                    @foreach (['thang' => 'Thanh toán theo tháng', 'quy' => 'Thanh toán theo quý', 'nam_1' => 'Thanh toán 1 năm/lần'] as $htVal => $htLabel)
+                                        <option value="{{ $htVal }}"
+                                            {{ old('hinh_thuc_thanh_toan', $kyGui->hinh_thuc_thanh_toan ?? '') == $htVal ? 'selected' : '' }}>
+                                            {{ $htLabel }}</option>
                                     @endforeach
                                 </select>
                             </div>
                         </div>
 
                         <div class="row g-3 mb-4 bg-light p-3 rounded">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold">Diện tích (m²)<span class="text-danger">*</span></label>
+                                <input type="number" step="0.01" min="1" name="dien_tich"
+                                    class="form-control" value="{{ old('dien_tich', $kyGui->dien_tich) }}" required
+                                    placeholder="VD: 55.5">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label">Mã căn</label>
+                                <input type="text" name="ma_can" class="form-control"
+                                    value="{{ old('ma_can', $kyGui->ma_can_ho ?? ($kyGui->ma_can ?? '')) }}"
+                                    placeholder="VD: A1-05">
+                            </div>
+                            <div class="col-md-2">
                                 <label class="form-label">Phòng ngủ</label>
-                                <input type="number" min="0" name="so_phong_ngu" class="form-control"
-                                    value="{{ $kyGui->so_phong_ngu }}">
+                                <input type="text" name="so_phong_ngu" class="form-control"
+                                    value="{{ old('so_phong_ngu', $kyGui->so_phong_ngu) }}" placeholder="VD: 2, Studio">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-2">
                                 <label class="form-label">Tầng</label>
-                                <input type="text" name="tang" class="form-control" value="{{ $kyGui->tang }}">
+                                <input type="text" name="tang" class="form-control"
+                                    value="{{ old('tang', $kyGui->tang) }}">
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label class="form-label">Nội thất</label>
                                 <select name="noi_that" class="form-select">
                                     <option value="">-- Chọn --</option>
-                                    @foreach(['full' => 'Full nội thất', 'co_ban' => 'Nội thất cơ bản', 'tho' => 'Thô (chưa có NT)'] as $v => $l)
-                                        <option value="{{ $v }}" {{ $kyGui->noi_that == $v ? 'selected' : '' }}>{{ $l }}</option>
+                                    @foreach (['full' => 'Full nội thất', 'co_ban' => 'Nội thất cơ bản', 'tho' => 'Thô (chưa có NT)'] as $v => $l)
+                                        <option value="{{ $v }}"
+                                            {{ old('noi_that', $kyGui->noi_that) == $v ? 'selected' : '' }}>
+                                            {{ $l }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -288,87 +314,107 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
-        $(document).ready(function() {
-            $('.select2-du-an').select2({
-                theme: 'bootstrap-5',
-                placeholder: '-- Không thuộc dự án --',
-                allowClear: true,
-                width: '100%'
-            });
-        });
-
-        // ── Toggle giá + trường theo Nhu cầu ───────────────────────
-        const selectNhuCau  = document.querySelector('select[name="nhu_cau"]');
-        const blockBan      = document.getElementById('blockBan');
-        const blockThue     = document.getElementById('blockThue');
-
-        function toggleNhuCau(val) {
-            if (val === 'ban') {
-                blockBan.style.removeProperty('display');
-                blockThue.style.display = 'none';
-            } else {
-                blockThue.style.removeProperty('display');
-                blockBan.style.display = 'none';
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.jQuery && window.jQuery.fn && window.jQuery.fn.select2) {
+                window.jQuery('.select2-du-an').select2({
+                    theme: 'bootstrap-5',
+                    placeholder: '-- Không thuộc dự án --',
+                    allowClear: true,
+                    width: '100%'
+                });
             }
-        }
 
-        selectNhuCau.addEventListener('change', function () {
-            toggleNhuCau(this.value);
-        });
+            const form = document.getElementById('kgAdminForm');
+            const selectNhuCau = document.querySelector('select[name="nhu_cau"]');
+            const blockBan = document.getElementById('blockBan');
+            const blockThue = document.getElementById('blockThue');
+            const btnLuuKyGui = document.getElementById('btnLuuKyGui');
+            const btnXacNhanSubmit = document.getElementById('btnXacNhanSubmit');
+            const modalEl = document.getElementById('modalXacNhanLuu');
 
-        // ── Format giá hiển thị ─────────────────────────────────────
-        // Giá BÁN: hiển thị Tỷ hoặc Triệu (không có "/tháng")
-        function formatGiaBan(val) {
-            if (!val || isNaN(val)) return '';
-            const n = parseFloat(val);
-            if (n >= 1e9)  return '≈ ' + (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + ' Tỷ';
-            if (n >= 1e6)  return '≈ ' + (n / 1e6).toFixed(1).replace(/\.?0+$/, '') + ' Triệu';
-            if (n >= 1e3)  return '≈ ' + (n / 1e3).toFixed(0) + ' Nghìn';
-            return '';
-        }
+            function toggleNhuCau(val) {
+                if (!blockBan || !blockThue) return;
+                if (val === 'ban') {
+                    blockBan.style.removeProperty('display');
+                    blockThue.style.display = 'none';
+                } else {
+                    blockThue.style.removeProperty('display');
+                    blockBan.style.display = 'none';
+                }
+            }
 
-        // Giá THUÊ: hiển thị Triệu/tháng hoặc Nghìn/tháng
-        function formatGiaThue(val) {
-            if (!val || isNaN(val)) return '';
-            const n = parseFloat(val);
-            if (n >= 1e6)  return '≈ ' + (n / 1e6).toFixed(1).replace(/\.?0+$/, '') + ' Triệu/tháng';
-            if (n >= 1e3)  return '≈ ' + (n / 1e3).toFixed(0) + ' Nghìn/tháng';
-            return '';
-        }
+            if (selectNhuCau) {
+                selectNhuCau.addEventListener('change', function() {
+                    toggleNhuCau(this.value);
+                });
+                toggleNhuCau(selectNhuCau.value);
+            }
 
-        const inputGia     = document.getElementById('inputGia');
-        const inputGiaThue = document.getElementById('inputGiaThue');
-        const giaLabel     = document.getElementById('giaLabel');
-        const giaThuLabel  = document.getElementById('giaThu\u0435Label');
+            // Giá BÁN: hiển thị Tỷ hoặc Triệu (không có "/tháng")
+            function formatGiaBan(val) {
+                if (!val || isNaN(val)) return '';
+                const n = parseFloat(val);
+                if (n >= 1e9) return '≈ ' + (n / 1e9).toFixed(2).replace(/\.?0+$/, '') + ' Tỷ';
+                if (n >= 1e6) return '≈ ' + (n / 1e6).toFixed(1).replace(/\.?0+$/, '') + ' Triệu';
+                if (n >= 1e3) return '≈ ' + (n / 1e3).toFixed(0) + ' Nghìn';
+                return '';
+            }
 
-        if (inputGia) {
-            inputGia.addEventListener('input', function () {
-                if (giaLabel) giaLabel.textContent = formatGiaBan(this.value);
-            });
-            // Hiển thị ngay khi load trang
-            if (giaLabel) giaLabel.textContent = formatGiaBan(inputGia.value);
-        }
-        if (inputGiaThue) {
-            inputGiaThue.addEventListener('input', function () {
-                if (giaThuLabel) giaThuLabel.textContent = formatGiaThue(this.value);
-            });
-            if (giaThuLabel) giaThuLabel.textContent = formatGiaThue(inputGiaThue.value);
-        }
+            // Giá THUÊ: hiển thị Triệu/tháng hoặc Nghìn/tháng
+            function formatGiaThue(val) {
+                if (!val || isNaN(val)) return '';
+                const n = parseFloat(val);
+                if (n >= 1e6) return '≈ ' + (n / 1e6).toFixed(1).replace(/\.?0+$/, '') + ' Triệu/tháng';
+                if (n >= 1e3) return '≈ ' + (n / 1e3).toFixed(0) + ' Nghìn/tháng';
+                return '';
+            }
 
+            const inputGia = document.getElementById('inputGia');
+            const inputGiaThue = document.getElementById('inputGiaThue');
+            const giaLabel = document.getElementById('giaLabel');
+            const giaThuLabel = document.getElementById('giaThueLabel');
 
-        // ── Mở modal khi click nút LƯU ─────────────────────────────
-        document.getElementById('btnLuuKyGui').addEventListener('click', function() {
-            var modal = new bootstrap.Modal(document.getElementById('modalXacNhanLuu'));
-            modal.show();
-        });
+            if (inputGia) {
+                inputGia.addEventListener('input', function() {
+                    if (giaLabel) giaLabel.textContent = formatGiaBan(this.value);
+                });
+                if (giaLabel) giaLabel.textContent = formatGiaBan(inputGia.value);
+            }
+            if (inputGiaThue) {
+                inputGiaThue.addEventListener('input', function() {
+                    if (giaThuLabel) giaThuLabel.textContent = formatGiaThue(this.value);
+                });
+                if (giaThuLabel) giaThuLabel.textContent = formatGiaThue(inputGiaThue.value);
+            }
 
-        // ── Submit form khi xác nhận trong modal ───────────────────
-        document.getElementById('btnXacNhanSubmit').addEventListener('click', function() {
-            document.getElementById('btnSubmitText').classList.add('d-none');
-            document.getElementById('btnSubmitLoading').classList.remove('d-none');
-            this.disabled = true;
-            document.getElementById('kgAdminForm').submit();
+            if (btnLuuKyGui) {
+                btnLuuKyGui.addEventListener('click', function() {
+                    if (window.bootstrap && modalEl) {
+                        const modal = new window.bootstrap.Modal(modalEl);
+                        modal.show();
+                        return;
+                    }
+
+                    if (form) {
+                        form.submit();
+                    }
+                });
+            }
+
+            if (btnXacNhanSubmit) {
+                btnXacNhanSubmit.addEventListener('click', function() {
+                    const btnSubmitText = document.getElementById('btnSubmitText');
+                    const btnSubmitLoading = document.getElementById('btnSubmitLoading');
+
+                    if (btnSubmitText) btnSubmitText.classList.add('d-none');
+                    if (btnSubmitLoading) btnSubmitLoading.classList.remove('d-none');
+
+                    this.disabled = true;
+                    if (form) {
+                        form.submit();
+                    }
+                });
+            }
         });
     </script>
 @endpush
-

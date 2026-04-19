@@ -141,7 +141,13 @@
                             <div class="kg-fe-fg">
                                 <label class="kg-fe-lbl">Dự án</label>
                                 <input type="text" name="du_an" class="kg-fe-fi @error('du_an') err @enderror"
-                                    value="{{ old('du_an') }}" placeholder="VD: Mỹ đình Pearl">
+                                    value="{{ old('du_an') }}" placeholder="VD: Mỹ Đình Pearl" list="du-an-goi-y"
+                                    autocomplete="off">
+                                <datalist id="du-an-goi-y">
+                                    @foreach ($duAnGoiY ?? [] as $tenDuAn)
+                                        <option value="{{ $tenDuAn }}"></option>
+                                    @endforeach
+                                </datalist>
                                 @error('du_an')
                                     <div class="kg-fe-err"><i class="fas fa-times-circle"></i> {{ $message }}</div>
                                 @enderror

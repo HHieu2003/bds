@@ -19,50 +19,12 @@ class BatDongSanObserver
     {
         Log::info("Observer: Vừa nhận thấy BĐS mới ID " . $bds->id);
 
-        // Bỏ qua nếu BĐS không hiển thị hoặc không còn hàng
         if (!$bds->hien_thi || $bds->trang_thai != 'con_hang') {
             Log::warning("Observer: BĐS mới không đủ điều kiện (ẩn hoặc hết hàng)");
             return;
         }
 
-        $giaHienTai = $bds->nhu_cau == 'ban' ? $bds->gia : $bds->gia_thue;
-        $khuVucId = $bds->duAn?->khu_vuc_id;
-
-        // Tìm tất cả khách hàng đăng ký "Theo dõi tiêu chí" (Không fix cứng ID căn hộ)
-        $danhSachDangKy = DB::table('dang_ky_nhan_tin')->where('trang_thai', 1)
-            ->whereNull('bat_dong_san_id')
-            ->get();
-
-        Log::info("Observer: Tìm thấy " . $danhSachDangKy->count() . " khách hàng đang chờ tin.");
-
-        foreach ($danhSachDangKy as $dk) {
-            $isMatch = true;
-
-            // Kiểm tra Nhu cầu (Mua/Thuê)
-            if ($dk->nhu_cau && $dk->nhu_cau != $bds->nhu_cau) $isMatch = false;
-
-            // Kiểm tra Dự án
-            if ($dk->du_an_id && $dk->du_an_id != $bds->du_an_id) $isMatch = false;
-
-            // Kiểm tra Khu vực
-            if ($dk->khu_vuc_id && $dk->khu_vuc_id != $khuVucId) $isMatch = false;
-
-            // Kiểm tra Số phòng ngủ (Nếu khách chọn 3PN+ thì check >=3)
-            if ($dk->so_phong_ngu) {
-                if ($dk->so_phong_ngu == '3' && $bds->so_phong_ngu < 3) $isMatch = false;
-                elseif ($dk->so_phong_ngu != '3' && $dk->so_phong_ngu != $bds->so_phong_ngu) $isMatch = false;
-            }
-
-            // Kiểm tra Khoảng giá
-            if ($dk->muc_gia_tu && $giaHienTai < $dk->muc_gia_tu) $isMatch = false;
-            if ($dk->muc_gia_den && $giaHienTai > $dk->muc_gia_den) $isMatch = false;
-
-            // Nếu khớp 100% tiêu chí -> Gửi Mail!
-            if ($isMatch) {
-                Log::info("Observer: Khớp tiêu chí! Đang bắn email BĐS MỚI tới " . $dk->email);
-                Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, 'BdsMoi'));
-            }
-        }
+        $this->guiMailTheoTieuChi($bds, 'BdsMoi');
     }
 
     /**
@@ -70,32 +32,120 @@ class BatDongSanObserver
      */
     public function updated(BatDongSan $bds)
     {
+        // ── Trường hợp 1: BĐS được tái kích hoạt (ẩn/hết hàng → hiển thị + còn hàng)
+        $vuaKichHoat = ($bds->wasChanged('hien_thi') || $bds->wasChanged('trang_thai'))
+            && $bds->hien_thi
+            && $bds->trang_thai == 'con_hang';
+
+        if ($vuaKichHoat) {
+            Log::info("Observer: BĐS ID {$bds->id} vừa được tái kích hoạt → gửi mail tiêu chí chung.");
+            $this->guiMailTheoTieuChi($bds, 'BdsMoi');
+            return; // Không cần check thay đổi giá nếu vừa tái kích hoạt
+        }
+
+        // ── Trường hợp 2: BĐS thay đổi giá (chỉ khi đang hiển thị và còn hàng)
+        if (!$bds->hien_thi || $bds->trang_thai != 'con_hang') return;
+
         if (!($bds->gui_mail_canh_bao_gia ?? true)) {
             Log::info('Observer: BDS ID ' . $bds->id . ' đã tắt gửi mail cảnh báo giá.');
             return;
         }
 
-        // Bỏ qua nếu BĐS không hiển thị hoặc không còn hàng
-        if (!$bds->hien_thi || $bds->trang_thai != 'con_hang') return;
-
-        // Kiểm tra xem giá Bán hoặc giá Thuê có bị thay đổi không?
         if ($bds->wasChanged('gia') || $bds->wasChanged('gia_thue')) {
+            $giaCu  = $bds->wasChanged('gia')      ? $bds->getOriginal('gia')      : $bds->getOriginal('gia_thue');
+            $giaMoi = $bds->wasChanged('gia')      ? $bds->gia                     : $bds->gia_thue;
 
-            $giaCu = $bds->wasChanged('gia') ? $bds->getOriginal('gia') : $bds->getOriginal('gia_thue');
-            $giaMoi = $bds->wasChanged('gia') ? $bds->gia : $bds->gia_thue;
-
-            // Gửi cảnh báo khi giá có thay đổi (tăng hoặc giảm)
-            $danhSachQuanTam = DB::table('dang_ky_nhan_tin')->where('trang_thai', 1)
+            $danhSachQuanTam = DB::table('dang_ky_nhan_tin')
+                ->where('trang_thai', 1)
                 ->where('bat_dong_san_id', $bds->id)
                 ->get();
 
             if ($danhSachQuanTam->count() > 0) {
-                Log::info("Observer: BĐS ID " . $bds->id . " vừa thay đổi giá. Đang chuẩn bị gửi email cho " . $danhSachQuanTam->count() . " người.");
+                Log::info("Observer: BĐS ID {$bds->id} vừa thay đổi giá từ {$giaCu} → {$giaMoi}. Gửi email cho {$danhSachQuanTam->count()} người.");
             }
 
             foreach ($danhSachQuanTam as $dk) {
-                Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, 'CapNhatGia', $giaCu));
+                try {
+                    Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, 'CapNhatGia', $giaCu));
+                } catch (\Throwable $e) {
+                    Log::error("Observer: Lỗi gửi mail CapNhatGia tới {$dk->email}: " . $e->getMessage());
+                }
             }
         }
+    }
+
+    /**
+     * Gửi email thông báo BĐS mới cho tất cả khách đăng ký theo tiêu chí chung.
+     * Được dùng cả khi tạo mới lẫn khi tái kích hoạt BĐS.
+     */
+    private function guiMailTheoTieuChi(BatDongSan $bds, string $loai = 'BdsMoi'): void
+    {
+        $giaHienTai = $bds->nhu_cau == 'ban' ? $bds->gia : $bds->gia_thue;
+
+        // BUG FIX 1: khu_vuc_id của BĐS — ưu tiên khu vực của DuAn (nếu có),
+        // nếu không có dự án thì BĐS nhà lẻ không có khu vực → $khuVucId = null
+        // Khi null, đăng ký có khu_vuc_id ≠ null sẽ bị loại → đúng hành vi mong muốn
+        $khuVucId = $bds->duAn?->khu_vuc_id;
+
+        // Eager load duAn nếu chưa load để tránh N+1
+        if (!$bds->relationLoaded('duAn')) {
+            $bds->load('duAn');
+            $khuVucId = $bds->duAn?->khu_vuc_id;
+        }
+
+        $danhSachDangKy = DB::table('dang_ky_nhan_tin')
+            ->where('trang_thai', 1)
+            ->whereNull('bat_dong_san_id')
+            ->get();
+
+        Log::info("Observer [{$loai}]: Kiểm tra {$danhSachDangKy->count()} đăng ký tiêu chí chung cho BĐS ID {$bds->id}.");
+
+        $soGuiThanhCong = 0;
+        foreach ($danhSachDangKy as $dk) {
+
+            // ── Kiểm tra Nhu cầu (Mua/Thuê)
+            if ($dk->nhu_cau && $dk->nhu_cau !== $bds->nhu_cau) continue;
+
+            // ── Kiểm tra Dự án
+            if ($dk->du_an_id && $dk->du_an_id != $bds->du_an_id) continue;
+
+            // ── Kiểm tra Khu vực
+            // Nếu khách đăng ký theo khu vực mà BĐS không có khu vực → bỏ qua
+            if ($dk->khu_vuc_id) {
+                if (is_null($khuVucId) || $dk->khu_vuc_id != $khuVucId) continue;
+            }
+
+            // ── BUG FIX 2: Kiểm tra Số phòng ngủ — cast về string để tránh type mismatch
+            if ($dk->so_phong_ngu) {
+                $bdsPhong = (string) $bds->so_phong_ngu; // int→string, 'studio'→'studio'
+                $dkPhong  = (string) $dk->so_phong_ngu;
+
+                if ($dkPhong === '3') {
+                    // "3+" nghĩa là >= 3 phòng ngủ
+                    if (!is_numeric($bdsPhong) || (int) $bdsPhong < 3) continue;
+                } elseif ($dkPhong === 'studio') {
+                    // Studio: phòng ngủ = 0 hoặc chuỗi 'studio'
+                    if ($bdsPhong !== 'studio' && $bdsPhong !== '0') continue;
+                } else {
+                    // So sánh chính xác 1 hoặc 2
+                    if ($bdsPhong !== $dkPhong) continue;
+                }
+            }
+
+            // ── Kiểm tra Khoảng giá
+            if ($dk->muc_gia_tu && $giaHienTai < $dk->muc_gia_tu) continue;
+            if ($dk->muc_gia_den && $giaHienTai > $dk->muc_gia_den) continue;
+
+            // ── Khớp 100% → Gửi Mail
+            try {
+                Mail::to($dk->email)->queue(new ThongBaoBatDongSanMail($bds, $loai));
+                $soGuiThanhCong++;
+                Log::info("Observer [{$loai}]: Gửi email tới {$dk->email} (DK ID {$dk->id})");
+            } catch (\Throwable $e) {
+                Log::error("Observer [{$loai}]: Lỗi gửi mail tới {$dk->email}: " . $e->getMessage());
+            }
+        }
+
+        Log::info("Observer [{$loai}]: Hoàn tất — gửi {$soGuiThanhCong}/{$danhSachDangKy->count()} email.");
     }
 }

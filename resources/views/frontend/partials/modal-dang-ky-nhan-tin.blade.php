@@ -81,7 +81,7 @@
                 <select name="du_an_id" id="dk_du_an_id" class="kh-field-input" style="cursor: pointer;">
                     <option value="">-- Tất cả dự án --</option>
                     @foreach (\App\Models\DuAn::where('hien_thi', 1)->orderBy('ten_du_an')->get() as $da)
-                        <option value="{{ $da->id }}">{{ $da->ten_du_an }}</option>
+                        <option value="{{ $da->id }}" data-khu-vuc="{{ $da->khu_vuc_id }}">{{ $da->ten_du_an }}</option>
                     @endforeach
                 </select>
                 <div class="kh-field-err" id="err_dk_du_an_id"></div>
@@ -358,4 +358,60 @@
             btn.disabled = false;
         }
     }
+
+    // Logic đồng bộ Khu Vực và Dự Án
+    document.addEventListener('DOMContentLoaded', function() {
+        const khuVucSelect = document.getElementById('dk_khu_vuc_id');
+        const duAnSelect = document.getElementById('dk_du_an_id');
+        
+        if (khuVucSelect && duAnSelect) {
+            // Lưu lại tất cả các option ban đầu
+            const allDuAnOptions = Array.from(duAnSelect.options).map(opt => ({
+                value: opt.value,
+                text: opt.text,
+                khuVucId: opt.getAttribute('data-khu-vuc')
+            }));
+
+            khuVucSelect.addEventListener('change', function() {
+                const selectedKhuVuc = this.value;
+                const currentSelectedDuAn = duAnSelect.value;
+                
+                // Xoá hết options hiện tại
+                duAnSelect.innerHTML = '';
+                
+                // Thêm lại các options phù hợp
+                allDuAnOptions.forEach(opt => {
+                    if (opt.value === '' || !selectedKhuVuc || opt.khuVucId === selectedKhuVuc) {
+                        const newOption = document.createElement('option');
+                        newOption.value = opt.value;
+                        newOption.text = opt.text;
+                        if (opt.khuVucId) newOption.setAttribute('data-khu-vuc', opt.khuVucId);
+                        duAnSelect.appendChild(newOption);
+                    }
+                });
+
+                // Cố gắng giữ lại giá trị đang chọn nếu nó vẫn hợp lệ
+                if (currentSelectedDuAn) {
+                    const exists = Array.from(duAnSelect.options).some(opt => opt.value === currentSelectedDuAn);
+                    if (exists) {
+                        duAnSelect.value = currentSelectedDuAn;
+                    } else {
+                        duAnSelect.value = '';
+                    }
+                }
+            });
+
+            duAnSelect.addEventListener('change', function() {
+                const selectedOption = this.options[this.selectedIndex];
+                if (selectedOption && selectedOption.value !== '') {
+                    const khuVucId = selectedOption.getAttribute('data-khu-vuc');
+                    if (khuVucId && khuVucSelect.value !== khuVucId) {
+                        khuVucSelect.value = khuVucId;
+                        khuVucSelect.dispatchEvent(new Event('change'));
+                        duAnSelect.value = selectedOption.value; // Khôi phục lại selection sau khi danh sách reload
+                    }
+                }
+            });
+        }
+    });
 </script>

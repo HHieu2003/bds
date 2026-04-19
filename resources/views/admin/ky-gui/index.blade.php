@@ -103,12 +103,30 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="col-6 col-md-2">
+                    <select name="khu_vuc_id" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Khu vực</option>
+                        @foreach ($khuVucs as $kv)
+                            <option value="{{ $kv->id }}" @selected(request('khu_vuc_id') == $kv->id)>{{ $kv->ten_khu_vuc }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 col-md-2">
+                    <select name="du_an_id" class="filter-ctrl w-100 filter-auto-submit">
+                        <option value="">Dự án</option>
+                        @foreach ($duAns as $duAn)
+                            <option value="{{ $duAn->id }}" @selected(request('du_an_id') == $duAn->id)>{{ $duAn->ten_du_an }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
                 <div class="col-6 col-md-1">
                     <button type="submit" class="btn btn-navy btn-sm px-3 w-100 h-100"><i class="fas fa-search"></i>
                         Lọc</button>
                 </div>
                 <div class="col-6 col-md-1">
-                    @if (request()->hasAny(['tim_kiem', 'trang_thai', 'nhan_vien_id', 'sapxep']))
+                    @if (request()->hasAny(['tim_kiem', 'trang_thai', 'nhan_vien_id', 'khu_vuc_id', 'du_an_id', 'sapxep']))
                         <a href="{{ route('nhanvien.admin.ky-gui.index', ['tab' => $activeTab]) }}"
                             class="btn btn-danger btn-sm px-3 w-100 h-100 d-flex align-items-center justify-content-center"><i
                                 class="fas fa-times"></i></a>
@@ -168,11 +186,11 @@
                         <tr class="{{ $kg->trang_thai === 'cho_duyet' ? 'table-warning' : '' }}"
                             data-kg-ho-ten="{{ $kg->ho_ten_chu_nha }}" data-kg-sdt="{{ $kg->so_dien_thoai }}"
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
-                            data-kg-loai-hinh="{{ $lhInfo['label'] }}" data-kg-nhu-cau="{{ $ncInfo['label'] }}"
-                            data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
-                            data-kg-tang="{{ $kg->tang }}" data-kg-noi-that="{{ $kg->noi_that }}"
-                            data-kg-phap-ly="{{ $kg->phap_ly }}" data-kg-gia="{{ $kg->gia_hien_thi }}"
-                            data-kg-trang-thai="{{ $ttInfo['label'] }}"
+                            data-kg-du-an="{{ $kg->du_an }}" data-kg-loai-hinh="{{ $lhInfo['label'] }}"
+                            data-kg-nhu-cau="{{ $ncInfo['label'] }}" data-kg-dien-tich="{{ (float) $kg->dien_tich }}"
+                            data-kg-phong-ngu="{{ $kg->so_phong_ngu }}" data-kg-tang="{{ $kg->tang }}"
+                            data-kg-noi-that="{{ $kg->noi_that }}" data-kg-phap-ly="{{ $kg->phap_ly }}"
+                            data-kg-gia="{{ $kg->gia_hien_thi }}" data-kg-trang-thai="{{ $ttInfo['label'] }}"
                             data-kg-created="{{ $kg->created_at->format('d/m/Y H:i') }}"
                             data-kg-ghi-chu="{{ $kg->ghi_chu }}"
                             data-kg-nv="{{ optional($kg->nhanVienPhuTrach)->ho_ten }}">
@@ -297,6 +315,7 @@
                         <div class="kg-card-detail-trigger" role="button" tabindex="0"
                             data-kg-ho-ten="{{ $kg->ho_ten_chu_nha }}" data-kg-sdt="{{ $kg->so_dien_thoai }}"
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
+                            data-kg-du-an="{{ $kg->du_an }}"
                             data-kg-loai-hinh="{{ \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh]['label'] ?? $kg->loai_hinh }}"
                             data-kg-nhu-cau="{{ \App\Models\KyGui::NHU_CAU[$kg->nhu_cau]['label'] ?? $kg->nhu_cau }}"
                             data-kg-dien-tich="{{ (float) $kg->dien_tich }}" data-kg-phong-ngu="{{ $kg->so_phong_ngu }}"
@@ -312,6 +331,7 @@
                         <div class="kg-card-detail-trigger" role="button" tabindex="0"
                             data-kg-ho-ten="{{ $kg->ho_ten_chu_nha }}" data-kg-sdt="{{ $kg->so_dien_thoai }}"
                             data-kg-email="{{ $kg->email }}" data-kg-dia-chi="{{ $kg->dia_chi }}"
+                            data-kg-du-an="{{ $kg->du_an }}"
                             data-kg-loai-hinh="{{ \App\Models\KyGui::LOAI_HINH[$kg->loai_hinh]['label'] ?? $kg->loai_hinh }}"
                             data-kg-nhu-cau="{{ \App\Models\KyGui::NHU_CAU[$kg->nhu_cau]['label'] ?? $kg->nhu_cau }}"
                             data-kg-dien-tich="{{ (float) $kg->dien_tich }}"
@@ -393,6 +413,11 @@
                         <div class="col-md-4">
                             <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Mức giá mong muốn</span>
                             <strong id="kgd_gia" class="text-danger fs-5"></strong>
+                        </div>
+
+                        <div class="col-md-6 mt-3">
+                            <span class="text-muted d-block mb-1" style="font-size: 0.8rem">Dự án</span>
+                            <strong id="kgd_du_an" class="text-dark"></strong>
                         </div>
 
                         <div class="col-12 mt-3">
@@ -548,6 +573,7 @@
                 setText('kgd_loai_hinh', dataset.kgLoaiHinh);
                 setText('kgd_nhu_cau', dataset.kgNhuCau);
                 setText('kgd_dia_chi', dataset.kgDiaChi, 'Chưa cập nhật');
+                setText('kgd_du_an', dataset.kgDuAn, 'Nhà lẻ / không thuộc dự án');
                 setText('kgd_dien_tich', dataset.kgDienTich ? dataset.kgDienTich + ' m²' : '—');
                 setText('kgd_phong_ngu', dataset.kgPhongNgu);
                 setText('kgd_tang', dataset.kgTang);

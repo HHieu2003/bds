@@ -8,6 +8,7 @@ use App\Models\NhanVien;
 use App\Models\ChuNha;
 use App\Models\BatDongSan;
 use App\Models\DuAn;
+use App\Models\KhuVuc;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,8 @@ class KyGuiController extends Controller
     public function index(Request $request)
     {
         $query = KyGui::with(['khachHang', 'nhanVienPhuTrach'])->withCount([]);
+        $duAns = DuAn::hienThi()->select('id', 'ten_du_an', 'khu_vuc_id')->orderBy('ten_du_an')->get();
+        $khuVucs = KhuVuc::hienThi()->select('id', 'ten_khu_vuc')->get();
 
         // Lấy tab hiện tại (mặc định là 'can_xu_ly')
         $activeTab = $request->get('tab', 'can_xu_ly');
@@ -44,6 +47,29 @@ class KyGuiController extends Controller
         if ($request->filled('nhu_cau')) $query->where('nhu_cau', $request->nhu_cau);
         if ($request->filled('nhan_vien_id')) $query->where('nhan_vien_phu_trach_id', $request->nhan_vien_id);
 
+        if ($request->filled('khu_vuc_id')) {
+            $selectedKhuVuc = KhuVuc::find($request->khu_vuc_id);
+
+            if ($selectedKhuVuc) {
+                $khuVucIds = $selectedKhuVuc->getAllDescendantIds();
+                $duAnNames = DuAn::whereIn('khu_vuc_id', $khuVucIds)->pluck('ten_du_an')->filter()->values();
+
+                if ($duAnNames->isNotEmpty()) {
+                    $query->whereIn('du_an', $duAnNames->all());
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }
+        }
+
+        if ($request->filled('du_an_id')) {
+            $selectedDuAnName = $duAns->firstWhere('id', (int) $request->du_an_id)?->ten_du_an;
+
+            if ($selectedDuAnName) {
+                $query->where('du_an', $selectedDuAnName);
+            }
+        }
+
         $sapXep = $request->get('sapxep', 'moi_nhat');
         if ($sapXep === 'cu_nhat') {
             $query->oldest();
@@ -64,7 +90,7 @@ class KyGuiController extends Controller
         // Chỉ lấy nhân sự Nguồn hàng (và admin) để xử lý ký gửi
         $nhanViens = NhanVien::where('kich_hoat', true)->whereIn('vai_tro', ['admin', 'nguon_hang'])->orderBy('ho_ten')->get();
 
-        return view('admin.ky-gui.index', compact('kyGuis', 'thongKe', 'nhanViens', 'activeTab'));
+        return view('admin.ky-gui.index', compact('kyGuis', 'thongKe', 'nhanViens', 'activeTab', 'khuVucs', 'duAns'));
     }
 
     public function show(KyGui $kyGui)
@@ -196,7 +222,17 @@ class KyGuiController extends Controller
         }
 
         $duAns = DuAn::orderBy('ten_du_an')->get();
-        return view('admin.ky-gui.convert', compact('kyGui', 'duAns'));
+        $duAnMatchedId = null;
+
+        if (!empty($kyGui->du_an)) {
+            $duAnMatched = $duAns->first(function ($duAn) use ($kyGui) {
+                return Str::lower(trim((string) $duAn->ten_du_an)) === Str::lower(trim((string) $kyGui->du_an));
+            });
+
+            $duAnMatchedId = $duAnMatched?->id;
+        }
+
+        return view('admin.ky-gui.convert', compact('kyGui', 'duAns', 'duAnMatchedId'));
     }
 
     public function duyetSubmit(Request $request, KyGui $kyGui)
@@ -208,7 +244,8 @@ class KyGuiController extends Controller
             'nhu_cau'        => 'required|in:ban,thue',
             'loai_hinh'      => 'required|string',
             'dien_tich'      => 'required|numeric|min:1',
-            'so_phong_ngu'   => 'nullable|integer|min:0',
+            'ma_can'         => 'nullable|string|max:50',
+            'so_phong_ngu'   => 'nullable|string|max:100',
             'tang'           => 'nullable|string|max:100',
             'gia'            => 'nullable|numeric|min:0',
             'gia_thue'       => 'nullable|numeric|min:0',
@@ -220,16 +257,31 @@ class KyGuiController extends Controller
 
         $nhanVienHienTai = Auth::guard('nhanvien')->id();
 
-        // 1. TẠO HOẶC LẤY CHỦ NHÀ
-        $chuNha = ChuNha::firstOrCreate(
-            ['so_dien_thoai' => $request->so_dien_thoai],
-            [
+        // 1. TẠO HOẶC LẤY CHỦ NHÀ (Xử lý cả trường hợp đã xoá mềm để tránh lỗi Unique)
+        $chuNha = ChuNha::withTrashed()->where('so_dien_thoai', $request->so_dien_thoai)->first();
+
+        if ($chuNha) {
+            // Nếu đã xoá mềm thì khôi phục lại
+            if ($chuNha->trashed()) {
+                $chuNha->restore();
+            }
+            
+            // Cập nhật lại thông tin mới nhất từ form ký gửi
+            $chuNha->update([
+                'ho_ten' => $request->ho_ten_chu_nha,
+                'email'  => $request->email,
+            ]);
+        } else {
+            // Tạo mới hoàn toàn
+            $chuNha = ChuNha::create([
+                'so_dien_thoai'      => $request->so_dien_thoai,
                 'ho_ten'             => $request->ho_ten_chu_nha,
                 'email'              => $request->email,
                 'ghi_chu'            => 'Khách hàng từ hệ thống Ký gửi',
                 'trang_thai_hop_tac' => 'dang_hop_tac'
-            ]
-        );
+            ]);
+        }
+
 
         // 2. TẠO BẤT ĐỘNG SẢN
         $bdsData = [
@@ -244,11 +296,12 @@ class KyGuiController extends Controller
             'loai_hinh'    => $request->loai_hinh,
             'nhu_cau'      => $request->nhu_cau,
             'dien_tich'    => $request->dien_tich,
+            'ma_can'       => $request->ma_can,
             'tang'         => $request->tang,
             'gia'          => $request->nhu_cau === 'ban' ? $request->gia : null,
             'gia_thue'     => $request->nhu_cau === 'thue' ? $request->gia_thue : null,
             'mo_ta'        => $request->mo_ta,
-            'so_phong_ngu' => $request->so_phong_ngu ? (int)$request->so_phong_ngu : null,
+            'so_phong_ngu' => $request->filled('so_phong_ngu') ? trim((string) $request->so_phong_ngu) : null,
             'noi_that'     => $request->noi_that,
             'phap_ly'      => $request->nhu_cau === 'ban' ? $request->phap_ly : null,
             'hinh_thuc_thanh_toan' => $request->nhu_cau === 'thue' ? $request->hinh_thuc_thanh_toan : null,
