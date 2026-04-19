@@ -142,7 +142,7 @@
                                 <label class="kg-fe-lbl">Dự án</label>
                                 <input type="text" name="du_an" class="kg-fe-fi @error('du_an') err @enderror"
                                     value="{{ old('du_an') }}" placeholder="VD: Mỹ Đình Pearl" list="du-an-goi-y"
-                                    autocomplete="off">
+                                    autocomplete="off" required>
                                 <datalist id="du-an-goi-y">
                                     @foreach ($duAnGoiY ?? [] as $tenDuAn)
                                         <option value="{{ $tenDuAn }}"></option>

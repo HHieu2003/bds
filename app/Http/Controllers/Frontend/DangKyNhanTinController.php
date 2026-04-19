@@ -52,23 +52,32 @@ class DangKyNhanTinController extends Controller
 
         try {
             $result = DB::transaction(function () use ($validated, $email, $khachHangId, $now) {
-                // Tìm bản ghi cùng EMAIL + đúng tiêu chí + cùng khách hàng (nếu đã login)
-                // Ưu tiên bản ghi của chính khách đang login, sau đó fallback sang email không có tài khoản
+                // Tìm bản ghi cùng EMAIL và cùng MỤC TIÊU (BĐS / Dự án / Khu vực)
+                // Thay vì so khớp chính xác mọi tiêu chí (giá, phòng ngủ), ta coi như nếu khách đăng ký
+                // cùng một dự án/BĐS thì đó là hành động "Cập nhật tiêu chí".
                 $query = DB::table('dang_ky_nhan_tin')
-                    ->whereRaw('LOWER(email) = ?', [$email])
-                    ->where('nhu_cau',          $validated['nhu_cau']          ?? null)
-                    ->where('khu_vuc_id',       $validated['khu_vuc_id']       ?? null)
-                    ->where('du_an_id',         $validated['du_an_id']         ?? null)
-                    ->where('bat_dong_san_id',  $validated['bat_dong_san_id']  ?? null)
-                    ->where('so_phong_ngu',     $validated['so_phong_ngu']     ?? null)
-                    ->where('muc_gia_tu',       $validated['muc_gia_tu']       ?? null)
-                    ->where('muc_gia_den',      $validated['muc_gia_den']      ?? null);
+                    ->whereRaw('LOWER(email) = ?', [$email]);
+
+                if (!empty($validated['bat_dong_san_id'])) {
+                    $query->where('bat_dong_san_id', $validated['bat_dong_san_id']);
+                } elseif (!empty($validated['du_an_id'])) {
+                    $query->whereNull('bat_dong_san_id')
+                          ->where('du_an_id', $validated['du_an_id']);
+                } elseif (!empty($validated['khu_vuc_id'])) {
+                    $query->whereNull('bat_dong_san_id')
+                          ->whereNull('du_an_id')
+                          ->where('khu_vuc_id', $validated['khu_vuc_id']);
+                } else {
+                    $query->whereNull('bat_dong_san_id')
+                          ->whereNull('du_an_id')
+                          ->whereNull('khu_vuc_id')
+                          ->where('nhu_cau', $validated['nhu_cau'] ?? null);
+                }
 
                 // Nếu đang login: ưu tiên tìm bản ghi của chính mình trước
                 if ($khachHangId) {
                     $existing = (clone $query)->where('khach_hang_id', $khachHangId)
                         ->lockForUpdate()->orderByDesc('id')->first();
-                    // Nếu không có bản ghi của mình → kiểm tra cùng email chưa login
                     if (!$existing) {
                         $existing = $query->whereNull('khach_hang_id')
                             ->lockForUpdate()->orderByDesc('id')->first();
