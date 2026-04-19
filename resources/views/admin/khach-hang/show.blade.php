@@ -581,10 +581,9 @@
                                                 khách hàng</h6>
                                             <p class="text-muted small mb-3">Xóa vĩnh viễn toàn bộ hồ sơ</p>
                                             <form action="{{ route('nhanvien.admin.khach-hang.destroy', $khachHang) }}"
-                                                method="POST"
-                                                onsubmit="return confirm('Xóa vĩnh viễn khách hàng {{ addslashes($khachHang->ho_ten) }}?')">
+                                                method="POST" id="formDeleteKH_{{ $khachHang->id }}">
                                                 @csrf @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger w-100">
+                                                <button type="button" class="btn btn-outline-danger w-100" data-confirm-delete="{{ addslashes($khachHang->ho_ten) }}" data-form-id="formDeleteKH_{{ $khachHang->id }}">
                                                     <i class="fas fa-trash-alt me-1"></i>Xóa hồ sơ
                                                 </button>
                                             </form>

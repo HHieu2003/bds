@@ -545,19 +545,23 @@ document.addEventListener("DOMContentLoaded", function () {
         });
 
     /* ── Confirm delete [data-confirm-delete] ── */
-    document.querySelectorAll("[data-confirm-delete]").forEach(function (el) {
-        el.addEventListener("click", function (e) {
-            e.preventDefault();
-            var label = this.dataset.confirmDelete || "mục này";
-            var form =
-                this.closest("form") ||
-                document.getElementById(this.dataset.formId);
-            confirmDelete(label, () => {
-                if (form) form.submit();
-            });
-        });
+    /* Moved to delegated listener below (handles dynamically injected content) */
+});
+
+/* ── Delegated confirm-delete: works for AJAX-loaded buttons too ── */
+document.addEventListener("click", function (e) {
+    var el = e.target.closest("[data-confirm-delete]");
+    if (!el) return;
+    e.preventDefault();
+    var label = el.dataset.confirmDelete || "mục này";
+    var form =
+        el.closest("form") ||
+        document.getElementById(el.dataset.formId);
+    confirmDelete(label, function () {
+        if (form) form.submit();
     });
 });
+
 
 function _positionTip(el, tip) {
     if (!tip) return;
