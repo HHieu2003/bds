@@ -72,7 +72,7 @@ class KhachHangAuthController extends Controller
         if (Auth::guard('customer')->check()) {
             return redirect()->route('frontend.home');
         }
-        return view('frontend.auth.register');
+        return redirect()->back()->with('open_auth_modal', 'register');
     }
 
     public function register(Request $request)
@@ -129,8 +129,17 @@ class KhachHangAuthController extends Controller
     // ══════════════════════════════════════════════════
     public function sendOtp(Request $request)
     {
-        $kh = KhachHang::where('email', $request->email)->whereNull('email_xac_thuc_at')->first();
-        if (!$kh) return response()->json(['success' => false, 'message' => 'Email không tồn tại.']);
+        $kh = KhachHang::where('email', $request->email)
+            ->whereNull('email_xac_thuc_at')
+            ->first();
+
+        if (!$kh) {
+            return response()->json(['success' => false, 'message' => 'Email không tồn tại hoặc đã được xác thực.']);
+        }
+
+        if (!$kh->kich_hoat) {
+            return response()->json(['success' => false, 'message' => 'Tài khoản đã bị vô hiệu hoá.']);
+        }
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         $kh->update([
