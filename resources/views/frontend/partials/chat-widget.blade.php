@@ -123,6 +123,30 @@
         color: #7e3f18;
     }
 
+    .chat-quick-replies .chat-qr-btn.is-collapse,
+    .chat-quick-replies .chat-qr-btn.is-expand {
+        border-color: transparent;
+        background: transparent;
+        color: #64748b;
+        flex-basis: 100%;
+        text-align: center;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        padding: 4px;
+        font-size: 11px;
+        box-shadow: none;
+    }
+
+    .chat-quick-replies .chat-qr-btn.is-collapse:hover,
+    .chat-quick-replies .chat-qr-btn.is-expand:hover {
+        background: transparent;
+        color: #334155;
+        box-shadow: none;
+        transform: none;
+        text-decoration: underline;
+    }
+
     @media (max-width: 576px) {
         .chat-quick-replies .chat-qr-btn {
             flex-basis: 100%;

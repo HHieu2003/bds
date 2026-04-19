@@ -120,6 +120,39 @@ function getCsrfHeaders(extraHeaders = {}) {
 window.getCsrfToken = getCsrfToken;
 window.getCsrfHeaders = getCsrfHeaders;
 
+const originalFetch = window.fetch;
+window.fetch = async function(...args) {
+    let res = await originalFetch.apply(this, args);
+    if (res.status === 419) {
+        try {
+            const refreshRes = await originalFetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const html = await refreshRes.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            const newToken = doc.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (newToken) {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) meta.setAttribute('content', newToken);
+                if (window.APP) window.APP.csrfToken = newToken;
+                
+                if (args.length >= 2 && args[1] && args[1].headers) {
+                    if (args[1].headers instanceof Headers) {
+                        args[1].headers.set('X-CSRF-TOKEN', newToken);
+                    } else {
+                        args[1].headers['X-CSRF-TOKEN'] = newToken;
+                    }
+                }
+                
+                return await originalFetch.apply(this, args);
+            }
+        } catch(e) {
+            console.error("CSRF refresh failed", e);
+        }
+        window.location.reload();
+    }
+    return res;
+};
+
 const AUTH_STEPS = {
     login: {
         title: "Đăng nhập",
@@ -1031,6 +1064,30 @@ function appendLocalBotMessage(content) {
     body.scrollTop = body.scrollHeight;
 }
 
+function renderCollapsedMenu() {
+    const wrap = document.getElementById("chatQuickReplies");
+    if (!wrap) return;
+    
+    wrap.innerHTML = "";
+    wrap.style.animation = "none";
+    
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "chat-qr-btn is-expand";
+    expandBtn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Mở rộng gợi ý';
+    expandBtn.onclick = (e) => {
+        e.preventDefault();
+        feQuickRepliesSignature = "";
+        if (feChatMode === 'faq') {
+            renderFaqMenu();
+        } else if (feChatMode === 'ai') {
+            renderAiModeActions();
+        }
+    };
+    wrap.appendChild(expandBtn);
+    wrap.style.display = "flex";
+}
+
 function renderFaqMenu() {
     const wrap = document.getElementById("chatQuickReplies");
     if (!wrap) return;
@@ -1085,6 +1142,16 @@ function renderFaqMenu() {
     };
     wrap.appendChild(supportBtn);
 
+    const collapseBtn = document.createElement("button");
+    collapseBtn.type = "button";
+    collapseBtn.className = "chat-qr-btn is-collapse";
+    collapseBtn.innerHTML = '<i class="fas fa-chevron-down me-1"></i> Thu gọn';
+    collapseBtn.onclick = (e) => {
+        e.preventDefault();
+        renderCollapsedMenu();
+    };
+    wrap.appendChild(collapseBtn);
+
     wrap.style.display = "flex";
     setTimeout(() => {
         wrap.style.animation = "slideUp 0.3s ease-out";
@@ -1137,6 +1204,16 @@ function renderAiModeActions(questions = null) {
         transferToAgent();
     };
     wrap.appendChild(supportBtn);
+
+    const collapseBtn = document.createElement("button");
+    collapseBtn.type = "button";
+    collapseBtn.className = "chat-qr-btn is-collapse";
+    collapseBtn.innerHTML = '<i class="fas fa-chevron-down me-1"></i> Thu gọn';
+    collapseBtn.onclick = (e) => {
+        e.preventDefault();
+        renderCollapsedMenu();
+    };
+    wrap.appendChild(collapseBtn);
 
     wrap.style.display = "flex";
     setTimeout(() => {

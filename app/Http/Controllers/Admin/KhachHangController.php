@@ -85,7 +85,7 @@ class KhachHangController extends Controller
         $data = $request->validate([
             'ho_ten'                 => 'required|string|max:100',
             'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai',
-            'email'                  => 'nullable|email|max:100',
+            'email'                  => 'nullable|email|max:100|unique:khach_hang,email',
             'password'               => 'required|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'nullable|in:lanh,am,nong',
             'nguon_khach_hang'       => 'nullable|string',
@@ -159,7 +159,7 @@ class KhachHangController extends Controller
         $data = $request->validate([
             'ho_ten'                 => 'required|string|max:100',
             'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai,' . $khachHang->id,
-            'email'                  => 'nullable|email|max:100',
+            'email'                  => 'nullable|email|max:100|unique:khach_hang,email,' . $khachHang->id,
             'password'               => 'nullable|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'required|in:lanh,am,nong',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id'
