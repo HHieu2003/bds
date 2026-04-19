@@ -203,13 +203,19 @@ class KyGuiController extends Controller
     {
         $request->validate([
             'ho_ten_chu_nha' => 'required|string|max:100',
-            'so_dien_thoai'  => 'required|string|max:15',
+            'so_dien_thoai'  => 'required|string|max:20',
             'tieu_de'        => 'required|string|max:255',
             'nhu_cau'        => 'required|in:ban,thue',
             'loai_hinh'      => 'required|string',
-            'dien_tich'      => 'required|numeric',
-            'so_phong_ngu'   => 'nullable|string|max:20',
+            'dien_tich'      => 'required|numeric|min:1',
+            'so_phong_ngu'   => 'nullable|integer|min:0',
             'tang'           => 'nullable|string|max:100',
+            'gia'            => 'nullable|numeric|min:0',
+            'gia_thue'       => 'nullable|numeric|min:0',
+        ], [
+            'tieu_de.required'    => 'Vui lòng nhập tiêu đề tin đăng.',
+            'dien_tich.required'  => 'Vui lòng nhập diện tích.',
+            'dien_tich.min'       => 'Diện tích phải lớn hơn 0.',
         ]);
 
         $nhanVienHienTai = Auth::guard('nhanvien')->id();
@@ -229,7 +235,7 @@ class KyGuiController extends Controller
         $bdsData = [
             'chu_nha_id'             => $chuNha->id,
             'nhan_vien_phu_trach_id' => $nhanVienHienTai,
-            'du_an_id'               => $request->du_an_id,
+            'du_an_id'               => $request->du_an_id ?: null,
 
             'tieu_de'         => $request->tieu_de,
             'slug'            => Str::slug($request->tieu_de) . '-' . time(),
@@ -239,21 +245,24 @@ class KyGuiController extends Controller
             'nhu_cau'      => $request->nhu_cau,
             'dien_tich'    => $request->dien_tich,
             'tang'         => $request->tang,
-            'gia'          => $request->nhu_cau == 'ban' ? $request->gia : null,
-            'gia_thue'     => $request->nhu_cau == 'thue' ? $request->gia_thue : null,
+            'gia'          => $request->nhu_cau === 'ban' ? $request->gia : null,
+            'gia_thue'     => $request->nhu_cau === 'thue' ? $request->gia_thue : null,
             'mo_ta'        => $request->mo_ta,
-            'so_phong_ngu' => $request->so_phong_ngu,
+            'so_phong_ngu' => $request->so_phong_ngu ? (int)$request->so_phong_ngu : null,
             'noi_that'     => $request->noi_that,
-            'phap_ly'      => $request->phap_ly,
+            'phap_ly'      => $request->nhu_cau === 'ban' ? $request->phap_ly : null,
+            'hinh_thuc_thanh_toan' => $request->nhu_cau === 'thue' ? $request->hinh_thuc_thanh_toan : null,
 
             'trang_thai'     => 'con_hang',
             'hien_thi'       => 1,
             'thoi_diem_dang' => now(),
         ];
 
+        // Copy ảnh tự động từ ky gởi sang BDS
+        // Kiểm tra album_anh có phải JSON cast không — nếu có, trực tiếp gán mảng
         if ($kyGui->hinh_anh_tham_khao && is_array($kyGui->hinh_anh_tham_khao) && count($kyGui->hinh_anh_tham_khao) > 0) {
-            $bdsData['hinh_anh'] = $kyGui->hinh_anh_tham_khao[0];
-            $bdsData['album_anh'] = json_encode($kyGui->hinh_anh_tham_khao); // Lưu dạng json theo cấu trúc DB của bạn
+            $bdsData['hinh_anh']  = $kyGui->hinh_anh_tham_khao[0];  // ảnh đại diện
+            $bdsData['album_anh'] = $kyGui->hinh_anh_tham_khao;     // mảng — Eloquent tự encode nếu cast array
         }
 
         BatDongSan::create($bdsData);

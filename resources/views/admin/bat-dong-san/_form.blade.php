@@ -1,14 +1,14 @@
 @php
     $isEdit = isset($batDongSan) && $batDongSan !== null;
     // Nguồn dữ liệu: BDS đang sửa (edit) hoặc BDS được clone (tạo mới từ bản sao)
-    $sourceBds   = $sourceBds ?? null;
-    $dataSource  = $isEdit ? $batDongSan : $sourceBds; // null khi tạo mới hoàn toàn
+    $sourceBds = $sourceBds ?? null;
+    $dataSource = $isEdit ? $batDongSan : $sourceBds; // null khi tạo mới hoàn toàn
 
     $prefillNhuCau = $prefillNhuCau ?? null;
     $prefillDuAnId = $prefillDuAnId ?? null;
-    $oldLoaiHinh   = old('loai_hinh',  $dataSource ? $dataSource->loai_hinh  : 'can_ho');
-    $oldNhuCau     = old('nhu_cau',    $dataSource ? $dataSource->nhu_cau    : ($prefillNhuCau ?? ''));
-    $oldTrangThai  = old('trang_thai', $dataSource ? $dataSource->trang_thai  : 'con_hang');
+    $oldLoaiHinh = old('loai_hinh', $dataSource ? $dataSource->loai_hinh : 'can_ho');
+    $oldNhuCau = old('nhu_cau', $dataSource ? $dataSource->nhu_cau : $prefillNhuCau ?? '');
+    $oldTrangThai = old('trang_thai', $dataSource ? $dataSource->trang_thai : 'con_hang');
     $defaultNhanVienPhuTrachId = $defaultNhanVienPhuTrachId ?? '';
     $huongs = ['Đông', 'Tây', 'Nam', 'Bắc', 'Đông Nam', 'Đông Bắc', 'Tây Nam', 'Tây Bắc'];
     $ngayDang = old(
@@ -45,7 +45,7 @@
                 <div class="mb-3">
                     <label class="form-label">Tiêu đề tin đăng <span class="text-danger">*</span></label>
                     <input type="text" name="tieu_de" class="form-control @error('tieu_de') is-invalid @enderror"
-                        value="{{ old('tieu_de', $isEdit ? $batDongSan->tieu_de : ($dataSource?->tieu_de ?? '')) }}"
+                        value="{{ old('tieu_de', $isEdit ? $batDongSan->tieu_de : $dataSource?->tieu_de ?? '') }}"
                         placeholder="VD: Bán căn hộ 2PN Vinhomes Smart City..." autofocus>
                     @error('tieu_de')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -90,7 +90,7 @@
                         <select name="du_an_id" id="sel_du_an" class="form-select">
                             <option value="">-- Không thuộc dự án --</option>
                             @foreach ($duAns as $da)
-                                <option value="{{ $da->id }}" @selected(old('du_an_id', $dataSource?->du_an_id ?? $prefillDuAnId ?? '') == $da->id)>{{ $da->ten_du_an }}
+                                <option value="{{ $da->id }}" @selected(old('du_an_id', $dataSource?->du_an_id ?? ($prefillDuAnId ?? '')) == $da->id)>{{ $da->ten_du_an }}
                                 </option>
                             @endforeach
                         </select>
@@ -242,9 +242,10 @@
                 <div class="row g-3">
                     <div class="col-md-4">
                         <label class="form-label">Giá thuê / tháng (VNĐ) <span class="text-danger">*</span></label>
-                        <input type="number" name="gia_thue"
+                        <input type="number" name="gia_thue" id="inp_gia_thue"
                             class="form-control @error('gia_thue') is-invalid @enderror"
                             value="{{ old('gia_thue', $dataSource?->gia_thue ?? '') }}">
+                        <div class="form-text text-info fw-bold" id="gia_thue_hint"></div>
                         @error('gia_thue')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -344,7 +345,8 @@
         <div class="card border-0 shadow-sm mb-4">
             <div class="card-header bg-white py-3">
                 <i class="fas fa-film text-danger me-2"></i>Album video
-                <span class="text-muted fw-normal" style="font-size: 0.8rem">(MP4, WebM, MOV — tối đa 100MB/video)</span>
+                <span class="text-muted fw-normal" style="font-size: 0.8rem">(MP4, WebM, MOV — tối đa
+                    100MB/video)</span>
             </div>
             <div class="card-body">
                 {{-- Video cũ (chỉ hiện khi edit) --}}
@@ -354,16 +356,14 @@
                             @php $vidKey = substr(md5($vidPath), 0, 12); @endphp
                             <div class="position-relative border rounded" id="vid_{{ $vidKey }}"
                                 style="width: 160px;">
-                                <video src="{{ asset('storage/' . $vidPath) }}"
-                                    class="w-100 rounded" style="height: 100px; object-fit: cover;"
-                                    muted preload="metadata"></video>
+                                <video src="{{ asset('storage/' . $vidPath) }}" class="w-100 rounded"
+                                    style="height: 100px; object-fit: cover;" muted preload="metadata"></video>
                                 <div class="text-muted text-truncate px-1" style="font-size: 0.7rem">
                                     {{ basename($vidPath) }}
                                 </div>
                                 <button type="button"
                                     class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 vid-del-btn p-0 d-flex align-items-center justify-content-center"
-                                    style="width: 20px; height: 20px;"
-                                    data-bds="{{ $batDongSan->id }}"
+                                    style="width: 20px; height: 20px;" data-bds="{{ $batDongSan->id }}"
                                     data-path="{{ $vidPath }}" data-key="{{ $vidKey }}">
                                     <i class="fas fa-times" style="font-size: 0.6rem"></i>
                                 </button>
@@ -380,7 +380,8 @@
                     class="d-flex flex-column align-items-center justify-content-center border border-dashed rounded bg-light cursor-pointer"
                     style="height: 120px; transition: 0.2s; border-color: #f87171 !important;">
                     <i class="fas fa-video fs-2 text-danger opacity-50 mb-2"></i>
-                    <span class="text-secondary" style="font-size: 0.85rem">Click để chọn video (MP4, WebM, MOV)</span>
+                    <span class="text-secondary" style="font-size: 0.85rem">Click để chọn video (MP4, WebM,
+                        MOV)</span>
                     <input type="file" id="inp_video" name="album_video[]" multiple
                         accept="video/mp4,video/webm,video/quicktime,video/x-msvideo" class="d-none">
                 </label>
@@ -548,10 +549,19 @@
         .bds-error-banner {
             animation: slideDown 0.35s ease;
         }
+
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-12px); }
-            to   { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(-12px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         .bds-error-banner-inner {
             display: flex;
             align-items: flex-start;
@@ -561,26 +571,36 @@
             border-left: 5px solid #ef4444;
             border-radius: 10px;
             padding: 16px 18px;
-            box-shadow: 0 4px 16px rgba(239,68,68,.10);
+            box-shadow: 0 4px 16px rgba(239, 68, 68, .10);
         }
+
         .bds-error-icon {
             flex-shrink: 0;
-            width: 38px; height: 38px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             background: #fee2e2;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #dc2626;
             font-size: 1rem;
         }
-        .bds-error-content { flex: 1; }
+
+        .bds-error-content {
+            flex: 1;
+        }
+
         .bds-error-title {
             font-weight: 700;
             color: #b91c1c;
             font-size: .92rem;
             margin-bottom: 6px;
         }
+
         .bds-error-list {
-            margin: 0; padding-left: 0;
+            margin: 0;
+            padding-left: 0;
             list-style: none;
             font-size: .84rem;
             color: #7f1d1d;
@@ -588,16 +608,37 @@
             flex-direction: column;
             gap: 3px;
         }
-        .bds-error-list li { display: flex; align-items: baseline; gap: 4px; }
-        .bds-error-list .fa-dot-circle { color: #ef4444; font-size: .65rem; flex-shrink: 0; margin-top: 2px; }
+
+        .bds-error-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .bds-error-list .fa-dot-circle {
+            color: #ef4444;
+            font-size: .65rem;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
         .bds-error-close {
             flex-shrink: 0;
-            background: none; border: none; padding: 4px 6px;
-            color: #ef4444; opacity: .7; cursor: pointer;
-            border-radius: 6px; line-height: 1;
+            background: none;
+            border: none;
+            padding: 4px 6px;
+            color: #ef4444;
+            opacity: .7;
+            cursor: pointer;
+            border-radius: 6px;
+            line-height: 1;
             transition: opacity .2s, background .2s;
         }
-        .bds-error-close:hover { opacity: 1; background: #fee2e2; }
+
+        .bds-error-close:hover {
+            opacity: 1;
+            background: #fee2e2;
+        }
     </style>
 @endpush
 
@@ -722,7 +763,7 @@
             // 5b. Preview & Xóa Video Album
             const inpVideo = document.getElementById('inp_video');
             if (inpVideo) {
-                inpVideo.addEventListener('change', function () {
+                inpVideo.addEventListener('change', function() {
                     const preview = document.getElementById('videoPreview');
                     Array.from(this.files).forEach(file => {
                         const url = URL.createObjectURL(file);
@@ -742,11 +783,11 @@
             }
 
             document.querySelectorAll('.vid-del-btn[data-bds]').forEach(btn => {
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     if (!confirm('Xóa video này khỏi hệ thống?')) return;
                     const path = this.dataset.path,
                         bdsId = this.dataset.bds,
-                        key   = this.dataset.key;
+                        key = this.dataset.key;
                     fetch(`/nhan-vien/admin/bat-dong-san/${bdsId}/xoa-video`, {
                         method: 'DELETE',
                         headers: {
@@ -754,7 +795,9 @@
                             'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         },
-                        body: JSON.stringify({ path })
+                        body: JSON.stringify({
+                            path
+                        })
                     }).then(r => r.json()).then(data => {
                         if (data.ok) document.getElementById('vid_' + key).remove();
                     });
@@ -765,17 +808,33 @@
             // 6. Format giá VNĐ khi gõ
             const inpGia = document.getElementById('inp_gia');
             const giaHint = document.getElementById('gia_hint');
-            if (inpGia) {
-                function updateGiaHint() {
-                    const val = parseFloat(inpGia.value);
-                    if (isNaN(val) || val <= 0) giaHint.textContent = '';
-                    else if (val >= 1e9) giaHint.textContent = `= ${(val / 1e9).toFixed(3)} tỷ VNĐ`;
-                    else if (val >= 1e6) giaHint.textContent = `= ${(val / 1e6).toFixed(1)} triệu VNĐ`;
-                    else giaHint.textContent = `= ${val.toLocaleString('vi-VN')} đ`;
-                }
-                inpGia.addEventListener('input', updateGiaHint);
-                updateGiaHint();
+            const inpGiaThue = document.getElementById('inp_gia_thue');
+            const giaThueHint = document.getElementById('gia_thue_hint');
+
+            function formatCompactNumber(value) {
+                return parseFloat(Number(value).toFixed(3)).toString();
             }
+
+            function formatVndHint(value) {
+                const val = Number(value);
+                if (!Number.isFinite(val) || val <= 0) return '';
+                if (val >= 1e9) return `= ${formatCompactNumber(val / 1e9)} tỷ VNĐ`;
+                if (val >= 1e6) return `= ${formatCompactNumber(val / 1e6)} triệu VNĐ`;
+                if (val >= 1e3) return `= ${formatCompactNumber(val / 1e3)} nghìn VNĐ`;
+                return `= ${val.toLocaleString('vi-VN')} VNĐ`;
+            }
+
+            function bindHint(inputEl, hintEl) {
+                if (!inputEl || !hintEl) return;
+                const updateHint = () => {
+                    hintEl.textContent = formatVndHint(inputEl.value);
+                };
+                inputEl.addEventListener('input', updateHint);
+                updateHint();
+            }
+
+            bindHint(inpGia, giaHint);
+            bindHint(inpGiaThue, giaThueHint);
 
             // 7. Khởi tạo TomSelect cho dự án và chủ nhà
             new TomSelect('#sel_du_an', {

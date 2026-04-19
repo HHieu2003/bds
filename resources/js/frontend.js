@@ -121,31 +121,35 @@ window.getCsrfToken = getCsrfToken;
 window.getCsrfHeaders = getCsrfHeaders;
 
 const originalFetch = window.fetch;
-window.fetch = async function(...args) {
+window.fetch = async function (...args) {
     let res = await originalFetch.apply(this, args);
     if (res.status === 419) {
         try {
-            const refreshRes = await originalFetch(window.location.href, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const refreshRes = await originalFetch(window.location.href, {
+                headers: { "X-Requested-With": "XMLHttpRequest" },
+            });
             const html = await refreshRes.text();
             const parser = new DOMParser();
-            const doc = parser.parseFromString(html, 'text/html');
-            const newToken = doc.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const doc = parser.parseFromString(html, "text/html");
+            const newToken = doc
+                .querySelector('meta[name="csrf-token"]')
+                ?.getAttribute("content");
             if (newToken) {
                 const meta = document.querySelector('meta[name="csrf-token"]');
-                if (meta) meta.setAttribute('content', newToken);
+                if (meta) meta.setAttribute("content", newToken);
                 if (window.APP) window.APP.csrfToken = newToken;
 
                 if (args.length >= 2 && args[1] && args[1].headers) {
                     if (args[1].headers instanceof Headers) {
-                        args[1].headers.set('X-CSRF-TOKEN', newToken);
+                        args[1].headers.set("X-CSRF-TOKEN", newToken);
                     } else {
-                        args[1].headers['X-CSRF-TOKEN'] = newToken;
+                        args[1].headers["X-CSRF-TOKEN"] = newToken;
                     }
                 }
 
                 return await originalFetch.apply(this, args);
             }
-        } catch(e) {
+        } catch (e) {
             console.error("CSRF refresh failed", e);
         }
         window.location.reload();
@@ -472,8 +476,7 @@ document
             ) {
                 const errGeneral = document.getElementById("errRegGeneral");
                 if (errGeneral) {
-                    errGeneral.innerHTML =
-                        `<i class="fas fa-exclamation-circle"></i> ${data.message || "Đăng ký thất bại, vui lòng thử lại."}`;
+                    errGeneral.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message || "Đăng ký thất bại, vui lòng thử lại."}`;
                     errGeneral.style.color = "var(--status-danger)";
                     errGeneral.style.display = "block";
                 }
@@ -481,8 +484,7 @@ document
         } else {
             const errGeneral = document.getElementById("errRegGeneral");
             if (errGeneral) {
-                errGeneral.innerHTML =
-                    `<i class="fas fa-exclamation-circle"></i> ${data.message || "Không thể đăng ký lúc này, vui lòng thử lại."}`;
+                errGeneral.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${data.message || "Không thể đăng ký lúc này, vui lòng thử lại."}`;
                 errGeneral.style.color = "var(--status-danger)";
                 errGeneral.style.display = "block";
             }
@@ -1099,13 +1101,14 @@ function renderCollapsedMenu() {
     const expandBtn = document.createElement("button");
     expandBtn.type = "button";
     expandBtn.className = "chat-qr-btn is-expand";
-    expandBtn.innerHTML = '<i class="fas fa-chevron-up me-1"></i> Mở rộng gợi ý';
+    expandBtn.innerHTML =
+        '<i class="fas fa-chevron-up me-1"></i> Mở rộng gợi ý';
     expandBtn.onclick = (e) => {
         e.preventDefault();
         feQuickRepliesSignature = "";
-        if (feChatMode === 'faq') {
+        if (feChatMode === "faq") {
             renderFaqMenu();
-        } else if (feChatMode === 'ai') {
+        } else if (feChatMode === "ai") {
             renderAiModeActions();
         }
     };
@@ -1898,33 +1901,33 @@ window.submitThongTin = function (e) {
 
     // --- Xác thực phía client ---
     let hasErr = false;
-    const hoTen = document.getElementById('f_ho_ten').value.trim();
-    const sdt   = document.getElementById('f_so_dien_thoai').value.trim();
-    const errHoTen = document.getElementById('err_ho_ten');
-    const errSdt   = document.getElementById('err_so_dien_thoai');
+    const hoTen = document.getElementById("f_ho_ten").value.trim();
+    const sdt = document.getElementById("f_so_dien_thoai").value.trim();
+    const errHoTen = document.getElementById("err_ho_ten");
+    const errSdt = document.getElementById("err_so_dien_thoai");
 
     // Reset lỗi
-    if (errHoTen) errHoTen.textContent = '';
-    if (errSdt)   errSdt.textContent   = '';
+    if (errHoTen) errHoTen.textContent = "";
+    if (errSdt) errSdt.textContent = "";
 
     if (!hoTen) {
-        if (errHoTen) errHoTen.textContent = 'Vui lòng nhập họ và tên.';
+        if (errHoTen) errHoTen.textContent = "Vui lòng nhập họ và tên.";
         hasErr = true;
     }
     if (sdt && !/^[0-9+\- ]{7,20}$/.test(sdt)) {
-        if (errSdt) errSdt.textContent = 'Số điện thoại không hợp lệ.';
+        if (errSdt) errSdt.textContent = "Số điện thoại không hợp lệ.";
         hasErr = true;
     }
     if (hasErr) return;
 
-    const btn  = document.getElementById('btnSubmitThongTin');
+    const btn = document.getElementById("btnSubmitThongTin");
     const orig = '<i class="fas fa-save"></i> Lưu thay đổi';
     postKhachHang(
         window.APP.routes.profileUpdate,
         {
-            ho_ten:         hoTen,
-            so_dien_thoai:  sdt,
-            email:          document.getElementById('f_email').value.trim(),
+            ho_ten: hoTen,
+            so_dien_thoai: sdt,
+            email: document.getElementById("f_email").value.trim(),
         },
         btn,
         orig,
@@ -1934,105 +1937,163 @@ window.submitThongTin = function (e) {
 
 window.submitMatKhau = function (e) {
     e.preventDefault();
-    const pw1 = document.getElementById('f_mat_khau_moi').value;
-    const pw2 = document.getElementById('f_mat_khau_moi_confirmation').value;
-    const pwCu = document.getElementById('f_mat_khau_cu').value;
+    const pw1 = document.getElementById("f_mat_khau_moi").value;
+    const pw2 = document.getElementById("f_mat_khau_moi_confirmation").value;
+    const pwCu = document.getElementById("f_mat_khau_cu").value;
 
-    const errCu      = document.getElementById('err_mat_khau_cu');
-    const errMoi     = document.getElementById('err_mat_khau_moi');
-    const errConfirm = document.getElementById('err_mat_khau_moi_confirmation');
+    const errCu = document.getElementById("err_mat_khau_cu");
+    const errMoi = document.getElementById("err_mat_khau_moi");
+    const errConfirm = document.getElementById("err_mat_khau_moi_confirmation");
 
     // Reset lỗi cũ
-    if (errCu)      errCu.textContent      = '';
-    if (errMoi)     errMoi.textContent     = '';
-    if (errConfirm) errConfirm.textContent = '';
+    if (errCu) errCu.textContent = "";
+    if (errMoi) errMoi.textContent = "";
+    if (errConfirm) errConfirm.textContent = "";
 
     // Validate phía client
     let hasErr = false;
     if (!pwCu) {
-        if (errCu) errCu.textContent = 'Vui lòng nhập mật khẩu hiện tại.';
+        if (errCu) errCu.textContent = "Vui lòng nhập mật khẩu hiện tại.";
         hasErr = true;
     }
     if (!pw1) {
-        if (errMoi) errMoi.textContent = 'Vui lòng nhập mật khẩu mới.';
+        if (errMoi) errMoi.textContent = "Vui lòng nhập mật khẩu mới.";
         hasErr = true;
     } else if (pw1.length < 6) {
-        if (errMoi) errMoi.textContent = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+        if (errMoi)
+            errMoi.textContent = "Mật khẩu mới phải có ít nhất 6 ký tự.";
         hasErr = true;
     }
     if (pw1 && pw2 && pw1 !== pw2) {
-        if (errConfirm) errConfirm.textContent = 'Xác nhận mật khẩu không khớp.';
+        if (errConfirm)
+            errConfirm.textContent = "Xác nhận mật khẩu không khớp.";
         hasErr = true;
     }
     if (hasErr) return;
 
-    const btn  = document.getElementById('btnSubmitMk');
+    const btn = document.getElementById("btnSubmitMk");
     const orig = '<i class="fas fa-shield-alt"></i> Cập nhật';
     postKhachHang(
         window.APP.routes.changePassword,
         {
-            mat_khau_cu:                pwCu,
-            mat_khau_moi:               pw1,
-            mat_khau_moi_confirmation:  pw2,
+            mat_khau_cu: pwCu,
+            mat_khau_moi: pw1,
+            mat_khau_moi_confirmation: pw2,
         },
         btn,
         orig,
         () => {
             // Dùng optional chaining để tránh crash nếu form không tìm thấy
-            document.getElementById('formMatKhau')?.reset();
+            document.getElementById("formMatKhau")?.reset();
             closeModalHoSo();
         },
     );
 };
 
-
 function postKhachHang(url, data, btn, orig, onSuccess) {
+    const fieldInputMap = {
+        ho_ten: "f_ho_ten",
+        so_dien_thoai: "f_so_dien_thoai",
+        email: "f_email",
+        mat_khau_cu: "f_mat_khau_cu",
+        mat_khau_moi: "f_mat_khau_moi",
+        mat_khau_moi_confirmation: "f_mat_khau_moi_confirmation",
+    };
+
+    const normalizeFieldKey = (key) => {
+        if (!key) return "";
+        const normalized = String(key).replace(/\./g, "_");
+        // Laravel rule `confirmed` thường trả lỗi ở field gốc.
+        if (normalized === "mat_khau_moi") {
+            return "mat_khau_moi_confirmation";
+        }
+        return normalized;
+    };
+
+    const showInlineError = (rawKey, message) => {
+        const key = normalizeFieldKey(rawKey);
+        const errEl =
+            document.getElementById(`err_${key}`) ||
+            document.getElementById(`err${key}`);
+        const inputId = fieldInputMap[key] || `f_${key}`;
+        const inputEl = document.getElementById(inputId);
+
+        if (errEl) errEl.textContent = message;
+        if (inputEl) inputEl.classList.add("error");
+
+        return Boolean(errEl || inputEl);
+    };
+
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...';
 
     // Reset tất cả field errors trước khi gửi
-    document.querySelectorAll('.kh-field-err').forEach(el => el.textContent = '');
+    document
+        .querySelectorAll(".kh-field-err")
+        .forEach((el) => (el.textContent = ""));
+    document
+        .querySelectorAll(".kh-field-input")
+        .forEach((el) => el.classList.remove("error"));
 
     fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: getCsrfHeaders({
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
+            "Content-Type": "application/json",
+            Accept: "application/json",
         }),
-        credentials: 'same-origin',
+        credentials: "same-origin",
         body: JSON.stringify(data),
     })
-        .then(r => r.json())
-        .then(res => {
+        .then(async (r) => {
+            const contentType = r.headers.get("content-type") || "";
+            const isJson = contentType.includes("application/json");
+            const payload = isJson
+                ? await r.json()
+                : {
+                      success: false,
+                      message: "Không đọc được phản hồi từ máy chủ.",
+                  };
+            return { ok: r.ok, status: r.status, payload };
+        })
+        .then(({ ok, status, payload: res }) => {
             if (res.success) {
-                showFlash(res.message || 'Cập nhật thành công!', 'success');
+                showFlash(res.message || "Cập nhật thành công!", "success");
                 if (onSuccess) onSuccess();
             } else {
+                const errors = res.errors || {};
                 // Nếu có lỗi field cụ thể → hiện inline, KHÔNG hiện toast chung
-                if (res.errors && Object.keys(res.errors).length > 0) {
+                if (Object.keys(errors).length > 0) {
                     let firstMsg = null;
-                    Object.entries(res.errors).forEach(([key, msgs]) => {
+                    let hasMappedField = false;
+
+                    Object.entries(errors).forEach(([key, msgs]) => {
                         const msg = Array.isArray(msgs) ? msgs[0] : msgs;
                         if (!firstMsg) firstMsg = msg;
-                        // id field err dùng dấu _ (vd: err_mat_khau_cu)
-                        const elUnder = document.getElementById('err_' + key);
-                        // fallback: tên không có dấu _ (err + key)
-                        const elCamel = document.getElementById('err' + key);
-                        const el = elUnder || elCamel;
-                        if (el) {
-                            el.textContent = msg;
-                        }
+                        if (showInlineError(key, msg)) hasMappedField = true;
                     });
+
                     // Chỉ toast nếu không có field nào match
-                    if (!document.querySelector('.kh-field-err:not(:empty)')) {
-                        showFlash(res.message || firstMsg || 'Vui lòng kiểm tra lại thông tin.', 'danger');
+                    if (!hasMappedField) {
+                        showFlash(
+                            res.message ||
+                                firstMsg ||
+                                "Vui lòng kiểm tra lại thông tin.",
+                            "danger",
+                        );
                     }
                 } else {
-                    showFlash(res.message || 'Có lỗi xảy ra.', 'danger');
+                    if (!ok && status === 419) {
+                        showFlash(
+                            "Phiên làm việc đã hết hạn, vui lòng tải lại trang.",
+                            "warning",
+                        );
+                    } else {
+                        showFlash(res.message || "Có lỗi xảy ra.", "danger");
+                    }
                 }
             }
         })
-        .catch(() => showFlash('Lỗi kết nối', 'danger'))
+        .catch(() => showFlash("Lỗi kết nối", "danger"))
         .finally(() => {
             btn.disabled = false;
             btn.innerHTML = orig;
