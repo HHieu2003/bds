@@ -9,6 +9,7 @@ use App\Models\LichHen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class KhachHangController extends Controller
 {
@@ -84,13 +85,33 @@ class KhachHangController extends Controller
 
         $data = $request->validate([
             'ho_ten'                 => 'required|string|max:100',
-            'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai',
-            'email'                  => 'nullable|email|max:100|unique:khach_hang,email',
+            'so_dien_thoai'          => [
+                'required', 'string', 'max:20',
+                Rule::unique('khach_hang', 'so_dien_thoai')->whereNull('deleted_at'),
+            ],
+            'email'                  => [
+                'nullable', 'email', 'max:100',
+                Rule::unique('khach_hang', 'email')->whereNull('deleted_at'),
+            ],
             'password'               => 'required|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'nullable|in:lanh,am,nong',
             'nguon_khach_hang'       => 'nullable|string',
             'ghi_chu_noi_bo'         => 'nullable|string',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id'
+        ], [
+            'ho_ten.required'                => 'Vui lòng nhập họ tên khách hàng.',
+            'ho_ten.max'                     => 'Họ tên không được vượt quá 100 ký tự.',
+            'so_dien_thoai.required'         => 'Vui lòng nhập số điện thoại.',
+            'so_dien_thoai.max'              => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'so_dien_thoai.unique'           => 'Số điện thoại này đã được sử dụng bởi khách hàng khác.',
+            'email.email'                    => 'Địa chỉ email không hợp lệ.',
+            'email.max'                      => 'Email không được vượt quá 100 ký tự.',
+            'email.unique'                   => 'Email này đã được sử dụng bởi khách hàng khác.',
+            'password.required'              => 'Vui lòng nhập mật khẩu.',
+            'password.min'                   => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed'             => 'Xác nhận mật khẩu không khớp.',
+            'muc_do_tiem_nang.in'            => 'Mức độ tiềm năng không hợp lệ.',
+            'nhan_vien_phu_trach_id.exists'  => 'Nhân viên phụ trách không tồn tại.',
         ]);
 
         $data['nhan_vien_phu_trach_id'] = $nhanVien->isSale() ? $nhanVien->id : ($request->nhan_vien_phu_trach_id ?? null);
@@ -98,10 +119,28 @@ class KhachHangController extends Controller
         $data['nguon_khach_hang'] = $request->nguon_khach_hang ?? 'sale';
         $data['password'] = Hash::make($data['password']);
 
-        KhachHang::create($data);
+        // Kiểm tra xem có record bị soft-delete trùng email/SĐT không.
+        // Nếu có, cần restore thay vì create mới để tránh UniqueConstraintViolationException.
+        $trashed = KhachHang::withTrashed()
+            ->where(function ($q) use ($data) {
+                if (!empty($data['email'])) {
+                    $q->orWhere('email', $data['email']);
+                }
+                $q->orWhere('so_dien_thoai', $data['so_dien_thoai']);
+            })
+            ->whereNotNull('deleted_at')
+            ->first();
+
+        if ($trashed) {
+            $trashed->restore();
+            $trashed->forceFill($data)->save();
+        } else {
+            KhachHang::create($data);
+        }
 
         return back()->with('success', 'Đã thêm Khách hàng mới thành công!');
     }
+
 
     public function show(KhachHang $khachHang)
     {
@@ -158,11 +197,31 @@ class KhachHangController extends Controller
 
         $data = $request->validate([
             'ho_ten'                 => 'required|string|max:100',
-            'so_dien_thoai'          => 'required|string|max:20|unique:khach_hang,so_dien_thoai,' . $khachHang->id,
-            'email'                  => 'nullable|email|max:100|unique:khach_hang,email,' . $khachHang->id,
+            'so_dien_thoai'          => [
+                'required', 'string', 'max:20',
+                Rule::unique('khach_hang', 'so_dien_thoai')->ignore($khachHang->id)->whereNull('deleted_at'),
+            ],
+            'email'                  => [
+                'nullable', 'email', 'max:100',
+                Rule::unique('khach_hang', 'email')->ignore($khachHang->id)->whereNull('deleted_at'),
+            ],
             'password'               => 'nullable|string|min:6|confirmed',
             'muc_do_tiem_nang'       => 'required|in:lanh,am,nong',
             'nhan_vien_phu_trach_id' => 'nullable|exists:nhan_vien,id'
+        ], [
+            'ho_ten.required'                => 'Vui lòng nhập họ tên khách hàng.',
+            'ho_ten.max'                     => 'Họ tên không được vượt quá 100 ký tự.',
+            'so_dien_thoai.required'         => 'Vui lòng nhập số điện thoại.',
+            'so_dien_thoai.max'              => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'so_dien_thoai.unique'           => 'Số điện thoại này đã được sử dụng bởi khách hàng khác.',
+            'email.email'                    => 'Địa chỉ email không hợp lệ.',
+            'email.max'                      => 'Email không được vượt quá 100 ký tự.',
+            'email.unique'                   => 'Email này đã được sử dụng bởi khách hàng khác.',
+            'password.min'                   => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.confirmed'             => 'Xác nhận mật khẩu không khớp.',
+            'muc_do_tiem_nang.required'      => 'Vui lòng chọn mức độ tiềm năng.',
+            'muc_do_tiem_nang.in'            => 'Mức độ tiềm năng không hợp lệ.',
+            'nhan_vien_phu_trach_id.exists'  => 'Nhân viên phụ trách không tồn tại.',
         ]);
 
         if (empty($data['password'])) {

@@ -149,16 +149,32 @@ class NhanVienController extends Controller
     public function store(Request $request)
     {
         try {
-            // Hỗ trợ cả AJAX (JSON) và form thường
             $data = $this->validateNhanVien($request);
             $data['vai_tro']      = NhanVien::normalizeVaiTro($data['vai_tro']);
-
             $data['password']     = Hash::make($data['mat_khau']);
             $data['kich_hoat']    = $request->input('kich_hoat', '1') === '1' || $request->boolean('kich_hoat', true);
             $data['anh_dai_dien'] = $this->handleAvatar($request);
             unset($data['mat_khau'], $data['mat_khau_confirmation']);
 
-            $nv = NhanVien::create($data);
+            // Kiểm tra record bị soft-delete có cùng email/SĐT, nếu có thì restore thay vì INSERT mới
+            // để tránh UniqueConstraintViolationException từ DB.
+            $trashed = NhanVien::withTrashed()
+                ->where(function ($q) use ($data) {
+                    $q->where('email', $data['email']);
+                    if (!empty($data['so_dien_thoai'])) {
+                        $q->orWhere('so_dien_thoai', $data['so_dien_thoai']);
+                    }
+                })
+                ->whereNotNull('deleted_at')
+                ->first();
+
+            if ($trashed) {
+                $trashed->restore();
+                $trashed->forceFill($data)->save();
+                $nv = $trashed->fresh();
+            } else {
+                $nv = NhanVien::create($data);
+            }
         } catch (QueryException $e) {
             if ((int) $e->getCode() === 23000) {
                 $msg = 'Email hoặc số điện thoại đã tồn tại trong hệ thống.';
@@ -166,9 +182,7 @@ class NhanVienController extends Controller
                 if ($request->wantsJson()) {
                     return response()->json([
                         'ok' => false,
-                        'errors' => [
-                            'email' => [$msg],
-                        ],
+                        'errors' => ['email' => [$msg]],
                     ], 422);
                 }
 
@@ -190,6 +204,7 @@ class NhanVienController extends Controller
             ->route('nhanvien.admin.nhan-vien.index')
             ->with('success', '✅ Đã thêm nhân viên <strong>' . $nv->ho_ten . '</strong> thành công!');
     }
+
 
     // EDIT DATA (AJAX — để load vào modal)
     public function editData(NhanVien $nhanVien)
@@ -318,7 +333,7 @@ class NhanVienController extends Controller
                 'required',
                 'email',
                 'max:150',
-                Rule::unique('nhan_vien', 'email')->ignore($ignoreId),
+                Rule::unique('nhan_vien', 'email')->ignore($ignoreId)->whereNull('deleted_at'),
             ],
             'mat_khau'            => $ignoreId ? 'nullable|string|min:6|max:50' : 'required|string|min:6|max:50',
             'mat_khau_confirmation' => $ignoreId ? 'nullable|string' : 'required|string',
@@ -327,12 +342,33 @@ class NhanVienController extends Controller
                 'nullable',
                 'string',
                 'max:20',
-                Rule::unique('nhan_vien', 'so_dien_thoai')->ignore($ignoreId),
+                Rule::unique('nhan_vien', 'so_dien_thoai')->ignore($ignoreId)->whereNull('deleted_at'),
             ],
             'anh_dai_dien'        => 'nullable|image|mimes:jpeg,png,webp|max:2048',
             'kich_hoat'           => 'nullable',
+        ], [
+            'ho_ten.required'               => 'Vui lòng nhập họ và tên.',
+            'ho_ten.max'                    => 'Họ và tên không được vượt quá 100 ký tự.',
+            'email.required'                => 'Vui lòng nhập địa chỉ email.',
+            'email.email'                   => 'Địa chỉ email không hợp lệ.',
+            'email.max'                     => 'Email không được vượt quá 150 ký tự.',
+            'email.unique'                  => 'Email này đã được sử dụng bởi nhân viên khác.',
+            'mat_khau.required'             => 'Vui lòng nhập mật khẩu.',
+            'mat_khau.min'                  => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'mat_khau.max'                  => 'Mật khẩu không được vượt quá 50 ký tự.',
+            'mat_khau_confirmation.required' => 'Vui lòng nhập xác nhận mật khẩu.',
+            'mat_khau_confirmation.same'    => 'Xác nhận mật khẩu không khớp.',
+            'vai_tro.required'              => 'Vui lòng chọn vai trò cho nhân viên.',
+            'vai_tro.in'                    => 'Vai trò được chọn không hợp lệ.',
+            'so_dien_thoai.max'             => 'Số điện thoại không được vượt quá 20 ký tự.',
+            'so_dien_thoai.unique'          => 'Số điện thoại này đã được sử dụng bởi nhân viên khác.',
+            'anh_dai_dien.image'            => 'Tệp tải lên phải là hình ảnh.',
+            'anh_dai_dien.mimes'            => 'Ảnh đại diện phải có định dạng: JPG, PNG hoặc WebP.',
+            'anh_dai_dien.max'              => 'Ảnh đại diện không được vượt quá 2MB.',
         ]);
     }
+
+
 
     private function handleAvatar(Request $request): ?string
     {

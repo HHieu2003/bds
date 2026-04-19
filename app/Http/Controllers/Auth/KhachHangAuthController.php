@@ -96,21 +96,29 @@ class KhachHangAuthController extends Controller
             return response()->json(['success' => false, 'errors' => $v->errors()], 422);
         }
 
-        $existing = KhachHang::where('email', $request->email)->first();
-        $alreadyVerified = $existing && (
-            $existing->email_xac_thuc_at ||
-            ($existing->kich_hoat && empty($existing->verification_token))
-        );
+        // Dùng withTrashed() để phát hiện cả tài khoản bị soft-delete.
+        // Nếu không kiểm tra, updateOrCreate sẽ không tìm thấy record bị xóa
+        // và cố INSERT → DB ném UniqueConstraintViolationException.
+        $existing = KhachHang::withTrashed()->where('email', $request->email)->first();
 
-        if ($alreadyVerified) {
-            return response()->json(['success' => false, 'errors'  => ['email' => ['Email này đã được sử dụng.']]], 422);
+        if ($existing) {
+            $alreadyVerified = $existing->email_xac_thuc_at ||
+                ($existing->kich_hoat && empty($existing->verification_token));
+
+            // Tài khoản đang hoạt động và đã xác thực → không cho đăng ký lại
+            if ($alreadyVerified && !$existing->trashed()) {
+                return response()->json(['success' => false, 'errors' => ['email' => ['Email này đã được sử dụng.']]], 422);
+            }
         }
 
         $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 
-        $kh = KhachHang::updateOrCreate(
-            ['email' => $request->email],
-            [
+        if ($existing) {
+            // Phục hồi tài khoản bị soft-delete hoặc cập nhật tài khoản chưa xác thực
+            if ($existing->trashed()) {
+                $existing->restore();
+            }
+            $existing->forceFill([
                 'ho_ten'             => $request->ho_ten,
                 'so_dien_thoai'      => $request->so_dien_thoai,
                 'password'           => Hash::make($request->password),
@@ -118,8 +126,21 @@ class KhachHangAuthController extends Controller
                 'verification_token' => $otp,
                 'token_expiry'       => Carbon::now()->addMinutes(15),
                 'email_xac_thuc_at'  => null,
-            ]
-        );
+                'kich_hoat'          => false,
+            ])->save();
+            $kh = $existing->fresh();
+        } else {
+            $kh = KhachHang::create([
+                'email'              => $request->email,
+                'ho_ten'             => $request->ho_ten,
+                'so_dien_thoai'      => $request->so_dien_thoai,
+                'password'           => Hash::make($request->password),
+                'nguon_khach_hang'   => 'website',
+                'verification_token' => $otp,
+                'token_expiry'       => Carbon::now()->addMinutes(15),
+                'email_xac_thuc_at'  => null,
+            ]);
+        }
 
         try {
             Mail::to($kh->email)->send(new VerifyEmailMail($otp, $kh->ho_ten));
