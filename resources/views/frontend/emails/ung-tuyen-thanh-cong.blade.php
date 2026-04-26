@@ -130,21 +130,7 @@
                         </td>
                     </tr>
 
-                    {{-- CTA --}}
-                    <tr>
-                        <td style="padding:10px 28px 24px 28px;">
-                            <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
-                                <tr>
-                                    <td align="center">
-                                        <a href="{{ url('/tuyen-dung') }}"
-                                            style="display:inline-block;background:#0F172A;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 20px;border-radius:10px;">
-                                            Xem them vi tri tuyen dung
-                                        </a>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
+
 
                     {{-- Footer --}}
                     <tr>

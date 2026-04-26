@@ -56,7 +56,7 @@ class LichHenController extends Controller
         $thoiGianHen = $request->thoi_gian_hen;
         $lichHenId = $lichHen->id;
 
-        dispatch(function () use ($lichHenId, $emailKhach, $khachHangId, $tenKhach, $thoiGianHen) {
+        app()->terminating(function () use ($lichHenId, $emailKhach, $khachHangId, $tenKhach, $thoiGianHen) {
             // 5a. Bắn thông báo cho toàn bộ Sale và Admin biết có kèo mới để vào nhận
             $saleVaAdmin = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', 1)->get();
             foreach ($saleVaAdmin as $nv) {
@@ -114,7 +114,7 @@ class LichHenController extends Controller
                     ]);
                 }
             }
-        })->afterResponse();
+        });
 
         return response()->json([
             'status'  => 'success',

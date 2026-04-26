@@ -63,7 +63,7 @@ class TuyenDungController extends Controller
         $donId = $don->id;
         $emailUngVien = $don->email;
 
-        dispatch(function () use ($donId, $emailUngVien) {
+        app()->terminating(function () use ($donId, $emailUngVien) {
             try {
                 $don = DonUngTuyen::with('tinTuyenDung')->find($donId);
                 if (!$don) return;
@@ -71,23 +71,29 @@ class TuyenDungController extends Controller
                 Mail::to($emailUngVien)->send(new UngTuyenThanhCongMail($don));
 
                 NhatKyEmail::create([
-                    'loai'       => 'ung_tuyen_thanh_cong',
-                    'nguoi_nhan' => $emailUngVien,
-                    'tieu_de'    => 'Xác nhận ứng tuyển thành công',
-                    'noi_dung'   => "Ứng tuyển vị trí: {$don->tinTuyenDung->tieu_de}",
-                    'trang_thai' => 'thanh_cong',
+                    'loai_email'          => 'ung_tuyen_thanh_cong',
+                    'email_nguoi_nhan'    => $emailUngVien,
+                    'tieu_de'             => 'Xác nhận ứng tuyển thành công',
+                    'noi_dung'            => "Ứng tuyển vị trí: {$don->tinTuyenDung->tieu_de}",
+                    'trang_thai'          => 'thanh_cong',
+                    'doi_tuong_lien_quan' => 'don_ung_tuyen',
+                    'doi_tuong_id'        => $donId,
+                    'thoi_diem_gui'       => now(),
                 ]);
             } catch (\Exception $e) {
                 NhatKyEmail::create([
-                    'loai'       => 'ung_tuyen_thanh_cong',
-                    'nguoi_nhan' => $emailUngVien,
-                    'tieu_de'    => 'Xác nhận ứng tuyển thành công',
-                    'noi_dung'   => null,
-                    'trang_thai' => 'that_bai',
-                    'loi'        => $e->getMessage(),
+                    'loai_email'          => 'ung_tuyen_thanh_cong',
+                    'email_nguoi_nhan'    => $emailUngVien,
+                    'tieu_de'             => 'Xác nhận ứng tuyển thành công',
+                    'noi_dung'            => null,
+                    'trang_thai'          => 'that_bai',
+                    'loi'                 => $e->getMessage(),
+                    'doi_tuong_lien_quan' => 'don_ung_tuyen',
+                    'doi_tuong_id'        => $donId,
+                    'thoi_diem_gui'       => now(),
                 ]);
             }
-        })->afterResponse();
+        });
 
         if ($request->ajax()) {
             return response()->json([

@@ -54,9 +54,9 @@ class TrackPageView
                     'created_at'      => now(),
                 ];
 
-                dispatch(function () use ($trackData) {
+                app()->terminating(function () use ($trackData) {
                     LuotTruyCap::create($trackData);
-                })->afterResponse();
+                });
             } catch (\Throwable $e) {
                 // Không để lỗi tracking làm crash trang
             }

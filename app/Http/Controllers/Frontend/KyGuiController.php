@@ -100,7 +100,7 @@ class KyGuiController extends Controller
 
         // 3. Tiến hành gửi mail nếu có email (gửi sau khi response đã trả về)
         if ($sendToEmail) {
-            dispatch(function () use ($sendToEmail, $kyGui) {
+            app()->terminating(function () use ($sendToEmail, $kyGui) {
                 try {
                     $mail = new KyGuiSuccessMail($kyGui);
                     $noiDung = $mail->render();
@@ -140,7 +140,7 @@ class KyGuiController extends Controller
                         'thoi_diem_gui' => now(),
                     ]);
                 }
-            })->afterResponse();
+            });
         }
 
         return redirect()->route('frontend.ky-gui.success')->with('success', 'Gửi ký gửi thành công!');
