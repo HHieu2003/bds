@@ -133,7 +133,7 @@ class BaiVietController extends Controller
         if ($request->hasFile('hinh_anh') || $request->hasFile('anh_dai_dien')) {
             $image = $request->file('hinh_anh') ?? $request->file('anh_dai_dien');
             $data['hinh_anh'] = $image
-                ->store('bai-viet/hinh-anh', 'public');
+                ->store('bai-viet/hinh-anh', 'r2');
         }
 
         // Album ảnh
@@ -203,11 +203,11 @@ class BaiVietController extends Controller
         // Ảnh đại diện mới
         if ($request->hasFile('hinh_anh') || $request->hasFile('anh_dai_dien')) {
             if ($baiViet->hinh_anh) {
-                Storage::disk('public')->delete($baiViet->hinh_anh);
+                Storage::disk('r2')->delete($baiViet->hinh_anh);
             }
             $image = $request->file('hinh_anh') ?? $request->file('anh_dai_dien');
             $data['hinh_anh'] = $image
-                ->store('bai-viet/hinh-anh', 'public');
+                ->store('bai-viet/hinh-anh', 'r2');
         }
 
         // Album ảnh mới
@@ -215,7 +215,7 @@ class BaiVietController extends Controller
             // Xóa ảnh cũ
             if ($baiViet->album_anh) {
                 foreach ($baiViet->album_anh as $old) {
-                    Storage::disk('public')->delete($old);
+                    Storage::disk('r2')->delete($old);
                 }
             }
             $data['album_anh'] = $this->luuAlbum($request->file('album_anh'));
@@ -223,7 +223,7 @@ class BaiVietController extends Controller
 
         // Xóa ảnh đại diện
         if ($request->boolean('xoa_hinh_anh') && $baiViet->hinh_anh) {
-            Storage::disk('public')->delete($baiViet->hinh_anh);
+            Storage::disk('r2')->delete($baiViet->hinh_anh);
             $data['hinh_anh'] = null;
         }
 
@@ -243,11 +243,11 @@ class BaiVietController extends Controller
 
         // Xóa ảnh liên quan
         if ($baiViet->hinh_anh) {
-            Storage::disk('public')->delete($baiViet->hinh_anh);
+            Storage::disk('r2')->delete($baiViet->hinh_anh);
         }
         if ($baiViet->album_anh) {
             foreach ($baiViet->album_anh as $anh) {
-                Storage::disk('public')->delete($anh);
+                Storage::disk('r2')->delete($anh);
             }
         }
 
@@ -313,11 +313,11 @@ class BaiVietController extends Controller
 
         foreach ($baiViets as $baiViet) {
             if ($baiViet->hinh_anh) {
-                Storage::disk('public')->delete($baiViet->hinh_anh);
+                Storage::disk('r2')->delete($baiViet->hinh_anh);
             }
             if ($baiViet->album_anh) {
                 foreach ($baiViet->album_anh as $anh) {
-                    Storage::disk('public')->delete($anh);
+                    Storage::disk('r2')->delete($anh);
                 }
             }
             $baiViet->delete();
@@ -420,7 +420,7 @@ class BaiVietController extends Controller
     {
         $paths = [];
         foreach ($files as $file) {
-            $paths[] = $file->store('bai-viet/album', 'public');
+            $paths[] = $file->store('bai-viet/album', 'r2');
         }
         return $paths;
     }

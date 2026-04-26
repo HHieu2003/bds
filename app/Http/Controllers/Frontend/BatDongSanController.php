@@ -117,8 +117,8 @@ class BatDongSanController extends Controller
             $query->where('noi_bat', 1);
         }
 
-        // 8.1. Lọc BĐS vào ở ngay (nếu có cột)
-        if ($request->boolean('vao_o_ngay') && Schema::hasColumn('bat_dong_san', 'vao_o_ngay')) {
+        // 8.1. Lọc BĐS vào ở ngay
+        if ($request->boolean('vao_o_ngay')) {
             $query->where('vao_o_ngay', 1);
         }
 

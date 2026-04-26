@@ -8,9 +8,11 @@ use App\Models\LichHen;
 use App\Models\PhienChat;
 use App\Models\YeuCauLienHe;
 use App\Models\ThongBao;
+use App\Models\NhanVien;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\View\View;
 
 class ThongBaoController extends Controller
@@ -22,7 +24,13 @@ class ThongBaoController extends Controller
     {
         $nv    = Auth::guard('nhanvien')->user();
         $items = $this->buildItems($nv, limit: 100);
-        return view('admin.thong-bao.index', compact('items'));
+        
+        $nhanViens = [];
+        if ($nv->isAdmin()) {
+            $nhanViens = NhanVien::where('kich_hoat', 1)->where('id', '!=', $nv->id)->get();
+        }
+
+        return view('admin.thong-bao.index', compact('items', 'nv', 'nhanViens'));
     }
 
     /**
@@ -54,6 +62,50 @@ class ThongBaoController extends Controller
             ->update(['da_doc_at' => now()]);
 
         return response()->json(['ok' => true]);
+    }
+
+    /**
+     * Admin gửi thông báo cho nhân viên
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $nv = Auth::guard('nhanvien')->user();
+        
+        if (!$nv->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'Bạn không có quyền thực hiện thao tác này.'], 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'doi_tuong_nhan_ids' => 'required|array|min:1',
+            'doi_tuong_nhan_ids.*' => 'exists:nhan_vien,id',
+            'tieu_de' => 'required|string|max:255',
+            'noi_dung' => 'required|string',
+            'lien_ket' => 'nullable|string|max:255',
+        ], [
+            'doi_tuong_nhan_ids.required' => 'Vui lòng chọn ít nhất một người nhận.',
+            'tieu_de.required' => 'Vui lòng nhập tiêu đề.',
+            'noi_dung.required' => 'Vui lòng nhập nội dung.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'errors' => $validator->errors()]);
+        }
+
+        $data = $validator->validated();
+
+        foreach ($data['doi_tuong_nhan_ids'] as $nhanVienId) {
+            // For all selected staff
+            ThongBao::create([
+                'loai' => 'thong_bao_admin',
+                'doi_tuong_nhan' => 'nhan_vien',
+                'doi_tuong_nhan_id' => $nhanVienId,
+                'tieu_de' => $data['tieu_de'],
+                'noi_dung' => $data['noi_dung'],
+                'lien_ket' => $data['lien_ket'] ?? null,
+            ]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Đã gửi thông báo thành công.']);
     }
 
     // ══════════════════════════════════════════════════════════
@@ -150,6 +202,7 @@ class ThongBaoController extends Controller
             'lich_hen_moi'    => ['icon' => 'fas fa-calendar-check', 'color' => '#8e44ad', 'bg' => '#f5eeff'],
             'yeu_cau_lien_he' => ['icon' => 'fas fa-phone-alt',       'color' => '#3498db', 'bg' => '#eaf4fd'],
             'tin_nhan_chat'   => ['icon' => 'fas fa-comment-dots',    'color' => '#e74c3c', 'bg' => '#fff0f0'],
+            'thong_bao_admin' => ['icon' => 'fas fa-bullhorn',        'color' => '#8e44ad', 'bg' => '#f5eeff'],
         ];
         ThongBao::where('doi_tuong_nhan', 'nhan_vien')
             ->where('doi_tuong_nhan_id', $nv->id)

@@ -48,7 +48,7 @@ class NganHangController extends Controller
         $data['trang_thai'] = $request->has('trang_thai') ? 1 : 0;
 
         if ($request->hasFile('logo')) {
-            $data['logo'] = $request->file('logo')->store('ngan_hang', 'public');
+            $data['logo'] = $request->file('logo')->store('ngan_hang', 'r2');
         }
 
         NganHang::create($data);
@@ -72,8 +72,8 @@ class NganHangController extends Controller
         $data['trang_thai'] = $request->has('trang_thai') ? 1 : 0;
 
         if ($request->hasFile('logo')) {
-            if ($nganHang->logo) Storage::disk('public')->delete($nganHang->logo);
-            $data['logo'] = $request->file('logo')->store('ngan_hang', 'public');
+            if ($nganHang->logo) Storage::disk('r2')->delete($nganHang->logo);
+            $data['logo'] = $request->file('logo')->store('ngan_hang', 'r2');
         }
 
         $nganHang->update($data);
@@ -84,7 +84,7 @@ class NganHangController extends Controller
     public function destroy(NganHang $nganHang)
     {
         if ($nganHang->logo) {
-            Storage::disk('public')->delete($nganHang->logo);
+            Storage::disk('r2')->delete($nganHang->logo);
         }
         $nganHang->delete();
         return redirect()->route('nhanvien.admin.ngan-hang.index')->with('success', 'Đã xóa ngân hàng!');

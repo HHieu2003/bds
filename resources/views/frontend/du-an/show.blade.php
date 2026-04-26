@@ -1,5 +1,9 @@
 @extends('frontend.layouts.master')
 @section('title', $duAn->ten_du_an . ' - Thành Công Land')
+@section('meta_description', Str::limit(strip_tags($duAn->mo_ta_ngan ?? $duAn->noi_dung_chi_tiet), 160))
+@section('og_title', $duAn->ten_du_an)
+@section('og_description', Str::limit(strip_tags($duAn->mo_ta_ngan ?? $duAn->noi_dung_chi_tiet), 160))
+@section('og_image', $duAn->hinh_anh_dai_dien ? \Storage::disk('r2')->url($duAn->hinh_anh_dai_dien) : asset('images/default-bds.jpg'))
 
 @section('content')
 
@@ -229,7 +233,7 @@
                                                 </div>
                                                 <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                                                     class="dact-card-thumb overflow-hidden d-block">
-                                                    <img src="{{ $anh ? asset('storage/' . $anh) : asset('images/default-bds.jpg') }}"
+                                                    <img src="{{ $anh ? \Storage::disk('r2')->url($anh) : asset('images/default-bds.jpg') }}"
                                                         class="w-100 h-100 project-img" style="object-fit:cover;"
                                                         alt="{{ $bds->tieu_de }}">
                                                 </a>
@@ -289,7 +293,7 @@
                                                 </div>
                                                 <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                                                     class="dact-card-thumb overflow-hidden d-block">
-                                                    <img src="{{ $anh ? asset('storage/' . $anh) : asset('images/default-bds.jpg') }}"
+                                                    <img src="{{ $anh ? \Storage::disk('r2')->url($anh) : asset('images/default-bds.jpg') }}"
                                                         class="w-100 h-100 project-img" style="object-fit:cover;"
                                                         alt="{{ $bds->tieu_de }}">
                                                 </a>
@@ -346,7 +350,7 @@
                                         <a href="{{ route('frontend.du-an.show', $da->slug) }}"
                                             class="dact-da-card d-block">
                                             <div class="dact-da-thumb">
-                                                <img src="{{ $da->hinh_anh_dai_dien ? asset('storage/' . $da->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}"
+                                                <img src="{{ $da->hinh_anh_dai_dien ? \Storage::disk('r2')->url($da->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}"
                                                     alt="{{ $da->ten_du_an }}">
                                             </div>
                                             <div class="dact-da-body">
@@ -464,7 +468,7 @@
         .dact-hero {
             position: relative;
             min-height: clamp(420px, 72vh, 760px);
-            background: url('{{ $duAn->hinh_anh_dai_dien ? asset('storage/' . $duAn->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}') center center / cover no-repeat;
+            background: url('{{ $duAn->hinh_anh_dai_dien ? \Storage::disk('r2')->url($duAn->hinh_anh_dai_dien) : asset('images/default-bds.jpg') }}') center center / cover no-repeat;
             overflow: hidden;
         }
 

@@ -207,7 +207,7 @@
                                     ? json_decode($lh->batDongSan->album_anh, true)
                                     : $lh->batDongSan->album_anh;
                                 if (is_array($album) && count($album) > 0) {
-                                    $anhBds = asset('storage/' . $album[0]);
+                                    $anhBds = \Storage::disk('r2')->url($album[0]);
                                 }
                             }
                         @endphp

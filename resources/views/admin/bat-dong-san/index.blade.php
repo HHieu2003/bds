@@ -251,7 +251,7 @@
                                     : ($bds->gia_thue
                                         ? number_format($bds->gia_thue, 0, ',', '.') . ' VNĐ/tháng'
                                         : 'Thỏa thuận');
-                            $hinhAnhBds = $bds->hinh_anh ? asset('storage/' . $bds->hinh_anh) : '';
+                            $hinhAnhBds = $bds->hinh_anh ? \Storage::disk('r2')->url($bds->hinh_anh) : '';
                             $moTaText = trim(strip_tags((string) $bds->mo_ta));
                         @endphp
                         <tr>
@@ -262,7 +262,7 @@
                                 <div class="d-flex align-items-start gap-2">
                                     <div class="position-relative d-flex flex-column flex-shrink-0">
                                         @if ($bds->hinh_anh)
-                                            <img src="{{ asset('storage/' . $bds->hinh_anh) }}" class="rounded border"
+                                            <img src="{{ \Storage::disk('r2')->url($bds->hinh_anh) }}" class="rounded border"
                                                 style="min-width: 90px; height: 45px; object-fit: cover;" alt="">
                                         @else
                                             <div class="rounded border bg-light text-muted d-flex align-items-center justify-content-center"
@@ -473,12 +473,12 @@
                             : ($bds->gia_thue
                                 ? number_format($bds->gia_thue, 0, ',', '.') . ' VNĐ/tháng'
                                 : 'Thỏa thuận');
-                    $hinhAnhBds = $bds->hinh_anh ? asset('storage/' . $bds->hinh_anh) : '';
+                    $hinhAnhBds = $bds->hinh_anh ? \Storage::disk('r2')->url($bds->hinh_anh) : '';
                 @endphp
                 <div class="mobile-card">
                     <div class="mobile-card-top align-items-start">
                         @if ($bds->hinh_anh)
-                            <img src="{{ asset('storage/' . $bds->hinh_anh) }}" class="rounded border me-2"
+                            <img src="{{ \Storage::disk('r2')->url($bds->hinh_anh) }}" class="rounded border me-2"
                                 style="width: 70px; height: 50px; object-fit: cover;" alt="">
                         @else
                             <div class="rounded border bg-light text-muted d-flex align-items-center justify-content-center me-2"

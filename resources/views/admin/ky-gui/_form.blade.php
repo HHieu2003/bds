@@ -198,7 +198,7 @@
                     <div class="d-flex flex-wrap gap-2 mb-3">
                         @foreach ($kyGui->hinh_anh_tham_khao as $img)
                             <div class="position-relative border rounded" style="width: 100px; height: 100px;">
-                                <img src="{{ asset('storage/' . $img) }}"
+                                <img src="{{ \Storage::disk('r2')->url($img) }}"
                                     class="w-100 h-100 object-fit-cover rounded img-chk-target">
                                 <label
                                     class="position-absolute top-0 end-0 m-1 bg-danger text-white rounded d-flex align-items-center justify-content-center cursor-pointer"

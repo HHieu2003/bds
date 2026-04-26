@@ -47,7 +47,7 @@
                             <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                                 class="overflow-hidden d-block bg-light" style="height: 200px;">
                                 @php $anh = is_array($bds->album_anh) && count($bds->album_anh) > 0 ? $bds->album_anh[0] : null; @endphp
-                                <img src="{{ $anh ? asset('storage/' . $anh) : asset('images/default-bds.jpg') }}"
+                                <img src="{{ $anh ? \Storage::disk('r2')->url($anh) : asset('images/default-bds.jpg') }}"
                                     class="card-img-top h-100 w-100 bds-img"
                                     style="object-fit: cover; transition: transform 0.5s;">
                             </a>

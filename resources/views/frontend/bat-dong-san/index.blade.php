@@ -1541,7 +1541,7 @@
                             <div class="bds-card">
                                 <div class="bds-thumb">
                                     @if ($anhBia)
-                                        <img src="{{ asset('storage/' . $anhBia) }}" alt="{{ $bds->tieu_de }}"
+                                        <img src="{{ \Storage::disk('r2')->url($anhBia) }}" alt="{{ $bds->tieu_de }}"
                                             loading="lazy"
                                             onerror="this.parentElement.innerHTML='<div class=\'bds-thumb-placeholder\'><i class=\'fas fa-image\' style=\'font-size:2rem\'></i><span style=\'font-size:.75rem\'>Chưa có ảnh</span></div>'">
                                     @else

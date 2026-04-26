@@ -106,7 +106,7 @@
             <button class="topbar-user" id="topbarUserBtn" onclick="toggleUserDropdown()" type="button">
                 <div class="topbar-user-avatar">
                     @if ($hasAvatar)
-                        <img src="{{ asset('storage/' . $avatarPath) }}" alt="{{ $nhanVien->ho_ten }}"
+                        <img src="{{ \Storage::disk('r2')->url($avatarPath) }}" alt="{{ $nhanVien->ho_ten }}"
                             style="width:100%;height:100%;object-fit:cover;">
                     @else
                         {{ mb_strtoupper(mb_substr($nhanVien->ho_ten, 0, 1)) }}

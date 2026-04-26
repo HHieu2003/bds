@@ -136,7 +136,7 @@ class BatDongSan extends Model
     public function getHinhAnhUrlAttribute(): string
     {
         return $this->hinh_anh
-            ? asset('storage/' . $this->hinh_anh)
+            ? \Illuminate\Support\Facades\Storage::disk('r2')->url($this->hinh_anh)
             : asset('images/no-image.jpg');
     }
 

@@ -37,7 +37,7 @@ class NganHang extends Model
     public function getLogoUrlAttribute(): string
     {
         return $this->logo
-            ? asset('storage/' . $this->logo)
+            ? \Illuminate\Support\Facades\Storage::disk('r2')->url($this->logo)
             : asset('images/default-bank.png');
     }
 }

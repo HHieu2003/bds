@@ -42,17 +42,21 @@ class TrackPageView
                 $duAnId    = $request->route('duAn')  ? (int) $request->route('duAn')  : null;
                 $bdsId     = null;
 
-                // Thêm log vào DB (async-friendly: fire-and-forget nếu sau này dùng queue)
-                LuotTruyCap::create([
-                    'session_id'     => $request->session()->getId(),
-                    'ip_address'     => $request->ip(),
-                    'url'            => substr($request->fullUrl(), 0, 499),
-                    'trang'          => $trang,
-                    'du_an_id'       => $duAnId,
+                // Dispatch sang queue để không block response
+                $trackData = [
+                    'session_id'      => $request->session()->getId(),
+                    'ip_address'      => $request->ip(),
+                    'url'             => substr($request->fullUrl(), 0, 499),
+                    'trang'           => $trang,
+                    'du_an_id'        => $duAnId,
                     'bat_dong_san_id' => $bdsId,
-                    'user_agent'     => substr($request->userAgent() ?? '', 0, 499),
-                    'created_at'     => now(),
-                ]);
+                    'user_agent'      => substr($request->userAgent() ?? '', 0, 499),
+                    'created_at'      => now(),
+                ];
+
+                dispatch(function () use ($trackData) {
+                    LuotTruyCap::create($trackData);
+                })->afterResponse();
             } catch (\Throwable $e) {
                 // Không để lỗi tracking làm crash trang
             }

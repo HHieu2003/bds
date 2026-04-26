@@ -242,16 +242,36 @@ class DashboardController extends Controller
             'thue_da_thue' => BatDongSan::whereNull('deleted_at')->where('nhu_cau', 'thue')->whereIn('trang_thai', ['da_ban', 'da_thue'])->count(),
         ];
 
-        // Biểu đồ 6 tháng (Tính lùi 6 tháng từ ngày End Date đang lọc)
+        // Biểu đồ 6 tháng — Tối ưu: 2 query GROUP BY thay vì 12 query riêng lẻ
+        $baseChartDate = $endDate->copy();
+        $chartStart = $baseChartDate->copy()->subMonths(5)->startOfMonth();
+
+        // Query 1: BĐS thêm mới theo tháng
+        $themRaw = BatDongSan::whereNull('deleted_at')
+            ->where('created_at', '>=', $chartStart)
+            ->where('created_at', '<=', $endDate)
+            ->selectRaw("DATE_FORMAT(created_at, '%Y-%m') as thang, COUNT(*) as so_luong")
+            ->groupBy('thang')
+            ->pluck('so_luong', 'thang');
+
+        // Query 2: BĐS đã bán/thuê theo tháng
+        $banRaw = BatDongSan::whereNull('deleted_at')
+            ->whereIn('trang_thai', ['da_ban', 'da_thue'])
+            ->where('updated_at', '>=', $chartStart)
+            ->where('updated_at', '<=', $endDate)
+            ->selectRaw("DATE_FORMAT(updated_at, '%Y-%m') as thang, COUNT(*) as so_luong")
+            ->groupBy('thang')
+            ->pluck('so_luong', 'thang');
+
         $labels6Thang = [];
         $dataThem6Thang = [];
         $dataBan6Thang = [];
-        $baseChartDate = $endDate->copy();
         for ($i = 5; $i >= 0; $i--) {
             $month = $baseChartDate->copy()->subMonths($i);
+            $key = $month->format('Y-m');
             $labels6Thang[] = $month->format('m/Y');
-            $dataThem6Thang[] = BatDongSan::whereYear('created_at', $month->year)->whereMonth('created_at', $month->month)->whereNull('deleted_at')->count();
-            $dataBan6Thang[] = BatDongSan::whereIn('trang_thai', ['da_ban', 'da_thue'])->whereYear('updated_at', $month->year)->whereMonth('updated_at', $month->month)->whereNull('deleted_at')->count();
+            $dataThem6Thang[] = $themRaw[$key] ?? 0;
+            $dataBan6Thang[] = $banRaw[$key] ?? 0;
         }
         $chart6Thang = ['labels' => $labels6Thang, 'them' => $dataThem6Thang, 'ban' => $dataBan6Thang];
 

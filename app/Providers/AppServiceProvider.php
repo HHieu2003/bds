@@ -8,12 +8,16 @@ use App\Models\BatDongSan;
 use App\Observers\BatDongSanObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
+    /** Cache TTL cho menu header (phút) */
+    private const MENU_CACHE_MINUTES = 30;
+
     public function register(): void
     {
         //
@@ -51,24 +55,57 @@ class AppServiceProvider extends ServiceProvider
 
         BatDongSan::observe(BatDongSanObserver::class);
 
-        try {
-            // ── Khu vực có dự án → dùng cho dropdown header ──
-            $khuVucMenu = KhuVuc::withCount([
-                'duAn as so_du_an' => fn($q) =>
-                $q->where('hien_thi', true)
+        // ── Menu header: Cache 30 phút, chỉ share cho frontend views ──
+        View::composer('frontend.*', function ($view) {
+            try {
+                $view->with('khuVucMenu', $this->getCachedKhuVucMenu());
+                $view->with('tongSoDuAn', $this->getCachedTongSoDuAn());
+                $view->with('duAnMenu', $this->getCachedDuAnMenu());
+            } catch (\Exception $e) {
+                $view->with('khuVucMenu', collect());
+                $view->with('tongSoDuAn', 0);
+                $view->with('duAnMenu', collect());
+            }
+        });
+    }
+
+    /**
+     * Cache danh sách khu vực cho menu header.
+     */
+    private function getCachedKhuVucMenu()
+    {
+        return Cache::remember('menu:khu_vuc', now()->addMinutes(self::MENU_CACHE_MINUTES), function () {
+            return KhuVuc::withCount([
+                'duAn as so_du_an' => fn($q) => $q->where('hien_thi', true)
             ])
                 ->having('so_du_an', '>', 0)
                 ->where('hien_thi', true)
                 ->orderBy('thu_tu_hien_thi')
                 ->get();
+        });
+    }
 
-            $tongSoDuAn = DuAn::where('hien_thi', true)->count();
-            $duAnMenu = DuAn::withCount([
+    /**
+     * Cache tổng số dự án.
+     */
+    private function getCachedTongSoDuAn()
+    {
+        return Cache::remember('menu:tong_du_an', now()->addMinutes(self::MENU_CACHE_MINUTES), function () {
+            return DuAn::where('hien_thi', true)->count();
+        });
+    }
+
+    /**
+     * Cache danh sách dự án cho menu dropdown.
+     */
+    private function getCachedDuAnMenu()
+    {
+        return Cache::remember('menu:du_an', now()->addMinutes(self::MENU_CACHE_MINUTES), function () {
+            return DuAn::withCount([
                 'batDongSans as so_can_ban' => fn($q) =>
                 $q->where('nhu_cau', 'ban')
                     ->where('hien_thi', true)
                     ->where('trang_thai', 'con_hang'),
-
                 'batDongSans as so_can_thue' => fn($q) =>
                 $q->where('nhu_cau', 'thue')
                     ->where('hien_thi', true)
@@ -78,16 +115,16 @@ class AppServiceProvider extends ServiceProvider
                 ->orderBy('thu_tu_hien_thi')
                 ->limit(5)
                 ->get();
+        });
+    }
 
-            View::share('duAnMenu', $duAnMenu);
-
-            // ── Share xuống TẤT CẢ views (frontend + admin) ──
-            View::share('khuVucMenu',  $khuVucMenu);
-            View::share('tongSoDuAn', $tongSoDuAn);
-        } catch (\Exception $e) {
-            // Tránh crash khi chưa migrate
-            View::share('khuVucMenu',  collect());
-            View::share('tongSoDuAn', 0);
-        }
+    /**
+     * Xóa toàn bộ cache menu (gọi khi admin thay đổi DuAn/KhuVuc/BDS).
+     */
+    public static function clearMenuCache(): void
+    {
+        Cache::forget('menu:khu_vuc');
+        Cache::forget('menu:tong_du_an');
+        Cache::forget('menu:du_an');
     }
 }

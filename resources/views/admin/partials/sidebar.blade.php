@@ -2,31 +2,46 @@
     $nhanVien = Auth::guard('nhanvien')->user();
     $routeName = Route::currentRouteName() ?? '';
 
-    $kyGuiCount = \App\Models\KyGui::where('trang_thai', 'cho_duyet')->count();
+    // ── Badge counts: cache 2 phút theo nhân viên để giảm ~6 query/page ──
+    $badgeCacheKey = 'sidebar:badges:' . $nhanVien->id;
+    $badges = Cache::remember($badgeCacheKey, now()->addMinutes(2), function () use ($nhanVien) {
+        $data = [];
+        $data['kyGuiCount'] = \App\Models\KyGui::where('trang_thai', 'cho_duyet')->count();
 
-    if ($nhanVien->isSale()) {
-        $lichHenCount = \App\Models\LichHen::where('nhan_vien_sale_id', $nhanVien->id)
-            ->whereDate('thoi_gian_hen', today())
-            ->whereNotIn('trang_thai', ['hoan_thanh', 'huy', 'tu_choi'])
-            ->count();
-        $lichHenMoiCount = \App\Models\LichHen::where('nhan_vien_sale_id', $nhanVien->id)
-            ->where('trang_thai', 'moi_dat')
-            ->count();
-    } elseif ($nhanVien->isNguonHang()) {
-        $lichHenCount = \App\Models\LichHen::where('nhan_vien_nguon_hang_id', $nhanVien->id)
-            ->where('trang_thai', 'cho_xac_nhan')
-            ->count();
-        $lichHenMoiCount = 0;
-    } else {
-        $lichHenCount = \App\Models\LichHen::whereDate('thoi_gian_hen', today())
-            ->whereNotIn('trang_thai', ['hoan_thanh', 'huy', 'tu_choi'])
-            ->count();
-        $lichHenMoiCount = \App\Models\LichHen::where('trang_thai', 'moi_dat')->count();
-    }
+        if ($nhanVien->isSale()) {
+            $data['lichHenCount'] = \App\Models\LichHen::where('nhan_vien_sale_id', $nhanVien->id)
+                ->whereDate('thoi_gian_hen', today())
+                ->whereNotIn('trang_thai', ['hoan_thanh', 'huy', 'tu_choi'])
+                ->count();
+            $data['lichHenMoiCount'] = \App\Models\LichHen::where('nhan_vien_sale_id', $nhanVien->id)
+                ->where('trang_thai', 'moi_dat')
+                ->count();
+        } elseif ($nhanVien->isNguonHang()) {
+            $data['lichHenCount'] = \App\Models\LichHen::where('nhan_vien_nguon_hang_id', $nhanVien->id)
+                ->where('trang_thai', 'cho_xac_nhan')
+                ->count();
+            $data['lichHenMoiCount'] = 0;
+        } else {
+            $data['lichHenCount'] = \App\Models\LichHen::whereDate('thoi_gian_hen', today())
+                ->whereNotIn('trang_thai', ['hoan_thanh', 'huy', 'tu_choi'])
+                ->count();
+            $data['lichHenMoiCount'] = \App\Models\LichHen::where('trang_thai', 'moi_dat')->count();
+        }
 
-    $chatCount = \App\Models\PhienChat::where('trang_thai', 'dang_cho')->count();
-    $lienHeCanXuLyCount = \App\Models\YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
-    $soKhuVuc = $nhanVien->isAdmin() ? \App\Models\KhuVuc::count() : 0;
+        $data['chatCount'] = \App\Models\PhienChat::where('trang_thai', 'dang_cho')->count();
+        $data['lienHeCanXuLyCount'] = \App\Models\YeuCauLienHe::whereNull('nhan_vien_phu_trach_id')->count();
+        $data['soKhuVuc'] = $nhanVien->isAdmin() ? \App\Models\KhuVuc::count() : 0;
+
+        return $data;
+    });
+
+    $kyGuiCount = $badges['kyGuiCount'];
+    $lichHenCount = $badges['lichHenCount'];
+    $lichHenMoiCount = $badges['lichHenMoiCount'];
+    $chatCount = $badges['chatCount'];
+    $lienHeCanXuLyCount = $badges['lienHeCanXuLyCount'];
+    $soKhuVuc = $badges['soKhuVuc'];
+
     $bdsFilter = request('nhu_cau');
     $isBdsMenuOpen = str_starts_with($routeName, 'nhanvien.admin.bat-dong-san');
 
@@ -214,6 +229,20 @@
             </a>
         </div>
 
+        @php
+            $donMoiCount = \App\Models\DonUngTuyen::where('trang_thai', 'moi')->count();
+        @endphp
+        <div class="nav-item">
+            <a class="nav-link-item {{ $active('nhanvien.admin.tuyen-dung') }}"
+                href="{{ route('nhanvien.admin.tuyen-dung.index') }}" data-tooltip="Tuyển dụng">
+                <i class="fas fa-user-plus nav-icon"></i>
+                <span class="nav-link-text">Tuyển dụng</span>
+                @if ($donMoiCount > 0)
+                    <span class="nav-badge nav-badge-red">{{ $donMoiCount }}</span>
+                @endif
+            </a>
+        </div>
+
         {{-- ── 6. HỆ THỐNG & CÀI ĐẶT ── --}}
         @if ($nhanVien->isAdmin())
             <div class="nav-group-label">Hệ thống & Cài đặt</div>
@@ -243,7 +272,7 @@
                         $avatarPath && \Illuminate\Support\Facades\Storage::disk('public')->exists($avatarPath);
                 @endphp
                 @if ($hasAvatar)
-                    <img src="{{ asset('storage/' . $avatarPath) }}" alt="{{ $nhanVien->ho_ten }}">
+                    <img src="{{ \Storage::disk('r2')->url($avatarPath) }}" alt="{{ $nhanVien->ho_ten }}">
                 @else
                     {{ mb_strtoupper(mb_substr($nhanVien->ho_ten, 0, 1)) }}
                 @endif

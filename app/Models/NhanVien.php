@@ -112,8 +112,8 @@ class NhanVien extends Authenticatable
      */
     public function getAnhDaiDienUrlAttribute(): string
     {
-        if ($this->anh_dai_dien && Storage::disk('public')->exists($this->anh_dai_dien)) {
-            return asset('storage/' . $this->anh_dai_dien);
+        if ($this->anh_dai_dien && Storage::disk('r2')->exists($this->anh_dai_dien)) {
+            return Storage::disk('r2')->url($this->anh_dai_dien);
         }
 
         $name = urlencode($this->ho_ten ?: 'NV');

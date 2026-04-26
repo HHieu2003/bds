@@ -1,6 +1,10 @@
 @extends('frontend.layouts.master')
 
 @section('title', $baiViet->tieu_de . ' - Thành Công Land')
+@section('meta_description', Str::limit(strip_tags($baiViet->mo_ta_ngan ?? $baiViet->noi_dung), 160))
+@section('og_title', $baiViet->tieu_de)
+@section('og_description', Str::limit(strip_tags($baiViet->mo_ta_ngan ?? $baiViet->noi_dung), 160))
+@section('og_image', $baiViet->hinh_anh ? \Storage::disk('r2')->url($baiViet->hinh_anh) : asset('images/default-news.jpg'))
 
 @section('content')
 
@@ -123,7 +127,7 @@
                                         <div class="card border-0 shadow-sm h-100 rounded-4 overflow-hidden hover-up">
                                             <a href="{{ route('frontend.tin-tuc.show', $bv->slug) }}"
                                                 class="bvct-related-thumb overflow-hidden d-block">
-                                                <img src="{{ $bv->hinh_anh ? asset('storage/' . $bv->hinh_anh) : asset('images/default-news.jpg') }}"
+                                                <img src="{{ $bv->hinh_anh ? \Storage::disk('r2')->url($bv->hinh_anh) : asset('images/default-news.jpg') }}"
                                                     class="w-100 h-100 project-img" style="object-fit:cover;"
                                                     alt="{{ $bv->tieu_de }}">
                                             </a>
@@ -209,7 +213,7 @@
             padding: 4rem 0 3rem;
             background:
                 linear-gradient(rgb(153 145 138 / 69%), rgb(93 90 87 / 73%)),
-                url('{{ $baiViet->hinh_anh ? asset('storage/' . $baiViet->hinh_anh) : asset('images/default-news.jpg') }}') center / cover fixed;
+                url('{{ $baiViet->hinh_anh ? \Storage::disk('r2')->url($baiViet->hinh_anh) : asset('images/default-news.jpg') }}') center / cover fixed;
             overflow: hidden;
         }
 

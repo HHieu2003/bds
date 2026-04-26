@@ -9,15 +9,24 @@ use App\Models\DuAn;
 use App\Models\KhuVuc;
 use App\Models\YeuThich;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use App\Services\GoiYService;
 
 class HomeController extends Controller
 {
     public function index(GoiYService $goiYService)
     {
-        $bdsNoiBat = BatDongSan::with('duAn')->where('hien_thi', true)->where('noi_bat', true)->where('trang_thai', 'con_hang')->orderBy('thu_tu_hien_thi')->limit(8)->get();
-        $bdsBan = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
-        $bdsThue = BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        // ── Dữ liệu tĩnh: cache 10 phút (ít thay đổi) ──
+        $bdsNoiBat = Cache::remember('home:bds_noi_bat', now()->addMinutes(10), function () {
+            return BatDongSan::with('duAn')->where('hien_thi', true)->where('noi_bat', true)->where('trang_thai', 'con_hang')->orderBy('thu_tu_hien_thi')->limit(8)->get();
+        });
+        $bdsBan = Cache::remember('home:bds_ban', now()->addMinutes(10), function () {
+            return BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'ban')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        });
+        $bdsThue = Cache::remember('home:bds_thue', now()->addMinutes(10), function () {
+            return BatDongSan::with('duAn')->where('hien_thi', true)->where('nhu_cau', 'thue')->where('trang_thai', 'con_hang')->latest()->limit(6)->get();
+        });
+
         $khachHangId = Auth::guard('customer')->id();
         $sessionId   = session()->getId();
 
@@ -36,28 +45,36 @@ class HomeController extends Controller
                 ->flip();
         }
 
-        $bdsNoiBat->transform(function ($item) use ($favoriteMap) {
-            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
-            return $item;
+        // Clone để không biến đổi bản gốc trong cache
+        $bdsNoiBat = $bdsNoiBat->map(function ($item) use ($favoriteMap) {
+            $clone = clone $item;
+            $clone->setAttribute('isYeuThich', $favoriteMap->has($clone->id));
+            return $clone;
         });
-        $bdsBan->transform(function ($item) use ($favoriteMap) {
-            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
-            return $item;
+        $bdsBan = $bdsBan->map(function ($item) use ($favoriteMap) {
+            $clone = clone $item;
+            $clone->setAttribute('isYeuThich', $favoriteMap->has($clone->id));
+            return $clone;
         });
-        $bdsThue->transform(function ($item) use ($favoriteMap) {
-            $item->setAttribute('isYeuThich', $favoriteMap->has($item->id));
-            return $item;
+        $bdsThue = $bdsThue->map(function ($item) use ($favoriteMap) {
+            $clone = clone $item;
+            $clone->setAttribute('isYeuThich', $favoriteMap->has($clone->id));
+            return $clone;
         });
 
-        $duAnNoiBat = DuAn::with('khuVuc')->orderBy('thu_tu_hien_thi')->get();
-        $baiVietMoi = BaiViet::where('hien_thi', true)->orderByDesc('thoi_diem_dang')->limit(8)->get();
+        $duAnNoiBat = Cache::remember('home:du_an_noi_bat', now()->addMinutes(10), function () {
+            return DuAn::with('khuVuc')->orderBy('thu_tu_hien_thi')->get();
+        });
+        $baiVietMoi = Cache::remember('home:bai_viet_moi', now()->addMinutes(10), function () {
+            return BaiViet::where('hien_thi', true)->orderByDesc('thoi_diem_dang')->limit(8)->get();
+        });
+        $khuVuc = Cache::remember('home:khu_vuc', now()->addMinutes(10), function () {
+            return KhuVuc::where('hien_thi', true)->orderBy('thu_tu_hien_thi')->get();
+        });
+        $danhSachDuAn = Cache::remember('home:danh_sach_du_an', now()->addMinutes(10), function () {
+            return DuAn::where('hien_thi', true)->orderBy('ten_du_an')->get();
+        });
 
-        $khuVuc = KhuVuc::where('hien_thi', true)->orderBy('thu_tu_hien_thi')->get();
-
-        // THÊM DÒNG NÀY: Lấy toàn bộ dự án để đưa vào Form tìm kiếm
-        $danhSachDuAn = DuAn::where('hien_thi', true)->orderBy('ten_du_an')->get();
-
-        // Thêm 'danhSachDuAn' vào compact
         return view('frontend.home.index', compact(
             'bdsNoiBat',
             'bdsBan',

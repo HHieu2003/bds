@@ -149,7 +149,7 @@
                                 <div class="d-flex gap-2 mt-3 flex-wrap">
                                     @foreach (array_slice($kg->hinh_anh_tham_khao, 0, 4) as $idx => $img)
                                         <div class="position-relative">
-                                            <img src="{{ asset('storage/' . $img) }}" alt="Ảnh ký gửi"
+                                            <img src="{{ \Storage::disk('r2')->url($img) }}" alt="Ảnh ký gửi"
                                                 class="rounded-3 hover-up"
                                                 style="width: 75px; height: 75px; object-fit: cover; border: 1.5px solid var(--border); transition: transform 0.2s;">
                                             @if ($idx === 3 && count($kg->hinh_anh_tham_khao) > 4)

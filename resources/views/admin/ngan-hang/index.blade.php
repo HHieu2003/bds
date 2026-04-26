@@ -77,7 +77,7 @@
                             <div class="bg-light rounded p-2 d-flex align-items-center justify-content-center"
                                 style="width: 70px; height: 50px;">
                                 @if ($nganHang->logo)
-                                    <img src="{{ asset('storage/' . $nganHang->logo) }}" alt="Logo"
+                                    <img src="{{ \Storage::disk('r2')->url($nganHang->logo) }}" alt="Logo"
                                         style="max-height: 100%; max-width: 100%;">
                                 @else
                                     <i class="fas fa-building text-secondary fs-4"></i>

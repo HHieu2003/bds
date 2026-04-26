@@ -48,7 +48,7 @@
 
                         {{-- Ảnh đại diện --}}
                         @if ($anh)
-                            <img src="{{ asset('storage/' . $anh) }}" class="ss-item-img w-100 rounded-3 shadow-sm mb-3"
+                            <img src="{{ \Storage::disk('r2')->url($anh) }}" class="ss-item-img w-100 rounded-3 shadow-sm mb-3"
                                 onerror="this.style.display='none'">
                         @else
                             <div

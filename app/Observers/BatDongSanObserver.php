@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\BatDongSan;
 use App\Mail\ThongBaoBatDongSanMail;
+use App\Providers\AppServiceProvider;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,7 @@ class BatDongSanObserver
      */
     public function created(BatDongSan $bds)
     {
+        AppServiceProvider::clearMenuCache();
         Log::info("Observer: Vừa nhận thấy BĐS mới ID " . $bds->id);
 
         if (!$bds->hien_thi || $bds->trang_thai != 'con_hang') {
@@ -32,6 +34,7 @@ class BatDongSanObserver
      */
     public function updated(BatDongSan $bds)
     {
+        AppServiceProvider::clearMenuCache();
         // ── Trường hợp 1: BĐS được tái kích hoạt (ẩn/hết hàng → hiển thị + còn hàng)
         $vuaKichHoat = ($bds->wasChanged('hien_thi') || $bds->wasChanged('trang_thai'))
             && $bds->hien_thi

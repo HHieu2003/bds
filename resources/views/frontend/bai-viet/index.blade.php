@@ -38,7 +38,7 @@
                                                 {{ $bv->loai_bai_viet ?? 'Tin Tức' }}
                                             </span>
                                         </div>
-                                        <img src="{{ $bv->hinh_anh ? asset('storage/' . $bv->hinh_anh) : asset('images/default-news.jpg') }}"
+                                        <img src="{{ $bv->hinh_anh ? \Storage::disk('r2')->url($bv->hinh_anh) : asset('images/default-news.jpg') }}"
                                             class="card-img-top w-100 h-100 project-img" alt="{{ $bv->tieu_de }}">
                                     </a>
 
@@ -136,7 +136,7 @@
                                 @foreach ($tinNoiBat as $tin)
                                     <div class="d-flex mb-3 align-items-center">
                                         <a href="{{ route('frontend.tin-tuc.show', $tin->slug) }}" class="flex-shrink-0">
-                                            <img src="{{ $tin->hinh_anh ? asset('storage/' . $tin->hinh_anh) : asset('images/default-news.jpg') }}"
+                                            <img src="{{ $tin->hinh_anh ? \Storage::disk('r2')->url($tin->hinh_anh) : asset('images/default-news.jpg') }}"
                                                 alt="{{ $tin->tieu_de }}" class="rounded-3 bv-sidebar-thumb">
                                         </a>
                                         <div class="ms-3">

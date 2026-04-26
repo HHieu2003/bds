@@ -240,7 +240,7 @@ class NhanVienController extends Controller
             $newAvatar = $this->handleAvatar($request);
             if ($newAvatar) {
                 if ($nhanVien->anh_dai_dien) {
-                    Storage::disk('public')->delete($nhanVien->anh_dai_dien);
+                    Storage::disk('r2')->delete($nhanVien->anh_dai_dien);
                 }
                 $data['anh_dai_dien'] = $newAvatar;
             }
@@ -288,7 +288,7 @@ class NhanVienController extends Controller
 
         $ten = $nhanVien->ho_ten;
         if ($nhanVien->anh_dai_dien) {
-            Storage::disk('public')->delete($nhanVien->anh_dai_dien);
+            Storage::disk('r2')->delete($nhanVien->anh_dai_dien);
         }
         $nhanVien->delete();
 
@@ -373,7 +373,7 @@ class NhanVienController extends Controller
     private function handleAvatar(Request $request): ?string
     {
         if ($request->hasFile('anh_dai_dien')) {
-            return $request->file('anh_dai_dien')->store('avatars/nhan-vien', 'public');
+            return $request->file('anh_dai_dien')->store('avatars/nhan-vien', 'r2');
         }
         return null;
     }

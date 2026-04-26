@@ -507,7 +507,7 @@
                     @if ($bai1)
                         @php
                             $anh1 = $bai1->hinh_anh
-                                ? asset('storage/' . $bai1->hinh_anh)
+                                ? \Storage::disk('r2')->url($bai1->hinh_anh)
                                 : asset('images/default-news.jpg');
                             $ngay1 = \Carbon\Carbon::parse($bai1->thoi_diem_dang ?? $bai1->created_at);
                         @endphp
@@ -545,7 +545,7 @@
                             @if ($bvMini)
                                 @php
                                     $anhM = $bvMini->hinh_anh
-                                        ? asset('storage/' . $bvMini->hinh_anh)
+                                        ? \Storage::disk('r2')->url($bvMini->hinh_anh)
                                         : asset('images/default-news.jpg');
                                     $ngayM = \Carbon\Carbon::parse($bvMini->thoi_diem_dang ?? $bvMini->created_at);
                                 @endphp
@@ -596,7 +596,7 @@
                     @foreach ($stack as $bvS)
                         @php
                             $anhS = $bvS->hinh_anh
-                                ? asset('storage/' . $bvS->hinh_anh)
+                                ? \Storage::disk('r2')->url($bvS->hinh_anh)
                                 : asset('images/default-news.jpg');
                             $ngayS = \Carbon\Carbon::parse($bvS->thoi_diem_dang ?? $bvS->created_at);
                             $tomS = $bvS->mo_ta_ngan ?? Str::limit(strip_tags($bvS->noi_dung ?? ''), 80);

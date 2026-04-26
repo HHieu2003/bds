@@ -169,7 +169,7 @@
 
                             <div class="da-card-img-wrap">
                                 <img src="{{ $da->hinh_anh_dai_dien
-                                    ? asset('storage/' . $da->hinh_anh_dai_dien)
+                                    ? \Storage::disk('r2')->url($da->hinh_anh_dai_dien)
                                     : 'https://vinhomesland.vn/wp-content/uploads/2023/10/be-boi-the-canopy-residences-vinhomes-smart-city.jpg' }}"
                                     class="da-card-img" alt="{{ $da->ten_du_an }}">
 

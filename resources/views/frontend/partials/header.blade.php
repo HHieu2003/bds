@@ -215,9 +215,24 @@
                     </div>
                 </li>
 
-                <li class="nav-item"><a href="{{ route('frontend.gioi-thieu') }}"
-                        class="nav-link {{ request()->routeIs('frontend.gioi-thieu') ? 'active' : '' }}">Giới
-                        thiệu</a></li>
+                {{-- Giới thiệu --}}
+                <li class="nav-item has-dropdown">
+                    <a href="{{ route('frontend.gioi-thieu') }}"
+                        class="nav-link {{ request()->routeIs('frontend.gioi-thieu', 'frontend.lien-he.*', 'frontend.tuyen-dung') ? 'active' : '' }}">
+                        Giới thiệu <i class="fas fa-chevron-down nav-arrow"></i>
+                    </a>
+                    <div class="nav-dropdown">
+                        <a href="{{ route('frontend.gioi-thieu') }}">
+                            <i class="fas fa-building me-2"></i> Giới thiệu công ty
+                        </a>
+                        <a href="{{ route('frontend.lien-he.index') }}">
+                            <i class="fas fa-address-book me-2"></i> Liên Hệ
+                        </a>
+                        <a href="{{ route('frontend.tuyen-dung') }}">
+                            <i class="fas fa-user-plus me-2"></i> Tuyển dụng
+                        </a>
+                    </div>
+                </li>
                 <li class="nav-item"><a href="{{ route('frontend.noi-that') }}"
                         class="nav-link {{ request()->routeIs('frontend.noi-that') ? 'active' : '' }}">Nội Thất</a>
                 </li>

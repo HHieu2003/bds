@@ -1,6 +1,10 @@
 @extends('frontend.layouts.master')
 
 @section('title', $bds->tieu_de . ' — Thành Công Land')
+@section('meta_description', Str::limit(strip_tags($bds->mo_ta), 160))
+@section('og_title', $bds->tieu_de)
+@section('og_description', Str::limit(strip_tags($bds->mo_ta), 160))
+@section('og_image', $bds->hinh_anh ? \Storage::disk('r2')->url($bds->hinh_anh) : asset('images/og-default.jpg'))
 
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
@@ -970,10 +974,10 @@
         // Gộp chung video lên đầu, sau đó đến ảnh
         $media = [];
         foreach ($albumVideo as $v) {
-            $media[] = ['type' => 'video', 'path' => asset('storage/' . $v)];
+            $media[] = ['type' => 'video', 'path' => \Storage::disk('r2')->url($v)];
         }
         foreach ($album as $a) {
-            $media[] = ['type' => 'image', 'path' => asset('storage/' . $a)];
+            $media[] = ['type' => 'image', 'path' => \Storage::disk('r2')->url($a)];
         }
 
         $default = asset('images/default-bds.jpg');
@@ -1461,7 +1465,7 @@
                                     $anhLQ = is_array($r) ? $r : [];
                                 }
                                 $hinhAnhLQ =
-                                    count($anhLQ) > 0 ? asset('storage/' . $anhLQ[0]) : asset('images/default-bds.jpg');
+                                    count($anhLQ) > 0 ? \Storage::disk('r2')->url($anhLQ[0]) : asset('images/default-bds.jpg');
                             @endphp
                             <div class="col-6 col-md-6 col-lg-3">
                                 <div class="bds-lq-card">

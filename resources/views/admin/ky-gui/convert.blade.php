@@ -212,8 +212,8 @@
                     <div class="card-body d-flex flex-wrap gap-2">
                         @if ($kyGui->hinh_anh_tham_khao && is_array($kyGui->hinh_anh_tham_khao))
                             @foreach ($kyGui->hinh_anh_tham_khao as $anh)
-                                <a href="{{ asset('storage/' . $anh) }}" target="_blank">
-                                    <img src="{{ asset('storage/' . $anh) }}" class="img-thumbnail object-fit-cover"
+                                <a href="{{ \Storage::disk('r2')->url($anh) }}" target="_blank">
+                                    <img src="{{ \Storage::disk('r2')->url($anh) }}" class="img-thumbnail object-fit-cover"
                                         style="width: 100px; height: 100px;">
                                 </a>
                             @endforeach

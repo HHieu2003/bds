@@ -56,8 +56,8 @@ class BaiViet extends Model
     // ── Accessors ──
     public function getHinhAnhUrlAttribute(): ?string
     {
-        if ($this->hinh_anh && Storage::disk('public')->exists($this->hinh_anh)) {
-            return asset('storage/' . $this->hinh_anh);
+        if ($this->hinh_anh && Storage::disk('r2')->exists($this->hinh_anh)) {
+            return Storage::disk('r2')->url($this->hinh_anh);
         }
         return null;
     }

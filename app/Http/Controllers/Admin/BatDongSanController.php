@@ -278,14 +278,14 @@ class BatDongSanController extends Controller
 
         // Upload Ảnh Đại Diện
         if ($request->hasFile('hinh_anh')) {
-            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'public');
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'r2');
         }
 
         // Upload Album Ảnh
         $album = [];
         if ($request->hasFile('album_anh')) {
             foreach ($request->file('album_anh') as $file) {
-                $album[] = $file->store('bat-dong-san/album', 'public');
+                $album[] = $file->store('bat-dong-san/album', 'r2');
             }
         }
         $data['album_anh'] = $album;
@@ -294,7 +294,7 @@ class BatDongSanController extends Controller
         $albumVideo = [];
         if ($request->hasFile('album_video')) {
             foreach ($request->file('album_video') as $file) {
-                $albumVideo[] = $file->store('bat-dong-san/video', 'public');
+                $albumVideo[] = $file->store('bat-dong-san/video', 'r2');
             }
         }
         $data['album_video'] = $albumVideo;
@@ -379,9 +379,9 @@ class BatDongSanController extends Controller
         // Xử lý Ảnh Đại Diện
         if ($request->hasFile('hinh_anh')) {
             if ($batDongSan->hinh_anh) {
-                Storage::disk('public')->delete($batDongSan->hinh_anh);
+                Storage::disk('r2')->delete($batDongSan->hinh_anh);
             }
-            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'public');
+            $data['hinh_anh'] = $request->file('hinh_anh')->store('bat-dong-san', 'r2');
         }
 
         // --- XỬ LÝ ALBUM ẢNH (Fix lỗi P1006 Intelephense) ---
@@ -391,7 +391,7 @@ class BatDongSanController extends Controller
         // 1. Xóa ảnh cũ nếu người dùng đánh dấu X trên form
         if (is_array($xoaAnh) && count($xoaAnh) > 0) {
             foreach ($xoaAnh as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
                 $albumCu = array_filter($albumCu, fn($p) => $p !== $path);
             }
         }
@@ -400,7 +400,7 @@ class BatDongSanController extends Controller
         $albumMoi = [];
         if ($request->hasFile('album_anh')) {
             foreach ($request->file('album_anh') as $file) {
-                $albumMoi[] = $file->store('bat-dong-san/album', 'public');
+                $albumMoi[] = $file->store('bat-dong-san/album', 'r2');
             }
         }
 
@@ -414,7 +414,7 @@ class BatDongSanController extends Controller
         // 1. Xóa video cũ được đánh dấu X
         if (is_array($xoaVideo) && count($xoaVideo) > 0) {
             foreach ($xoaVideo as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
                 $albumVideoCu = array_filter($albumVideoCu, fn($p) => $p !== $path);
             }
         }
@@ -423,7 +423,7 @@ class BatDongSanController extends Controller
         $albumVideoMoi = [];
         if ($request->hasFile('album_video')) {
             foreach ($request->file('album_video') as $file) {
-                $albumVideoMoi[] = $file->store('bat-dong-san/video', 'public');
+                $albumVideoMoi[] = $file->store('bat-dong-san/video', 'r2');
             }
         }
 
@@ -442,14 +442,14 @@ class BatDongSanController extends Controller
 
         // Xóa ảnh đại diện
         if ($batDongSan->hinh_anh) {
-            Storage::disk('public')->delete($batDongSan->hinh_anh);
+            Storage::disk('r2')->delete($batDongSan->hinh_anh);
         }
 
         // Xóa toàn bộ album ảnh
         $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
         if (!empty($album)) {
             foreach ($album as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
             }
         }
 
@@ -457,7 +457,7 @@ class BatDongSanController extends Controller
         $videos = $this->normalizeAlbumAnh($batDongSan->album_video ?? []);
         if (!empty($videos)) {
             foreach ($videos as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
             }
         }
 
@@ -531,7 +531,7 @@ class BatDongSanController extends Controller
         $album = $this->normalizeAlbumAnh($batDongSan->album_anh);
 
         if (in_array($path, $album)) {
-            Storage::disk('public')->delete($path);
+            Storage::disk('r2')->delete($path);
             $album = array_filter($album, fn($p) => $p !== $path);
             $batDongSan->update(['album_anh' => array_values($album)]);
             return response()->json(['ok' => true]);
@@ -549,7 +549,7 @@ class BatDongSanController extends Controller
         $videos = $this->normalizeAlbumAnh($batDongSan->album_video ?? []);
 
         if (in_array($path, $videos)) {
-            Storage::disk('public')->delete($path);
+            Storage::disk('r2')->delete($path);
             $videos = array_filter($videos, fn($p) => $p !== $path);
             $batDongSan->update(['album_video' => array_values($videos)]);
             return response()->json(['ok' => true]);

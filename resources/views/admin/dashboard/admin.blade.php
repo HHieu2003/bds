@@ -367,7 +367,7 @@
                                 }
 
                                 $thumb = $hinhAnhChinh
-                                    ? asset('storage/' . ltrim($hinhAnhChinh, '/'))
+                                    ? \Storage::disk('r2')->url(ltrim($hinhAnhChinh, '/'))
                                     : asset('images/no-image.jpg');
 
                                 $giaHienThi = 'Thỏa thuận';

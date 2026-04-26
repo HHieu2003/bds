@@ -151,7 +151,7 @@ class ChatController extends Controller
 
         if ($request->hasFile('tep_tin')) {
             $file = $request->file('tep_tin');
-            $tepDinhKem = $file->store('chat', 'public');
+            $tepDinhKem = $file->store('chat', 'r2');
             $mime = (string) $file->getMimeType();
             $loaiTinNhan = str_starts_with($mime, 'video/') ? 'video' : 'hinh_anh';
             $noiDung = $noiDung ?: ($loaiTinNhan === 'video' ? '[Video]' : '[Hinh anh]');

@@ -499,7 +499,7 @@
                                             if (!empty($bds->album_anh)) {
                                                 $album = is_string($bds->album_anh) ? json_decode($bds->album_anh, true) : $bds->album_anh;
                                                 if (is_array($album) && count($album) > 0) {
-                                                    $anhThuNho = asset('storage/' . $album[0]);
+                                                    $anhThuNho = \Storage::disk('r2')->url($album[0]);
                                                 }
                                             }
                                             

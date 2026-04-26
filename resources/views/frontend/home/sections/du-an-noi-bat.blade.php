@@ -29,7 +29,7 @@
                             onclick="window.location.href='{{ route('frontend.du-an.show', $da->slug) }}'">
 
                             <div class="overflow-hidden position-relative w-100" style="height: 280px;">
-                                <img src="{{ $da->hinh_anh_dai_dien ? asset('storage/' . $da->hinh_anh_dai_dien) : 'https://vinhomesland.vn/wp-content/uploads/2023/10/be-boi-the-canopy-residences-vinhomes-smart-city.jpg' }}"
+                                <img src="{{ $da->hinh_anh_dai_dien ? \Storage::disk('r2')->url($da->hinh_anh_dai_dien) : 'https://vinhomesland.vn/wp-content/uploads/2023/10/be-boi-the-canopy-residences-vinhomes-smart-city.jpg' }}"
                                     class="card-img-top w-100 h-100 project-img" alt="{{ $da->ten_du_an }}">
 
                                 <div class="position-absolute bottom-0 start-0 w-100 p-4"

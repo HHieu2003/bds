@@ -12,6 +12,7 @@
         'lich_hen' => ['label' => 'Lịch hẹn',   'icon' => 'fas fa-calendar-check', 'color' => '#8e44ad'],
         'yeu_cau'  => ['label' => 'Liên hệ',    'icon' => 'fas fa-phone-alt',      'color' => '#3498db'],
         'chat'     => ['label' => 'Chat',        'icon' => 'fas fa-comment-dots',   'color' => '#e74c3c'],
+        'thong_bao_admin' => ['label' => 'Từ Admin',    'icon' => 'fas fa-bullhorn',      'color' => '#8e44ad'],
     ];
 
     // Nhóm theo loại
@@ -33,16 +34,27 @@
                 {{ count($items) }} thông báo đang chờ xử lý
             </p>
         </div>
-        @if (count($items) > 0)
-            <button id="btnMarkAllPage" type="button"
-                    onclick="pageMarkAllRead()"
-                    style="display:inline-flex;align-items:center;gap:6px;
-                           padding:7px 14px;border-radius:8px;border:1px solid var(--border);
-                           background:#fff;color:var(--primary);font-size:.78rem;
-                           font-weight:600;cursor:pointer;transition:all .2s;">
-                <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
-            </button>
-        @endif
+        <div style="display:flex;gap:10px;">
+            @if ($nv->isAdmin())
+                <button type="button" onclick="openSendNotifModal()"
+                        style="display:inline-flex;align-items:center;gap:6px;
+                               padding:7px 14px;border-radius:8px;border:none;
+                               background:var(--primary);color:#fff;font-size:.78rem;
+                               font-weight:600;cursor:pointer;transition:all .2s;">
+                    <i class="fas fa-paper-plane"></i> Gửi thông báo
+                </button>
+            @endif
+            @if (count($items) > 0)
+                <button id="btnMarkAllPage" type="button"
+                        onclick="pageMarkAllRead()"
+                        style="display:inline-flex;align-items:center;gap:6px;
+                               padding:7px 14px;border-radius:8px;border:1px solid var(--border);
+                               background:#fff;color:var(--primary);font-size:.78rem;
+                               font-weight:600;cursor:pointer;transition:all .2s;">
+                    <i class="fas fa-check-double"></i> Đánh dấu tất cả đã đọc
+                </button>
+            @endif
+        </div>
     </div>
 
     @if (count($items) === 0)
@@ -166,5 +178,112 @@ function pageMarkAllRead() {
     })
     .catch(() => {});
 }
+
+// ── ADMIN SEND NOTIF MODAL ──────────────────────────────────────────────
+@if ($nv->isAdmin())
+function openSendNotifModal() {
+    document.getElementById('sendNotifModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeSendNotifModal() {
+    document.getElementById('sendNotifModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('formSendNotif')?.addEventListener('submit', function(e) {
+    e.preventDefault();
+    var fd = new FormData(this);
+    var csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+    
+    var btn = document.getElementById('btnSubmitNotif');
+    var originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Đang gửi...';
+
+    // Convert FormData to JSON, handling multiple select
+    var payload = {
+        doi_tuong_nhan_ids: fd.getAll('doi_tuong_nhan_ids[]'),
+        tieu_de: fd.get('tieu_de'),
+        noi_dung: fd.get('noi_dung'),
+        lien_ket: fd.get('lien_ket')
+    };
+
+    fetch('{{ route('nhanvien.admin.thong-bao.store') }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrf,
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.success) {
+            if (typeof showAdminToast === 'function') showAdminToast(res.message, 'success');
+            closeSendNotifModal();
+            this.reset();
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            var errorMsg = res.message || 'Có lỗi xảy ra.';
+            if (res.errors) {
+                var firstKey = Object.keys(res.errors)[0];
+                errorMsg = res.errors[firstKey][0];
+            }
+            if (typeof showAdminToast === 'function') showAdminToast(errorMsg, 'error');
+        }
+    })
+    .catch(() => {
+        if (typeof showAdminToast === 'function') showAdminToast('Lỗi kết nối.', 'error');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    });
+});
+@endif
 </script>
+
+@if ($nv->isAdmin())
+<div id="sendNotifModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:#fff;width:100%;max-width:500px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.2);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+            <h3 style="margin:0;font-size:1rem;font-weight:700;color:var(--navy);"><i class="fas fa-paper-plane" style="color:var(--primary);margin-right:8px;"></i>Gửi thông báo cho nhân viên</h3>
+            <button type="button" onclick="closeSendNotifModal()" style="background:none;border:none;font-size:1.2rem;color:var(--text-sub);cursor:pointer;">&times;</button>
+        </div>
+        <form id="formSendNotif" style="padding:20px;">
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:6px;">Người nhận <span style="color:red">*</span></label>
+                <select name="doi_tuong_nhan_ids[]" multiple required style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;min-height:100px;">
+                    @foreach($nhanViens as $nvItem)
+                        <option value="{{ $nvItem->id }}">{{ $nvItem->ho_ten }} ({{ $nvItem->vai_tro_label }})</option>
+                    @endforeach
+                </select>
+                <div style="font-size:.7rem;color:var(--text-sub);margin-top:4px;">Giữ Ctrl (hoặc Cmd) để chọn nhiều người.</div>
+            </div>
+            
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:6px;">Tiêu đề <span style="color:red">*</span></label>
+                <input type="text" name="tieu_de" required placeholder="VD: Thông báo họp gấp" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;">
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:6px;">Nội dung <span style="color:red">*</span></label>
+                <textarea name="noi_dung" required rows="4" placeholder="Nhập nội dung thông báo..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;resize:vertical;"></textarea>
+            </div>
+
+            <div style="margin-bottom:20px;">
+                <label style="display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:6px;">Đường dẫn đính kèm (Tuỳ chọn)</label>
+                <input type="url" name="lien_ket" placeholder="https://..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:.85rem;">
+            </div>
+
+            <div style="display:flex;justify-content:flex-end;gap:10px;">
+                <button type="button" onclick="closeSendNotifModal()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:#fff;color:var(--navy);font-weight:600;font-size:.85rem;cursor:pointer;">Hủy</button>
+                <button type="submit" id="btnSubmitNotif" style="padding:8px 16px;border-radius:8px;border:none;background:var(--primary);color:#fff;font-weight:600;font-size:.85rem;cursor:pointer;"><i class="fas fa-paper-plane" style="margin-right:6px;"></i>Gửi thông báo</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
 @endsection

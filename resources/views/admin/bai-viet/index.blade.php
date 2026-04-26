@@ -145,7 +145,7 @@
                                 <div class="d-flex align-items-start gap-3">
                                     <div style="flex-shrink:0">
                                         @if ($bv->anh_dai_dien)
-                                            <img src="{{ asset('storage/' . $bv->anh_dai_dien) }}"
+                                            <img src="{{ \Storage::disk('r2')->url($bv->anh_dai_dien) }}"
                                                 alt="{{ $bv->tieu_de }}" class="table-thumb"
                                                 style="width:64px;height:48px" onerror="this.style.display='none'">
                                         @else
@@ -299,7 +299,7 @@
                     <div class="mobile-card-top">
                         <div class="d-flex align-items-start gap-3 flex-1" style="min-width:0">
                             @if ($bv->anh_dai_dien)
-                                <img src="{{ asset('storage/' . $bv->anh_dai_dien) }}" alt="{{ $bv->tieu_de }}"
+                                <img src="{{ \Storage::disk('r2')->url($bv->anh_dai_dien) }}" alt="{{ $bv->tieu_de }}"
                                     class="table-thumb flex-shrink-0" style="width:56px;height:42px">
                             @endif
                             <div style="min-width:0;flex:1">

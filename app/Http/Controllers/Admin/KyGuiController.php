@@ -151,7 +151,7 @@ class KyGuiController extends Controller
 
         if (is_array($xoaHinhAnh) && count($xoaHinhAnh) > 0) {
             foreach ($xoaHinhAnh as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
                 $hinhCu = array_filter($hinhCu, fn($p) => $p !== $path);
             }
         }
@@ -168,7 +168,7 @@ class KyGuiController extends Controller
         $hinhAnh = $kyGui->hinh_anh_tham_khao;
         if (is_array($hinhAnh) && count($hinhAnh) > 0) {
             foreach ($hinhAnh as $path) {
-                Storage::disk('public')->delete($path);
+                Storage::disk('r2')->delete($path);
             }
         }
 
@@ -205,7 +205,7 @@ class KyGuiController extends Controller
         $paths = [];
         if ($request->hasFile('hinh_anh_tham_khao')) {
             foreach ($request->file('hinh_anh_tham_khao') as $file) {
-                $paths[] = $file->store('ky-gui', 'public');
+                $paths[] = $file->store('ky-gui', 'r2');
             }
         }
         return $paths;

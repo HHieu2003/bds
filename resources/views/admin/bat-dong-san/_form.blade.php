@@ -311,7 +311,7 @@
                             @php $imgKey = substr(md5($imgPath), 0, 12); @endphp
                             <div class="position-relative border rounded" id="alb_{{ $imgKey }}"
                                 style="width: 100px; height: 100px;">
-                                <img src="{{ asset('storage/' . $imgPath) }}"
+                                <img src="{{ \Storage::disk('r2')->url($imgPath) }}"
                                     class="w-100 h-100 object-fit-cover rounded">
                                 <button type="button"
                                     class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1 alb-del-btn p-0 d-flex align-items-center justify-content-center"
@@ -356,7 +356,7 @@
                             @php $vidKey = substr(md5($vidPath), 0, 12); @endphp
                             <div class="position-relative border rounded" id="vid_{{ $vidKey }}"
                                 style="width: 160px;">
-                                <video src="{{ asset('storage/' . $vidPath) }}" class="w-100 rounded"
+                                <video src="{{ \Storage::disk('r2')->url($vidPath) }}" class="w-100 rounded"
                                     style="height: 100px; object-fit: cover;" muted preload="metadata"></video>
                                 <div class="text-muted text-truncate px-1" style="font-size: 0.7rem">
                                     {{ basename($vidPath) }}
@@ -436,7 +436,7 @@
             <div class="card-body text-center">
                 @if ($isEdit && $batDongSan->hinh_anh)
                     <div id="currentImageWrapper" class="mb-3">
-                        <img src="{{ asset('storage/' . $batDongSan->hinh_anh) }}"
+                        <img src="{{ \Storage::disk('r2')->url($batDongSan->hinh_anh) }}"
                             class="img-fluid rounded border mb-2"
                             style="max-height: 200px; width: 100%; object-fit: cover;" alt="Ảnh đại diện">
                         <span class="badge bg-success bg-opacity-10 text-success"><i

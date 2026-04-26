@@ -8,6 +8,7 @@ use App\Models\YeuThich;
 use App\Models\BatDongSan;
 use App\Models\PhienChat;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class GoiYService
 {
@@ -24,6 +25,18 @@ class GoiYService
      * Xây dựng "profile điểm" sở thích của người dùng có áp dụng Hao mòn thời gian
      */
     public function xayDungProfile(?int $khachHangId, string $sessionId): array
+    {
+        $cacheKey = 'goiy:profile:' . ($khachHangId ?? 'guest:' . $sessionId);
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($khachHangId, $sessionId) {
+            return $this->buildProfileFromDb($khachHangId, $sessionId);
+        });
+    }
+
+    /**
+     * Xây dựng profile từ DB (logic gốc, được cache bởi xayDungProfile)
+     */
+    private function buildProfileFromDb(?int $khachHangId, string $sessionId): array
     {
         $loaiHinhScore = [];
         $khuVucScore   = [];

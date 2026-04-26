@@ -18,7 +18,7 @@
                         <a href="{{ route('frontend.bat-dong-san.show', $bds->slug) }}"
                             class="overflow-hidden d-block img-wrapper" style="height: 220px;">
                             @php $anh = is_array($bds->album_anh) && count($bds->album_anh) > 0 ? $bds->album_anh[0] : null; @endphp
-                            <img src="{{ $anh ? asset('storage/' . $anh) : asset('images/default-bds.jpg') }}"
+                            <img src="{{ $anh ? \Storage::disk('r2')->url($anh) : asset('images/default-bds.jpg') }}"
                                 class="card-img-top h-100 w-100 bds-img" alt="{{ $bds->tieu_de }}">
                         </a>
 

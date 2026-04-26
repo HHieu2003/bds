@@ -2013,7 +2013,7 @@ ol {
 .cp-brand-logo {
     width: 70px;
     height: 42px;
-    background: rgba(255, 255, 255, 0.1);
+    background: rgb(255, 255, 255);
     border: 1px solid rgba(196, 145, 42, 0.4);
     border-radius: 12px;
     display: flex;

@@ -181,7 +181,7 @@
             <div class="card-body text-center">
                 @if (!empty($duAn->hinh_anh_dai_dien))
                     <div id="currentImageWrapper" class="mb-3">
-                        <img src="{{ asset('storage/' . $duAn->hinh_anh_dai_dien) }}"
+                        <img src="{{ \Storage::disk('r2')->url($duAn->hinh_anh_dai_dien) }}"
                             class="img-fluid rounded border mb-2"
                             style="max-height: 200px; object-fit: cover; width: 100%" alt="Ảnh hiện tại">
                         <span class="badge bg-success bg-opacity-10 text-success"><i

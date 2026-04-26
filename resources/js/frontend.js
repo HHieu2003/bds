@@ -1363,8 +1363,9 @@ function updateTransferButtonsByState(trangThai, dangBotXuLy) {
         return;
     }
 
+    // faq mode: always enable input so user can type freely
     feChatMode = "faq";
-    setChatInputsEnabled(false);
+    setChatInputsEnabled(true);
     renderFaqMenu();
 }
 
@@ -1505,7 +1506,8 @@ function initChatSession(payload = {}) {
             feLastMessageCount = 0;
             feChatMode = "faq";
             feAiQuickQuestions = [];
-            setChatInputsEnabled(false);
+            // Enable input immediately so user can type straight away
+            setChatInputsEnabled(true);
             setAiThinking(false);
             updateTransferButtonsByState("dang_bot", true);
             fetchFrontendMessages();
@@ -1525,18 +1527,9 @@ function initFrontendChat() {
         return;
     }
 
-    if (window.APP.isLoggedIn) {
-        if (guestEl) guestEl.style.display = "none";
-        initChatSession();
-        return;
-    }
-
-    setChatInputsEnabled(false);
-    setAiThinking(false);
-    if (guestEl) guestEl.style.display = "flex";
-    updateTransferButtonsByState("da_dong", false);
-    document.getElementById("chatBody").innerHTML =
-        '<div class="text-center text-muted small p-3">Vui lòng nhập thông tin để bắt đầu cuộc trò chuyện.</div>';
+    // Always hide the guest gate — all visitors can chat immediately
+    if (guestEl) guestEl.style.display = "none";
+    initChatSession();
 }
 
 window.startGuestChat = function (e) {

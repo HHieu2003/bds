@@ -23,6 +23,9 @@ use App\Http\Controllers\Frontend\YeuThichController;
 use App\Http\Controllers\Frontend\LienHeController as FrontendLienHeController;
 use App\Http\Controllers\Frontend\ChatController as FeChatController;
 use App\Http\Controllers\Frontend\DangKyNhanTinController;
+use App\Http\Controllers\Frontend\SitemapController;
+use App\Http\Controllers\Frontend\TuyenDungController as FeTuyenDungController;
+use App\Http\Controllers\Admin\TuyenDungController as AdminTuyenDungController;
 use App\Http\Controllers\Admin\NganHangController;
 use App\Http\Controllers\Admin\ThongKeController;
 use App\Http\Controllers\Frontend\LichHenController as FeLichHenController;
@@ -37,10 +40,13 @@ use Illuminate\Support\Facades\Route;
 // ══════════════════════════════════════════════════════════
 Route::prefix('')->name('frontend.')->group(function () {
 
+    Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('/gioi-thieu', [HomeController::class, 'gioiThieu'])->name('gioi-thieu');
     Route::get('/noi-that', [HomeController::class, 'noiThat'])->name('noi-that');
-    Route::get('/tuyen-dung', [HomeController::class, 'tuyendung'])->name('tuyen-dung');
+    Route::get('/tuyen-dung', [FeTuyenDungController::class, 'index'])->name('tuyen-dung');
+    Route::get('/tuyen-dung/{slug}', [FeTuyenDungController::class, 'show'])->name('tuyen-dung.show');
+    Route::post('/tuyen-dung/ung-tuyen', [FeTuyenDungController::class, 'ungTuyen'])->middleware('throttle:anti-spam')->name('tuyen-dung.ung-tuyen');
     Route::get('/cong-cu-tai-chinh', [HomeController::class, 'congCuTaiChinh'])->name('cong-cu-tai-chinh');
 
     Route::get('/bat-dong-san', [FeBatDongSanController::class, 'index'])->name('bat-dong-san.index');
@@ -270,6 +276,21 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
 
             // ── Tất cả nhân viên ──────────────
             Route::resource('bai-viet', BaiVietController::class);
+
+            // ── Tuyển dụng ──────────────
+            Route::prefix('tuyen-dung')->name('tuyen-dung.')->group(function () {
+                Route::get('/',                          [AdminTuyenDungController::class, 'index'])->name('index');
+                Route::get('/create',                    [AdminTuyenDungController::class, 'create'])->name('create');
+                Route::post('/',                         [AdminTuyenDungController::class, 'store'])->name('store');
+                Route::get('/{tinTuyenDung}/edit',       [AdminTuyenDungController::class, 'edit'])->name('edit');
+                Route::put('/{tinTuyenDung}',            [AdminTuyenDungController::class, 'update'])->name('update');
+                Route::delete('/{tinTuyenDung}',         [AdminTuyenDungController::class, 'destroy'])->name('destroy');
+                Route::patch('/{tinTuyenDung}/toggle',   [AdminTuyenDungController::class, 'toggleHienThi'])->name('toggle');
+                Route::get('/don-ung-tuyen',             [AdminTuyenDungController::class, 'donUngTuyen'])->name('don-ung-tuyen');
+                Route::get('/don-ung-tuyen/{donUngTuyen}', [AdminTuyenDungController::class, 'showDon'])->name('don.show');
+                Route::patch('/don-ung-tuyen/{donUngTuyen}/trang-thai', [AdminTuyenDungController::class, 'capNhatTrangThai'])->name('don.trang-thai');
+                Route::delete('/don-ung-tuyen/{donUngTuyen}', [AdminTuyenDungController::class, 'xoaDon'])->name('don.xoa');
+            });
             Route::patch('bai-viet/{baiViet}/hien-thi', [BaiVietController::class, 'toggleHienThi'])->name('bai-viet.toggle-hien-thi');
             Route::patch('bai-viet/{baiViet}/noi-bat', [BaiVietController::class, 'toggleNoiBat'])->name('bai-viet.toggle-noi-bat');
             Route::post('bai-viet/bulk-action', [BaiVietController::class, 'bulkAction'])->name('bai-viet.bulk-action');
@@ -302,6 +323,7 @@ Route::prefix('nhan-vien')->name('nhanvien.')->group(function () {
             // ── THÔNG BÁO (tất cả nhân viên đã đăng nhập) ────────
             Route::prefix('thong-bao')->name('thong-bao.')->group(function () {
                 Route::get('/',               [ThongBaoController::class, 'danhSach'])->name('danh-sach');
+                Route::post('/',              [ThongBaoController::class, 'store'])->name('store');
                 Route::get('/api',            [ThongBaoController::class, 'index'])->name('api');
                 Route::post('/mark-all-read', [ThongBaoController::class, 'markAllRead'])->name('mark-all-read');
             });

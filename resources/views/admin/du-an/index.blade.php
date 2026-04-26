@@ -108,7 +108,7 @@
                                 {{ ($duAns->currentPage() - 1) * $duAns->perPage() + $i + 1 }}</td>
                             <td>
                                 @if ($da->hinh_anh_dai_dien)
-                                    <img src="{{ asset('storage/' . $da->hinh_anh_dai_dien) }}" class="table-thumb"
+                                    <img src="{{ \Storage::disk('r2')->url($da->hinh_anh_dai_dien) }}" class="table-thumb"
                                         alt="{{ $da->ten_du_an }}">
                                 @else
                                     <div
@@ -185,7 +185,7 @@
                 <div class="mobile-card">
                     <div class="mobile-card-top align-items-start">
                         @if ($da->hinh_anh_dai_dien)
-                            <img src="{{ asset('storage/' . $da->hinh_anh_dai_dien) }}" class="table-thumb me-2"
+                            <img src="{{ \Storage::disk('r2')->url($da->hinh_anh_dai_dien) }}" class="table-thumb me-2"
                                 alt="{{ $da->ten_du_an }}">
                         @else
                             <div

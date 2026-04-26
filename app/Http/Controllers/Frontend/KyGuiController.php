@@ -66,7 +66,7 @@ class KyGuiController extends Controller
         $hinhAnh = [];
         if ($request->hasFile('hinh_anh_tham_khao')) {
             foreach ($request->file('hinh_anh_tham_khao') as $file) {
-                $hinhAnh[] = $file->store('ky-gui', 'public');
+                $hinhAnh[] = $file->store('ky-gui', 'r2');
             }
         }
 

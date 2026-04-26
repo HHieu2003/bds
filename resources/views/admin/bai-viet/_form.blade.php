@@ -353,7 +353,7 @@
                     <div
                         style="position:relative;border-radius:var(--r);overflow:hidden;aspect-ratio:16/9;background:var(--bg)">
                         <img id="bv_thumb_preview"
-                            src="{{ $isEdit && $baiViet->anh_dai_dien ? asset('storage/' . $baiViet->anh_dai_dien) : '' }}"
+                            src="{{ $isEdit && $baiViet->anh_dai_dien ? \Storage::disk('r2')->url($baiViet->anh_dai_dien) : '' }}"
                             alt="Thumbnail" style="width:100%;height:100%;object-fit:cover">
                         <button type="button" onclick="removeThumb()"
                             style="position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.65);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem">

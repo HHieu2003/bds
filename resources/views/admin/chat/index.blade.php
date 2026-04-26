@@ -979,14 +979,14 @@
                                 @if ($msg->tep_dinh_kem)
                                     <div class="zl-media">
                                         @if ($msg->loai_tin_nhan === 'hinh_anh')
-                                            <a href="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
+                                            <a href="{{ \Storage::disk('r2')->url(ltrim($msg->tep_dinh_kem, '/')) }}"
                                                 target="_blank">
-                                                <img src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}"
+                                                <img src="{{ \Storage::disk('r2')->url(ltrim($msg->tep_dinh_kem, '/')) }}"
                                                     alt="Ảnh">
                                             </a>
                                         @elseif($msg->loai_tin_nhan === 'video')
                                             <video controls preload="metadata">
-                                                <source src="{{ asset('storage/' . ltrim($msg->tep_dinh_kem, '/')) }}">
+                                                <source src="{{ \Storage::disk('r2')->url(ltrim($msg->tep_dinh_kem, '/')) }}">
                                             </video>
                                         @endif
                                     </div>

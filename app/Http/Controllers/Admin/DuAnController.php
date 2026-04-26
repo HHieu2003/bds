@@ -98,7 +98,7 @@ class DuAnController extends Controller
         // Upload ảnh
         if ($request->hasFile('hinh_anh_dai_dien')) {
             $validated['hinh_anh_dai_dien'] = $request->file('hinh_anh_dai_dien')
-                ->store('du-an', 'public');
+                ->store('du-an', 'r2');
         }
 
         // Checkbox → boolean
@@ -146,10 +146,10 @@ class DuAnController extends Controller
         // Upload ảnh mới → xóa ảnh cũ
         if ($request->hasFile('hinh_anh_dai_dien')) {
             if ($duAn->hinh_anh_dai_dien) {
-                Storage::disk('public')->delete($duAn->hinh_anh_dai_dien);
+                Storage::disk('r2')->delete($duAn->hinh_anh_dai_dien);
             }
             $validated['hinh_anh_dai_dien'] = $request->file('hinh_anh_dai_dien')
-                ->store('du-an', 'public');
+                ->store('du-an', 'r2');
         }
 
         $validated['hien_thi'] = $request->boolean('hien_thi');
@@ -166,7 +166,7 @@ class DuAnController extends Controller
         $this->yeuCauQuyenQuanLy();
 
         if ($duAn->hinh_anh_dai_dien) {
-            Storage::disk('public')->delete($duAn->hinh_anh_dai_dien);
+            Storage::disk('r2')->delete($duAn->hinh_anh_dai_dien);
         }
         $duAn->delete();
 
