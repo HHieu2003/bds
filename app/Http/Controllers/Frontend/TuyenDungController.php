@@ -58,30 +58,36 @@ class TuyenDungController extends Controller
         }
 
         $don = DonUngTuyen::create($data);
-        $don->load('tinTuyenDung');
 
-        // Gửi email xác nhận cho ứng viên
-        try {
-            Mail::to($don->email)->send(new UngTuyenThanhCongMail($don));
+        // Gửi email xác nhận SAU khi đã trả response cho ứng viên
+        $donId = $don->id;
+        $emailUngVien = $don->email;
 
-            // Ghi nhật ký email
-            NhatKyEmail::create([
-                'loai'       => 'ung_tuyen_thanh_cong',
-                'nguoi_nhan' => $don->email,
-                'tieu_de'    => 'Xác nhận ứng tuyển thành công',
-                'noi_dung'   => "Ứng tuyển vị trí: {$don->tinTuyenDung->tieu_de}",
-                'trang_thai' => 'thanh_cong',
-            ]);
-        } catch (\Exception $e) {
-            NhatKyEmail::create([
-                'loai'       => 'ung_tuyen_thanh_cong',
-                'nguoi_nhan' => $don->email,
-                'tieu_de'    => 'Xác nhận ứng tuyển thành công',
-                'noi_dung'   => "Ứng tuyển vị trí: {$don->tinTuyenDung->tieu_de}",
-                'trang_thai' => 'that_bai',
-                'loi'        => $e->getMessage(),
-            ]);
-        }
+        dispatch(function () use ($donId, $emailUngVien) {
+            try {
+                $don = DonUngTuyen::with('tinTuyenDung')->find($donId);
+                if (!$don) return;
+
+                Mail::to($emailUngVien)->send(new UngTuyenThanhCongMail($don));
+
+                NhatKyEmail::create([
+                    'loai'       => 'ung_tuyen_thanh_cong',
+                    'nguoi_nhan' => $emailUngVien,
+                    'tieu_de'    => 'Xác nhận ứng tuyển thành công',
+                    'noi_dung'   => "Ứng tuyển vị trí: {$don->tinTuyenDung->tieu_de}",
+                    'trang_thai' => 'thanh_cong',
+                ]);
+            } catch (\Exception $e) {
+                NhatKyEmail::create([
+                    'loai'       => 'ung_tuyen_thanh_cong',
+                    'nguoi_nhan' => $emailUngVien,
+                    'tieu_de'    => 'Xác nhận ứng tuyển thành công',
+                    'noi_dung'   => null,
+                    'trang_thai' => 'that_bai',
+                    'loi'        => $e->getMessage(),
+                ]);
+            }
+        })->afterResponse();
 
         if ($request->ajax()) {
             return response()->json([

@@ -50,63 +50,71 @@ class LichHenController extends Controller
             'nguon_dat_lich'   => 'website'
         ]);
 
-        // 5. Bắn thông báo cho toàn bộ Sale và Admin biết có kèo mới để vào nhận
-        $saleVaAdmin = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', 1)->get();
-        foreach ($saleVaAdmin as $nv) {
-            ThongBao::create([
-                'loai'              => 'lich_hen_moi',
-                'doi_tuong_nhan'    => 'nhan_vien',
-                'doi_tuong_nhan_id' => $nv->id,
-                'tieu_de'           => '🔥 CÓ KHÁCH ĐẶT LỊCH XEM NHÀ',
-                'noi_dung'          => $request->ten_khach_hang . ' vừa đặt lịch lúc ' . date('H:i d/m', strtotime($request->thoi_gian_hen)) . '. Hãy vào nhận lịch ngay!',
-                'lien_ket'          => route('nhanvien.admin.lich-hen.index'),
-            ]);
-        }
-
-        // 6. Gửi email xác nhận cho khách hàng (nếu họ có nhập email)
+        // 5. Bắn thông báo + gửi email SAU khi đã trả response cho khách
         $emailKhach = $request->email_khach_hang;
-        if ($emailKhach) {
-            try {
-                $lichHen->load('batDongSan');
-                $mail = new DatLichXemNhaMail($lichHen);
-                $noiDung = $mail->render();
+        $tenKhach = $request->ten_khach_hang;
+        $thoiGianHen = $request->thoi_gian_hen;
+        $lichHenId = $lichHen->id;
 
-                Mail::to($emailKhach)->send($mail);
-
-                NhatKyEmail::create([
-                    'khach_hang_id' => $khachHangId,
-                    'nhan_vien_id' => null,
-                    'loai_email' => 'dat_lich_hen',
-                    'email_nguoi_nhan' => $emailKhach,
-                    'tieu_de' => 'Xác nhận đặt lịch xem nhà',
-                    'noi_dung' => $noiDung,
-                    'trang_thai' => 'thanh_cong',
-                    'doi_tuong_lien_quan' => 'lich_hen',
-                    'doi_tuong_id' => $lichHen->id,
-                    'thoi_diem_gui' => now(),
+        dispatch(function () use ($lichHenId, $emailKhach, $khachHangId, $tenKhach, $thoiGianHen) {
+            // 5a. Bắn thông báo cho toàn bộ Sale và Admin biết có kèo mới để vào nhận
+            $saleVaAdmin = NhanVien::whereIn('vai_tro', ['admin', 'sale'])->where('kich_hoat', 1)->get();
+            foreach ($saleVaAdmin as $nv) {
+                ThongBao::create([
+                    'loai'              => 'lich_hen_moi',
+                    'doi_tuong_nhan'    => 'nhan_vien',
+                    'doi_tuong_nhan_id' => $nv->id,
+                    'tieu_de'           => '🔥 CÓ KHÁCH ĐẶT LỊCH XEM NHÀ',
+                    'noi_dung'          => $tenKhach . ' vừa đặt lịch lúc ' . date('H:i d/m', strtotime($thoiGianHen)) . '. Hãy vào nhận lịch ngay!',
+                    'lien_ket'          => route('nhanvien.admin.lich-hen.index'),
                 ]);
-            } catch (\Throwable $e) {
-                Log::error('Không gửi được email xác nhận đặt lịch.', [
-                    'email' => $emailKhach,
-                    'error' => $e->getMessage(),
-                ]);
-
-                NhatKyEmail::create([
-                    'khach_hang_id' => $khachHangId,
-                    'nhan_vien_id' => null,
-                    'loai_email' => 'dat_lich_hen',
-                    'email_nguoi_nhan' => $emailKhach,
-                    'tieu_de' => 'Xác nhận đặt lịch xem nhà',
-                    'noi_dung' => null,
-                    'trang_thai' => 'that_bai',
-                    'loi' => mb_substr($e->getMessage(), 0, 1000),
-                    'doi_tuong_lien_quan' => 'lich_hen',
-                    'doi_tuong_id' => $lichHen->id,
-                    'thoi_diem_gui' => now(),
-                ]);
-                // Không throw — lịch hẹn đã được tạo, chỉ log lỗi mail
             }
-        }
+
+            // 5b. Gửi email xác nhận cho khách hàng (nếu họ có nhập email)
+            if ($emailKhach) {
+                try {
+                    $lichHen = LichHen::with('batDongSan')->find($lichHenId);
+                    if (!$lichHen) return;
+
+                    $mail = new DatLichXemNhaMail($lichHen);
+                    $noiDung = $mail->render();
+
+                    Mail::to($emailKhach)->send($mail);
+
+                    NhatKyEmail::create([
+                        'khach_hang_id' => $khachHangId,
+                        'nhan_vien_id' => null,
+                        'loai_email' => 'dat_lich_hen',
+                        'email_nguoi_nhan' => $emailKhach,
+                        'tieu_de' => 'Xác nhận đặt lịch xem nhà',
+                        'noi_dung' => $noiDung,
+                        'trang_thai' => 'thanh_cong',
+                        'doi_tuong_lien_quan' => 'lich_hen',
+                        'doi_tuong_id' => $lichHenId,
+                        'thoi_diem_gui' => now(),
+                    ]);
+                } catch (\Throwable $e) {
+                    Log::error('Không gửi được email xác nhận đặt lịch.', [
+                        'email' => $emailKhach,
+                        'error' => $e->getMessage(),
+                    ]);
+
+                    NhatKyEmail::create([
+                        'khach_hang_id' => $khachHangId,
+                        'nhan_vien_id' => null,
+                        'loai_email' => 'dat_lich_hen',
+                        'email_nguoi_nhan' => $emailKhach,
+                        'tieu_de' => 'Xác nhận đặt lịch xem nhà',
+                        'noi_dung' => null,
+                        'trang_thai' => 'that_bai',
+                        'loi' => mb_substr($e->getMessage(), 0, 1000),
+                        'doi_tuong_lien_quan' => 'lich_hen',
+                        'doi_tuong_id' => $lichHenId,
+                        'thoi_diem_gui' => now(),
+                    ]);
+                }
+            }
+        })->afterResponse();
 
         return response()->json([
             'status'  => 'success',
