@@ -1538,7 +1538,7 @@
                                 $isNew = $bds->created_at?->diffInDays(now()) <= 7;
                             @endphp
 
-                            <div class="bds-card">
+                            <div class="bds-card" data-aos="fade-up" data-aos-delay="{{ (($loop->iteration - 1) % 12) * 50 }}">
                                 <div class="bds-thumb">
                                     @if ($anhBia)
                                         <img src="{{ \Storage::disk('r2')->url($anhBia) }}" alt="{{ $bds->tieu_de }}"

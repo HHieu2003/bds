@@ -2,9 +2,11 @@
 
 namespace App\Providers;
 
+use App\Models\BaiViet;
 use App\Models\DuAn;
 use App\Models\KhuVuc;
 use App\Models\BatDongSan;
+use App\Observers\BaiVietObserver;
 use App\Observers\BatDongSanObserver;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -54,6 +56,7 @@ class AppServiceProvider extends ServiceProvider
         });
 
         BatDongSan::observe(BatDongSanObserver::class);
+        BaiViet::observe(BaiVietObserver::class);
 
         // ── Menu header: Cache 30 phút, chỉ share cho frontend views ──
         View::composer('frontend.*', function ($view) {

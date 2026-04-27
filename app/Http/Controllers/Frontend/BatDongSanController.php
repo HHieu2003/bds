@@ -11,6 +11,7 @@ use App\Models\YeuThich;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Str;
 use App\Services\GoiYService;
 
 class BatDongSanController extends Controller
@@ -311,6 +312,13 @@ class BatDongSanController extends Controller
             'chat_loai_ngu_canh' => 'bat_dong_san',
             'chat_ngu_canh_id'  => $bds->id,
             'chat_ten_ngu_canh' => $bds->tieu_de,
+
+            // ═══ SEO META TAGS ═══
+            'seo_title'       => ($bds->seo_title ?: $bds->tieu_de) . ' — Thành Công Land',
+            'seo_description' => $bds->seo_description ?: Str::limit(strip_tags($bds->mo_ta), 160),
+            'seo_image'       => $bds->hinh_anh_url,
+            'seo_keywords'    => $bds->seo_keywords ?: null,
+            'seo_type'        => 'article',
         ]);
     }
     public function trackTime(Request $request)

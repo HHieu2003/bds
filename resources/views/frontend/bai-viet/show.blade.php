@@ -1,11 +1,5 @@
 @extends('frontend.layouts.master')
 
-@section('title', $baiViet->tieu_de . ' - Thành Công Land')
-@section('meta_description', Str::limit(strip_tags($baiViet->mo_ta_ngan ?? $baiViet->noi_dung), 160))
-@section('og_title', $baiViet->tieu_de)
-@section('og_description', Str::limit(strip_tags($baiViet->mo_ta_ngan ?? $baiViet->noi_dung), 160))
-@section('og_image', $baiViet->hinh_anh ? \Storage::disk('r2')->url($baiViet->hinh_anh) : asset('images/default-news.jpg'))
-
 @section('content')
 
     {{-- ── READING PROGRESS BAR ── --}}

@@ -7,19 +7,15 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>@yield('title', 'Thành Công Land — Bất động sản Vinhomes Smart City')</title>
-    <meta name="description" content="@yield('meta_description', 'Đơn vị phân phối bất động sản uy tín tại Vinhomes Smart City và khu vực phía Tây Hà Nội.')">
-    <meta name="keywords" content="@yield('meta_keywords', 'bất động sản, vinhomes smart city, căn hộ hà nội, mua bán căn hộ, cho thuê căn hộ')">
-    <meta name="robots" content="@yield('meta_robots', 'index, follow')">
-    <link rel="canonical" href="@yield('canonical', url()->current())">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url()->current() }}">
-    <meta property="og:title" content="@yield('og_title', 'Thành Công Land')">
-    <meta property="og:description" content="@yield('og_description', 'Bất động sản Vinhomes Smart City')">
-    <meta property="og:image" content="@yield('og_image', asset('images/og-default.jpg'))">
-    <meta property="og:locale" content="vi_VN">
-    <meta property="og:site_name" content="Thành Công Land">
+    {{-- ═══ SEO META TAGS (Dynamic Component) ═══ --}}
+    @include('frontend.partials.meta-seo', [
+        'seo_title'       => $seo_title ?? null,
+        'seo_description' => $seo_description ?? null,
+        'seo_image'       => $seo_image ?? null,
+        'seo_keywords'    => $seo_keywords ?? null,
+        'seo_type'        => $seo_type ?? null,
+        'seo_canonical'   => $seo_canonical ?? null,
+    ])
 
     <link rel="icon" type="image/png" href="{{ asset('images/logo-icon.png') }}">
     <link rel="shortcut icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
@@ -31,7 +27,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
-    <meta name="author" content="Thành Công Land">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
 
     @vite(['resources/css/frontend.css', 'resources/js/frontend.js'])
     @stack('styles')
@@ -142,6 +139,13 @@
                 dangKyNhanTinDestroy: '{{ route('frontend.dang-ky-nhan-tin.destroy', ['id' => '__ID__'], false) }}'
             }
         };
+    </script>
+
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            AOS.init({ duration: 800, once: true });
+        });
     </script>
 
 

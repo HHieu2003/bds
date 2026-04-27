@@ -1,4 +1,7 @@
 User-agent: *
-Disallow:
+Disallow: /nhan-vien/
+Disallow: /tai-khoan/
+Disallow: /api/
+Allow: /
 
-Sitemap: https://yourdomain.com/sitemap.xml
+Sitemap: /sitemap.xml

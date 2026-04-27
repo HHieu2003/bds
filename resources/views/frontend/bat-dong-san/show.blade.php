@@ -1,12 +1,67 @@
 @extends('frontend.layouts.master')
 
-@section('title', $bds->tieu_de . ' — Thành Công Land')
-@section('meta_description', Str::limit(strip_tags($bds->mo_ta), 160))
-@section('og_title', $bds->tieu_de)
-@section('og_description', Str::limit(strip_tags($bds->mo_ta), 160))
-@section('og_image', $bds->hinh_anh ? \Storage::disk('r2')->url($bds->hinh_anh) : asset('images/og-default.jpg'))
-
+{{-- ═══ SCHEMA MARKUP JSON-LD: RealEstateListing ═══ --}}
 @push('styles')
+    <script type="application/ld+json">
+    {
+        "@@context": "https://schema.org",
+        "@type": "RealEstateListing",
+        "name": @json($bds->tieu_de),
+        "description": @json(Str::limit(strip_tags($bds->mo_ta), 300)),
+        "url": @json(route('frontend.bat-dong-san.show', $bds->slug)),
+        "image": @json($bds->hinh_anh_url),
+        "datePosted": @json(optional($bds->thoi_diem_dang ?? $bds->created_at)->toIso8601String()),
+        @if($bds->duAn && $bds->duAn->khuVuc)
+        "contentLocation": {
+            "@type": "Place",
+            "name": @json($bds->duAn->ten_du_an),
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": @json($bds->duAn->khuVuc->ten_khu_vuc ?? ''),
+                "addressRegion": "Hà Nội",
+                "addressCountry": "VN"
+            }
+        },
+        @endif
+        "offers": {
+            "@type": "Offer",
+            "price": @json((float) ($bds->nhu_cau === 'ban' ? $bds->gia : $bds->gia_thue) ?: 0),
+            "priceCurrency": "VND",
+            "availability": "https://schema.org/InStock",
+            "url": @json(route('frontend.bat-dong-san.show', $bds->slug))
+        },
+        "additionalProperty": [
+            {
+                "@type": "PropertyValue",
+                "name": "Diện tích",
+                "value": @json($bds->dien_tich . ' m²'),
+                "unitCode": "MTK"
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Số phòng ngủ",
+                "value": @json($bds->so_phong_ngu ?? 'N/A')
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Nội thất",
+                "value": @json($bds->noi_that ?? 'N/A')
+            },
+            {
+                "@type": "PropertyValue",
+                "name": "Hướng cửa",
+                "value": @json($bds->huong_cua ?? 'N/A')
+            }
+        ],
+        "seller": {
+            "@type": "RealEstateAgent",
+            "name": "Thành Công Land",
+            "url": @json(url('/')),
+            "telephone": "+84-xxx-xxx-xxx"
+        }
+    }
+    </script>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@5.0/dist/fancybox/fancybox.css" />
     <style>
         /* ═══════════════════════════════════════
@@ -1025,7 +1080,7 @@
         <div class="container py-4">
 
             {{-- ═══════ GALLERY ═══════ --}}
-            <div class="position-relative">
+            <div class="position-relative" data-aos="fade-right">
                 <div class="bds-gallery count-{{ $galleryCount }}">
                     {{-- Media chính --}}
                     @if ($mediaChinh)
@@ -1151,7 +1206,7 @@
             <div class="row g-4">
 
                 {{-- ══ CỘT TRÁI ══ --}}
-                <div class="col-lg-8">
+                <div class="col-lg-8" data-aos="fade-left">
 
                     {{-- TITLE BLOCK --}}
                     <div class="bds-title-block">

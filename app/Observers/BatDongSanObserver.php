@@ -8,10 +8,55 @@ use App\Providers\AppServiceProvider;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class BatDongSanObserver
 {
     public $afterCommit = true;
+
+    /**
+     * TỰ ĐỘNG TẠO SLUG KHI THÊM MỚI BĐS (nếu chưa có slug)
+     * Đảm bảo URL thân thiện: /bat-dong-san/can-ho-2pn-vinhomes-smart-city
+     */
+    public function creating(BatDongSan $bds): void
+    {
+        if (empty($bds->slug) && !empty($bds->tieu_de)) {
+            $bds->slug = $this->generateUniqueSlug($bds->tieu_de);
+        }
+    }
+
+    /**
+     * Tạo slug duy nhất. Nếu bị trùng, thêm hậu tố -2, -3,...
+     */
+    private function generateUniqueSlug(string $title, ?int $exceptId = null): string
+    {
+        $slug = Str::slug($title);
+
+        // Nếu slug trống (tiêu đề toàn ký tự đặc biệt), fallback
+        if (empty($slug)) {
+            $slug = 'bat-dong-san-' . time();
+        }
+
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (true) {
+            $query = BatDongSan::withTrashed()->where('slug', $slug);
+
+            if ($exceptId) {
+                $query->where('id', '!=', $exceptId);
+            }
+
+            if (!$query->exists()) {
+                break;
+            }
+
+            $counter++;
+            $slug = $originalSlug . '-' . $counter;
+        }
+
+        return $slug;
+    }
 
     /**
      * CHẠY KHI ADMIN VỪA THÊM 1 BẤT ĐỘNG SẢN MỚI

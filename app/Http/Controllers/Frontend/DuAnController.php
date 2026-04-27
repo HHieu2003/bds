@@ -8,6 +8,7 @@ use App\Models\KhuVuc;
 use App\Models\YeuThich;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class DuAnController extends Controller
 {
@@ -119,6 +120,15 @@ class DuAnController extends Controller
             'chat_loai_ngu_canh' => 'du_an',
             'chat_ngu_canh_id'  => $duAn->id,
             'chat_ten_ngu_canh' => $duAn->ten_du_an,
+
+            // ═══ SEO META TAGS ═══
+            'seo_title'       => ($duAn->seo_title ?: $duAn->ten_du_an) . ' — Thành Công Land',
+            'seo_description' => $duAn->seo_description ?: Str::limit(strip_tags($duAn->mo_ta_ngan ?? $duAn->noi_dung_chi_tiet), 160),
+            'seo_image'       => $duAn->hinh_anh_dai_dien
+                ? \Illuminate\Support\Facades\Storage::disk('r2')->url($duAn->hinh_anh_dai_dien)
+                : asset('images/og-default.jpg'),
+            'seo_keywords'    => $duAn->seo_keywords ?: null,
+            'seo_type'        => 'article',
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Frontend;
 use App\Http\Controllers\Controller;
 use App\Models\BaiViet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class BaiVietController extends Controller
 {
@@ -57,6 +58,13 @@ class BaiVietController extends Controller
         // 4. Lấy tin nổi bật cho sidebar
         $tinNoiBat = BaiViet::where('hien_thi', 1)->where('noi_bat', 1)->limit(5)->get();
 
-        return view('frontend.bai-viet.show', compact('baiViet', 'tinLienQuan', 'tinNoiBat'));
+        return view('frontend.bai-viet.show', compact('baiViet', 'tinLienQuan', 'tinNoiBat') + [
+            // ═══ SEO META TAGS ═══
+            'seo_title'       => ($baiViet->seo_title ?: $baiViet->tieu_de) . ' — Thành Công Land',
+            'seo_description' => $baiViet->seo_description ?: Str::limit(strip_tags($baiViet->mo_ta_ngan ?? $baiViet->noi_dung), 160),
+            'seo_image'       => $baiViet->hinh_anh_url ?: asset('images/og-default.jpg'),
+            'seo_keywords'    => $baiViet->seo_keywords ?: null,
+            'seo_type'        => 'article',
+        ]);
     }
 }

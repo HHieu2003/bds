@@ -3028,3 +3028,23 @@ ol {
         display: none;
     }
 }
+
+/* =========================================================
+   HIỆU ỨNG HOVER NÂNG CẤP (TƯƠNG TÁC CHUỘT)
+========================================================= */
+.bds-card, .da-card, .property-card, .project-card {
+    transition: all 0.3s ease;
+}
+
+.bds-card:hover, .da-card:hover, .property-card:hover, .project-card:hover {
+    transform: translateY(-5px) !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.bds-card img, .da-card img, .property-card img, .project-card img {
+    transition: all 0.3s ease;
+}
+
+.bds-card:hover img, .da-card:hover img, .property-card:hover img, .project-card:hover img {
+    transform: scale(1.05) !important;
+}
